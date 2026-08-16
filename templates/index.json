@@ -9,28 +9,22 @@
  */
 {
   "sections": {
-    "hero_jVaWmY": {
+    "hero_ona": {
       "type": "hero",
       "blocks": {
-        "text_YLPk4p": {
+        "text_headline": {
           "type": "text",
           "name": "t:names.heading",
           "settings": {
-            "text": "<p>Browse our latest products</p>",
+            "text": "<p>Coffee. <em>elevated.</em></p>",
             "width": "fit-content",
             "max_width": "normal",
-            "alignment": "left",
-            "type_preset": "h2",
-            "font": "var(--font-body--family)",
-            "font_size": "1rem",
-            "line_height": "normal",
-            "letter_spacing": "normal",
-            "case": "none",
+            "alignment": "center",
+            "type_preset": "h1",
+            "font": "var(--font-heading--family)",
             "wrap": "pretty",
             "text_color": "{{ settings.color_palette.background }}",
             "background": false,
-            "background_color": "#00000026",
-            "corner_radius": 0,
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
@@ -38,134 +32,172 @@
           },
           "blocks": {}
         },
-        "button_H9gpTf": {
+        "button_quiz": {
           "type": "button",
           "name": "t:names.button",
           "settings": {
-            "label": "Shop all",
+            "label": "Find your coffee",
+            "link": "#find-your-coffee",
+            "open_in_new_tab": false,
+            "style_class": "button-secondary",
+            "width": "fit-content",
+            "width_mobile": "fit-content"
+          },
+          "blocks": {}
+        },
+        "button_shop": {
+          "type": "button",
+          "name": "t:names.button",
+          "settings": {
+            "label": "Shop coffee",
             "link": "shopify://collections/all",
             "open_in_new_tab": false,
-            "style_class": "button-custom",
-            "custom_button_background": "rgba(0, 0, 0, 0)",
-            "custom_button_text": "{{ settings.color_palette.background }}",
-            "custom_button_border": "{{ settings.color_palette.background }}",
+            "style_class": "button",
             "width": "fit-content",
-            "custom_width": 100,
-            "width_mobile": "fit-content",
-            "custom_width_mobile": 100
+            "width_mobile": "fit-content"
           },
           "blocks": {}
         }
       },
       "block_order": [
-        "text_YLPk4p",
-        "button_H9gpTf"
+        "text_headline",
+        "button_quiz",
+        "button_shop"
       ],
       "name": "t:names.hero",
       "settings": {
         "media_type_1": "image",
         "media_type_2": "image",
-        "link": "",
-        "open_in_new_tab": false,
         "content_direction": "column",
         "vertical_on_mobile": true,
-        "horizontal_alignment": "space-between",
-        "vertical_alignment": "flex-end",
-        "align_baseline": true,
         "horizontal_alignment_flex_direction_column": "center",
-        "vertical_alignment_flex_direction_column": "flex-end",
+        "vertical_alignment_flex_direction_column": "center",
         "gap": 24,
-        "section_width": "page-width",
-        "section_height": "medium",
-        "section_height_custom": 50,
+        "section_width": "full-width",
+        "section_height": "large",
         "toggle_overlay": true,
-        "overlay_color": "#12121266",
+        "overlay_color": "#470a1266",
         "overlay_style": "solid",
-        "gradient_direction": "to bottom",
-        "blurred_reflection": false,
-        "reflection_opacity": 75,
         "padding-block-start": 100,
-        "padding-block-end": 72
+        "padding-block-end": 100
       }
     },
-    "product_list_fa6P9H": {
+    "find_your_coffee": {
+      "type": "media-with-content",
+      "name": "t:names.media_with_text",
+      "settings": {
+        "media_position": "right",
+        "media_width": "medium",
+        "media_height": "60svh",
+        "section_width": "full-width",
+        "extend_media": false,
+        "background_color": "{{ settings.color_palette.color1 }}",
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      },
+      "blocks": {
+        "media": {
+          "type": "_media-without-appearance",
+          "static": true,
+          "settings": {}
+        },
+        "content": {
+          "type": "_content-without-appearance",
+          "static": true,
+          "settings": {
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "center"
+          },
+          "blocks": {
+            "group": {
+              "type": "group",
+              "settings": {
+                "height": "fit"
+              },
+              "blocks": {
+                "heading": {
+                  "type": "text",
+                  "name": "t:names.heading",
+                  "settings": {
+                    "text": "<h2>Find <em>your</em> Coffee</h2>",
+                    "type_preset": "h2",
+                    "text_color": "{{ settings.color_palette.background }}"
+                  }
+                },
+                "text": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Finding great coffee shouldn't be complicated. Answer a few quick questions and we'll recommend ONA coffees you'll love.</p>",
+                    "max_width": "narrow",
+                    "type_preset": "rte",
+                    "text_color": "{{ settings.color_palette.background }}"
+                  }
+                }
+              },
+              "block_order": [
+                "heading",
+                "text"
+              ]
+            },
+            "button": {
+              "type": "button",
+              "settings": {
+                "label": "Answer the quiz",
+                "link": "#coffee-quiz",
+                "style_class": "button-custom",
+                "custom_button_background": "{{ settings.color_palette.background }}",
+                "custom_button_text": "{{ settings.color_palette.foreground }}",
+                "custom_button_border": "{{ settings.color_palette.background }}"
+              }
+            }
+          },
+          "block_order": [
+            "group",
+            "button"
+          ]
+        }
+      },
+      "block_order": [
+        "media",
+        "content"
+      ]
+    },
+    "coffee_spotlight": {
       "type": "product-list",
+      "name": "t:names.featured_collection",
       "blocks": {
         "static-header": {
           "type": "_product-list-content",
           "name": "t:names.header",
           "static": true,
           "settings": {
-            "content_direction": "row",
-            "vertical_on_mobile": false,
-            "horizontal_alignment": "space-between",
-            "vertical_alignment": "flex-end",
-            "align_baseline": true,
-            "horizontal_alignment_flex_direction_column": "flex-start",
-            "vertical_alignment_flex_direction_column": "center",
-            "gap": 12,
-            "width": "fill",
-            "custom_width": 100,
-            "width_mobile": "fill",
-            "custom_width_mobile": 100,
-            "height": "fit",
-            "custom_height": 100,
-            "background_media": "none",
-            "video_position": "cover",
-            "background_image_position": "cover",
-            "border": "none",
-            "border_width": 1,
-            "border_opacity": 100,
-            "border_radius": 0,
-            "padding-block-start": 0,
-            "padding-block-end": 0,
-            "padding-inline-start": 0,
-            "padding-inline-end": 0
+            "content_direction": "column",
+            "horizontal_alignment_flex_direction_column": "center",
+            "gap": 8
           },
           "blocks": {
-            "product_list_text_YFtzcL": {
+            "product_list_text": {
               "type": "_product-list-text",
               "name": "t:names.collection_title",
               "settings": {
-                "text": "<h3>{{ closest.collection.title }}</h3>",
-                "width": "fit-content",
-                "max_width": "normal",
-                "alignment": "left",
-                "type_preset": "h4",
-                "font": "var(--font-body--family)",
-                "font_size": "",
-                "line_height": "normal",
-                "letter_spacing": "normal",
-                "case": "none",
-                "wrap": "pretty",
-                "background": false,
-                "background_color": "#00000026",
-                "corner_radius": 0,
-                "padding-block-start": 0,
-                "padding-block-end": 0,
-                "padding-inline-start": 0,
-                "padding-inline-end": 0
-              },
-              "blocks": {}
+                "text": "<h2>Coffee <em>spotlight</em></h2>",
+                "alignment": "center",
+                "type_preset": "h2"
+              }
             },
-            "product_list_button_MWeP9V": {
-              "type": "_product-list-button",
-              "name": "t:names.product_list_button",
+            "product_list_subtext": {
+              "type": "_product-list-text",
+              "name": "t:names.text",
               "settings": {
-                "label": "View all",
-                "open_in_new_tab": false,
-                "style_class": "button-unstyled",
-                "width": "fit-content",
-                "custom_width": 100,
-                "width_mobile": "fit-content",
-                "custom_width_mobile": 100
-              },
-              "blocks": {}
+                "text": "<p>Explore our latest arrivals alongside the coffees our community keeps coming back for.</p>",
+                "alignment": "center",
+                "type_preset": "paragraph"
+              }
             }
           },
           "block_order": [
-            "product_list_text_YFtzcL",
-            "product_list_button_MWeP9V"
+            "product_list_text",
+            "product_list_subtext"
           ]
         },
         "static-product-card": {
@@ -173,110 +205,146 @@
           "name": "t:names.product_card",
           "static": true,
           "settings": {
-            "product_card_gap": 4,
-            "border": "none",
-            "border_width": 1,
-            "border_opacity": 100,
-            "border_radius": 0,
-            "padding-block-start": 0,
-            "padding-block-end": 0,
-            "padding-inline-start": 0,
-            "padding-inline-end": 0
+            "product_card_gap": 4
           },
           "blocks": {
-            "product_card_gallery_677WP3": {
+            "product_card_gallery": {
               "type": "_product-card-gallery",
               "name": "t:names.product_card_media",
               "settings": {
-                "image_ratio": "adapt",
-                "border": "none",
-                "border_width": 1,
-                "border_opacity": 100,
-                "border_radius": 0,
-                "padding-block-start": 0,
-                "padding-block-end": 0,
-                "padding-inline-start": 0,
-                "padding-inline-end": 0
-              },
-              "blocks": {}
+                "image_ratio": "adapt"
+              }
             },
-            "product_title_YXxMTj": {
+            "product_title": {
               "type": "product-title",
               "name": "t:names.product_title",
               "settings": {
-                "width": "100%",
-                "max_width": "normal",
-                "alignment": "left",
                 "type_preset": "paragraph",
-                "font": "var(--font-body--family)",
-                "font_size": "1rem",
-                "line_height": "normal",
-                "letter_spacing": "normal",
-                "case": "none",
-                "wrap": "pretty",
-                "background": false,
-                "background_color": "#00000026",
-                "corner_radius": 0,
-                "padding-block-start": 4,
-                "padding-block-end": 0,
-                "padding-inline-start": 0,
-                "padding-inline-end": 0
-              },
-              "blocks": {}
+                "alignment": "left"
+              }
             },
-            "price_JQzVV4": {
-              "type": "price",
-              "name": "t:names.product_price",
+            "variant_picker": {
+              "type": "swatches",
+              "name": "t:names.variant_picker",
+              "settings": {}
+            },
+            "add_to_cart": {
+              "type": "add-to-cart",
+              "name": "t:names.add_to_cart_button",
               "settings": {
-                "show_sale_price_first": true,
-                "show_installments": false,
-                "show_tax_info": false,
-                "type_preset": "h6",
-                "width": "100%",
-                "alignment": "left",
-                "font": "var(--font-body--family)",
-                "font_size": "1rem",
-                "line_height": "normal",
-                "letter_spacing": "normal",
-                "case": "none",
-                "padding-block-start": 0,
-                "padding-block-end": 0,
-                "padding-inline-start": 0,
-                "padding-inline-end": 0
-              },
-              "blocks": {}
+                "style_class": "button"
+              }
             }
           },
           "block_order": [
-            "product_card_gallery_677WP3",
-            "product_title_YXxMTj",
-            "price_JQzVV4"
+            "product_card_gallery",
+            "product_title",
+            "variant_picker",
+            "add_to_cart"
           ]
         }
       },
-      "name": "t:names.featured_collection",
       "settings": {
         "collection": "all",
-        "layout_type": "grid",
-        "carousel_on_mobile": false,
+        "layout_type": "carousel",
+        "carousel_on_mobile": true,
         "max_products": 8,
-        "columns": 4,
-        "mobile_columns": "2",
-        "mobile_card_size": "60cqw",
-        "columns_gap": 8,
+        "columns": 3,
+        "mobile_columns": "1",
+        "columns_gap": 24,
         "rows_gap": 24,
-        "icons_style": "arrow",
-        "icons_shape": "none",
         "section_width": "page-width",
-        "horizontal_alignment": "flex-start",
-        "gap": 28,
-        "padding-block-start": 48,
-        "padding-block-end": 48
+        "gap": 40,
+        "background_color": "{{ settings.color_palette.background }}",
+        "padding-block-start": 80,
+        "padding-block-end": 80
       }
+    },
+    "special_release": {
+      "type": "media-with-content",
+      "name": "t:names.media_with_text",
+      "settings": {
+        "media_position": "right",
+        "media_width": "wide",
+        "media_height": "60svh",
+        "section_width": "full-width",
+        "extend_media": false,
+        "background_color": "{{ settings.color_palette.foreground }}",
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      },
+      "blocks": {
+        "media": {
+          "type": "_media-without-appearance",
+          "static": true,
+          "settings": {}
+        },
+        "content": {
+          "type": "_content-without-appearance",
+          "static": true,
+          "settings": {
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "center"
+          },
+          "blocks": {
+            "group": {
+              "type": "group",
+              "settings": {
+                "height": "fit"
+              },
+              "blocks": {
+                "heading": {
+                  "type": "text",
+                  "name": "t:names.heading",
+                  "settings": {
+                    "text": "<h2>Special <em>release</em></h2>",
+                    "type_preset": "h2",
+                    "text_color": "{{ settings.color_palette.background }}"
+                  }
+                },
+                "text": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Ugly Sweater is a cosy blend with notes of milk chocolate and hazelnut &mdash; something a little unconventional that always ends up being a favourite.</p>",
+                    "max_width": "narrow",
+                    "type_preset": "rte",
+                    "text_color": "{{ settings.color_palette.background }}"
+                  }
+                }
+              },
+              "block_order": [
+                "heading",
+                "text"
+              ]
+            },
+            "button": {
+              "type": "button",
+              "settings": {
+                "label": "Shop now",
+                "link": "shopify://collections/all",
+                "style_class": "button-custom",
+                "custom_button_background": "{{ settings.color_palette.background }}",
+                "custom_button_text": "{{ settings.color_palette.foreground }}",
+                "custom_button_border": "{{ settings.color_palette.background }}"
+              }
+            }
+          },
+          "block_order": [
+            "group",
+            "button"
+          ]
+        }
+      },
+      "block_order": [
+        "media",
+        "content"
+      ]
     }
   },
   "order": [
-    "hero_jVaWmY",
-    "product_list_fa6P9H"
+    "hero_ona",
+    "find_your_coffee",
+    "coffee_spotlight",
+    "special_release"
   ]
 }
