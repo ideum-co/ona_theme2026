@@ -339,12 +339,420 @@
         "media",
         "content"
       ]
+    },
+    "club_benefits": {
+      "type": "section",
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "column",
+        "horizontal_alignment_flex_direction_column": "center",
+        "gap": 48,
+        "section_width": "page-width",
+        "background_color": "#18191b",
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      },
+      "blocks": {
+        "heading": {
+          "type": "text",
+          "name": "t:names.heading",
+          "settings": {
+            "text": "<h2>Club <em>benefits</em></h2>",
+            "alignment": "center",
+            "type_preset": "h2",
+            "text_color": "{{ settings.color_palette.background }}"
+          }
+        },
+        "columns": {
+          "type": "group",
+          "name": "t:names.group",
+          "settings": {
+            "content_direction": "row",
+            "vertical_on_mobile": true,
+            "gap": 48,
+            "horizontal_alignment": "space-between"
+          },
+          "blocks": {
+            "col1": {
+              "type": "group",
+              "settings": {
+                "content_direction": "column",
+                "horizontal_alignment_flex_direction_column": "center",
+                "gap": 12
+              },
+              "blocks": {
+                "icon": {
+                  "type": "icon",
+                  "settings": {
+                    "icon": "fire",
+                    "size": "2rem",
+                    "icon_color": "{{ settings.color_palette.background }}"
+                  }
+                },
+                "heading": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<h4>Freshly roasted</h4>",
+                    "alignment": "center",
+                    "type_preset": "h4",
+                    "text_color": "{{ settings.color_palette.background }}"
+                  }
+                },
+                "text": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Every order is roasted to your delivery date, never off a shelf.</p>",
+                    "alignment": "center",
+                    "type_preset": "paragraph",
+                    "text_color": "{{ settings.color_palette.background }}"
+                  }
+                }
+              },
+              "block_order": [
+                "icon",
+                "heading",
+                "text"
+              ]
+            },
+            "col2": {
+              "type": "group",
+              "settings": {
+                "content_direction": "column",
+                "horizontal_alignment_flex_direction_column": "center",
+                "gap": 12
+              },
+              "blocks": {
+                "icon": {
+                  "type": "icon",
+                  "settings": {
+                    "icon": "star",
+                    "size": "2rem",
+                    "icon_color": "{{ settings.color_palette.background }}"
+                  }
+                },
+                "heading": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<h4>New releases</h4>",
+                    "alignment": "center",
+                    "type_preset": "h4",
+                    "text_color": "{{ settings.color_palette.background }}"
+                  }
+                },
+                "text": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>First access to limited and seasonal coffees before anyone else.</p>",
+                    "alignment": "center",
+                    "type_preset": "paragraph",
+                    "text_color": "{{ settings.color_palette.background }}"
+                  }
+                }
+              },
+              "block_order": [
+                "icon",
+                "heading",
+                "text"
+              ]
+            },
+            "col3": {
+              "type": "group",
+              "settings": {
+                "content_direction": "column",
+                "horizontal_alignment_flex_direction_column": "center",
+                "gap": 12
+              },
+              "blocks": {
+                "icon": {
+                  "type": "icon",
+                  "settings": {
+                    "icon": "truck",
+                    "size": "2rem",
+                    "icon_color": "{{ settings.color_palette.background }}"
+                  }
+                },
+                "heading": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<h4>Flexible delivery</h4>",
+                    "alignment": "center",
+                    "type_preset": "h4",
+                    "text_color": "{{ settings.color_palette.background }}"
+                  }
+                },
+                "text": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Pause, skip or change your delivery frequency any time.</p>",
+                    "alignment": "center",
+                    "type_preset": "paragraph",
+                    "text_color": "{{ settings.color_palette.background }}"
+                  }
+                }
+              },
+              "block_order": [
+                "icon",
+                "heading",
+                "text"
+              ]
+            }
+          },
+          "block_order": [
+            "col1",
+            "col2",
+            "col3"
+          ]
+        }
+      },
+      "block_order": [
+        "heading",
+        "columns"
+      ]
+    },
+    "raspberry_candy": {
+      "type": "media-with-content",
+      "name": "t:names.media_with_text",
+      "settings": {
+        "media_position": "left",
+        "media_width": "narrow",
+        "media_height": "auto",
+        "section_width": "full-width",
+        "extend_media": false,
+        "background_color": "{{ settings.color_palette.color2 }}",
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      },
+      "blocks": {
+        "media": {
+          "type": "_media-without-appearance",
+          "static": true,
+          "settings": {
+            "image": "shopify://shop_images/Candy.png"
+          }
+        },
+        "content": {
+          "type": "_content-without-appearance",
+          "static": true,
+          "settings": {
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "center"
+          },
+          "blocks": {
+            "group": {
+              "type": "group",
+              "settings": {
+                "height": "fit"
+              },
+              "blocks": {
+                "caption": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Introducing</p>",
+                    "type_preset": "h6",
+                    "text_color": "{{ settings.color_palette.foreground }}"
+                  }
+                },
+                "heading": {
+                  "type": "text",
+                  "name": "t:names.heading",
+                  "settings": {
+                    "text": "<h2>Raspberry <em>Candy</em></h2>",
+                    "type_preset": "h2",
+                    "text_color": "{{ settings.color_palette.foreground }}"
+                  }
+                },
+                "subheading": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p><em>The sweet spot.</em></p>",
+                    "type_preset": "h5",
+                    "text_color": "{{ settings.color_palette.foreground }}"
+                  }
+                },
+                "text": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Bright, juicy and easy to love &mdash; the coffee that first made ONA's name, and the one our community keeps coming back for.</p>",
+                    "max_width": "narrow",
+                    "type_preset": "rte",
+                    "text_color": "{{ settings.color_palette.foreground }}"
+                  }
+                }
+              },
+              "block_order": [
+                "caption",
+                "heading",
+                "subheading",
+                "text"
+              ]
+            },
+            "buttons": {
+              "type": "group",
+              "settings": {
+                "content_direction": "row",
+                "gap": 12
+              },
+              "blocks": {
+                "shop": {
+                  "type": "button",
+                  "settings": {
+                    "label": "Shop now",
+                    "link": "shopify://collections/all",
+                    "style_class": "button-custom",
+                    "custom_button_background": "{{ settings.color_palette.foreground }}",
+                    "custom_button_text": "{{ settings.color_palette.background }}",
+                    "custom_button_border": "{{ settings.color_palette.foreground }}"
+                  }
+                },
+                "subscribe": {
+                  "type": "button",
+                  "settings": {
+                    "label": "Subscribe & Save",
+                    "link": "shopify://collections/all",
+                    "style_class": "button-secondary"
+                  }
+                }
+              },
+              "block_order": [
+                "shop",
+                "subscribe"
+              ]
+            }
+          },
+          "block_order": [
+            "group",
+            "buttons"
+          ]
+        }
+      },
+      "block_order": [
+        "media",
+        "content"
+      ]
+    },
+    "good_coffee_delivered": {
+      "type": "section",
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "column",
+        "horizontal_alignment_flex_direction_column": "center",
+        "vertical_alignment_flex_direction_column": "center",
+        "section_width": "full-width",
+        "section_height": "medium",
+        "background_media": "image",
+        "background_image": "shopify://shop_images/roastery2732h.jpg",
+        "background_image_position": "cover",
+        "toggle_overlay": true,
+        "overlay_color": "#18191b66",
+        "overlay_style": "solid",
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      },
+      "blocks": {
+        "heading": {
+          "type": "text",
+          "name": "t:names.heading",
+          "settings": {
+            "text": "<p>Good coffee. <em>Delivered.</em></p>",
+            "alignment": "center",
+            "type_preset": "h2",
+            "text_color": "{{ settings.color_palette.background }}"
+          }
+        }
+      },
+      "block_order": [
+        "heading"
+      ]
+    },
+    "more_than_coffee": {
+      "type": "media-with-content",
+      "name": "t:names.media_with_text",
+      "settings": {
+        "media_position": "left",
+        "media_width": "wide",
+        "media_height": "60svh",
+        "section_width": "full-width",
+        "extend_media": false,
+        "background_color": "{{ settings.color_palette.color1 }}",
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      },
+      "blocks": {
+        "media": {
+          "type": "_media-without-appearance",
+          "static": true,
+          "settings": {}
+        },
+        "content": {
+          "type": "_content-without-appearance",
+          "static": true,
+          "settings": {
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "center"
+          },
+          "blocks": {
+            "group": {
+              "type": "group",
+              "settings": {
+                "height": "fit"
+              },
+              "blocks": {
+                "heading": {
+                  "type": "text",
+                  "name": "t:names.heading",
+                  "settings": {
+                    "text": "<h2>More than coffee. <em>Since 2008.</em></h2>",
+                    "type_preset": "h2",
+                    "text_color": "{{ settings.color_palette.background }}"
+                  }
+                },
+                "text": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>From Canberra to cafes around the world, ONA has been championing exceptional coffee through innovation, education and meaningful partnerships.</p>",
+                    "max_width": "narrow",
+                    "type_preset": "rte",
+                    "text_color": "{{ settings.color_palette.background }}"
+                  }
+                }
+              },
+              "block_order": [
+                "heading",
+                "text"
+              ]
+            },
+            "button": {
+              "type": "button",
+              "settings": {
+                "label": "Learn more about ONA",
+                "link": "/pages/about",
+                "style_class": "button-custom",
+                "custom_button_background": "rgba(0,0,0,0)",
+                "custom_button_text": "{{ settings.color_palette.background }}",
+                "custom_button_border": "{{ settings.color_palette.background }}"
+              }
+            }
+          },
+          "block_order": [
+            "group",
+            "button"
+          ]
+        }
+      },
+      "block_order": [
+        "media",
+        "content"
+      ]
     }
   },
   "order": [
     "hero_ona",
     "find_your_coffee",
     "coffee_spotlight",
-    "special_release"
+    "special_release",
+    "club_benefits",
+    "raspberry_candy",
+    "good_coffee_delivered",
+    "more_than_coffee"
   ]
 }
