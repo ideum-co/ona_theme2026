@@ -150,12 +150,20 @@
                 "padding-inline-end": 0
               },
               "blocks": {}
+            },
+            "add_to_cart": {
+              "type": "add-to-cart",
+              "name": "t:names.add_to_cart_button",
+              "settings": {
+                "style_class": "button"
+              }
             }
           },
           "block_order": [
             "product_card_gallery_cFExAi",
             "product_title_j7qXTx",
-            "price_fYkUgG"
+            "price_fYkUgG",
+            "add_to_cart"
           ]
         }
       },

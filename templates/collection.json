@@ -204,13 +204,21 @@
                 "product_swatches_padding_left": 0,
                 "product_swatches_padding_right": 0
               }
+            },
+            "add_to_cart": {
+              "type": "add-to-cart",
+              "name": "t:names.add_to_cart_button",
+              "settings": {
+                "style_class": "button"
+              }
             }
           },
           "block_order": [
             "card-gallery",
             "product_title_4nY4eT",
             "price_EzJzMm",
-            "swatches"
+            "swatches",
+            "add_to_cart"
           ]
         }
       },
