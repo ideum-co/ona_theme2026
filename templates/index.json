@@ -743,6 +743,388 @@
         "media",
         "content"
       ]
+    },
+    "learn_with_ona": {
+      "type": "section",
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "column",
+        "horizontal_alignment_flex_direction_column": "center",
+        "gap": 48,
+        "section_width": "page-width",
+        "background_color": "{{ settings.color_palette.background }}",
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      },
+      "blocks": {
+        "heading": {
+          "type": "text",
+          "name": "t:names.heading",
+          "settings": {
+            "text": "<h2>Learn with <em>ONA</em></h2>",
+            "alignment": "center",
+            "type_preset": "h2",
+            "text_color": "{{ settings.color_palette.foreground }}"
+          }
+        },
+        "subtext": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Whether you're just getting started or refining your craft, explore our barista courses, brewing guides and the latest stories from the world of specialty coffee.</p>",
+            "alignment": "center",
+            "type_preset": "paragraph",
+            "text_color": "{{ settings.color_palette.foreground }}",
+            "max_width": "narrow"
+          }
+        },
+        "columns": {
+          "type": "group",
+          "settings": {
+            "content_direction": "row",
+            "vertical_on_mobile": true,
+            "gap": 32
+          },
+          "blocks": {
+            "col1": {
+              "type": "group",
+              "settings": {
+                "content_direction": "column",
+                "gap": 12,
+                "width": "fill"
+              },
+              "blocks": {
+                "image": {
+                  "type": "image",
+                  "settings": {
+                    "image": "shopify://shop_images/7-top-reasons-for-you-to-enrol-in-barista-training.png",
+                    "image_ratio": "square",
+                    "link": "/pages/barista-courses"
+                  }
+                },
+                "heading": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<h4>Barista Courses</h4>",
+                    "type_preset": "h4",
+                    "text_color": "{{ settings.color_palette.foreground }}"
+                  }
+                }
+              },
+              "block_order": [
+                "image",
+                "heading"
+              ]
+            },
+            "col2": {
+              "type": "group",
+              "settings": {
+                "content_direction": "column",
+                "gap": 12,
+                "width": "fill"
+              },
+              "blocks": {
+                "image": {
+                  "type": "image",
+                  "settings": {
+                    "image": "shopify://shop_images/how-to-brew-instant-coffee.png",
+                    "image_ratio": "square",
+                    "link": "/pages/brewing-guides"
+                  }
+                },
+                "heading": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<h4>Brewing Guides</h4>",
+                    "type_preset": "h4",
+                    "text_color": "{{ settings.color_palette.foreground }}"
+                  }
+                }
+              },
+              "block_order": [
+                "image",
+                "heading"
+              ]
+            },
+            "col3": {
+              "type": "group",
+              "settings": {
+                "content_direction": "column",
+                "gap": 12,
+                "width": "fill"
+              },
+              "blocks": {
+                "image": {
+                  "type": "image",
+                  "settings": {
+                    "image": "shopify://shop_images/what-is-a-barista-style-coffee.png",
+                    "image_ratio": "square",
+                    "link": "/blogs/news"
+                  }
+                },
+                "heading": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<h4>Journal</h4>",
+                    "type_preset": "h4",
+                    "text_color": "{{ settings.color_palette.foreground }}"
+                  }
+                }
+              },
+              "block_order": [
+                "image",
+                "heading"
+              ]
+            }
+          },
+          "block_order": [
+            "col1",
+            "col2",
+            "col3"
+          ]
+        }
+      },
+      "block_order": [
+        "heading",
+        "subtext",
+        "columns"
+      ]
+    },
+    "press_band": {
+      "type": "section",
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "row",
+        "vertical_on_mobile": true,
+        "gap": 48,
+        "section_width": "page-width",
+        "background_color": "{{ settings.color_palette.color1 }}",
+        "padding-block-start": 64,
+        "padding-block-end": 64
+      },
+      "blocks": {
+        "urban_list": {
+          "type": "group",
+          "settings": {
+            "content_direction": "column",
+            "gap": 12
+          },
+          "blocks": {
+            "brand": {
+              "type": "text",
+              "settings": {
+                "text": "<h5>Urban List</h5>",
+                "type_preset": "h5",
+                "text_color": "{{ settings.color_palette.background }}"
+              }
+            },
+            "quote": {
+              "type": "text",
+              "settings": {
+                "text": "<p>&ldquo;If you've been fortunate enough to visit ONA's flagship, you'll know exceptional coffee when you taste it.&rdquo;</p>",
+                "type_preset": "paragraph",
+                "text_color": "{{ settings.color_palette.background }}"
+              }
+            }
+          },
+          "block_order": [
+            "brand",
+            "quote"
+          ]
+        },
+        "espresso_room": {
+          "type": "group",
+          "settings": {
+            "content_direction": "column",
+            "gap": 12
+          },
+          "blocks": {
+            "brand": {
+              "type": "text",
+              "settings": {
+                "text": "<h5>Espresso Room</h5>",
+                "type_preset": "h5",
+                "text_color": "{{ settings.color_palette.background }}"
+              }
+            },
+            "quote": {
+              "type": "text",
+              "settings": {
+                "text": "<p>&ldquo;Since 2012, our partnership with ONA Coffee has demonstrated their commitment to quality.&rdquo;</p>",
+                "type_preset": "paragraph",
+                "text_color": "{{ settings.color_palette.background }}"
+              }
+            }
+          },
+          "block_order": [
+            "brand",
+            "quote"
+          ]
+        },
+        "broadsheet": {
+          "type": "group",
+          "settings": {
+            "content_direction": "column",
+            "gap": 12
+          },
+          "blocks": {
+            "brand": {
+              "type": "text",
+              "settings": {
+                "text": "<h5>Broadsheet</h5>",
+                "type_preset": "h5",
+                "text_color": "{{ settings.color_palette.background }}"
+              }
+            },
+            "quote": {
+              "type": "text",
+              "settings": {
+                "text": "<p>&ldquo;Canberra's ONA Coffee is one of the country's most awarded specialty roasters.&rdquo;</p>",
+                "type_preset": "paragraph",
+                "text_color": "{{ settings.color_palette.background }}"
+              }
+            }
+          },
+          "block_order": [
+            "brand",
+            "quote"
+          ]
+        }
+      },
+      "block_order": [
+        "urban_list",
+        "espresso_room",
+        "broadsheet"
+      ]
+    },
+    "find_ona": {
+      "type": "media-with-content",
+      "name": "t:names.media_with_text",
+      "settings": {
+        "media_position": "right",
+        "media_width": "wide",
+        "media_height": "60svh",
+        "section_width": "full-width",
+        "extend_media": false,
+        "background_color": "{{ settings.color_palette.color3 }}",
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      },
+      "blocks": {
+        "media": {
+          "type": "_media-without-appearance",
+          "static": true,
+          "settings": {}
+        },
+        "content": {
+          "type": "_content-without-appearance",
+          "static": true,
+          "settings": {
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "center"
+          },
+          "blocks": {
+            "group": {
+              "type": "group",
+              "settings": {
+                "height": "fit"
+              },
+              "blocks": {
+                "heading": {
+                  "type": "text",
+                  "name": "t:names.heading",
+                  "settings": {
+                    "text": "<h2>Find <em>ONA</em></h2>",
+                    "type_preset": "h2",
+                    "text_color": "{{ settings.color_palette.background }}"
+                  }
+                },
+                "text": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>From Canberra to Dubai, ONA coffee is served in growing number of cafes around the world, proudly bringing exceptional coffee to our community.</p>",
+                    "max_width": "narrow",
+                    "type_preset": "rte",
+                    "text_color": "{{ settings.color_palette.background }}"
+                  }
+                }
+              },
+              "block_order": [
+                "heading",
+                "text"
+              ]
+            },
+            "button": {
+              "type": "button",
+              "settings": {
+                "label": "See Flagships & Locations",
+                "link": "/pages/locations",
+                "style_class": "button-custom",
+                "custom_button_background": "rgba(0,0,0,0)",
+                "custom_button_text": "{{ settings.color_palette.background }}",
+                "custom_button_border": "{{ settings.color_palette.background }}"
+              }
+            }
+          },
+          "block_order": [
+            "group",
+            "button"
+          ]
+        }
+      },
+      "block_order": [
+        "media",
+        "content"
+      ]
+    },
+    "discover_by_category": {
+      "type": "collection-list",
+      "name": "t:names.collection_list",
+      "settings": {
+        "collection_list": [
+          "gid://shopify/Collection/272100589759",
+          "gid://shopify/Collection/272100360383",
+          "gid://shopify/Collection/272100524223",
+          "gid://shopify/Collection/272100458687",
+          "gid://shopify/Collection/272100393151"
+        ],
+        "layout_type": "grid",
+        "carousel_on_mobile": true,
+        "columns": 5,
+        "mobile_columns": "2",
+        "columns_gap": 16,
+        "rows_gap": 16,
+        "icons_style": "arrow",
+        "section_width": "page-width",
+        "gap": 40,
+        "background_color": "{{ settings.color_palette.background }}",
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      },
+      "blocks": {
+        "header": {
+          "type": "group",
+          "static": true,
+          "settings": {
+            "content_direction": "column",
+            "horizontal_alignment_flex_direction_column": "center"
+          },
+          "blocks": {
+            "heading": {
+              "type": "text",
+              "name": "t:names.heading",
+              "settings": {
+                "text": "<h2>Discover by <em>category</em></h2>",
+                "alignment": "center",
+                "type_preset": "h2",
+                "text_color": "{{ settings.color_palette.foreground }}"
+              }
+            }
+          },
+          "block_order": [
+            "heading"
+          ]
+        }
+      }
     }
   },
   "order": [
@@ -753,6 +1135,10 @@
     "club_benefits",
     "raspberry_candy",
     "good_coffee_delivered",
-    "more_than_coffee"
+    "more_than_coffee",
+    "learn_with_ona",
+    "press_band",
+    "find_ona",
+    "discover_by_category"
   ]
 }
