@@ -38,27 +38,10 @@
           "blocks": {}
         },
         "text_twGGkJ": {
-          "type": "text",
+          "type": "custom-liquid",
           "name": "t:names.description",
           "settings": {
-            "text": "{{ closest.collection.description }}",
-            "width": "fit-content",
-            "max_width": "narrow",
-            "alignment": "left",
-            "type_preset": "rte",
-            "font": "var(--font-body--family)",
-            "font_size": "",
-            "line_height": "normal",
-            "letter_spacing": "normal",
-            "case": "none",
-            "wrap": "pretty",
-            "background": false,
-            "background_color": "#00000026",
-            "corner_radius": 0,
-            "padding-block-start": 0,
-            "padding-block-end": 0,
-            "padding-inline-start": 0,
-            "padding-inline-end": 0
+            "custom_liquid": "{% liquid\n  assign desc_parts = closest.collection.description | split: '<!-- split -->'\n  assign intro_html = desc_parts | first\n%}\n<div class=\"collection-intro\">{{ intro_html }}</div>\n<style>\n  .collection-intro { max-width: var(--max-width--body-narrow); }\n  .collection-intro p { margin: 0 0 1em; line-height: 1.6; }\n  .collection-intro p:last-child { margin-bottom: 0; }\n</style>"
           },
           "blocks": {}
         },
@@ -271,10 +254,32 @@
         "padding-block-start": 0,
         "padding-block-end": 32
       }
+    },
+    "below_fold": {
+      "type": "section",
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "column",
+        "horizontal_alignment_flex_direction_column": "flex-start",
+        "gap": 16,
+        "section_width": "page-width",
+        "padding-block-start": 8,
+        "padding-block-end": 48
+      },
+      "blocks": {
+        "body": {
+          "type": "custom-liquid",
+          "settings": {
+            "custom_liquid": "{% liquid\n  assign desc_parts = closest.collection.description | split: '<!-- split -->'\n  assign below_fold_html = desc_parts[1]\n%}\n{% if below_fold_html != blank %}\n  <div class=\"collection-below-fold\">\n    {{ below_fold_html }}\n  </div>\n  <style>\n    .collection-below-fold { max-width: 46rem; }\n    .collection-below-fold h2 { margin: 1.5em 0 0.5em; font-size: 1.5rem; }\n    .collection-below-fold h2:first-child { margin-top: 0; }\n    .collection-below-fold p { margin: 0 0 1em; line-height: 1.6; }\n    .collection-below-fold a { text-decoration: underline; }\n    .collection-below-fold__read-more { margin-top: 8px; }\n  </style>\n  <script>\n    (function () {\n      document.querySelectorAll('.collection-below-fold .readmore-text').forEach(function (block) {\n        if (block.dataset.readmoreInit) return;\n        block.dataset.readmoreInit = '1';\n        var button = document.createElement('button');\n        button.type = 'button';\n        button.className = 'button-secondary collection-below-fold__read-more';\n        button.textContent = 'Read more';\n        button.setAttribute('aria-expanded', 'false');\n        block.parentNode.insertBefore(button, block);\n        button.addEventListener('click', function () {\n          var expanded = block.style.display !== 'none';\n          block.style.display = expanded ? 'none' : '';\n          button.textContent = expanded ? 'Read more' : 'Read less';\n          button.setAttribute('aria-expanded', String(!expanded));\n        });\n      });\n    })();\n  </script>\n{% endif %}"
+          }
+        }
+      },
+      "block_order": ["body"]
     }
   },
   "order": [
     "section",
-    "main"
+    "main",
+    "below_fold"
   ]
 }
