@@ -349,9 +349,9 @@
       "settings": {
         "content_direction": "column",
         "horizontal_alignment_flex_direction_column": "center",
-        "gap": 48,
+        "gap": 56,
         "section_width": "page-width",
-        "background_color": "#18191b",
+        "background_color": "#4d4748",
         "padding-block-start": 80,
         "padding-block-end": 80
       },
@@ -381,40 +381,28 @@
               "settings": {
                 "content_direction": "column",
                 "horizontal_alignment_flex_direction_column": "center",
-                "gap": 12
+                "gap": 20
               },
               "blocks": {
                 "icon": {
-                  "type": "icon",
+                  "type": "custom-liquid",
                   "settings": {
-                    "icon": "fire",
-                    "size": "2rem",
-                    "icon_color": "{{ settings.color_palette.background }}"
+                    "custom_liquid": "<svg width=\"72\" height=\"56\" viewBox=\"0 0 72 56\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\"><g stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\" fill=\"none\"><path d=\"M14 6C24 2 32 10 28 20C24 30 12 30 8 22C4 14 6 9 14 6Z\"/><path d=\"M14 14C18 12 22 18 20 24\"/><path d=\"M34 20C42 15 50 21 48 29C46 37 36 38 32 31C28 25 28 24 34 20Z\"/><path d=\"M35 25C38 23 42 28 40 33\"/><path d=\"M22 32C30 28 38 34 35 42C32 50 22 50 18 43C14 36 15 35 22 32Z\"/><path d=\"M23 37C26 35 30 40 28 45\"/></g></svg>"
                   }
                 },
                 "heading": {
                   "type": "text",
                   "settings": {
-                    "text": "<h4>Freshly roasted</h4>",
+                    "text": "<h4>Freshly <em>roasted</em></h4>",
                     "alignment": "center",
                     "type_preset": "h4",
-                    "text_color": "{{ settings.color_palette.background }}"
-                  }
-                },
-                "text": {
-                  "type": "text",
-                  "settings": {
-                    "text": "<p>Every order is roasted to your delivery date, never off a shelf.</p>",
-                    "alignment": "center",
-                    "type_preset": "paragraph",
                     "text_color": "{{ settings.color_palette.background }}"
                   }
                 }
               },
               "block_order": [
                 "icon",
-                "heading",
-                "text"
+                "heading"
               ]
             },
             "col2": {
@@ -422,40 +410,28 @@
               "settings": {
                 "content_direction": "column",
                 "horizontal_alignment_flex_direction_column": "center",
-                "gap": 12
+                "gap": 20
               },
               "blocks": {
                 "icon": {
-                  "type": "icon",
+                  "type": "custom-liquid",
                   "settings": {
-                    "icon": "star",
-                    "size": "2rem",
-                    "icon_color": "{{ settings.color_palette.background }}"
+                    "custom_liquid": "<svg width=\"56\" height=\"68\" viewBox=\"0 0 56 68\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\"><path d=\"M8 22 L11 64 H45 L48 22 Z\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/><path d=\"M8 22 L4 14 H52 L48 22\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/><path d=\"M16 14 C16 5, 40 5, 40 14\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/><circle cx=\"22\" cy=\"36\" r=\"2\" fill=\"{{ settings.color_palette.background }}\"/><circle cx=\"30\" cy=\"36\" r=\"2\" fill=\"{{ settings.color_palette.background }}\"/><circle cx=\"26\" cy=\"44\" r=\"2\" fill=\"{{ settings.color_palette.background }}\"/></svg>"
                   }
                 },
                 "heading": {
                   "type": "text",
                   "settings": {
-                    "text": "<h4>New releases</h4>",
+                    "text": "<h4>New <em>releases</em></h4>",
                     "alignment": "center",
                     "type_preset": "h4",
-                    "text_color": "{{ settings.color_palette.background }}"
-                  }
-                },
-                "text": {
-                  "type": "text",
-                  "settings": {
-                    "text": "<p>First access to limited and seasonal coffees before anyone else.</p>",
-                    "alignment": "center",
-                    "type_preset": "paragraph",
                     "text_color": "{{ settings.color_palette.background }}"
                   }
                 }
               },
               "block_order": [
                 "icon",
-                "heading",
-                "text"
+                "heading"
               ]
             },
             "col3": {
@@ -463,40 +439,28 @@
               "settings": {
                 "content_direction": "column",
                 "horizontal_alignment_flex_direction_column": "center",
-                "gap": 12
+                "gap": 20
               },
               "blocks": {
                 "icon": {
-                  "type": "icon",
+                  "type": "custom-liquid",
                   "settings": {
-                    "icon": "truck",
-                    "size": "2rem",
-                    "icon_color": "{{ settings.color_palette.background }}"
+                    "custom_liquid": "<svg width=\"80\" height=\"48\" viewBox=\"0 0 80 48\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\"><path d=\"M4 32 V16 H46 L58 26 V32\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/><path d=\"M46 16 V32\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/><rect x=\"48\" y=\"20\" width=\"8\" height=\"7\" rx=\"1\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/><path d=\"M4 32 H72\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/><path d=\"M72 32 V24 H62\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/><circle cx=\"18\" cy=\"36\" r=\"5\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/><circle cx=\"60\" cy=\"36\" r=\"5\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/></svg>"
                   }
                 },
                 "heading": {
                   "type": "text",
                   "settings": {
-                    "text": "<h4>Flexible delivery</h4>",
+                    "text": "<h4>Flexible <em>delivery</em></h4>",
                     "alignment": "center",
                     "type_preset": "h4",
-                    "text_color": "{{ settings.color_palette.background }}"
-                  }
-                },
-                "text": {
-                  "type": "text",
-                  "settings": {
-                    "text": "<p>Pause, skip or change your delivery frequency any time.</p>",
-                    "alignment": "center",
-                    "type_preset": "paragraph",
                     "text_color": "{{ settings.color_palette.background }}"
                   }
                 }
               },
               "block_order": [
                 "icon",
-                "heading",
-                "text"
+                "heading"
               ]
             }
           },
@@ -505,11 +469,30 @@
             "col2",
             "col3"
           ]
+        },
+        "testimonials": {
+          "type": "custom-liquid",
+          "settings": {
+            "custom_liquid": "<!-- Placeholder testimonial -- Sasa offered to source real, named ONA Coffee Club member\n     quotes (DES-8 thread, 2026-08-10) but none were provided yet. This is the same\n     placeholder shown in the approved club-benefits.png design reference, not a real\n     customer quote. Swap TESTIMONIALS below once real ones land. -->\n<div class=\"ona-testimonials\" data-testimonials>\n  <style>\n    .ona-testimonials { position: relative; max-width: 640px; margin: 0 auto; text-align: center; padding: 0 56px; }\n    .ona-testimonials [data-quote] { font-size: 1.125rem; margin: 0 0 20px; }\n    .ona-testimonials [data-name] { margin: 0; }\n    .ona-testimonials [data-role] { margin: 2px 0 0; font-style: italic; opacity: .85; }\n    .ona-testimonials button { position: absolute; top: 40%; background: none; border: none; color: inherit; cursor: pointer; padding: 8px; }\n    .ona-testimonials [data-prev] { left: 0; }\n    .ona-testimonials [data-next] { right: 0; }\n  </style>\n  <button type=\"button\" data-prev aria-label=\"Previous testimonial\"><svg width=\"9\" height=\"16\" viewBox=\"0 0 9 16\" fill=\"none\"><path d=\"M8 1L1 8L8 15\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></button>\n  <p data-quote></p>\n  <p data-name></p>\n  <p data-role></p>\n  <button type=\"button\" data-next aria-label=\"Next testimonial\"><svg width=\"9\" height=\"16\" viewBox=\"0 0 9 16\" fill=\"none\"><path d=\"M1 1L8 8L1 15\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></button>\n  <script>\n    (() => {\n      const TESTIMONIALS = [\n        { quote: \"The easiest way to make sure I never run out of great coffee. I love getting to discover new ONA coffees along the way.\", name: \"Sarah\", role: \"ONA Coffee Club member\" },\n      ];\n      document.querySelectorAll('[data-testimonials]').forEach((root) => {\n        let i = 0;\n        const quote = root.querySelector('[data-quote]');\n        const name = root.querySelector('[data-name]');\n        const role = root.querySelector('[data-role]');\n        function render() {\n          quote.textContent = '\\u201c' + TESTIMONIALS[i].quote + '\\u201d';\n          name.textContent = TESTIMONIALS[i].name;\n          role.textContent = TESTIMONIALS[i].role;\n        }\n        root.querySelector('[data-prev]').addEventListener('click', () => { i = (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length; render(); });\n        root.querySelector('[data-next]').addEventListener('click', () => { i = (i + 1) % TESTIMONIALS.length; render(); });\n        render();\n      });\n    })();\n  </script>\n</div>"
+          }
+        },
+        "cta": {
+          "type": "button",
+          "settings": {
+            "label": "Join the ONA Coffee Club",
+            "link": "/collections/coffee-subscriptions",
+            "style_class": "button-custom",
+            "custom_button_background": "{{ settings.color_palette.color1 }}",
+            "custom_button_text": "{{ settings.color_palette.background }}",
+            "custom_button_border": "{{ settings.color_palette.color1 }}"
+          }
         }
       },
       "block_order": [
         "heading",
-        "columns"
+        "columns",
+        "testimonials",
+        "cta"
       ]
     },
     "raspberry_candy": {
