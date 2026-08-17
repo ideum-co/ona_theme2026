@@ -41,7 +41,7 @@
           "type": "custom-liquid",
           "name": "t:names.description",
           "settings": {
-            "custom_liquid": "{% liquid\n  assign desc_parts = closest.collection.description | split: '<!-- split -->'\n  assign intro_html = desc_parts | first\n%}\n<div class=\"collection-intro\">{{ intro_html }}</div>\n<style>\n  .collection-intro { max-width: var(--max-width--body-narrow); }\n  .collection-intro p { margin: 0 0 1em; line-height: 1.6; }\n  .collection-intro p:last-child { margin-bottom: 0; }\n</style>"
+            "custom_liquid": "{% liquid\n  assign desc_parts = closest.collection.description | split: '<!-- split -->'\n  assign intro_html = desc_parts | first\n%}\n<div class=\"collection-intro\">{{ intro_html }}</div>\n<style>\n  .collection-intro { width: 100%; }\n  .collection-intro p { margin: 0 0 1em; line-height: 1.6; }\n  .collection-intro p:last-child { margin-bottom: 0; }\n</style>"
           },
           "blocks": {}
         },
