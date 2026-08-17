@@ -36,6 +36,7 @@
     {% paginate search.results by products_per_page %}
       {% if search.results_count > 0 %}
         {% content_for 'block', type: 'filters', id: 'filters', results: search, results_size: search.results_count %}
+        {% content_for 'block', type: 'category-pills', id: 'category-pills' %}
         {% assign products = search.results | where: 'object_type', 'product' %}
       {% else %}
         {% assign collection = settings.empty_state_collection | default: collections.all %}

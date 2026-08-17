@@ -60,7 +60,7 @@
             "enable_filtering": true,
             "filter_style": "horizontal",
             "filter_width": "centered",
-            "text_label_case": "default",
+            "text_label_case": "uppercase",
             "show_swatch_label": false,
             "show_filter_label": false,
             "enable_sorting": true,
@@ -71,6 +71,15 @@
             "padding-inline-end": 0,
             "facets_margin_bottom": 8,
             "facets_margin_right": 20
+          },
+          "blocks": {}
+        },
+        "category-pills": {
+          "type": "category-pills",
+          "static": true,
+          "settings": {
+            "padding-block-start": 8,
+            "padding-block-end": 16
           },
           "blocks": {}
         },
@@ -188,10 +197,14 @@
           ]
         }
       },
+      "block_order": [
+        "filters",
+        "category-pills"
+      ],
       "settings": {
         "layout_type": "grid",
-        "product_card_size": "small",
-        "mobile_product_card_size": "small",
+        "product_card_size": "medium",
+        "mobile_product_card_size": "medium",
         "product_grid_width": "centered",
         "full_width_on_mobile": true,
         "columns_gap_horizontal": 16,
