@@ -275,11 +275,33 @@
         }
       },
       "block_order": ["body"]
+    },
+    "faqs": {
+      "type": "section",
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "column",
+        "horizontal_alignment_flex_direction_column": "center",
+        "gap": 16,
+        "section_width": "page-width",
+        "padding-block-start": 8,
+        "padding-block-end": 64
+      },
+      "blocks": {
+        "body": {
+          "type": "custom-liquid",
+          "settings": {
+            "custom_liquid": "{% liquid\n  assign faqs = closest.collection.metafields.custom.faqs.value\n%}\n{% if faqs.size > 0 %}\n  <div class=\"collection-faqs\">\n    <h2 class=\"collection-faqs__heading\"><em>FAQs</em></h2>\n    <div class=\"collection-faqs__list\">\n      {% for faq in faqs %}\n        <details class=\"collection-faqs__item\">\n          <summary class=\"collection-faqs__question\">\n            <span>{{ faq.question }}</span>\n            <span class=\"collection-faqs__icon\" aria-hidden=\"true\"></span>\n          </summary>\n          <div class=\"collection-faqs__answer\">{{ faq.answer | metafield_tag }}</div>\n        </details>\n      {% endfor %}\n    </div>\n  </div>\n  <style>\n    .collection-faqs { width: 100%; max-width: 46rem; margin: 0 auto; }\n    .collection-faqs__heading { text-align: center; font-size: 2rem; margin: 0 0 1.5em; }\n    .collection-faqs__list { border-top: 1px solid var(--border-color); }\n    .collection-faqs__item { border-bottom: 1px solid var(--border-color); }\n    .collection-faqs__question {\n      display: flex;\n      align-items: center;\n      justify-content: space-between;\n      gap: 1em;\n      padding: 1em 0;\n      cursor: pointer;\n      font-weight: 600;\n      list-style: none;\n    }\n    .collection-faqs__question::-webkit-details-marker { display: none; }\n    .collection-faqs__icon { position: relative; width: 14px; height: 14px; flex-shrink: 0; }\n    .collection-faqs__icon::before,\n    .collection-faqs__icon::after {\n      content: '';\n      position: absolute;\n      background: currentColor;\n      transition: transform 0.15s ease, opacity 0.15s ease;\n    }\n    .collection-faqs__icon::before { top: 6px; left: 0; width: 14px; height: 2px; }\n    .collection-faqs__icon::after { top: 0; left: 6px; width: 2px; height: 14px; }\n    details[open] .collection-faqs__icon::after { transform: rotate(90deg); opacity: 0; }\n    .collection-faqs__answer { padding: 0 0 1em; line-height: 1.6; }\n    .collection-faqs__answer p { margin: 0; }\n  </style>\n{% endif %}"
+          }
+        }
+      },
+      "block_order": ["body"]
     }
   },
   "order": [
     "section",
     "main",
-    "below_fold"
+    "below_fold",
+    "faqs"
   ]
 }
