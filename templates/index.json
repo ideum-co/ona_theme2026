@@ -1132,6 +1132,10 @@
           ]
         }
       }
+    },
+    "coffee_quiz": {
+      "type": "coffee-quiz",
+      "settings": {}
     }
   },
   "order": [
@@ -1146,6 +1150,7 @@
     "learn_with_ona",
     "press_band",
     "find_ona",
-    "discover_by_category"
+    "discover_by_category",
+    "coffee_quiz"
   ]
 }

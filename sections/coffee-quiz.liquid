@@ -1,0 +1,467 @@
+{%- doc -%}
+  Coffee recommendation quiz -- popup modal triggered by any element
+  linking to #coffee-quiz. Matches the DES-8 Formswell design (6
+  questions, reveal slide, recommendation slide).
+
+  Recommendation logic is a placeholder heuristic (flavour-word tags on
+  Q3/Q5 mapped to 3 real products: Raspberry Candy, Ugly Sweater,
+  Maple) -- ONA never answered what should actually drive the matching
+  (see the DES-8 comment thread, 2026-08-10), so this is a reasonable
+  first pass, not a finished recommendation engine.
+{%- enddoc -%}
+
+<div class="ona-quiz" id="ona-quiz" aria-hidden="true">
+  <div class="ona-quiz__overlay" data-quiz-close></div>
+  <div class="ona-quiz__modal" role="dialog" aria-modal="true" aria-label="Find your coffee quiz">
+    <div class="ona-quiz__header">
+      <p class="ona-quiz__title">Find your coffee quiz</p>
+      <button type="button" class="ona-quiz__close" data-quiz-close aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 1L19 19M19 1L1 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="ona-quiz__body" data-quiz-body></div>
+
+    <div class="ona-quiz__footer">
+      <button type="button" class="ona-quiz__next" data-quiz-next disabled>
+        <span data-quiz-next-label>Next Question</span>
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M11 1L17 7L11 13M17 7H1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <svg class="ona-quiz__bag-icon" width="72" height="88" viewBox="0 0 72 88" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M10 30 L14 84 H58 L62 30 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        <path d="M10 30 L4 20 H68 L62 30" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
+        <path d="M20 20 C20 8, 52 8, 52 20" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        <circle cx="30" cy="48" r="2.5" fill="currentColor"/>
+        <circle cx="42" cy="48" r="2.5" fill="currentColor"/>
+        <circle cx="36" cy="58" r="2.5" fill="currentColor"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+{% style %}
+  .ona-quiz {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    display: none;
+  }
+
+  .ona-quiz.is-open {
+    display: block;
+  }
+
+  .ona-quiz__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  .ona-quiz__modal {
+    position: relative;
+    z-index: 1;
+    margin: 5vh auto;
+    width: min(720px, 92vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: {{ settings.color_palette.color1 }};
+    color: {{ settings.color_palette.background }};
+    padding: 40px clamp(24px, 5vw, 56px) 32px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .ona-quiz__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .ona-quiz__title {
+    font: var(--font-body--style) var(--font-body--weight) 1rem/1 var(--font-body--family);
+    margin: 0;
+  }
+
+  .ona-quiz__close {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 0;
+  }
+
+  .ona-quiz__eyebrow {
+    opacity: 0.8;
+    font-size: 0.8125rem;
+    margin: 0 0 8px;
+  }
+
+  .ona-quiz__question {
+    font-family: var(--font-heading--family);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    margin: 0 0 12px;
+    line-height: 1.1;
+  }
+
+  .ona-quiz__question em {
+    font-style: italic;
+  }
+
+  .ona-quiz__subtext {
+    margin: 0 0 24px;
+    opacity: 0.9;
+  }
+
+  .ona-quiz__options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .ona-quiz__option {
+    border: 1px solid {{ settings.color_palette.background }};
+    background: transparent;
+    color: inherit;
+    padding: 14px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9375rem;
+    text-align: center;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .ona-quiz__option:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .ona-quiz__option[aria-pressed="true"] {
+    background: {{ settings.color_palette.background }};
+    color: {{ settings.color_palette.color1 }};
+  }
+
+  .ona-quiz__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+  }
+
+  .ona-quiz__next {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: {{ settings.color_palette.background }};
+    color: {{ settings.color_palette.color1 }};
+    border: none;
+    border-radius: 100px;
+    padding: 14px 24px;
+    font-size: 0.9375rem;
+    cursor: pointer;
+  }
+
+  .ona-quiz__next:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .ona-quiz__bag-icon {
+    opacity: 0.9;
+    display: none;
+  }
+
+  @media (min-width: 700px) {
+    .ona-quiz__bag-icon {
+      display: block;
+    }
+  }
+
+  .ona-quiz__reveal {
+    text-align: center;
+    padding: 48px 0;
+  }
+
+  .ona-quiz__reveal p:first-child {
+    font-family: var(--font-heading--family);
+    font-size: 1.75rem;
+    margin: 0 0 8px;
+  }
+
+  .ona-quiz__match {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .ona-quiz__match-image {
+    width: 96px;
+    flex: none;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .ona-quiz__match-image img {
+    width: 100%;
+    display: block;
+  }
+
+  .ona-quiz__match-label {
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.75;
+    margin: 0 0 4px;
+  }
+
+  .ona-quiz__match-name {
+    font-family: var(--font-heading--family);
+    font-size: 1.5rem;
+    margin: 0 0 8px;
+  }
+
+  .ona-quiz__match-reasons {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+    font-size: 0.875rem;
+  }
+
+  .ona-quiz__match-reasons li::before {
+    content: "\2713  ";
+  }
+
+  .ona-quiz__cta {
+    display: inline-block;
+    margin-top: 20px;
+    background: {{ settings.color_palette.background }};
+    color: {{ settings.color_palette.color1 }};
+    border-radius: 100px;
+    padding: 14px 24px;
+    font-size: 0.9375rem;
+    text-decoration: none;
+  }
+{% endstyle %}
+
+<script>
+  (() => {
+    const QUESTIONS = [
+      {
+        eyebrow: "Question 1 of 6",
+        heading: "How <em>do you</em> brew?",
+        subtext: "How do you make your coffee?",
+        options: ["Espresso", "Pour Over/ Filter", "French Press", "AeroPress", "Stovetop / Moka Pot", "Automatic Machine", "I'm not sure"],
+      },
+      {
+        eyebrow: "Question 2 of 6",
+        heading: "How do you <em>drink it</em>?",
+        subtext: "How do you usually enjoy your coffee?",
+        options: ["Black", "With milk", "Both", "Iced", "It depends"],
+      },
+      {
+        eyebrow: "Question 3 of 6",
+        heading: "What sounds <em>best</em>?",
+        subtext: "What flavours sound best to you?",
+        options: [
+          { label: "🍫 Chocolatey & nutty", tag: "ugly-sweater" },
+          { label: "🍯 Sweet & caramel-like", tag: "maple" },
+          { label: "🍓 Fruity & juicy", tag: "raspberry-candy" },
+          { label: "🌸 Floral & delicate", tag: "raspberry-candy" },
+          { label: "🍊 Bright & citrusy", tag: "raspberry-candy" },
+          { label: "🍇 Rich & wine-like", tag: "ugly-sweater" },
+        ],
+      },
+      {
+        eyebrow: "Question 4 of 6",
+        heading: "How <em>adventurous</em> are you?",
+        subtext: "How adventurous do you like your coffee?",
+        options: [
+          { label: "Keep it familiar", tag: "maple" },
+          { label: "Somewhere in the middle", tag: "maple" },
+          { label: "Take me somewhere new", tag: "raspberry-candy" },
+        ],
+      },
+      {
+        eyebrow: "Question 5 of 6",
+        heading: "What <em>matters most</em>?",
+        subtext: "What matters most in your next coffee?",
+        options: [
+          { label: "Something easy to drink every day", tag: "maple" },
+          { label: "Something sweet & balanced", tag: "maple" },
+          { label: "Something bright & fruity", tag: "raspberry-candy" },
+          { label: "Something complex & interesting", tag: "ugly-sweater" },
+          { label: "Something special / limited", tag: "raspberry-candy" },
+          { label: "I just want the best one!", tag: "" },
+        ],
+      },
+      {
+        eyebrow: "Question 6 of 6",
+        heading: "What are you <em>shopping for</em>?",
+        subtext: "What are you shopping for?",
+        options: ["My everyday coffee", "Something for the weekend", "A coffee to explore", "A gift", "Not sure yet"],
+      },
+    ];
+
+    const MATCHES = {
+      "raspberry-candy": {
+        name: "Raspberry Candy",
+        handle: "raspberry-candy",
+        image: "{{ 'Candy.png' | file_img_url: '400x' }}",
+        description: "Bright and juicy with notes of raspberry, caramel and milk chocolate.",
+        reasons: ["Sweet & fruit-forward", "Approachable but interesting", "ONA's signature release"],
+      },
+      "ugly-sweater": {
+        name: "Ugly Sweater",
+        handle: "ugly-sweater",
+        image: "{{ 'Ugly_Sweater.png' | file_img_url: '400x' }}",
+        description: "A cosy, unconventional blend with notes of milk chocolate and hazelnut.",
+        reasons: ["Great with milk", "Rich & comforting", "A little unconventional"],
+      },
+      "maple": {
+        name: "Maple",
+        handle: "maple",
+        image: "{{ 'Maple.png' | file_img_url: '400x' }}",
+        description: "A balanced, easy-drinking everyday coffee with warm caramel sweetness.",
+        reasons: ["Classic & balanced", "Easy to drink every day", "A dependable favourite"],
+      },
+    };
+
+    const root = document.getElementById("ona-quiz");
+    if (!root) return;
+    const body = root.querySelector("[data-quiz-body]");
+    const nextButton = root.querySelector("[data-quiz-next]");
+    const nextLabel = root.querySelector("[data-quiz-next-label]");
+
+    let step = 0; // 0..5 questions, 6 = reveal, 7 = results
+    let selected = null;
+    const tally = {};
+
+    function openQuiz(event) {
+      if (event) event.preventDefault();
+      step = 0;
+      selected = null;
+      nextButton.style.display = "";
+      Object.keys(tally).forEach((k) => delete tally[k]);
+      render();
+      root.classList.add("is-open");
+      root.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeQuiz() {
+      root.classList.remove("is-open");
+      root.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
+
+    function pickWinner() {
+      let winner = "maple";
+      let best = -1;
+      Object.entries(tally).forEach(([tag, count]) => {
+        if (count > best) {
+          best = count;
+          winner = tag;
+        }
+      });
+      return MATCHES[winner] || MATCHES.maple;
+    }
+
+    function render() {
+      if (step < QUESTIONS.length) {
+        const q = QUESTIONS[step];
+        nextButton.disabled = true;
+        nextLabel.textContent = step === QUESTIONS.length - 1 ? "See my matches" : "Next Question";
+        body.innerHTML = `
+          <div>
+            <p class="ona-quiz__eyebrow">${q.eyebrow}</p>
+            <h2 class="ona-quiz__question">${q.heading}</h2>
+            <p class="ona-quiz__subtext">${q.subtext}</p>
+            <div class="ona-quiz__options">
+              ${q.options
+                .map((opt, i) => {
+                  const label = typeof opt === "string" ? opt : opt.label;
+                  return `<button type="button" class="ona-quiz__option" data-index="${i}" aria-pressed="false">${label}</button>`;
+                })
+                .join("")}
+            </div>
+          </div>
+        `;
+        selected = null;
+        body.querySelectorAll(".ona-quiz__option").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            body.querySelectorAll(".ona-quiz__option").forEach((b) => b.setAttribute("aria-pressed", "false"));
+            btn.setAttribute("aria-pressed", "true");
+            const idx = Number(btn.dataset.index);
+            selected = q.options[idx];
+            nextButton.disabled = false;
+          });
+        });
+      } else if (step === QUESTIONS.length) {
+        nextButton.style.display = "none";
+        body.innerHTML = `
+          <div class="ona-quiz__reveal">
+            <p>Your coffee match is taking shape&hellip;</p>
+            <p style="opacity:.85; font-style: italic;">Finding the right balance of flavour, character and sweetness.</p>
+          </div>
+        `;
+        window.setTimeout(() => {
+          step += 1;
+          render();
+        }, 1400);
+      } else {
+        nextButton.style.display = "none";
+        const match = pickWinner();
+        body.innerHTML = `
+          <div>
+            <h2 class="ona-quiz__question" style="font-size:1.75rem; margin-bottom:24px;">We think you&rsquo;ll <em>love</em> these.</h2>
+            <div class="ona-quiz__match">
+              <div class="ona-quiz__match-image"><img src="${match.image}" alt="${match.name}" loading="lazy"></div>
+              <div>
+                <p class="ona-quiz__match-label">Your #1 match</p>
+                <p class="ona-quiz__match-name">${match.name}</p>
+                <p>${match.description}</p>
+                <ul class="ona-quiz__match-reasons">
+                  ${match.reasons.map((r) => `<li>${r}</li>`).join("")}
+                </ul>
+                <a class="ona-quiz__cta" href="/products/${match.handle}">Shop ${match.name}</a>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    nextButton.addEventListener("click", () => {
+      if (step < QUESTIONS.length) {
+        if (typeof selected === "object" && selected && selected.tag) {
+          tally[selected.tag] = (tally[selected.tag] || 0) + 1;
+        }
+        step += 1;
+        nextButton.style.display = "";
+        render();
+      }
+    });
+
+    root.querySelectorAll("[data-quiz-close]").forEach((el) => el.addEventListener("click", closeQuiz));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && root.classList.contains("is-open")) closeQuiz();
+    });
+
+    document.querySelectorAll('a[href="#coffee-quiz"]').forEach((el) => {
+      el.addEventListener("click", openQuiz);
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Coffee quiz",
+  "settings": []
+}
+{% endschema %}
