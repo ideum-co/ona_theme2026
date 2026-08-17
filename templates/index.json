@@ -229,19 +229,29 @@
               "name": "t:names.variant_picker",
               "settings": {}
             },
-            "add_to_cart": {
-              "type": "add-to-cart",
-              "name": "t:names.add_to_cart_button",
+            "buy_buttons": {
+              "type": "buy-buttons",
+              "name": "t:names.buy_buttons",
               "settings": {
-                "style_class": "button"
-              }
+                "stacking": true
+              },
+              "blocks": {
+                "add-to-cart": {
+                  "type": "add-to-cart",
+                  "static": true,
+                  "settings": {
+                    "style_class": "button"
+                  }
+                }
+              },
+              "block_order": []
             }
           },
           "block_order": [
             "product_card_gallery",
             "product_title",
             "variant_picker",
-            "add_to_cart"
+            "buy_buttons"
           ]
         }
       },
@@ -651,63 +661,45 @@
       ]
     },
     "more_than_coffee": {
-      "type": "media-with-content",
-      "name": "t:names.media_with_text",
+      "type": "section",
+      "name": "t:names.section",
       "settings": {
-        "media_position": "left",
-        "media_width": "wide",
-        "media_height": "60svh",
-        "section_width": "full-width",
-        "extend_media": false,
+        "content_direction": "column",
+        "horizontal_alignment_flex_direction_column": "center",
+        "gap": 40,
+        "section_width": "page-width",
         "background_color": "{{ settings.color_palette.color1 }}",
         "padding-block-start": 80,
         "padding-block-end": 80
       },
       "blocks": {
-        "media": {
-          "type": "_media-without-appearance",
-          "static": true,
+        "text": {
+          "type": "group",
           "settings": {
-            "image": "shopify://shop_images/Zerihun-and-Sasa.webp"
-          }
-        },
-        "content": {
-          "type": "_content-without-appearance",
-          "static": true,
-          "settings": {
-            "horizontal_alignment_flex_direction_column": "flex-start",
-            "vertical_alignment_flex_direction_column": "center"
+            "content_direction": "column",
+            "horizontal_alignment_flex_direction_column": "center",
+            "gap": 16
           },
           "blocks": {
-            "group": {
-              "type": "group",
+            "heading": {
+              "type": "text",
+              "name": "t:names.heading",
               "settings": {
-                "height": "fit"
-              },
-              "blocks": {
-                "heading": {
-                  "type": "text",
-                  "name": "t:names.heading",
-                  "settings": {
-                    "text": "<h2>More than coffee. <em>Since 2008.</em></h2>",
-                    "type_preset": "h2",
-                    "text_color": "{{ settings.color_palette.background }}"
-                  }
-                },
-                "text": {
-                  "type": "text",
-                  "settings": {
-                    "text": "<p>From Canberra to cafes around the world, ONA has been championing exceptional coffee through innovation, education and meaningful partnerships.</p>",
-                    "max_width": "narrow",
-                    "type_preset": "rte",
-                    "text_color": "{{ settings.color_palette.background }}"
-                  }
-                }
-              },
-              "block_order": [
-                "heading",
-                "text"
-              ]
+                "text": "<h2>More than coffee. <em>Since 2008.</em></h2>",
+                "alignment": "center",
+                "type_preset": "h2",
+                "text_color": "{{ settings.color_palette.background }}"
+              }
+            },
+            "body": {
+              "type": "text",
+              "settings": {
+                "text": "<p>From Canberra to cafes around the world, ONA has been championing exceptional coffee through innovation, education and meaningful partnerships.</p>",
+                "alignment": "center",
+                "max_width": "narrow",
+                "type_preset": "rte",
+                "text_color": "{{ settings.color_palette.background }}"
+              }
             },
             "button": {
               "type": "button",
@@ -722,14 +714,21 @@
             }
           },
           "block_order": [
-            "group",
+            "heading",
+            "body",
             "button"
           ]
+        },
+        "video_photo": {
+          "type": "custom-liquid",
+          "settings": {
+            "custom_liquid": "<!-- Sasa's 30-45s welcome video isn't shot yet (DES-8 thread, 2026-08-09/10) --\n     play button is decorative only, no click handler, so it can't look like a\n     broken/dead video link. Swap for a real <video>/embed once the asset lands. -->\n<div style=\"position:relative; max-width:900px; margin:0 auto; border-radius:4px; overflow:hidden;\">\n  <img src=\"{{ 'Zerihun-and-Sasa.webp' | file_img_url: '1200x' }}\" alt=\"Sasa, ONA Coffee founder\" loading=\"lazy\" style=\"width:100%; display:block;\">\n  <span style=\"position:absolute; inset:0; display:flex; align-items:center; justify-content:center;\">\n    <span style=\"width:64px; height:64px; border-radius:999px; background:{{ settings.color_palette.background }}; display:flex; align-items:center; justify-content:center;\">\n      <svg width=\"20\" height=\"24\" viewBox=\"0 0 20 24\" fill=\"{{ settings.color_palette.foreground }}\"><path d=\"M0 0L20 12L0 24Z\"/></svg>\n    </span>\n  </span>\n</div>"
+          }
         }
       },
       "block_order": [
-        "media",
-        "content"
+        "text",
+        "video_photo"
       ]
     },
     "learn_with_ona": {

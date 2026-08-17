@@ -151,19 +151,29 @@
               },
               "blocks": {}
             },
-            "add_to_cart": {
-              "type": "add-to-cart",
-              "name": "t:names.add_to_cart_button",
+            "buy_buttons": {
+              "type": "buy-buttons",
+              "name": "t:names.buy_buttons",
               "settings": {
-                "style_class": "button"
-              }
+                "stacking": true
+              },
+              "blocks": {
+                "add-to-cart": {
+                  "type": "add-to-cart",
+                  "static": true,
+                  "settings": {
+                    "style_class": "button"
+                  }
+                }
+              },
+              "block_order": []
             }
           },
           "block_order": [
             "product_card_gallery_cFExAi",
             "product_title_j7qXTx",
             "price_fYkUgG",
-            "add_to_cart"
+            "buy_buttons"
           ]
         }
       },
