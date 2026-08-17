@@ -95,7 +95,7 @@
   endcapture
 
   capture actions
-    echo '<span class="header-quick-links"><style>.header-quick-links{display:inline-flex;gap:8px;margin-inline-end:12px;}.header-quick-links .button{padding-block:6px;padding-inline:16px;}@media (max-width:749px){.header-quick-links{display:none;}}#header-component .header__column:has(.header-menu){display:none!important;}#header-component .header__icon--menu{display:inline-flex!important;}</style><a href="/collections/all" class="button">Shop</a><a href="/collections/coffee-subscriptions" class="button">Subscribe</a></span>'
+    echo '<span class="header-quick-links"><style>.header-quick-links{display:inline-flex;gap:8px;margin-inline-end:12px;}.header-quick-links .button{padding-block:6px;padding-inline:16px;}@media (max-width:749px){.header-quick-links{display:none;}}#header-component[data-menu-style=menu] .header-menu{display:none!important;}#header-component[data-menu-style=menu] .header__drawer{display:flex!important;min-height:0!important;}</style><a href="/collections/all" class="button">Shop</a><a href="/collections/coffee-subscriptions" class="button">Subscribe</a></span>'
     render 'header-actions', customer_account_menu: section.settings.customer_account_menu, display_style: section.settings.actions_display_style, section: section
   endcapture
 
