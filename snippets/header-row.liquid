@@ -20,10 +20,6 @@
   assign center = ''
   assign right = ''
 
-  if first != blank
-    assign left = 'first '
-  endif
-
   for item in order
     assign column_key = item | append: '_position'
     assign row_key = item | append: '_row'
@@ -46,6 +42,10 @@
       endcase
     endif
   endfor
+
+  if first != blank
+    assign right = right | append: 'first '
+  endif
 
   assign columns = 'left,center,right' | split: ','
 -%}
