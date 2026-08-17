@@ -43,7 +43,7 @@
           "settings": {
             "text": "{{ closest.collection.description }}",
             "width": "fit-content",
-            "max_width": "normal",
+            "max_width": "narrow",
             "alignment": "left",
             "type_preset": "rte",
             "font": "var(--font-body--family)",
@@ -61,11 +61,25 @@
             "padding-inline-end": 0
           },
           "blocks": {}
+        },
+        "divider_cpKq2s": {
+          "type": "_divider",
+          "name": "t:names.divider",
+          "settings": {
+            "thickness": 1,
+            "corner_radius": "square",
+            "divider_color": "{{ settings.color_palette.color3 }}",
+            "width_percent": 100,
+            "padding-block-start": 24,
+            "padding-block-end": 0
+          },
+          "blocks": {}
         }
       },
       "block_order": [
         "text_tqQTNE",
-        "text_twGGkJ"
+        "text_twGGkJ",
+        "divider_cpKq2s"
       ],
       "name": "t:names.heading",
       "settings": {
@@ -105,7 +119,7 @@
             "enable_filtering": true,
             "filter_style": "horizontal",
             "filter_width": "centered",
-            "text_label_case": "default",
+            "text_label_case": "uppercase",
             "show_swatch_label": false,
             "show_filter_label": false,
             "enable_sorting": true,
@@ -116,6 +130,15 @@
             "padding-inline-end": 0,
             "facets_margin_bottom": 8,
             "facets_margin_right": 20
+          },
+          "blocks": {}
+        },
+        "category-pills": {
+          "type": "category-pills",
+          "static": true,
+          "settings": {
+            "padding-block-start": 8,
+            "padding-block-end": 16
           },
           "blocks": {}
         },
@@ -231,6 +254,10 @@
           ]
         }
       },
+      "block_order": [
+        "filters",
+        "category-pills"
+      ],
       "settings": {
         "layout_type": "grid",
         "product_card_size": "medium",

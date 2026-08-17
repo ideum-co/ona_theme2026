@@ -52,6 +52,11 @@
         results_size: collection.products_count
       %}
 
+      {% content_for 'block',
+        type: 'category-pills',
+        id: 'category-pills'
+      %}
+
       {% assign products_per_page = 24 %}
 
       {% if section.settings.enable_infinite_scroll == false %}
