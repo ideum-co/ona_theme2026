@@ -21,6 +21,7 @@
     <div
       class="purchase-options__list"
       role="radiogroup"
+      aria-label="{{ block.settings.label | default: 'Purchase options' }}"
     >
       <label class="purchase-options__card is-selected">
         <input
@@ -32,7 +33,7 @@
           checked
         >
         <span class="purchase-options__row">
-          <span class="purchase-options__title">One time purchase</span>
+          <span class="purchase-options__title">{{ 'products.product.one_time_purchase' | t }}</span>
           <span class="purchase-options__price">{{ variant.price | money }}</span>
         </span>
       </label>
@@ -51,7 +52,7 @@
             if allocation.compare_at_price > allocation.price
               assign save_pct = allocation.compare_at_price | minus: allocation.price | times: 100.0 | divided_by: allocation.compare_at_price | round
             endif
-            assign card_title = 'Subscribe and save'
+            assign card_title = 'products.product.subscribe_and_save' | t
           %}
           <label class="purchase-options__card">
             <input
@@ -66,7 +67,7 @@
                 <span class="purchase-options__title">
                   {{ card_title }}
                   {% if save_pct > 0 %}
-                    <span class="purchase-options__badge">Save {{ save_pct }}%</span>
+                    <span class="purchase-options__badge">{{ 'products.product.save_percentage' | t: percentage: save_pct }}</span>
                   {% endif %}
                 </span>
                 <span class="purchase-options__price">
@@ -80,7 +81,7 @@
                 <select
                   class="purchase-options__frequency"
                   data-plan-select
-                  aria-label="Delivery frequency"
+                  aria-label="{{ 'products.product.delivery_frequency' | t }}"
                 >
                   {% for plan in group.selling_plans %}
                     {% liquid
@@ -114,7 +115,7 @@
     {% assign detail_plan = groups.first.selling_plans.first %}
     {% if detail_plan.description != blank %}
       <details class="purchase-options__details">
-        <summary>Subscription details</summary>
+        <summary>{{ 'products.product.subscription_details' | t }}</summary>
         <div class="purchase-options__details-body">{{ detail_plan.description }}</div>
       </details>
     {% endif %}

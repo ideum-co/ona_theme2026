@@ -1,6 +1,6 @@
 {% liquid
   assign current_handle = closest.collection.handle
-  assign pills = 'all:All Products|milk-based:Milk-based Coffee|filter:Filter Coffee|espresso:Espresso Coffee|ready-to-brew:Ready to Brew|special-release:Special Release|candy:Candy|rare-coffee:Rare Coffee|reserve:Reserve' | split: '|'
+  assign pill_handles = 'all,milk-based,filter,espresso,ready-to-brew,special-release,candy,rare-coffee,reserve' | split: ','
 %}
 
 <div
@@ -10,27 +10,28 @@
 >
   <nav
     class="category-pills__scroll"
-    aria-label="Shop by category"
+    aria-label="{{ 'accessibility.shop_by_category' | t }}"
   >
-    {% for pill in pills %}
+    {% for pill_handle in pill_handles %}
       {% liquid
-        assign pill_parts = pill | split: ':'
-        assign pill_handle = pill_parts[0]
-        assign pill_label = pill_parts[1]
+        assign pill_collection = collections[pill_handle]
+        assign pill_label = pill_collection.title
         assign is_active = false
         if current_handle == pill_handle
           assign is_active = true
         endif
       %}
-      <a
-        href="/collections/{{ pill_handle }}"
-        class="category-pills__pill{% if is_active %} is-active{% endif %}"
-        {% if is_active %}
-          aria-current="page"
-        {% endif %}
-      >
-        {{ pill_label }}
-      </a>
+      {% unless pill_collection == blank %}
+        <a
+          href="/collections/{{ pill_handle }}"
+          class="category-pills__pill{% if is_active %} is-active{% endif %}"
+          {% if is_active %}
+            aria-current="page"
+          {% endif %}
+        >
+          {{ pill_label }}
+        </a>
+      {% endunless %}
     {% endfor %}
   </nav>
 </div>

@@ -14,6 +14,7 @@
     "cart": "Cart",
     "cart_count": "Total items in cart",
     "close_dialog": "Close dialog",
+    "shop_by_category": "Shop by category",
     "country_region": "Country/Region",
     "country_results_count": "{{ count }} results",
     "product_details": "Product details",
@@ -369,7 +370,12 @@
       "quantity_maximum": "Maximum of {{ maximum }}",
       "in_cart": "in cart",
       "default_title": "Default Title",
-      "sticky_add_to_cart": "Quick add to cart bar"
+      "sticky_add_to_cart": "Quick add to cart bar",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   }
 }
