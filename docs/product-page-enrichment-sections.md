@@ -1,5 +1,10 @@
 # Product page enrichment sections — data model & migration plan
 
+**Status: BLOCKED — pending Formswell + Victor review.** Do not start
+building any of the sections below until that review lands. This doc is the
+handoff artifact for that review; it's the investigation/plan, not an
+implementation in progress.
+
 Planning doc only — nothing in this doc is built yet. Written 2026-08-17 after
 investigating how the live theme sources the richer PDP content (properties
 table aside, which is already ported — see below). Revisit when ready to
