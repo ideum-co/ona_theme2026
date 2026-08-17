@@ -181,6 +181,15 @@
               },
               "blocks": {}
             },
+            "purchase_options_SbK4qN": {
+              "type": "purchase-options",
+              "settings": {
+                "label": "Purchase options",
+                "padding-block-start": 0,
+                "padding-block-end": 0
+              },
+              "blocks": {}
+            },
             "buy_buttons_eYQEYi": {
               "type": "buy-buttons",
               "settings": {
@@ -240,6 +249,7 @@
             "group_icgrde",
             "divider_VJhene",
             "variant_picker_R3rGDr",
+            "purchase_options_SbK4qN",
             "buy_buttons_eYQEYi",
             "text_aEtTtq"
           ]
