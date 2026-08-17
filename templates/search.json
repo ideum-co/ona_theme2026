@@ -167,12 +167,23 @@
                 }
               },
               "block_order": []
+            },
+            "variant_picker": {
+              "type": "variant-picker",
+              "name": "t:names.variant_picker",
+              "settings": {
+                "variant_style": "dropdowns",
+                "show_swatches": false,
+                "padding-block-start": 0,
+                "padding-block-end": 8
+              }
             }
           },
           "block_order": [
             "product_card_gallery_cFExAi",
             "product_title_j7qXTx",
             "price_fYkUgG",
+            "variant_picker",
             "buy_buttons"
           ]
         }

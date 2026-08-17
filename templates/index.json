@@ -89,7 +89,7 @@
       "settings": {
         "media_position": "right",
         "media_width": "medium",
-        "media_height": "auto",
+        "media_height": "small",
         "section_width": "full-width",
         "extend_media": false,
         "background_color": "{{ settings.color_palette.color1 }}",
@@ -100,7 +100,9 @@
         "media": {
           "type": "_media-without-appearance",
           "static": true,
-          "settings": {}
+          "settings": {
+            "image": "shopify://shop_images/ona_coffee_candles_aspen_gateway_raspberry_candy_maple.jpg"
+          }
         },
         "content": {
           "type": "_content-without-appearance",
@@ -225,9 +227,14 @@
               }
             },
             "variant_picker": {
-              "type": "swatches",
+              "type": "variant-picker",
               "name": "t:names.variant_picker",
-              "settings": {}
+              "settings": {
+                "variant_style": "dropdowns",
+                "show_swatches": false,
+                "padding-block-start": 0,
+                "padding-block-end": 8
+              }
             },
             "buy_buttons": {
               "type": "buy-buttons",
@@ -277,7 +284,7 @@
       "settings": {
         "media_position": "right",
         "media_width": "wide",
-        "media_height": "auto",
+        "media_height": "small",
         "section_width": "full-width",
         "extend_media": false,
         "background_color": "{{ settings.color_palette.foreground }}",
@@ -989,7 +996,7 @@
       "settings": {
         "media_position": "right",
         "media_width": "wide",
-        "media_height": "auto",
+        "media_height": "small",
         "section_width": "full-width",
         "extend_media": false,
         "background_color": "{{ settings.color_palette.color3 }}",
@@ -1066,54 +1073,87 @@
       ]
     },
     "discover_by_category": {
-      "type": "collection-list",
-      "name": "t:names.collection_list",
+      "type": "section",
+      "name": "t:names.section",
       "settings": {
-        "collection_list": [
-          "gid://shopify/Collection/272100589759",
-          "gid://shopify/Collection/272100360383",
-          "gid://shopify/Collection/272100524223",
-          "gid://shopify/Collection/272100458687",
-          "gid://shopify/Collection/272100393151"
-        ],
-        "layout_type": "grid",
-        "carousel_on_mobile": true,
-        "columns": 5,
-        "mobile_columns": "2",
-        "columns_gap": 16,
-        "rows_gap": 16,
-        "icons_style": "arrow",
+        "content_direction": "column",
+        "horizontal_alignment_flex_direction_column": "center",
+        "gap": 32,
         "section_width": "page-width",
-        "gap": 40,
         "background_color": "{{ settings.color_palette.background }}",
         "padding-block-start": 80,
         "padding-block-end": 80
       },
       "blocks": {
-        "header": {
-          "type": "group",
-          "static": true,
+        "heading": {
+          "type": "text",
+          "name": "t:names.heading",
           "settings": {
-            "content_direction": "column",
-            "horizontal_alignment_flex_direction_column": "center"
+            "text": "<h2>Discover by <em>category</em></h2>",
+            "alignment": "center",
+            "type_preset": "h2",
+            "text_color": "{{ settings.color_palette.foreground }}"
+          }
+        },
+        "tiles": {
+          "type": "group",
+          "settings": {
+            "content_direction": "row",
+            "vertical_on_mobile": true,
+            "gap": 16,
+            "width": "fill"
           },
           "blocks": {
-            "heading": {
-              "type": "text",
-              "name": "t:names.heading",
-              "settings": {
-                "text": "<h2>Discover by <em>category</em></h2>",
-                "alignment": "center",
-                "type_preset": "h2",
-                "text_color": "{{ settings.color_palette.foreground }}"
-              }
+            "milk": {
+              "type": "group",
+              "settings": {"content_direction": "column", "gap": 12, "width": "fill"},
+              "blocks": {
+                "image": {"type": "image", "settings": {"image": "shopify://shop_images/latte_art-1.jpg", "image_ratio": "square", "link": "/collections/milk-based"}},
+                "heading": {"type": "text", "settings": {"text": "<h4>Milk-based</h4>", "alignment": "center", "type_preset": "h4", "text_color": "{{ settings.color_palette.foreground }}"}}
+              },
+              "block_order": ["image", "heading"]
+            },
+            "filter": {
+              "type": "group",
+              "settings": {"content_direction": "column", "gap": 12, "width": "fill"},
+              "blocks": {
+                "image": {"type": "image", "settings": {"image": "shopify://shop_images/Filter_web.png", "image_ratio": "square", "link": "/collections/filter"}},
+                "heading": {"type": "text", "settings": {"text": "<h4>Filter</h4>", "alignment": "center", "type_preset": "h4", "text_color": "{{ settings.color_palette.foreground }}"}}
+              },
+              "block_order": ["image", "heading"]
+            },
+            "espresso": {
+              "type": "group",
+              "settings": {"content_direction": "column", "gap": 12, "width": "fill"},
+              "blocks": {
+                "image": {"type": "image", "settings": {"image": "shopify://shop_images/Espresso_web.png", "image_ratio": "square", "link": "/collections/espresso"}},
+                "heading": {"type": "text", "settings": {"text": "<h4>Espresso</h4>", "alignment": "center", "type_preset": "h4", "text_color": "{{ settings.color_palette.foreground }}"}}
+              },
+              "block_order": ["image", "heading"]
+            },
+            "gear": {
+              "type": "group",
+              "settings": {"content_direction": "column", "gap": 12, "width": "fill"},
+              "blocks": {
+                "image": {"type": "image", "settings": {"image": "shopify://shop_images/coffee_timemore_hand_grinder.jpg", "image_ratio": "square", "link": "/collections/brew-gear"}},
+                "heading": {"type": "text", "settings": {"text": "<h4>Brew Gear</h4>", "alignment": "center", "type_preset": "h4", "text_color": "{{ settings.color_palette.foreground }}"}}
+              },
+              "block_order": ["image", "heading"]
+            },
+            "merch": {
+              "type": "group",
+              "settings": {"content_direction": "column", "gap": 12, "width": "fill"},
+              "blocks": {
+                "image": {"type": "image", "settings": {"image": "shopify://shop_images/canberra_mug_ona_coffee.jpg", "image_ratio": "square", "link": "/collections/merch"}},
+                "heading": {"type": "text", "settings": {"text": "<h4>Merchandise</h4>", "alignment": "center", "type_preset": "h4", "text_color": "{{ settings.color_palette.foreground }}"}}
+              },
+              "block_order": ["image", "heading"]
             }
           },
-          "block_order": [
-            "heading"
-          ]
+          "block_order": ["milk", "filter", "espresso", "gear", "merch"]
         }
-      }
+      },
+      "block_order": ["heading", "tiles"]
     },
     "coffee_quiz": {
       "type": "coffee-quiz",

@@ -194,17 +194,6 @@
               },
               "blocks": {}
             },
-            "swatches": {
-              "type": "swatches",
-              "name": "t:names.swatches",
-              "settings": {
-                "product_swatches_alignment": "flex-start",
-                "product_swatches_padding_top": 4,
-                "product_swatches_padding_bottom": 0,
-                "product_swatches_padding_left": 0,
-                "product_swatches_padding_right": 0
-              }
-            },
             "buy_buttons": {
               "type": "buy-buttons",
               "name": "t:names.buy_buttons",
@@ -221,13 +210,23 @@
                 }
               },
               "block_order": []
+            },
+            "variant_picker": {
+              "type": "variant-picker",
+              "name": "t:names.variant_picker",
+              "settings": {
+                "variant_style": "dropdowns",
+                "show_swatches": false,
+                "padding-block-start": 0,
+                "padding-block-end": 8
+              }
             }
           },
           "block_order": [
             "card-gallery",
             "product_title_4nY4eT",
             "price_EzJzMm",
-            "swatches",
+            "variant_picker",
             "buy_buttons"
           ]
         }
