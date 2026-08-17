@@ -75,12 +75,12 @@
         "vertical_alignment_flex_direction_column": "center",
         "gap": 24,
         "section_width": "full-width",
-        "section_height": "large",
+        "section_height": "medium",
         "toggle_overlay": true,
         "overlay_color": "#470a1266",
         "overlay_style": "solid",
-        "padding-block-start": 100,
-        "padding-block-end": 100
+        "padding-block-start": 64,
+        "padding-block-end": 64
       }
     },
     "find_your_coffee": {
@@ -89,7 +89,7 @@
       "settings": {
         "media_position": "right",
         "media_width": "medium",
-        "media_height": "60svh",
+        "media_height": "auto",
         "section_width": "full-width",
         "extend_media": false,
         "background_color": "{{ settings.color_palette.color1 }}",
@@ -213,7 +213,7 @@
               "type": "_product-card-gallery",
               "name": "t:names.product_card_media",
               "settings": {
-                "image_ratio": "adapt"
+                "image_ratio": "portrait"
               }
             },
             "product_title": {
@@ -277,7 +277,7 @@
       "settings": {
         "media_position": "right",
         "media_width": "wide",
-        "media_height": "60svh",
+        "media_height": "auto",
         "section_width": "full-width",
         "extend_media": false,
         "background_color": "{{ settings.color_palette.foreground }}",
@@ -989,7 +989,7 @@
       "settings": {
         "media_position": "right",
         "media_width": "wide",
-        "media_height": "60svh",
+        "media_height": "auto",
         "section_width": "full-width",
         "extend_media": false,
         "background_color": "{{ settings.color_palette.color3 }}",
