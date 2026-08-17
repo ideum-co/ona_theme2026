@@ -243,6 +243,13 @@
                 "padding-inline-end": 0
               },
               "blocks": {}
+            },
+            "properties_table": {
+              "type": "custom-liquid",
+              "settings": {
+                "custom_liquid": "{% liquid\n  assign tastes_like = closest.product.metafields.accentuate.tastes_like.value\n  assign roast = closest.product.metafields.accentuate.roast.value\n  assign components = closest.product.metafields.accentuate.components.value\n%}\n{% if tastes_like != blank or roast != blank or components != blank %}\n  <div class=\"product-properties\">\n    {% if tastes_like != blank %}\n      <div class=\"product-properties__row\">\n        <span class=\"product-properties__label\">Tastes Like</span>\n        <span class=\"product-properties__value\">{{ tastes_like }}</span>\n      </div>\n    {% endif %}\n    {% if roast != blank %}\n      <div class=\"product-properties__row\">\n        <span class=\"product-properties__label\">Roast</span>\n        <span class=\"product-properties__value\">{{ roast }}</span>\n      </div>\n    {% endif %}\n    {% if components != blank %}\n      <div class=\"product-properties__row\">\n        <span class=\"product-properties__label\">Components</span>\n        <span class=\"product-properties__value\">{{ components }}</span>\n      </div>\n    {% endif %}\n  </div>\n  <style>\n    .product-properties {\n      width: 100%;\n      border-top: 1px solid var(--border-color);\n    }\n    .product-properties__row {\n      display: grid;\n      grid-template-columns: minmax(100px, 0.35fr) 1fr;\n      gap: var(--gap-md);\n      padding: var(--gap-sm) 0;\n      border-bottom: 1px solid var(--border-color);\n    }\n    .product-properties__label {\n      font-size: var(--font-size--xs);\n      font-weight: 600;\n      letter-spacing: 0.04em;\n      text-transform: uppercase;\n      color: var(--color-foreground-secondary);\n    }\n    .product-properties__value {\n      font-size: var(--font-size--sm);\n      line-height: 1.6;\n    }\n  </style>\n{% endif %}"
+              },
+              "blocks": {}
             }
           },
           "block_order": [
@@ -251,7 +258,8 @@
             "variant_picker_R3rGDr",
             "purchase_options_SbK4qN",
             "buy_buttons_eYQEYi",
-            "text_aEtTtq"
+            "text_aEtTtq",
+            "properties_table"
           ]
         },
         "disclosures": {
@@ -275,6 +283,27 @@
         "padding-block-start": 0,
         "padding-block-end": 0
       }
+    },
+    "faqs": {
+      "type": "section",
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "column",
+        "horizontal_alignment_flex_direction_column": "center",
+        "gap": 16,
+        "section_width": "page-width",
+        "padding-block-start": 48,
+        "padding-block-end": 48
+      },
+      "blocks": {
+        "body": {
+          "type": "custom-liquid",
+          "settings": {
+            "custom_liquid": "{% liquid\n  assign faqs = closest.product.metafields.custom.accordion.value\n%}\n{% if faqs.size > 0 %}\n  <div class=\"collection-faqs\">\n    <h2 class=\"collection-faqs__heading\"><em>FAQs</em></h2>\n    <div class=\"collection-faqs__list\">\n      {% for faq in faqs %}\n        <details class=\"collection-faqs__item\">\n          <summary class=\"collection-faqs__question\">\n            <span>{{ faq.title }}</span>\n            <span class=\"collection-faqs__icon\" aria-hidden=\"true\"></span>\n          </summary>\n          <div class=\"collection-faqs__answer\">{{ faq.description | metafield_tag }}</div>\n        </details>\n      {% endfor %}\n    </div>\n  </div>\n  <style>\n    .collection-faqs { width: 100%; max-width: 46rem; margin: 0 auto; }\n    .collection-faqs__heading { text-align: center; font-size: 2rem; margin: 0 0 1.5em; }\n    .collection-faqs__list { border-top: 1px solid var(--border-color); }\n    .collection-faqs__item { border-bottom: 1px solid var(--border-color); }\n    .collection-faqs__question {\n      display: flex;\n      align-items: center;\n      justify-content: space-between;\n      gap: 1em;\n      padding: 1em 0;\n      cursor: pointer;\n      font-weight: 600;\n      list-style: none;\n    }\n    .collection-faqs__question::-webkit-details-marker { display: none; }\n    .collection-faqs__icon { position: relative; width: 14px; height: 14px; flex-shrink: 0; }\n    .collection-faqs__icon::before,\n    .collection-faqs__icon::after {\n      content: '';\n      position: absolute;\n      background: currentColor;\n      transition: transform 0.15s ease, opacity 0.15s ease;\n    }\n    .collection-faqs__icon::before { top: 6px; left: 0; width: 14px; height: 2px; }\n    .collection-faqs__icon::after { top: 0; left: 6px; width: 2px; height: 14px; }\n    details[open] .collection-faqs__icon::after { transform: rotate(90deg); opacity: 0; }\n    .collection-faqs__answer { padding: 0 0 1em; line-height: 1.6; }\n    .collection-faqs__answer p { margin: 0; }\n  </style>\n{% endif %}"
+          }
+        }
+      },
+      "block_order": ["body"]
     },
     "product_recommendations_qggXJq": {
       "type": "product-recommendations",
@@ -414,6 +443,7 @@
   },
   "order": [
     "main",
+    "faqs",
     "product_recommendations_qggXJq"
   ]
 }
