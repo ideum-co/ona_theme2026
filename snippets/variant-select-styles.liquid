@@ -1,0 +1,251 @@
+{%- doc -%}
+  Styles for the custom variant select: the trigger button used on the product page
+  and the modal that lists the option values with their variant image.
+
+  Files that emit `.variant-select` should render this snippet.
+
+  @example
+  {% render 'variant-select-styles' %}
+{%- enddoc -%}
+
+{% stylesheet %}
+  .variant-select {
+    --variant-select-border-color: rgb(var(--color-foreground-rgb) / var(--opacity-15));
+    --variant-select-selected-color: var(--color-foreground);
+    --variant-select-media-width: 3.5rem;
+
+    display: block;
+  }
+
+  /* The card variant sits inside `.quick-add`, which positions its button absolutely. */
+  .variant-select--quick-add {
+    display: contents;
+  }
+
+  /* Trigger */
+  .variant-select__label {
+    display: block;
+    color: var(--variant-option-label-color, var(--color-foreground));
+    font-size: var(--font-size--sm);
+    margin-block-end: var(--margin-xs, 0.5rem);
+  }
+
+  .variant-select__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-sm);
+    inline-size: 100%;
+    padding: var(--padding-md) var(--padding-lg);
+    background: transparent;
+    color: var(--variant-option-label-color, var(--color-foreground));
+    border: 1px solid var(--variant-select-border-color);
+    border-radius: 0;
+    text-align: start;
+    cursor: pointer;
+    transition: border-color var(--animation-speed) var(--animation-easing);
+  }
+
+  .variant-select__trigger:hover {
+    border-color: var(--color-foreground);
+  }
+
+  .variant-select__trigger-value {
+    font-size: var(--font-size--md);
+  }
+
+  .variant-select__trigger-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    inline-size: 1rem;
+  }
+
+  /* Dialog */
+  .variant-select__dialog.dialog-modal {
+    inline-size: min(30rem, calc(100vw - 2rem));
+    max-inline-size: min(30rem, calc(100vw - 2rem));
+    block-size: auto;
+    max-block-size: calc(100dvh - 3rem);
+    padding: 0;
+    border-radius: var(--style-border-radius-popover);
+    color: var(--color-foreground);
+    background: var(--color-background);
+    overflow: hidden;
+    overscroll-behavior: contain;
+
+    /* `.quick-add` sets `pointer-events: none`, and a top-layer dialog still inherits it. */
+    pointer-events: auto;
+  }
+
+  .variant-select__header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: var(--padding-lg) var(--padding-xl);
+    border-block-end: 1px solid var(--variant-select-border-color);
+  }
+
+  .variant-select__title {
+    grid-area: 1 / 1 / 2 / -1;
+    margin: 0;
+    font-size: var(--font-size--xl);
+    text-align: center;
+  }
+
+  .variant-select__close {
+    grid-area: 1 / 2 / 2 / 3;
+    justify-self: end;
+    display: grid;
+    place-items: center;
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  /* Option list */
+  .variant-select__list {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    max-block-size: min(60dvh, 28rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .variant-select__option {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--gap-lg);
+    padding: var(--padding-md) var(--padding-xl);
+    border-block-end: 1px solid var(--variant-select-border-color);
+    cursor: pointer;
+  }
+
+  .variant-select__option:last-child {
+    border-block-end: 0;
+  }
+
+  .variant-select__option:has(> .variant-select__input:checked) {
+    box-shadow: inset 0 0 0 2px var(--variant-select-selected-color);
+  }
+
+  .variant-select__option:has(> .variant-select__input:focus-visible) {
+    outline: var(--focus-outline-width, 2px) solid var(--color-foreground);
+    outline-offset: calc(var(--focus-outline-width, 2px) * -2);
+  }
+
+  .variant-select__option--unavailable {
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-50));
+  }
+
+  /* Card lists disable sold out variants outright. Product page option values stay
+     selectable, because picking one is how a shopper reaches a different combination. */
+  .variant-select__option:has(> .variant-select__input:disabled) {
+    cursor: not-allowed;
+  }
+
+  .variant-select__option--unavailable .variant-select__media {
+    opacity: var(--opacity-50);
+  }
+
+  /* The input covers the whole row so the entire row is the hit area. */
+  .variant-select__input {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    opacity: 0;
+    appearance: none;
+    cursor: inherit;
+  }
+
+  .variant-select__media {
+    display: grid;
+    place-items: center;
+    flex: none;
+    inline-size: var(--variant-select-media-width);
+    block-size: calc(var(--variant-select-media-width) * 1.25);
+  }
+
+  .variant-select__media img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: contain;
+  }
+
+  .variant-select__option-title {
+    display: block;
+    font-size: var(--font-size--lg);
+  }
+
+  .variant-select__option-meta {
+    display: block;
+    font-size: var(--font-size--sm);
+    opacity: var(--opacity-muted-text);
+  }
+
+  .variant-select__radio {
+    display: grid;
+    place-items: center;
+    flex: none;
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    border: 1.5px solid rgb(var(--color-foreground-rgb) / var(--opacity-40));
+    border-radius: 50%;
+  }
+
+  .variant-select__radio::after {
+    content: '';
+    inline-size: 0.75rem;
+    block-size: 0.75rem;
+    border-radius: 50%;
+    background: var(--color-foreground);
+    transform: scale(0);
+  }
+
+  .variant-select__option:has(> .variant-select__input:checked) .variant-select__radio {
+    border-color: var(--variant-select-selected-color);
+  }
+
+  .variant-select__option:has(> .variant-select__input:checked) .variant-select__radio::after {
+    transform: scale(1);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .variant-select__radio::after {
+      transition: transform var(--animation-speed) var(--animation-easing);
+    }
+  }
+
+  /* Footer (card only) */
+  .variant-select__footer {
+    display: grid;
+    gap: var(--gap-sm);
+    padding: var(--padding-xl);
+    border-block-start: 1px solid var(--variant-select-border-color);
+  }
+
+  .variant-select__price {
+    margin: 0;
+    font-size: var(--font-size--lg);
+    text-align: center;
+  }
+
+  .variant-select__submit.button {
+    inline-size: 100%;
+    justify-content: center;
+  }
+{% endstylesheet %}

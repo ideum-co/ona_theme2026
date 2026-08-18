@@ -1328,7 +1328,7 @@
         "step": 1,
         "unit": "px",
         "label": "t:settings.border_radius",
-        "default": 100
+        "default": 0
       },
       {
         "type": "select",
@@ -1405,7 +1405,7 @@
         "step": 1,
         "unit": "px",
         "label": "t:settings.border_radius",
-        "default": 100
+        "default": 0
       },
       {
         "type": "select",
@@ -2097,7 +2097,7 @@
         "step": 1,
         "unit": "px",
         "label": "t:settings.border_radius",
-        "default": 8
+        "default": 0
       },
       {
         "type": "select",

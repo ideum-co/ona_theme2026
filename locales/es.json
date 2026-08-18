@@ -95,6 +95,7 @@
     "view_all": "Ver todo",
     "add": "Agregar",
     "choose": "Elegir",
+    "select_option": "Elegir {{ option }}",
     "added": "Agregado",
     "show_less": "Mostrar menos",
     "show_more": "Mostrar más",
