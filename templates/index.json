@@ -22,9 +22,15 @@
             "alignment": "center",
             "type_preset": "h1",
             "font": "var(--font-heading--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
             "wrap": "pretty",
             "text_color": "{{ settings.color_palette.background }}",
             "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
@@ -40,8 +46,14 @@
             "link": "#find-your-coffee",
             "open_in_new_tab": false,
             "style_class": "button-secondary",
+            "custom_button_background": "{{ settings.color_palette.foreground }}",
+            "custom_button_text": "{{ settings.color_palette.background }}",
+            "custom_button_border": "{{ settings.color_palette.background }}",
+            "link_text_color": "",
             "width": "fit-content",
-            "width_mobile": "fit-content"
+            "custom_width": 100,
+            "width_mobile": "fit-content",
+            "custom_width_mobile": 100
           },
           "blocks": {}
         },
@@ -53,8 +65,14 @@
             "link": "shopify://collections/all",
             "open_in_new_tab": false,
             "style_class": "button",
+            "custom_button_background": "{{ settings.color_palette.foreground }}",
+            "custom_button_text": "{{ settings.color_palette.background }}",
+            "custom_button_border": "{{ settings.color_palette.background }}",
+            "link_text_color": "",
             "width": "fit-content",
-            "width_mobile": "fit-content"
+            "custom_width": 100,
+            "width_mobile": "fit-content",
+            "custom_width_mobile": 100
           },
           "blocks": {}
         }
@@ -69,53 +87,97 @@
         "media_type_1": "image",
         "image_1": "shopify://shop_images/cherries.jpg",
         "media_type_2": "image",
+        "stack_media_on_mobile": false,
+        "custom_mobile_media": false,
+        "media_type_1_mobile": "image",
+        "media_type_2_mobile": "image",
+        "link": "",
+        "open_in_new_tab": false,
         "content_direction": "column",
         "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
         "horizontal_alignment_flex_direction_column": "center",
         "vertical_alignment_flex_direction_column": "center",
         "gap": 24,
         "section_width": "full-width",
         "section_height": "medium",
+        "section_height_custom": 50,
+        "background_color": "",
         "toggle_overlay": true,
         "overlay_color": "#470a1266",
         "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "blurred_reflection": false,
+        "reflection_opacity": 75,
         "padding-block-start": 64,
         "padding-block-end": 64
       }
     },
     "find_your_coffee": {
       "type": "media-with-content",
-      "name": "t:names.media_with_text",
-      "settings": {
-        "media_position": "right",
-        "media_width": "medium",
-        "media_height": "small",
-        "section_width": "full-width",
-        "extend_media": false,
-        "background_color": "{{ settings.color_palette.color1 }}",
-        "padding-block-start": 80,
-        "padding-block-end": 80
-      },
       "blocks": {
         "media": {
           "type": "_media-without-appearance",
           "static": true,
           "settings": {
-            "image": "shopify://shop_images/ona_coffee_candles_aspen_gateway_raspberry_candy_maple.jpg"
-          }
+            "media_type": "image",
+            "image": "shopify://shop_images/ona_coffee_candles_aspen_gateway_raspberry_candy_maple.jpg",
+            "link": "",
+            "video_loop": true,
+            "video_autoplay": false,
+            "image_position": "cover",
+            "video_position": "cover"
+          },
+          "blocks": {}
         },
         "content": {
           "type": "_content-without-appearance",
           "static": true,
           "settings": {
             "horizontal_alignment_flex_direction_column": "flex-start",
-            "vertical_alignment_flex_direction_column": "center"
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 24
           },
           "blocks": {
             "group": {
               "type": "group",
               "settings": {
-                "height": "fit"
+                "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 12,
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
               "blocks": {
                 "heading": {
@@ -123,18 +185,51 @@
                   "name": "t:names.heading",
                   "settings": {
                     "text": "<h2>Find <em>your</em> Coffee</h2>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
                     "type_preset": "h2",
-                    "text_color": "{{ settings.color_palette.background }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.background }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 },
                 "text": {
                   "type": "text",
                   "settings": {
                     "text": "<p>Finding great coffee shouldn't be complicated. Answer a few quick questions and we'll recommend ONA coffees you'll love.</p>",
+                    "width": "fit-content",
                     "max_width": "narrow",
+                    "alignment": "left",
                     "type_preset": "rte",
-                    "text_color": "{{ settings.color_palette.background }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.background }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 }
               },
               "block_order": [
@@ -147,11 +242,18 @@
               "settings": {
                 "label": "Answer the quiz",
                 "link": "#coffee-quiz",
+                "open_in_new_tab": false,
                 "style_class": "button-custom",
                 "custom_button_background": "{{ settings.color_palette.background }}",
                 "custom_button_text": "{{ settings.color_palette.foreground }}",
-                "custom_button_border": "{{ settings.color_palette.background }}"
-              }
+                "custom_button_border": "{{ settings.color_palette.background }}",
+                "link_text_color": "",
+                "width": "fit-content",
+                "custom_width": 100,
+                "width_mobile": "fit-content",
+                "custom_width_mobile": 100
+              },
+              "blocks": {}
             }
           },
           "block_order": [
@@ -160,14 +262,20 @@
           ]
         }
       },
-      "block_order": [
-        "media",
-        "content"
-      ]
+      "name": "t:names.media_with_text",
+      "settings": {
+        "media_position": "right",
+        "media_width": "medium",
+        "media_height": "small",
+        "section_width": "full-width",
+        "extend_media": false,
+        "background_color": "{{ settings.color_palette.color1 }}",
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      }
     },
     "coffee_spotlight": {
       "type": "product-list",
-      "name": "t:names.featured_collection",
       "blocks": {
         "static-header": {
           "type": "_product-list-content",
@@ -175,8 +283,32 @@
           "static": true,
           "settings": {
             "content_direction": "column",
+            "vertical_on_mobile": true,
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "center",
+            "align_baseline": false,
             "horizontal_alignment_flex_direction_column": "center",
-            "gap": 8
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 8,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "background_color": "",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
           },
           "blocks": {
             "product_list_text": {
@@ -184,18 +316,52 @@
               "name": "t:names.collection_title",
               "settings": {
                 "text": "<h2>Coffee <em>spotlight</em></h2>",
+                "width": "fit-content",
+                "max_width": "normal",
                 "alignment": "center",
-                "type_preset": "h2"
-              }
+                "type_preset": "h2",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
             },
             "product_list_subtext": {
               "type": "_product-list-text",
               "name": "t:names.text",
               "settings": {
                 "text": "<p>Explore our latest arrivals alongside the coffees our community keeps coming back for.</p>",
+                "width": "fit-content",
+                "max_width": "normal",
                 "alignment": "center",
-                "type_preset": "paragraph"
-              }
+                "type_preset": "paragraph",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
             }
           },
           "block_order": [
@@ -208,23 +374,60 @@
           "name": "t:names.product_card",
           "static": true,
           "settings": {
-            "product_card_gap": 4
+            "product_card_gap": 4,
+            "background_color": "",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
           },
           "blocks": {
             "product_card_gallery": {
               "type": "_product-card-gallery",
               "name": "t:names.product_card_media",
               "settings": {
-                "image_ratio": "portrait"
-              }
+                "image_ratio": "portrait",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
             },
             "product_title": {
               "type": "product-title",
               "name": "t:names.product_title",
               "settings": {
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
                 "type_preset": "paragraph",
-                "alignment": "left"
-              }
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
             },
             "variant_picker": {
               "type": "variant-picker",
@@ -232,23 +435,80 @@
               "settings": {
                 "variant_style": "custom_dropdown",
                 "show_swatches": false,
+                "option_label_text_color": "",
+                "variant_style_class": "default",
+                "custom_variant_background": "{{ settings.color_palette.background }}",
+                "custom_variant_text": "{{ settings.color_palette.foreground }}",
+                "custom_variant_border": "{{ settings.color_palette.foreground }}",
+                "selected_variant_style_class": "default",
+                "custom_selected_variant_background": "{{ settings.color_palette.foreground }}",
+                "custom_selected_variant_text": "{{ settings.color_palette.background }}",
+                "custom_selected_variant_border": "{{ settings.color_palette.foreground }}",
+                "alignment": "left",
                 "padding-block-start": 0,
-                "padding-block-end": 8
-              }
+                "padding-block-end": 8,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
             },
             "buy_buttons": {
               "type": "buy-buttons",
               "name": "t:names.buy_buttons",
               "settings": {
-                "stacking": true
+                "stacking": true,
+                "text_color": "",
+                "show_pickup_availability": true,
+                "gift_card_form": true,
+                "recipient_button_style": "default",
+                "recipient_button_background": "{{ settings.color_palette.background }}",
+                "recipient_button_text": "{{ settings.color_palette.foreground }}",
+                "recipient_button_border": "{{ settings.color_palette.foreground }}",
+                "selected_recipient_button_style": "default",
+                "selected_recipient_button_background": "{{ settings.color_palette.foreground }}",
+                "selected_recipient_button_text": "{{ settings.color_palette.background }}",
+                "selected_recipient_button_border": "{{ settings.color_palette.foreground }}",
+                "input_style": "default",
+                "input_background_color": "{{ settings.color_palette.background }}",
+                "input_text_color": "{{ settings.color_palette.foreground }}",
+                "input_border_color": "{{ settings.color_palette.foreground }}",
+                "border_width": 1,
+                "border_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
               "blocks": {
+                "quantity": {
+                  "type": "quantity",
+                  "static": true,
+                  "settings": {
+                    "input_style": "default",
+                    "input_background_color": "{{ settings.color_palette.background }}",
+                    "input_text_color": "{{ settings.color_palette.foreground }}",
+                    "input_border_color": "{{ settings.color_palette.foreground }}",
+                    "border_width": 1,
+                    "border_radius": 0
+                  },
+                  "blocks": {}
+                },
                 "add-to-cart": {
                   "type": "add-to-cart",
                   "static": true,
                   "settings": {
-                    "style_class": "button"
-                  }
+                    "style_class": "button",
+                    "custom_button_background": "{{ settings.color_palette.foreground }}",
+                    "custom_button_text": "{{ settings.color_palette.background }}",
+                    "custom_button_border": "{{ settings.color_palette.background }}"
+                  },
+                  "blocks": {}
+                },
+                "accelerated-checkout": {
+                  "type": "accelerated-checkout",
+                  "static": true,
+                  "settings": {},
+                  "blocks": {}
                 }
               },
               "block_order": []
@@ -262,16 +522,21 @@
           ]
         }
       },
+      "name": "t:names.featured_collection",
       "settings": {
         "collection": "all",
         "layout_type": "carousel",
         "carousel_on_mobile": true,
         "max_products": 8,
-        "columns": 5,
+        "columns": 3,
         "mobile_columns": "1",
+        "mobile_card_size": "44cqw",
         "columns_gap": 16,
         "rows_gap": 24,
+        "icons_style": "arrow",
+        "icons_shape": "none",
         "section_width": "page-width",
+        "horizontal_alignment": "center",
         "gap": 40,
         "background_color": "{{ settings.color_palette.background }}",
         "padding-block-start": 80,
@@ -280,37 +545,67 @@
     },
     "special_release": {
       "type": "media-with-content",
-      "name": "t:names.media_with_text",
-      "settings": {
-        "media_position": "right",
-        "media_width": "wide",
-        "media_height": "small",
-        "section_width": "full-width",
-        "extend_media": false,
-        "background_color": "{{ settings.color_palette.foreground }}",
-        "padding-block-start": 80,
-        "padding-block-end": 80
-      },
       "blocks": {
         "media": {
           "type": "_media-without-appearance",
           "static": true,
           "settings": {
-            "image": "shopify://shop_images/Ugly_Sweater.png"
-          }
+            "media_type": "image",
+            "image": "shopify://shop_images/Ugly_Sweater.png",
+            "link": "",
+            "video_loop": true,
+            "video_autoplay": false,
+            "image_position": "cover",
+            "video_position": "cover"
+          },
+          "blocks": {}
         },
         "content": {
           "type": "_content-without-appearance",
           "static": true,
           "settings": {
             "horizontal_alignment_flex_direction_column": "flex-start",
-            "vertical_alignment_flex_direction_column": "center"
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 24
           },
           "blocks": {
             "group": {
               "type": "group",
               "settings": {
-                "height": "fit"
+                "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 12,
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
               "blocks": {
                 "heading": {
@@ -318,18 +613,51 @@
                   "name": "t:names.heading",
                   "settings": {
                     "text": "<h2>Special <em>release</em></h2>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
                     "type_preset": "h2",
-                    "text_color": "{{ settings.color_palette.background }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.background }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 },
                 "text": {
                   "type": "text",
                   "settings": {
                     "text": "<p>Ugly Sweater is a cosy blend with notes of milk chocolate and hazelnut &mdash; something a little unconventional that always ends up being a favourite.</p>",
+                    "width": "fit-content",
                     "max_width": "narrow",
+                    "alignment": "left",
                     "type_preset": "rte",
-                    "text_color": "{{ settings.color_palette.background }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.background }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 }
               },
               "block_order": [
@@ -342,11 +670,18 @@
               "settings": {
                 "label": "Shop now",
                 "link": "shopify://collections/all",
+                "open_in_new_tab": false,
                 "style_class": "button-custom",
                 "custom_button_background": "{{ settings.color_palette.background }}",
                 "custom_button_text": "{{ settings.color_palette.foreground }}",
-                "custom_button_border": "{{ settings.color_palette.background }}"
-              }
+                "custom_button_border": "{{ settings.color_palette.background }}",
+                "link_text_color": "",
+                "width": "fit-content",
+                "custom_width": 100,
+                "width_mobile": "fit-content",
+                "custom_width_mobile": 100
+              },
+              "blocks": {}
             }
           },
           "block_order": [
@@ -355,33 +690,46 @@
           ]
         }
       },
-      "block_order": [
-        "media",
-        "content"
-      ]
+      "name": "t:names.media_with_text",
+      "settings": {
+        "media_position": "right",
+        "media_width": "wide",
+        "media_height": "small",
+        "section_width": "full-width",
+        "extend_media": false,
+        "background_color": "{{ settings.color_palette.foreground }}",
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      }
     },
     "club_benefits": {
       "type": "section",
-      "name": "t:names.section",
-      "settings": {
-        "content_direction": "column",
-        "horizontal_alignment_flex_direction_column": "center",
-        "gap": 56,
-        "section_width": "page-width",
-        "background_color": "#4d4748",
-        "padding-block-start": 80,
-        "padding-block-end": 80
-      },
       "blocks": {
         "heading": {
           "type": "text",
           "name": "t:names.heading",
           "settings": {
             "text": "<h2>Club <em>benefits</em></h2>",
+            "width": "fit-content",
+            "max_width": "normal",
             "alignment": "center",
             "type_preset": "h2",
-            "text_color": "{{ settings.color_palette.background }}"
-          }
+            "font": "var(--font-body--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "text_color": "{{ settings.color_palette.background }}",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
         },
         "columns": {
           "type": "group",
@@ -389,32 +737,110 @@
           "settings": {
             "content_direction": "row",
             "vertical_on_mobile": true,
+            "horizontal_alignment": "space-between",
+            "vertical_alignment": "center",
+            "align_baseline": false,
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "center",
             "gap": 48,
-            "horizontal_alignment": "space-between"
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "background_color": "",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "link": "",
+            "open_in_new_tab": false,
+            "placeholder": "",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
           },
           "blocks": {
             "col1": {
               "type": "group",
               "settings": {
                 "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
                 "horizontal_alignment_flex_direction_column": "center",
-                "gap": 20
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 20,
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
               "blocks": {
                 "icon": {
                   "type": "custom-liquid",
                   "settings": {
                     "custom_liquid": "<svg width=\"72\" height=\"56\" viewBox=\"0 0 72 56\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\"><g stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\" fill=\"none\"><path d=\"M14 6C24 2 32 10 28 20C24 30 12 30 8 22C4 14 6 9 14 6Z\"/><path d=\"M14 14C18 12 22 18 20 24\"/><path d=\"M34 20C42 15 50 21 48 29C46 37 36 38 32 31C28 25 28 24 34 20Z\"/><path d=\"M35 25C38 23 42 28 40 33\"/><path d=\"M22 32C30 28 38 34 35 42C32 50 22 50 18 43C14 36 15 35 22 32Z\"/><path d=\"M23 37C26 35 30 40 28 45\"/></g></svg>"
-                  }
+                  },
+                  "blocks": {}
                 },
                 "heading": {
                   "type": "text",
                   "settings": {
                     "text": "<h4>Freshly <em>roasted</em></h4>",
+                    "width": "fit-content",
+                    "max_width": "normal",
                     "alignment": "center",
                     "type_preset": "h4",
-                    "text_color": "{{ settings.color_palette.background }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.background }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 }
               },
               "block_order": [
@@ -426,24 +852,72 @@
               "type": "group",
               "settings": {
                 "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
                 "horizontal_alignment_flex_direction_column": "center",
-                "gap": 20
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 20,
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
               "blocks": {
                 "icon": {
                   "type": "custom-liquid",
                   "settings": {
                     "custom_liquid": "<svg width=\"56\" height=\"68\" viewBox=\"0 0 56 68\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\"><path d=\"M8 22 L11 64 H45 L48 22 Z\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/><path d=\"M8 22 L4 14 H52 L48 22\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/><path d=\"M16 14 C16 5, 40 5, 40 14\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/><circle cx=\"22\" cy=\"36\" r=\"2\" fill=\"{{ settings.color_palette.background }}\"/><circle cx=\"30\" cy=\"36\" r=\"2\" fill=\"{{ settings.color_palette.background }}\"/><circle cx=\"26\" cy=\"44\" r=\"2\" fill=\"{{ settings.color_palette.background }}\"/></svg>"
-                  }
+                  },
+                  "blocks": {}
                 },
                 "heading": {
                   "type": "text",
                   "settings": {
                     "text": "<h4>New <em>releases</em></h4>",
+                    "width": "fit-content",
+                    "max_width": "normal",
                     "alignment": "center",
                     "type_preset": "h4",
-                    "text_color": "{{ settings.color_palette.background }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.background }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 }
               },
               "block_order": [
@@ -455,24 +929,72 @@
               "type": "group",
               "settings": {
                 "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
                 "horizontal_alignment_flex_direction_column": "center",
-                "gap": 20
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 20,
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
               "blocks": {
                 "icon": {
                   "type": "custom-liquid",
                   "settings": {
                     "custom_liquid": "<svg width=\"80\" height=\"48\" viewBox=\"0 0 80 48\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\"><path d=\"M4 32 V16 H46 L58 26 V32\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/><path d=\"M46 16 V32\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/><rect x=\"48\" y=\"20\" width=\"8\" height=\"7\" rx=\"1\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/><path d=\"M4 32 H72\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/><path d=\"M72 32 V24 H62\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/><circle cx=\"18\" cy=\"36\" r=\"5\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/><circle cx=\"60\" cy=\"36\" r=\"5\" stroke=\"{{ settings.color_palette.background }}\" stroke-width=\"1.5\"/></svg>"
-                  }
+                  },
+                  "blocks": {}
                 },
                 "heading": {
                   "type": "text",
                   "settings": {
                     "text": "<h4>Flexible <em>delivery</em></h4>",
+                    "width": "fit-content",
+                    "max_width": "normal",
                     "alignment": "center",
                     "type_preset": "h4",
-                    "text_color": "{{ settings.color_palette.background }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.background }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 }
               },
               "block_order": [
@@ -491,18 +1013,26 @@
           "type": "custom-liquid",
           "settings": {
             "custom_liquid": "<!-- Placeholder testimonial -- Sasa offered to source real, named ONA Coffee Club member\n     quotes (DES-8 thread, 2026-08-10) but none were provided yet. This is the same\n     placeholder shown in the approved club-benefits.png design reference, not a real\n     customer quote. Swap TESTIMONIALS below once real ones land. -->\n<div class=\"ona-testimonials\" data-testimonials>\n  <style>\n    .ona-testimonials { position: relative; max-width: 640px; margin: 0 auto; text-align: center; padding: 0 56px; }\n    .ona-testimonials [data-quote] { font-size: 1.125rem; margin: 0 0 20px; }\n    .ona-testimonials [data-name] { margin: 0; }\n    .ona-testimonials [data-role] { margin: 2px 0 0; font-style: italic; opacity: .85; }\n    .ona-testimonials button { position: absolute; top: 40%; background: none; border: none; color: inherit; cursor: pointer; padding: 8px; }\n    .ona-testimonials [data-prev] { left: 0; }\n    .ona-testimonials [data-next] { right: 0; }\n  </style>\n  <button type=\"button\" data-prev aria-label=\"Previous testimonial\"><svg width=\"9\" height=\"16\" viewBox=\"0 0 9 16\" fill=\"none\"><path d=\"M8 1L1 8L8 15\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></button>\n  <p data-quote></p>\n  <p data-name></p>\n  <p data-role></p>\n  <button type=\"button\" data-next aria-label=\"Next testimonial\"><svg width=\"9\" height=\"16\" viewBox=\"0 0 9 16\" fill=\"none\"><path d=\"M1 1L8 8L1 15\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></button>\n  <script>\n    (() => {\n      const TESTIMONIALS = [\n        { quote: \"The easiest way to make sure I never run out of great coffee. I love getting to discover new ONA coffees along the way.\", name: \"Sarah\", role: \"ONA Coffee Club member\" },\n      ];\n      document.querySelectorAll('[data-testimonials]').forEach((root) => {\n        let i = 0;\n        const quote = root.querySelector('[data-quote]');\n        const name = root.querySelector('[data-name]');\n        const role = root.querySelector('[data-role]');\n        function render() {\n          quote.textContent = '\\u201c' + TESTIMONIALS[i].quote + '\\u201d';\n          name.textContent = TESTIMONIALS[i].name;\n          role.textContent = TESTIMONIALS[i].role;\n        }\n        root.querySelector('[data-prev]').addEventListener('click', () => { i = (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length; render(); });\n        root.querySelector('[data-next]').addEventListener('click', () => { i = (i + 1) % TESTIMONIALS.length; render(); });\n        render();\n      });\n    })();\n  </script>\n</div>"
-          }
+          },
+          "blocks": {}
         },
         "cta": {
           "type": "button",
           "settings": {
             "label": "Join the ONA Coffee Club",
             "link": "/collections/coffee-subscriptions",
+            "open_in_new_tab": false,
             "style_class": "button-custom",
             "custom_button_background": "{{ settings.color_palette.color1 }}",
             "custom_button_text": "{{ settings.color_palette.background }}",
-            "custom_button_border": "{{ settings.color_palette.color1 }}"
-          }
+            "custom_button_border": "{{ settings.color_palette.color1 }}",
+            "link_text_color": "",
+            "width": "fit-content",
+            "custom_width": 100,
+            "width_mobile": "fit-content",
+            "custom_width_mobile": 100
+          },
+          "blocks": {}
         }
       },
       "block_order": [
@@ -510,76 +1040,225 @@
         "columns",
         "testimonials",
         "cta"
-      ]
+      ],
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "center",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 56,
+        "section_width": "page-width",
+        "section_height": "",
+        "section_height_custom": 50,
+        "background_media": "none",
+        "background_color": "#4d4748",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      }
     },
     "raspberry_candy": {
       "type": "section",
-      "name": "t:names.section",
-      "settings": {
-        "content_direction": "row",
-        "vertical_on_mobile": true,
-        "vertical_alignment": "center",
-        "gap": 40,
-        "section_width": "full-width",
-        "background_color": "{{ settings.color_palette.color2 }}",
-        "padding-block-start": 80,
-        "padding-block-end": 80
-      },
       "blocks": {
         "media": {
           "type": "custom-liquid",
           "settings": {
             "custom_liquid": "<!-- Rotating 3D viewer, replaces the static Candy.png flat photo. Rotation is driven by page scroll progress through this section (not autoplay), using Google's model-viewer web component (MIT, cdn-hosted). Model: 'raspberry-candy-bag-3d.glb', the smallest of the 3 compressed test exports Formswell provided (742KB). Manual drag-to-rotate stays enabled via camera-controls; zoom/pan disabled so it doesn't hijack page-scroll or trackpad gestures.\n     Width is a fixed px (not %): this block is a flex item with no explicit flex-basis, so a percentage-width child can't resolve against it and collapses to 0 -- confirmed live via Playwright (model-viewer registered + correct src, but 0px rendered width). Fixed width + max-width:100% avoids the circular reference while still capping to the container on narrow screens. -->\n<div id=\"raspberry-3d-{{ section.id }}\" style=\"width:380px; max-width:100%; margin:0 auto;\">\n  <model-viewer\n    src=\"{{ 'raspberry-candy-bag-3d.glb' | file_url }}\"\n    alt=\"ONA Raspberry Candy coffee bag, 3D\"\n    camera-controls\n    disable-zoom\n    disable-pan\n    interaction-prompt=\"none\"\n    shadow-intensity=\"1\"\n    exposure=\"1\"\n    camera-orbit=\"35deg 62deg 105%\"\n    style=\"width:380px; max-width:100%; height:460px; background:transparent;\"\n  ></model-viewer>\n</div>\n<script type=\"module\" src=\"https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js\"></script>\n<script>\n  (() => {\n    const root = document.getElementById('raspberry-3d-{{ section.id }}');\n    if (!root || root.dataset.rotateInit) return;\n    root.dataset.rotateInit = '1';\n    const viewer = root.querySelector('model-viewer');\n    const REST_THETA = 35;\n    const PHI = 62;\n    let ticking = false;\n    function updateRotation() {\n      ticking = false;\n      const rect = root.getBoundingClientRect();\n      const vh = window.innerHeight || document.documentElement.clientHeight;\n      const total = rect.height + vh;\n      const traveled = vh - rect.top;\n      let progress = total > 0 ? traveled / total : 0;\n      progress = Math.min(1, Math.max(0, progress));\n      const theta = (REST_THETA + progress * 360) % 360;\n      viewer.cameraOrbit = theta.toFixed(1) + 'deg ' + PHI + 'deg 105%';\n    }\n    function onScroll() {\n      if (!ticking) {\n        ticking = true;\n        window.requestAnimationFrame(updateRotation);\n      }\n    }\n    window.addEventListener('scroll', onScroll, { passive: true });\n    updateRotation();\n  })();\n</script>"
-          }
+          },
+          "blocks": {}
         },
         "content": {
           "type": "group",
           "settings": {
             "content_direction": "column",
+            "vertical_on_mobile": true,
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "center",
+            "align_baseline": false,
             "horizontal_alignment_flex_direction_column": "flex-start",
             "vertical_alignment_flex_direction_column": "center",
-            "width": "fill"
+            "gap": 12,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "background_color": "",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "link": "",
+            "open_in_new_tab": false,
+            "placeholder": "",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
           },
           "blocks": {
             "group": {
               "type": "group",
               "settings": {
-                "height": "fit"
+                "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 12,
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
               "blocks": {
                 "caption": {
                   "type": "text",
                   "settings": {
                     "text": "<p>Introducing</p>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
                     "type_preset": "h6",
-                    "text_color": "{{ settings.color_palette.foreground }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.foreground }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 },
                 "heading": {
                   "type": "text",
                   "name": "t:names.heading",
                   "settings": {
                     "text": "<h2>Raspberry <em>Candy</em></h2>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
                     "type_preset": "h2",
-                    "text_color": "{{ settings.color_palette.foreground }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.foreground }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 },
                 "subheading": {
                   "type": "text",
                   "settings": {
                     "text": "<p><em>The sweet spot.</em></p>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
                     "type_preset": "h5",
-                    "text_color": "{{ settings.color_palette.foreground }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.foreground }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 },
                 "text": {
                   "type": "text",
                   "settings": {
                     "text": "<p>Bright, juicy and easy to love &mdash; the coffee that first made ONA's name, and the one our community keeps coming back for.</p>",
+                    "width": "fit-content",
                     "max_width": "narrow",
+                    "alignment": "left",
                     "type_preset": "rte",
-                    "text_color": "{{ settings.color_palette.foreground }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.foreground }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 }
               },
               "block_order": [
@@ -593,7 +1272,39 @@
               "type": "group",
               "settings": {
                 "content_direction": "row",
-                "gap": 12
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 12,
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
               "blocks": {
                 "shop": {
@@ -601,19 +1312,36 @@
                   "settings": {
                     "label": "Shop now",
                     "link": "shopify://collections/all",
+                    "open_in_new_tab": false,
                     "style_class": "button-custom",
                     "custom_button_background": "{{ settings.color_palette.foreground }}",
                     "custom_button_text": "{{ settings.color_palette.background }}",
-                    "custom_button_border": "{{ settings.color_palette.foreground }}"
-                  }
+                    "custom_button_border": "{{ settings.color_palette.foreground }}",
+                    "link_text_color": "",
+                    "width": "fit-content",
+                    "custom_width": 100,
+                    "width_mobile": "fit-content",
+                    "custom_width_mobile": 100
+                  },
+                  "blocks": {}
                 },
                 "subscribe": {
                   "type": "button",
                   "settings": {
                     "label": "Subscribe & Save",
                     "link": "shopify://collections/all",
-                    "style_class": "button-secondary"
-                  }
+                    "open_in_new_tab": false,
+                    "style_class": "button-secondary",
+                    "custom_button_background": "{{ settings.color_palette.foreground }}",
+                    "custom_button_text": "{{ settings.color_palette.background }}",
+                    "custom_button_border": "{{ settings.color_palette.background }}",
+                    "link_text_color": "",
+                    "width": "fit-content",
+                    "custom_width": 100,
+                    "width_mobile": "fit-content",
+                    "custom_width_mobile": 100
+                  },
+                  "blocks": {}
                 }
               },
               "block_order": [
@@ -631,61 +1359,141 @@
       "block_order": [
         "media",
         "content"
-      ]
+      ],
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "row",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "flex-start",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 40,
+        "section_width": "full-width",
+        "section_height": "",
+        "section_height_custom": 50,
+        "background_media": "none",
+        "background_color": "{{ settings.color_palette.color2 }}",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      }
     },
     "good_coffee_delivered": {
       "type": "section",
-      "name": "t:names.section",
-      "settings": {
-        "content_direction": "column",
-        "horizontal_alignment_flex_direction_column": "center",
-        "vertical_alignment_flex_direction_column": "center",
-        "section_width": "full-width",
-        "section_height": "medium",
-        "background_media": "image",
-        "background_image": "shopify://shop_images/roastery2732h.jpg",
-        "background_image_position": "cover",
-        "toggle_overlay": true,
-        "overlay_color": "#18191b66",
-        "overlay_style": "solid",
-        "padding-block-start": 80,
-        "padding-block-end": 80
-      },
       "blocks": {
         "heading": {
           "type": "text",
           "name": "t:names.heading",
           "settings": {
             "text": "<p>Good coffee. <em>Delivered.</em></p>",
+            "width": "fit-content",
+            "max_width": "normal",
             "alignment": "center",
             "type_preset": "h2",
-            "text_color": "{{ settings.color_palette.background }}"
-          }
+            "font": "var(--font-body--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "text_color": "{{ settings.color_palette.background }}",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
         }
       },
       "block_order": [
         "heading"
-      ]
-    },
-    "more_than_coffee": {
-      "type": "section",
+      ],
       "name": "t:names.section",
       "settings": {
         "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
         "horizontal_alignment_flex_direction_column": "center",
-        "gap": 40,
-        "section_width": "page-width",
-        "background_color": "{{ settings.color_palette.color1 }}",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 12,
+        "section_width": "full-width",
+        "section_height": "medium",
+        "section_height_custom": 50,
+        "background_media": "image",
+        "background_color": "",
+        "video_position": "cover",
+        "background_image": "shopify://shop_images/roastery2732h.jpg",
+        "background_image_position": "cover",
+        "toggle_overlay": true,
+        "overlay_color": "#18191b66",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
         "padding-block-start": 80,
         "padding-block-end": 80
-      },
+      }
+    },
+    "more_than_coffee": {
+      "type": "section",
       "blocks": {
         "text": {
           "type": "group",
           "settings": {
             "content_direction": "column",
+            "vertical_on_mobile": true,
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "center",
+            "align_baseline": false,
             "horizontal_alignment_flex_direction_column": "center",
-            "gap": 16
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 16,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "background_color": "",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "link": "",
+            "open_in_new_tab": false,
+            "placeholder": "",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
           },
           "blocks": {
             "heading": {
@@ -693,31 +1501,69 @@
               "name": "t:names.heading",
               "settings": {
                 "text": "<h2>More than coffee. <em>Since 2008.</em></h2>",
+                "width": "fit-content",
+                "max_width": "normal",
                 "alignment": "center",
                 "type_preset": "h2",
-                "text_color": "{{ settings.color_palette.background }}"
-              }
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "{{ settings.color_palette.background }}",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
             },
             "body": {
               "type": "text",
               "settings": {
                 "text": "<p>From Canberra to cafes around the world, ONA has been championing exceptional coffee through innovation, education and meaningful partnerships.</p>",
-                "alignment": "center",
+                "width": "fit-content",
                 "max_width": "narrow",
+                "alignment": "center",
                 "type_preset": "rte",
-                "text_color": "{{ settings.color_palette.background }}"
-              }
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "{{ settings.color_palette.background }}",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
             },
             "button": {
               "type": "button",
               "settings": {
                 "label": "Learn more about ONA",
                 "link": "/pages/about",
+                "open_in_new_tab": false,
                 "style_class": "button-custom",
                 "custom_button_background": "rgba(0,0,0,0)",
                 "custom_button_text": "{{ settings.color_palette.background }}",
-                "custom_button_border": "{{ settings.color_palette.background }}"
-              }
+                "custom_button_border": "{{ settings.color_palette.background }}",
+                "link_text_color": "",
+                "width": "fit-content",
+                "custom_width": 100,
+                "width_mobile": "fit-content",
+                "custom_width_mobile": 100
+              },
+              "blocks": {}
             }
           },
           "block_order": [
@@ -730,78 +1576,223 @@
           "type": "custom-liquid",
           "settings": {
             "custom_liquid": "<!-- Sasa's 30-45s welcome video isn't shot yet (DES-8 thread, 2026-08-09/10) --\n     play button is decorative only, no click handler, so it can't look like a\n     broken/dead video link. Swap for a real <video>/embed once the asset lands. -->\n<div style=\"position:relative; max-width:900px; margin:0 auto; border-radius:4px; overflow:hidden;\">\n  <img src=\"{{ 'Zerihun-and-Sasa.webp' | file_img_url: '1200x' }}\" alt=\"Sasa, ONA Coffee founder\" loading=\"lazy\" style=\"width:100%; display:block;\">\n  <span style=\"position:absolute; inset:0; display:flex; align-items:center; justify-content:center;\">\n    <span style=\"width:64px; height:64px; border-radius:999px; background:{{ settings.color_palette.background }}; display:flex; align-items:center; justify-content:center;\">\n      <svg width=\"20\" height=\"24\" viewBox=\"0 0 20 24\" fill=\"{{ settings.color_palette.foreground }}\"><path d=\"M0 0L20 12L0 24Z\"/></svg>\n    </span>\n  </span>\n</div>"
-          }
+          },
+          "blocks": {}
         }
       },
       "block_order": [
         "text",
         "video_photo"
-      ]
-    },
-    "learn_with_ona": {
-      "type": "section",
+      ],
       "name": "t:names.section",
       "settings": {
         "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
         "horizontal_alignment_flex_direction_column": "center",
-        "gap": 48,
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 40,
         "section_width": "page-width",
-        "background_color": "{{ settings.color_palette.background }}",
+        "section_height": "",
+        "section_height_custom": 50,
+        "background_media": "none",
+        "background_color": "{{ settings.color_palette.color1 }}",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
         "padding-block-start": 80,
         "padding-block-end": 80
-      },
+      }
+    },
+    "learn_with_ona": {
+      "type": "section",
       "blocks": {
         "heading": {
           "type": "text",
           "name": "t:names.heading",
           "settings": {
             "text": "<h2>Learn with <em>ONA</em></h2>",
+            "width": "fit-content",
+            "max_width": "normal",
             "alignment": "center",
             "type_preset": "h2",
-            "text_color": "{{ settings.color_palette.foreground }}"
-          }
+            "font": "var(--font-body--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "text_color": "{{ settings.color_palette.foreground }}",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
         },
         "subtext": {
           "type": "text",
           "settings": {
             "text": "<p>Whether you're just getting started or refining your craft, explore our barista courses, brewing guides and the latest stories from the world of specialty coffee.</p>",
+            "width": "fit-content",
+            "max_width": "narrow",
             "alignment": "center",
             "type_preset": "paragraph",
+            "font": "var(--font-body--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
             "text_color": "{{ settings.color_palette.foreground }}",
-            "max_width": "narrow"
-          }
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
         },
         "columns": {
           "type": "group",
           "settings": {
             "content_direction": "row",
             "vertical_on_mobile": true,
-            "gap": 32
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "center",
+            "align_baseline": false,
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 32,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "background_color": "",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "link": "",
+            "open_in_new_tab": false,
+            "placeholder": "",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
           },
           "blocks": {
             "col1": {
               "type": "group",
               "settings": {
                 "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
                 "gap": 12,
-                "width": "fill"
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
               "blocks": {
                 "image": {
                   "type": "image",
                   "settings": {
                     "image": "shopify://shop_images/7-top-reasons-for-you-to-enrol-in-barista-training.png",
+                    "link": "/pages/barista-courses",
                     "image_ratio": "square",
-                    "link": "/pages/barista-courses"
-                  }
+                    "width": "fill",
+                    "custom_width": 100,
+                    "width_mobile": "fill",
+                    "custom_width_mobile": 100,
+                    "height": "fit",
+                    "border": "none",
+                    "border_width": 1,
+                    "border_opacity": 100,
+                    "border_color": "",
+                    "border_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 },
                 "heading": {
                   "type": "text",
                   "settings": {
                     "text": "<h4>Barista Courses</h4>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
                     "type_preset": "h4",
-                    "text_color": "{{ settings.color_palette.foreground }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.foreground }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 }
               },
               "block_order": [
@@ -813,25 +1804,88 @@
               "type": "group",
               "settings": {
                 "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
                 "gap": 12,
-                "width": "fill"
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
               "blocks": {
                 "image": {
                   "type": "image",
                   "settings": {
                     "image": "shopify://shop_images/how-to-brew-instant-coffee.png",
+                    "link": "/pages/brewing-guides",
                     "image_ratio": "square",
-                    "link": "/pages/brewing-guides"
-                  }
+                    "width": "fill",
+                    "custom_width": 100,
+                    "width_mobile": "fill",
+                    "custom_width_mobile": 100,
+                    "height": "fit",
+                    "border": "none",
+                    "border_width": 1,
+                    "border_opacity": 100,
+                    "border_color": "",
+                    "border_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 },
                 "heading": {
                   "type": "text",
                   "settings": {
                     "text": "<h4>Brewing Guides</h4>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
                     "type_preset": "h4",
-                    "text_color": "{{ settings.color_palette.foreground }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.foreground }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 }
               },
               "block_order": [
@@ -843,25 +1897,88 @@
               "type": "group",
               "settings": {
                 "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
                 "gap": 12,
-                "width": "fill"
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
               "blocks": {
                 "image": {
                   "type": "image",
                   "settings": {
                     "image": "shopify://shop_images/what-is-a-barista-style-coffee.png",
+                    "link": "/blogs/news",
                     "image_ratio": "square",
-                    "link": "/blogs/news"
-                  }
+                    "width": "fill",
+                    "custom_width": 100,
+                    "width_mobile": "fill",
+                    "custom_width_mobile": 100,
+                    "height": "fit",
+                    "border": "none",
+                    "border_width": 1,
+                    "border_opacity": 100,
+                    "border_color": "",
+                    "border_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 },
                 "heading": {
                   "type": "text",
                   "settings": {
                     "text": "<h4>Journal</h4>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
                     "type_preset": "h4",
-                    "text_color": "{{ settings.color_palette.foreground }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.foreground }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 }
               },
               "block_order": [
@@ -881,43 +1998,128 @@
         "heading",
         "subtext",
         "columns"
-      ]
+      ],
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "center",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 48,
+        "section_width": "page-width",
+        "section_height": "",
+        "section_height_custom": 50,
+        "background_media": "none",
+        "background_color": "{{ settings.color_palette.background }}",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      }
     },
     "press_band": {
       "type": "section",
-      "name": "t:names.section",
-      "settings": {
-        "content_direction": "row",
-        "vertical_on_mobile": true,
-        "gap": 48,
-        "section_width": "page-width",
-        "background_color": "{{ settings.color_palette.color1 }}",
-        "padding-block-start": 64,
-        "padding-block-end": 64
-      },
       "blocks": {
         "urban_list": {
           "type": "group",
           "settings": {
             "content_direction": "column",
-            "gap": 12
+            "vertical_on_mobile": true,
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "center",
+            "align_baseline": false,
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 12,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "background_color": "",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "link": "",
+            "open_in_new_tab": false,
+            "placeholder": "",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
           },
           "blocks": {
             "brand": {
               "type": "text",
               "settings": {
                 "text": "<h5>Urban List</h5>",
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
                 "type_preset": "h5",
-                "text_color": "{{ settings.color_palette.background }}"
-              }
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "{{ settings.color_palette.background }}",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
             },
             "quote": {
               "type": "text",
               "settings": {
                 "text": "<p>&ldquo;If you've been fortunate enough to visit ONA's flagship, you'll know exceptional coffee when you taste it.&rdquo;</p>",
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
                 "type_preset": "paragraph",
-                "text_color": "{{ settings.color_palette.background }}"
-              }
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "{{ settings.color_palette.background }}",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
             }
           },
           "block_order": [
@@ -929,24 +2131,90 @@
           "type": "group",
           "settings": {
             "content_direction": "column",
-            "gap": 12
+            "vertical_on_mobile": true,
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "center",
+            "align_baseline": false,
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 12,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "background_color": "",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "link": "",
+            "open_in_new_tab": false,
+            "placeholder": "",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
           },
           "blocks": {
             "brand": {
               "type": "text",
               "settings": {
                 "text": "<h5>Espresso Room</h5>",
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
                 "type_preset": "h5",
-                "text_color": "{{ settings.color_palette.background }}"
-              }
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "{{ settings.color_palette.background }}",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
             },
             "quote": {
               "type": "text",
               "settings": {
                 "text": "<p>&ldquo;Since 2012, our partnership with ONA Coffee has demonstrated their commitment to quality.&rdquo;</p>",
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
                 "type_preset": "paragraph",
-                "text_color": "{{ settings.color_palette.background }}"
-              }
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "{{ settings.color_palette.background }}",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
             }
           },
           "block_order": [
@@ -958,24 +2226,90 @@
           "type": "group",
           "settings": {
             "content_direction": "column",
-            "gap": 12
+            "vertical_on_mobile": true,
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "center",
+            "align_baseline": false,
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 12,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "background_color": "",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "link": "",
+            "open_in_new_tab": false,
+            "placeholder": "",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
           },
           "blocks": {
             "brand": {
               "type": "text",
               "settings": {
                 "text": "<h5>Broadsheet</h5>",
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
                 "type_preset": "h5",
-                "text_color": "{{ settings.color_palette.background }}"
-              }
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "{{ settings.color_palette.background }}",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
             },
             "quote": {
               "type": "text",
               "settings": {
                 "text": "<p>&ldquo;Canberra's ONA Coffee is one of the country's most awarded specialty roasters.&rdquo;</p>",
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
                 "type_preset": "paragraph",
-                "text_color": "{{ settings.color_palette.background }}"
-              }
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "{{ settings.color_palette.background }}",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
             }
           },
           "block_order": [
@@ -988,41 +2322,100 @@
         "urban_list",
         "espresso_room",
         "broadsheet"
-      ]
+      ],
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "row",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "flex-start",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 48,
+        "section_width": "page-width",
+        "section_height": "",
+        "section_height_custom": 50,
+        "background_media": "none",
+        "background_color": "{{ settings.color_palette.color1 }}",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
+        "padding-block-start": 64,
+        "padding-block-end": 64
+      }
     },
     "find_ona": {
       "type": "media-with-content",
-      "name": "t:names.media_with_text",
-      "settings": {
-        "media_position": "right",
-        "media_width": "wide",
-        "media_height": "small",
-        "section_width": "full-width",
-        "extend_media": false,
-        "background_color": "{{ settings.color_palette.color3 }}",
-        "padding-block-start": 80,
-        "padding-block-end": 80
-      },
       "blocks": {
         "media": {
           "type": "_media-without-appearance",
           "static": true,
           "settings": {
-            "image": "shopify://shop_images/ona_coffee_canberra_Cup-1.jpg"
-          }
+            "media_type": "image",
+            "image": "shopify://shop_images/ona_coffee_canberra_Cup-1.jpg",
+            "link": "",
+            "video_loop": true,
+            "video_autoplay": false,
+            "image_position": "cover",
+            "video_position": "cover"
+          },
+          "blocks": {}
         },
         "content": {
           "type": "_content-without-appearance",
           "static": true,
           "settings": {
             "horizontal_alignment_flex_direction_column": "flex-start",
-            "vertical_alignment_flex_direction_column": "center"
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 24
           },
           "blocks": {
             "group": {
               "type": "group",
               "settings": {
-                "height": "fit"
+                "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 12,
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
               "blocks": {
                 "heading": {
@@ -1030,18 +2423,51 @@
                   "name": "t:names.heading",
                   "settings": {
                     "text": "<h2>Find <em>ONA</em></h2>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
                     "type_preset": "h2",
-                    "text_color": "{{ settings.color_palette.background }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.background }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 },
                 "text": {
                   "type": "text",
                   "settings": {
                     "text": "<p>From Canberra to Dubai, ONA coffee is served in growing number of cafes around the world, proudly bringing exceptional coffee to our community.</p>",
+                    "width": "fit-content",
                     "max_width": "narrow",
+                    "alignment": "left",
                     "type_preset": "rte",
-                    "text_color": "{{ settings.color_palette.background }}"
-                  }
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.background }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
                 }
               },
               "block_order": [
@@ -1054,11 +2480,18 @@
               "settings": {
                 "label": "See Flagships & Locations",
                 "link": "/pages/locations",
+                "open_in_new_tab": false,
                 "style_class": "button-custom",
                 "custom_button_background": "rgba(0,0,0,0)",
                 "custom_button_text": "{{ settings.color_palette.background }}",
-                "custom_button_border": "{{ settings.color_palette.background }}"
-              }
+                "custom_button_border": "{{ settings.color_palette.background }}",
+                "link_text_color": "",
+                "width": "fit-content",
+                "custom_width": 100,
+                "width_mobile": "fit-content",
+                "custom_width_mobile": 100
+              },
+              "blocks": {}
             }
           },
           "block_order": [
@@ -1067,93 +2500,594 @@
           ]
         }
       },
-      "block_order": [
-        "media",
-        "content"
-      ]
+      "name": "t:names.media_with_text",
+      "settings": {
+        "media_position": "right",
+        "media_width": "wide",
+        "media_height": "small",
+        "section_width": "full-width",
+        "extend_media": false,
+        "background_color": "{{ settings.color_palette.color3 }}",
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      }
     },
     "discover_by_category": {
       "type": "section",
-      "name": "t:names.section",
-      "settings": {
-        "content_direction": "column",
-        "horizontal_alignment_flex_direction_column": "center",
-        "gap": 32,
-        "section_width": "page-width",
-        "background_color": "{{ settings.color_palette.background }}",
-        "padding-block-start": 80,
-        "padding-block-end": 80
-      },
       "blocks": {
         "heading": {
           "type": "text",
           "name": "t:names.heading",
           "settings": {
             "text": "<h2>Discover by <em>category</em></h2>",
+            "width": "fit-content",
+            "max_width": "normal",
             "alignment": "center",
             "type_preset": "h2",
-            "text_color": "{{ settings.color_palette.foreground }}"
-          }
+            "font": "var(--font-body--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "text_color": "{{ settings.color_palette.foreground }}",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
         },
         "tiles": {
           "type": "group",
           "settings": {
             "content_direction": "row",
             "vertical_on_mobile": true,
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "center",
+            "align_baseline": false,
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "center",
             "gap": 16,
-            "width": "fill"
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "background_color": "",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "link": "",
+            "open_in_new_tab": false,
+            "placeholder": "",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
           },
           "blocks": {
             "milk": {
               "type": "group",
-              "settings": {"content_direction": "column", "gap": 12, "width": "fill"},
-              "blocks": {
-                "image": {"type": "image", "settings": {"image": "shopify://shop_images/latte_art-1.jpg", "image_ratio": "square", "link": "/collections/milk-based"}},
-                "heading": {"type": "text", "settings": {"text": "<h4>Milk-based</h4>", "alignment": "center", "type_preset": "h4", "text_color": "{{ settings.color_palette.foreground }}"}}
+              "settings": {
+                "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 12,
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
-              "block_order": ["image", "heading"]
+              "blocks": {
+                "image": {
+                  "type": "image",
+                  "settings": {
+                    "image": "shopify://shop_images/latte_art-1.jpg",
+                    "link": "/collections/milk-based",
+                    "image_ratio": "square",
+                    "width": "fill",
+                    "custom_width": 100,
+                    "width_mobile": "fill",
+                    "custom_width_mobile": 100,
+                    "height": "fit",
+                    "border": "none",
+                    "border_width": 1,
+                    "border_opacity": 100,
+                    "border_color": "",
+                    "border_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "heading": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<h4>Milk-based</h4>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "center",
+                    "type_preset": "h4",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.foreground }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "image",
+                "heading"
+              ]
             },
             "filter": {
               "type": "group",
-              "settings": {"content_direction": "column", "gap": 12, "width": "fill"},
-              "blocks": {
-                "image": {"type": "image", "settings": {"image": "shopify://shop_images/Filter_web.png", "image_ratio": "square", "link": "/collections/filter"}},
-                "heading": {"type": "text", "settings": {"text": "<h4>Filter</h4>", "alignment": "center", "type_preset": "h4", "text_color": "{{ settings.color_palette.foreground }}"}}
+              "settings": {
+                "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 12,
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
-              "block_order": ["image", "heading"]
+              "blocks": {
+                "image": {
+                  "type": "image",
+                  "settings": {
+                    "image": "shopify://shop_images/Filter_web.png",
+                    "link": "/collections/filter",
+                    "image_ratio": "square",
+                    "width": "fill",
+                    "custom_width": 100,
+                    "width_mobile": "fill",
+                    "custom_width_mobile": 100,
+                    "height": "fit",
+                    "border": "none",
+                    "border_width": 1,
+                    "border_opacity": 100,
+                    "border_color": "",
+                    "border_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "heading": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<h4>Filter</h4>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "center",
+                    "type_preset": "h4",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.foreground }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "image",
+                "heading"
+              ]
             },
             "espresso": {
               "type": "group",
-              "settings": {"content_direction": "column", "gap": 12, "width": "fill"},
-              "blocks": {
-                "image": {"type": "image", "settings": {"image": "shopify://shop_images/Espresso_web.png", "image_ratio": "square", "link": "/collections/espresso"}},
-                "heading": {"type": "text", "settings": {"text": "<h4>Espresso</h4>", "alignment": "center", "type_preset": "h4", "text_color": "{{ settings.color_palette.foreground }}"}}
+              "settings": {
+                "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 12,
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
-              "block_order": ["image", "heading"]
+              "blocks": {
+                "image": {
+                  "type": "image",
+                  "settings": {
+                    "image": "shopify://shop_images/Espresso_web.png",
+                    "link": "/collections/espresso",
+                    "image_ratio": "square",
+                    "width": "fill",
+                    "custom_width": 100,
+                    "width_mobile": "fill",
+                    "custom_width_mobile": 100,
+                    "height": "fit",
+                    "border": "none",
+                    "border_width": 1,
+                    "border_opacity": 100,
+                    "border_color": "",
+                    "border_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "heading": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<h4>Espresso</h4>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "center",
+                    "type_preset": "h4",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.foreground }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "image",
+                "heading"
+              ]
             },
             "gear": {
               "type": "group",
-              "settings": {"content_direction": "column", "gap": 12, "width": "fill"},
-              "blocks": {
-                "image": {"type": "image", "settings": {"image": "shopify://shop_images/coffee_timemore_hand_grinder.jpg", "image_ratio": "square", "link": "/collections/brew-gear"}},
-                "heading": {"type": "text", "settings": {"text": "<h4>Brew Gear</h4>", "alignment": "center", "type_preset": "h4", "text_color": "{{ settings.color_palette.foreground }}"}}
+              "settings": {
+                "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 12,
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
-              "block_order": ["image", "heading"]
+              "blocks": {
+                "image": {
+                  "type": "image",
+                  "settings": {
+                    "image": "shopify://shop_images/coffee_timemore_hand_grinder.jpg",
+                    "link": "/collections/brew-gear",
+                    "image_ratio": "square",
+                    "width": "fill",
+                    "custom_width": 100,
+                    "width_mobile": "fill",
+                    "custom_width_mobile": 100,
+                    "height": "fit",
+                    "border": "none",
+                    "border_width": 1,
+                    "border_opacity": 100,
+                    "border_color": "",
+                    "border_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "heading": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<h4>Brew Gear</h4>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "center",
+                    "type_preset": "h4",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.foreground }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "image",
+                "heading"
+              ]
             },
             "merch": {
               "type": "group",
-              "settings": {"content_direction": "column", "gap": 12, "width": "fill"},
-              "blocks": {
-                "image": {"type": "image", "settings": {"image": "shopify://shop_images/canberra_mug_ona_coffee.jpg", "image_ratio": "square", "link": "/collections/merch"}},
-                "heading": {"type": "text", "settings": {"text": "<h4>Merchandise</h4>", "alignment": "center", "type_preset": "h4", "text_color": "{{ settings.color_palette.foreground }}"}}
+              "settings": {
+                "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 12,
+                "width": "fill",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
-              "block_order": ["image", "heading"]
+              "blocks": {
+                "image": {
+                  "type": "image",
+                  "settings": {
+                    "image": "shopify://shop_images/canberra_mug_ona_coffee.jpg",
+                    "link": "/collections/merch",
+                    "image_ratio": "square",
+                    "width": "fill",
+                    "custom_width": 100,
+                    "width_mobile": "fill",
+                    "custom_width_mobile": 100,
+                    "height": "fit",
+                    "border": "none",
+                    "border_width": 1,
+                    "border_opacity": 100,
+                    "border_color": "",
+                    "border_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "heading": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<h4>Merchandise</h4>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "center",
+                    "type_preset": "h4",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.foreground }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "image",
+                "heading"
+              ]
             }
           },
-          "block_order": ["milk", "filter", "espresso", "gear", "merch"]
+          "block_order": [
+            "milk",
+            "filter",
+            "espresso",
+            "gear",
+            "merch"
+          ]
         }
       },
-      "block_order": ["heading", "tiles"]
+      "block_order": [
+        "heading",
+        "tiles"
+      ],
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "center",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 32,
+        "section_width": "page-width",
+        "section_height": "",
+        "section_height_custom": 50,
+        "background_media": "none",
+        "background_color": "{{ settings.color_palette.background }}",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      }
     },
     "coffee_quiz": {
       "type": "coffee-quiz",

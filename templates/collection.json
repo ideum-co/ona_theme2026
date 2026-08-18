@@ -237,10 +237,6 @@
           ]
         }
       },
-      "block_order": [
-        "filters",
-        "category-pills"
-      ],
       "settings": {
         "layout_type": "grid",
         "product_card_size": "medium",
@@ -257,15 +253,6 @@
     },
     "below_fold": {
       "type": "section",
-      "name": "t:names.section",
-      "settings": {
-        "content_direction": "column",
-        "horizontal_alignment_flex_direction_column": "flex-start",
-        "gap": 16,
-        "section_width": "page-width",
-        "padding-block-start": 8,
-        "padding-block-end": 48
-      },
       "blocks": {
         "body": {
           "type": "custom-liquid",
@@ -274,19 +261,21 @@
           }
         }
       },
-      "block_order": ["body"]
-    },
-    "faqs": {
-      "type": "section",
+      "block_order": [
+        "body"
+      ],
       "name": "t:names.section",
       "settings": {
         "content_direction": "column",
-        "horizontal_alignment_flex_direction_column": "center",
+        "horizontal_alignment_flex_direction_column": "flex-start",
         "gap": 16,
         "section_width": "page-width",
         "padding-block-start": 8,
-        "padding-block-end": 64
-      },
+        "padding-block-end": 48
+      }
+    },
+    "faqs": {
+      "type": "section",
       "blocks": {
         "body": {
           "type": "custom-liquid",
@@ -295,7 +284,18 @@
           }
         }
       },
-      "block_order": ["body"]
+      "block_order": [
+        "body"
+      ],
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "column",
+        "horizontal_alignment_flex_direction_column": "center",
+        "gap": 16,
+        "section_width": "page-width",
+        "padding-block-start": 8,
+        "padding-block-end": 64
+      }
     }
   },
   "order": [

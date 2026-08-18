@@ -197,10 +197,6 @@
           ]
         }
       },
-      "block_order": [
-        "filters",
-        "category-pills"
-      ],
       "settings": {
         "layout_type": "grid",
         "product_card_size": "medium",
