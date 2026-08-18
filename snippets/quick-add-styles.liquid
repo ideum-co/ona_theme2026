@@ -34,10 +34,8 @@
     cursor: not-allowed;
   }
 
-  /* Hide "Add" button when "Choose" button is shown.
-     Scoped to the card's own form so it does not reach the add to cart button that
-     `variant-select-modal` renders inside the choose dialog. */
-  [data-quick-add-button='choose'] .quick-add__product-form-component {
+  /* Hide "Add" button when "Choose" button is shown */
+  [data-quick-add-button='choose'] add-to-cart-component {
     display: none;
   }
 

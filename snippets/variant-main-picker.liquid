@@ -58,9 +58,9 @@
           assign swatch_count = product_option.values | map: 'swatch' | compact | size
           assign variant_style = block_settings.variant_style
 
-          # The modal already shows the variant image next to every value, so swatches would
-          # only duplicate it.
-          if swatch_count > 0 and block_settings.show_swatches and block_settings.variant_style != 'modal'
+          # The custom dropdown already shows the variant image next to every value, so swatches
+          # would only duplicate it.
+          if swatch_count > 0 and block_settings.show_swatches and block_settings.variant_style != 'custom_dropdown'
             if block_settings.variant_style == 'dropdown'
               assign variant_style = 'swatch_dropdown'
             else
@@ -176,28 +176,29 @@
             {% endif %}
           </fieldset>
           {%- assign fieldset_index = fieldset_index | plus: 1 -%}
-        {%- elsif block_settings.variant_style == 'modal' -%}
+        {%- elsif block_settings.variant_style == 'custom_dropdown' -%}
           {%- liquid
-            assign dialog_title = 'actions.select_option' | t: option: product_option.name
-            assign trigger_id = 'VariantSelectTrigger-' | append: block.id | append: '-' | append: forloop.index0
+            assign panel_title = 'actions.select_option' | t: option: product_option.name
+            assign unique_id = block.id | append: '-' | append: product_resource.id | append: '-' | append: product_option.position
+            assign trigger_id = 'VariantSelectTrigger-' | append: unique_id
+            assign panel_id = 'VariantSelectPanel-' | append: unique_id
+            assign anchor_name = '--variant-select-trigger-' | append: unique_id | handleize
           -%}
-          <div class="variant-option variant-option--modal">
+          <div class="variant-option variant-option--custom-dropdown">
             <label
               class="variant-select__label"
               for="{{ trigger_id }}"
             >
               {{- product_option.name | escape -}}
             </label>
-            <variant-select-component
-              class="variant-select"
-              data-mode="option"
-            >
+            <variant-select-component class="variant-select">
               <button
                 type="button"
                 id="{{ trigger_id }}"
                 class="variant-select__trigger"
-                on:click="/showDialog"
-                aria-haspopup="dialog"
+                ref="trigger"
+                popovertarget="{{ panel_id }}"
+                style="anchor-name: {{ anchor_name }};"
               >
                 <span class="variant-select__trigger-value">{{ product_option.selected_value }}</span>
                 <span
@@ -215,20 +216,22 @@
                 </span>
               </button>
 
-              <dialog
-                class="variant-select__dialog dialog-modal color-custom-popover"
-                ref="dialog"
-                aria-label="{{ dialog_title | escape }}"
-                on:click="/handleDialogClick"
-                scroll-lock
+              <div
+                id="{{ panel_id }}"
+                class="variant-select__panel"
+                ref="popover"
+                popover="auto"
+                on:click="/handlePanelClick"
+                style="position-anchor: {{ anchor_name }};"
               >
                 <div class="variant-select__header">
-                  <h2 class="variant-select__title">{{ dialog_title }}</h2>
+                  <span class="variant-select__title">{{ panel_title }}</span>
                   <button
                     type="button"
                     class="button button-unstyled variant-select__close"
-                    on:click="/closeDialog"
-                    aria-label="{{ 'accessibility.close_dialog' | t }}"
+                    popovertarget="{{ panel_id }}"
+                    popovertargetaction="hide"
+                    aria-label="{{ 'actions.close' | t }}"
                   >
                     {{- 'icon-close.svg' | inline_asset_content -}}
                   </button>
@@ -241,7 +244,7 @@
                   `fieldset input:checked`.
                 {% endcomment %}
                 <fieldset class="variant-select__list">
-                  <legend class="visually-hidden">{{ dialog_title }}</legend>
+                  <legend class="visually-hidden">{{ panel_title }}</legend>
                   {%- for product_option_value in product_option.values -%}
                     {%- liquid
                       assign value_media = product_option_value.variant.featured_media
@@ -276,17 +279,17 @@
                           data-current-checked="false"
                         {% endif %}
                       >
-                      <span class="variant-select__media">
-                        {%- if value_media != blank -%}
+                      {%- if value_media != blank -%}
+                        <span class="variant-select__media">
                           <img
-                            src="{{ value_media.preview_image | image_url: width: 160 }}"
+                            src="{{ value_media.preview_image | image_url: width: 120 }}"
                             alt="{{ value_media.alt | escape }}"
-                            width="80"
-                            height="100"
+                            width="60"
+                            height="60"
                             loading="lazy"
                           >
-                        {%- endif -%}
-                      </span>
+                        </span>
+                      {%- endif -%}
                       <span class="variant-select__option-text">
                         <span class="variant-select__option-title">{{ product_option_value | escape }}</span>
                         {%- unless product_option_value.available -%}
@@ -300,7 +303,7 @@
                     </label>
                   {%- endfor -%}
                 </fieldset>
-              </dialog>
+              </div>
             </variant-select-component>
           </div>
         {%- elsif block_settings.variant_style == 'dropdowns' -%}
@@ -375,7 +378,6 @@
 
 {% render 'swatch-styles' %}
 {% render 'variant-picker-styles' %}
-{% if block_settings.variant_style == 'modal' %}
-  {% render 'dialog-styles' %}
+{% if block_settings.variant_style == 'custom_dropdown' %}
   {% render 'variant-select-styles' %}
 {% endif %}

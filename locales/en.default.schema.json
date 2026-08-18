@@ -481,6 +481,8 @@
     "cover": "Cover",
     "crop_to_fit": "Crop to fit",
     "custom": "Custom",
+    // Variant picker style: a dropdown panel listing each value with its variant image
+    "custom_dropdown": "Custom dropdown",
     // Icon option representing dairy products
     "dairy": "Dairy",
     // Icon option for dietary restriction indication
