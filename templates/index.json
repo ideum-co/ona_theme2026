@@ -230,7 +230,7 @@
               "type": "variant-picker",
               "name": "t:names.variant_picker",
               "settings": {
-                "variant_style": "modal",
+                "variant_style": "custom_dropdown",
                 "show_swatches": false,
                 "padding-block-start": 0,
                 "padding-block-end": 8

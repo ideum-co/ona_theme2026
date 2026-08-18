@@ -54,14 +54,6 @@
     assign render_add = false
     assign render_choose = true
   endif
-
-  # The custom variant select renders every variant with the card, so it is only worth it while
-  # that list stays small. Bigger products keep the quick-add modal, which fetches the product page.
-  assign variant_select_max_variants = 30
-  assign use_variant_select = false
-  if render_choose and uses_selling_plans == false and product.variants_count <= variant_select_max_variants
-    assign use_variant_select = true
-  endif
 %}
 
 {% render 'fly-to-cart-styles' %}
@@ -136,28 +128,19 @@
   {% endif %}
 
   {% if render_choose %}
-    {% if use_variant_select %}
-      {% render 'variant-select-modal',
-        product: product,
-        section_id: section_id,
-        id_suffix: block.id,
-        choose_text: choose_options_text
-      %}
-    {% else %}
-      <button
-        class="button quick-add__button quick-add__button--choose add-to-cart-button"
-        name="add"
-        on:click="quick-add-component/handleClick"
+    <button
+      class="button quick-add__button quick-add__button--choose add-to-cart-button"
+      name="add"
+      on:click="quick-add-component/handleClick"
+    >
+      <span
+        aria-hidden="true"
+        class="svg-wrapper add-to-cart-icon"
       >
-        <span
-          aria-hidden="true"
-          class="svg-wrapper add-to-cart-icon"
-        >
-          {{- 'icon-add-to-cart.svg' | inline_asset_content -}}
-        </span>
-        {{- choose_options_text -}}
-      </button>
-    {% endif %}
+        {{- 'icon-add-to-cart.svg' | inline_asset_content -}}
+      </span>
+      {{- choose_options_text -}}
+    </button>
   {% endif %}
 </quick-add-component>
 
@@ -165,7 +148,7 @@
 {% render 'checkbox-styles' %}
 {% render 'text-block-styles' %}
 {% render 'price-styles' %}
-{% if render_choose and use_variant_select == false %}
+{% if render_choose %}
   {% render 'variant-picker-styles' %}
 {% endif %}
 {% render 'quick-add-styles' %}
