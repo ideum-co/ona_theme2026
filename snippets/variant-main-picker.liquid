@@ -188,36 +188,41 @@
             assign anchor_name = '--variant-select-trigger-' | append: anchor_slug
           -%}
           <div class="variant-option variant-option--custom-dropdown">
-            <label
-              class="variant-select__label"
-              for="{{ trigger_id }}"
-            >
-              {{- product_option.name | escape -}}
-            </label>
             <variant-select-component class="variant-select">
-              <button
-                type="button"
-                id="{{ trigger_id }}"
-                class="variant-select__trigger"
+              {% comment %}
+                A real fieldset/legend, so the browser cuts the notch out of the border itself.
+                Faking it with a background-coloured span would break on any card whose background
+                is not the page background. The anchor and the trigger ref sit on the fieldset
+                rather than the button so the panel lines up with the outer box.
+              {% endcomment %}
+              <fieldset
+                class="variant-select__field"
                 ref="trigger"
-                popovertarget="{{ panel_id }}"
                 style="anchor-name: {{ anchor_name }};"
               >
-                <span class="variant-select__trigger-value">{{ product_option.selected_value }}</span>
-                <span
-                  aria-hidden="true"
-                  class="variant-select__trigger-icon"
+                <legend class="variant-select__legend">{{ panel_title }}</legend>
+                <button
+                  type="button"
+                  id="{{ trigger_id }}"
+                  class="variant-select__trigger"
+                  popovertarget="{{ panel_id }}"
                 >
-                  <svg
+                  <span class="variant-select__trigger-value">{{ product_option.selected_value }}</span>
+                  <span
                     aria-hidden="true"
-                    focusable="false"
-                    class="icon icon-caret"
-                    viewBox="0 0 10 6"
+                    class="variant-select__trigger-icon"
                   >
-                    {%- render 'icon', icon: 'caret' -%}
-                  </svg>
-                </span>
-              </button>
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      class="icon icon-caret"
+                      viewBox="0 0 10 6"
+                    >
+                      {%- render 'icon', icon: 'caret' -%}
+                    </svg>
+                  </span>
+                </button>
+              </fieldset>
 
               <div
                 id="{{ panel_id }}"
