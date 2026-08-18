@@ -182,7 +182,10 @@
             assign unique_id = block.id | append: '-' | append: product_resource.id | append: '-' | append: product_option.position
             assign trigger_id = 'VariantSelectTrigger-' | append: unique_id
             assign panel_id = 'VariantSelectPanel-' | append: unique_id
-            assign anchor_name = '--variant-select-trigger-' | append: unique_id | handleize
+            # handleize goes on the suffix alone: run over the whole string it strips the leading
+            # dashes, and `anchor-name` needs a dashed-ident or the anchor is silently ignored.
+            assign anchor_slug = unique_id | handleize
+            assign anchor_name = '--variant-select-trigger-' | append: anchor_slug
           -%}
           <div class="variant-option variant-option--custom-dropdown">
             <label
