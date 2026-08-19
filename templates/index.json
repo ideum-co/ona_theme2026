@@ -737,6 +737,72 @@
         "padding-block-end": 120
       }
     },
+    "club_invite_QLL4T3": {
+      "type": "club-invite",
+      "blocks": {
+        "feature_VTcjbJ": {
+          "type": "feature",
+          "settings": {
+            "label": "Freshly roasted"
+          }
+        },
+        "feature_NAcjAF": {
+          "type": "feature",
+          "settings": {
+            "label": "Freshly roasted"
+          }
+        },
+        "feature_RLWjLd": {
+          "type": "feature",
+          "settings": {
+            "label": "Freshly roasted"
+          }
+        }
+      },
+      "block_order": [
+        "feature_VTcjbJ",
+        "feature_NAcjAF",
+        "feature_RLWjLd"
+      ],
+      "name": "t:names.club_invite",
+      "settings": {
+        "heading": "Join the <em>club</em>",
+        "body": "<p>Freshly roasted coffee delivered on your schedule.<br/>Choose your favourites, delivery anytime, and discover new coffees as they're released.</p>",
+        "button_label": "Explore subscriptions",
+        "button_link": "",
+        "button_background": "#751132",
+        "button_text": "#f5f4ea",
+        "background_media": "image",
+        "overlay_color": "#000000",
+        "overlay_opacity": 35,
+        "text_color": "#ffffff",
+        "section_height": "80svh",
+        "padding-block-start": 120,
+        "padding-block-end": 120
+      }
+    },
+    "product_intro_k9p6yn": {
+      "type": "product-intro",
+      "name": "t:names.product_intro",
+      "settings": {
+        "product": "instant-coffee-candy",
+        "eyebrow": "Introducing",
+        "wordmark_text": "Raspberry Candy",
+        "wordmark_color": "#d9a441",
+        "heading": "The <em>sweet</em> spot.",
+        "body": "",
+        "primary_label": "Shop now",
+        "primary_link": "",
+        "secondary_label": "Subscribe & Save",
+        "secondary_link": "",
+        "button_background": "#f5f4ea",
+        "button_text": "#751132",
+        "background_color": "#e488b0",
+        "text_color": "#f5f4ea",
+        "padding-block-start": 120,
+        "padding-block-end": 120
+      }
+    },
     "club_benefits": {
       "type": "section",
       "blocks": {
@@ -1076,6 +1142,7 @@
         "testimonials",
         "cta"
       ],
+      "disabled": true,
       "name": "t:names.section",
       "settings": {
         "content_direction": "column",
@@ -3135,6 +3202,8 @@
     "coffee_spotlight",
     "special_release",
     "product_highlight_KkUAVM",
+    "club_invite_QLL4T3",
+    "product_intro_k9p6yn",
     "club_benefits",
     "raspberry_candy",
     "good_coffee_delivered",
