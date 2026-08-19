@@ -1,0 +1,232 @@
+{%- liquid
+  assign settings = section.settings
+
+  assign show_arrows = false
+  if settings.icons_style != 'none' and section.blocks.size > settings.columns
+    assign show_arrows = true
+  endif
+-%}
+
+{%- capture slides -%}
+  {%- for block in section.blocks -%}
+    {%- capture slide_content -%}
+      <figure
+        class="press-quotes__item"
+        {{ block.shopify_attributes }}
+      >
+        {%- if block.settings.logo != blank -%}
+          {{
+            block.settings.logo
+            | image_url: width: 600
+            | image_tag: widths: '150, 300, 450, 600', sizes: '(min-width: 750px) 20vw, 60vw', loading: 'lazy', class: 'press-quotes__logo'
+          }}
+        {%- elsif block.settings.source != blank -%}
+          <p class="press-quotes__source">{{ block.settings.source }}</p>
+        {%- endif -%}
+
+        {%- if block.settings.quote != blank -%}
+          <blockquote class="press-quotes__quote">{{ block.settings.quote }}</blockquote>
+        {%- endif -%}
+      </figure>
+    {%- endcapture -%}
+    {%- render 'slideshow-slide',
+      index: forloop.index0,
+      children: slide_content,
+      class: 'press-quotes__slide'
+    -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+<div
+  class="press-quotes"
+  style="
+    --press-quotes-background: {{ settings.background_color }};
+    --press-quotes-color: {{ settings.text_color }};
+    --press-quotes-columns: {{ settings.columns }};
+    --press-quotes-padding-block-start: {{ settings.padding-block-start }}px;
+    --press-quotes-padding-block-end: {{ settings.padding-block-end }}px;
+  "
+  {{ section.shopify_attributes }}
+>
+  {%- if section.blocks.size > 0 -%}
+    {%- render 'slideshow',
+      ref: 'pressQuotes',
+      class: 'press-quotes__carousel',
+      slides: slides,
+      slide_count: section.blocks.size,
+      show_arrows: show_arrows,
+      icon_style: settings.icons_style,
+      icon_shape: 'none',
+      auto_hide_controls: true,
+      infinite: false,
+      initial_slide: 0
+    -%}
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .press-quotes {
+    --slide-width: calc(100% / var(--press-quotes-columns, 3));
+
+    padding-block: var(--press-quotes-padding-block-start) var(--press-quotes-padding-block-end);
+    padding-inline: var(--page-margin, 1rem);
+    background: var(--press-quotes-background);
+    color: var(--press-quotes-color);
+
+    @media screen and (max-width: 749px) {
+      --slide-width: 100%;
+    }
+  }
+
+  .press-quotes__carousel {
+    inline-size: 100%;
+  }
+
+  .press-quotes__item {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: var(--gap-xl);
+    margin: 0;
+    padding-inline: var(--padding-lg);
+    text-align: center;
+  }
+
+  .press-quotes__logo {
+    max-inline-size: min(100%, 12rem);
+    max-block-size: 3rem;
+    inline-size: auto;
+    block-size: auto;
+    object-fit: contain;
+  }
+
+  .press-quotes__source {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--font-h5--size, var(--font-size--xl));
+  }
+
+  .press-quotes__quote {
+    margin: 0;
+    font-size: var(--font-size--sm);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.press_quotes",
+  "tag": "section",
+  "blocks": [
+    {
+      "type": "quote",
+      "name": "t:names.press_quote",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "logo",
+          "label": "t:settings.image"
+        },
+        {
+          "type": "text",
+          "id": "source",
+          "label": "t:settings.title"
+        },
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "t:settings.text"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:settings.columns",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "icons_style",
+      "label": "t:settings.icon",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.none"
+        },
+        {
+          "value": "arrow",
+          "label": "t:options.arrow"
+        },
+        {
+          "value": "chevron",
+          "label": "t:options.chevron"
+        }
+      ],
+      "default": "arrow"
+    },
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "default": "#751132"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "default": "#f5f4ea"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.press_quotes",
+      "blocks": [
+        {
+          "type": "quote"
+        },
+        {
+          "type": "quote"
+        },
+        {
+          "type": "quote"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

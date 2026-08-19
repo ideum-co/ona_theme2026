@@ -9,6 +9,12 @@
  */
 {
   "names": {
+    "press_quote": "คำอ้างอิง",
+    "press_quotes": "คำวิจารณ์จากสื่อ",
+    "product_intro": "แนะนำสินค้า",
+    "club_invite_feature": "จุดเด่น",
+    "club_invite": "คำเชิญเข้าคลับ",
+    "product_highlight": "รุ่นพิเศษ",
     "product_highlight_spec": "รายละเอียด",
     "404": "404",
     "colors": "จานสี",
@@ -865,6 +871,7 @@
     "input_field": "ช่องกรอกข้อมูล"
   },
   "content": {
+    "wordmark": "โลโก้ตัวอักษร",
     "advanced": "ขั้นสูง",
     "background_image": "รูปภาพพื้นหลัง",
     "background_video": "วิดีโอพื้นหลัง",
@@ -1088,6 +1095,9 @@
     "disclosures": "การเปิดเผยข้อมูล"
   },
   "info": {
+    "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
+    "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
+    "club_invite_badge": "Sits beside the heading, tucked under it.",
     "product_highlight_image": "หากเว้นว่างไว้ จะใช้ภาพเด่นของสินค้า",
     "product_highlight_description": "หากเว้นว่างไว้ จะใช้คำอธิบายของสินค้าเอง",
     "video_alt_text": "โปรดอธิบายวิดีโอสำหรับผู้ใช้เทคโนโลยีความช่วยเหลือพิเศษ",

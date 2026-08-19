@@ -30,6 +30,7 @@
     "text": "טקסט"
   },
   "content": {
+    "wordmark": "לוגו טקסטואלי",
     "visible_if_collection_has_more_products": "גלוי אם באוסף יש יותר מוצרים ממה שמוצג",
     "advanced": "מתקדם",
     "appearance": "מראה",
@@ -215,6 +216,9 @@
     "work_quickly_to_ship": "<p>נעבוד מהר כדי לשלוח את ההזמנה שלך בהקדם האפשרי. לאחר שההזמנה שלך תישלח, תקבל דוא&quot;ל עם מידע נוסף. זמני האספקה משתנים בהתאם למיקומך.</p>"
   },
   "info": {
+    "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
+    "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
+    "club_invite_badge": "Sits beside the heading, tucked under it.",
     "product_highlight_image": "אם השדה ריק, נעשה שימוש בתמונה הראשית של המוצר.",
     "product_highlight_description": "אם השדה ריק, נעשה שימוש בתיאור המוצר.",
     "actions_display_style": "תמיד נעשה שימוש בסמלים בנייד",
@@ -246,6 +250,12 @@
     "media_type_info": "התכונות מאוכלסות מקישורי התפריט שלך"
   },
   "names": {
+    "press_quote": "ציטוט",
+    "press_quotes": "ציטוטי עיתונות",
+    "product_intro": "הצגת מוצר",
+    "club_invite_feature": "תכונה",
+    "club_invite": "הזמנה למועדון",
+    "product_highlight": "מהדורה מיוחדת",
     "product_highlight_spec": "פרט",
     "column": "עמודה",
     "product_title": "כותרת מוצר",

@@ -9,6 +9,12 @@
  */
 {
   "names": {
+    "press_quote": "Citação",
+    "press_quotes": "Citações da imprensa",
+    "product_intro": "Apresentação do produto",
+    "club_invite_feature": "Destaque",
+    "club_invite": "Convite do clube",
+    "product_highlight": "Lançamento especial",
     "product_highlight_spec": "Detalhe",
     "404": "404",
     "colors": "Paleta de cores",
@@ -865,6 +871,7 @@
     "input_field": "Campo de introdução"
   },
   "content": {
+    "wordmark": "Logótipo",
     "advanced": "Avançado",
     "background_image": "Imagem de fundo",
     "background_video": "Vídeo de fundo",
@@ -1088,6 +1095,9 @@
     "disclosures": "Divulgações"
   },
   "info": {
+    "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
+    "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
+    "club_invite_badge": "Sits beside the heading, tucked under it.",
     "product_highlight_image": "Se ficar vazio, usa a imagem em destaque do produto.",
     "product_highlight_description": "Se ficar vazio, usa a descrição do próprio produto.",
     "video_alt_text": "Descreva o vídeo para utilizadores de tecnologia de apoio",

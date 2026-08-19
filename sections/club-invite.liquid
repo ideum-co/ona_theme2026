@@ -1,0 +1,384 @@
+{%- liquid
+  assign settings = section.settings
+  assign has_media = false
+  if settings.background_media == 'video' and settings.background_video != blank
+    assign has_media = true
+  elsif settings.background_media == 'image' and settings.background_image != blank
+    assign has_media = true
+  endif
+-%}
+
+<div
+  class="club-invite"
+  style="
+    --club-invite-color: {{ settings.text_color }};
+    --club-invite-overlay: rgba({{ settings.overlay_color.rgb }} / {{ settings.overlay_opacity | divided_by: 100.0 }});
+    --club-invite-min-height: {{ settings.section_height }};
+    --club-invite-padding-block-start: {{ settings.padding-block-start }}px;
+    --club-invite-padding-block-end: {{ settings.padding-block-end }}px;
+    --club-invite-button-background: {{ settings.button_background }};
+    --club-invite-button-color: {{ settings.button_text }};
+  "
+  {{ section.shopify_attributes }}
+>
+  {%- if has_media -%}
+    <div class="club-invite__media">
+      {%- render 'background-media',
+        background_media: settings.background_media,
+        background_video: settings.background_video,
+        background_video_position: 'cover',
+        background_image: settings.background_image,
+        background_image_position: 'cover',
+        section: section
+      -%}
+    </div>
+  {%- endif -%}
+
+  <div
+    class="club-invite__overlay"
+    aria-hidden="true"
+  ></div>
+
+  <div class="club-invite__content">
+    <div class="club-invite__lockup">
+      {%- if settings.badge != blank -%}
+        {{
+          settings.badge
+          | image_url: width: 400
+          | image_tag: widths: '120, 200, 300, 400', sizes: '160px', loading: 'lazy', class: 'club-invite__badge'
+        }}
+      {%- endif -%}
+
+      {%- if settings.heading != blank -%}
+        <h2 class="club-invite__heading">{{ settings.heading }}</h2>
+      {%- endif -%}
+    </div>
+
+    {%- if settings.body != blank -%}
+      <div class="club-invite__body rte">{{ settings.body }}</div>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <ul class="club-invite__features">
+        {%- for block in section.blocks -%}
+          {%- if block.settings.label != blank -%}
+            <li
+              class="club-invite__feature"
+              {{ block.shopify_attributes }}
+            >
+              {{- block.settings.label -}}
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if settings.button_label != blank -%}
+      <a
+        class="button club-invite__button"
+        {% if settings.button_link != blank %}
+          href="{{ settings.button_link }}"
+        {% endif %}
+      >
+        {{- settings.button_label -}}
+      </a>
+    {%- endif -%}
+  </div>
+</div>
+
+{% stylesheet %}
+  .club-invite {
+    position: relative;
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    min-block-size: var(--club-invite-min-height, 80svh);
+    padding-block: var(--club-invite-padding-block-start) var(--club-invite-padding-block-end);
+    padding-inline: var(--page-margin, 1rem);
+    color: var(--club-invite-color, var(--color-background));
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .club-invite__media,
+  .club-invite__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+
+  .club-invite__media :is(img, video) {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  .club-invite__overlay {
+    background: var(--club-invite-overlay);
+  }
+
+  .club-invite__content {
+    display: grid;
+    justify-items: center;
+    gap: var(--gap-xl);
+    text-align: center;
+    max-inline-size: 46rem;
+  }
+
+  /* The badge sits beside the heading and tucks under it, as in the design. */
+  .club-invite__lockup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .club-invite__badge {
+    inline-size: clamp(5rem, 10vw, 8rem);
+    block-size: auto;
+    margin-inline-end: -1.5rem;
+    flex: none;
+  }
+
+  .club-invite__heading {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--font-h1--size);
+    font-weight: var(--font-heading--weight);
+  }
+
+  .club-invite__body {
+    display: grid;
+    gap: var(--gap-sm);
+    font-size: var(--font-size--md);
+  }
+
+  .club-invite__body :is(p, ul, ol) {
+    margin: 0;
+  }
+
+  .club-invite__features {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--gap-lg);
+    margin: 0;
+    padding: var(--padding-sm) var(--padding-2xl);
+    list-style: none;
+    border: 1px solid currentcolor;
+    border-radius: 999px;
+    font-size: var(--font-size--sm);
+  }
+
+  /* An em dash between items, drawn rather than typed so it never lands at the end of a wrap. */
+  .club-invite__feature + .club-invite__feature::before {
+    content: '';
+    display: inline-block;
+    inline-size: 1.5rem;
+    block-size: 1px;
+    margin-inline-end: var(--gap-lg);
+    vertical-align: middle;
+    background: currentcolor;
+  }
+
+  .club-invite__button.button {
+    --button-background-color: var(--club-invite-button-background);
+    --button-color: var(--club-invite-button-color);
+
+    justify-content: center;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.club_invite",
+  "tag": "section",
+  "blocks": [
+    {
+      "type": "feature",
+      "name": "t:names.club_invite_feature",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "t:settings.label",
+          "default": "Freshly roasted"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 5,
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "badge",
+      "label": "t:settings.image",
+      "info": "t:info.club_invite_badge"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "t:settings.heading",
+      "default": "Join the <em>club</em>"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "t:settings.description"
+    },
+    {
+      "type": "header",
+      "content": "t:content.buttons"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:settings.label",
+      "default": "Explore subscriptions"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "t:settings.link"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "t:settings.background",
+      "default": "#751132"
+    },
+    {
+      "type": "color",
+      "id": "button_text",
+      "label": "t:settings.text",
+      "default": "#f5f4ea"
+    },
+    {
+      "type": "header",
+      "content": "t:content.media"
+    },
+    {
+      "type": "select",
+      "id": "background_media",
+      "label": "t:settings.media_type",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.none"
+        },
+        {
+          "value": "image",
+          "label": "t:options.image"
+        },
+        {
+          "value": "video",
+          "label": "t:options.video"
+        }
+      ],
+      "default": "image"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "t:settings.image",
+      "visible_if": "{{ section.settings.background_media == 'image' }}"
+    },
+    {
+      "type": "video",
+      "id": "background_video",
+      "label": "t:settings.video",
+      "visible_if": "{{ section.settings.background_media == 'video' }}"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "t:settings.overlay_color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "t:settings.opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 35
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "section_height",
+      "label": "t:settings.height",
+      "options": [
+        {
+          "value": "auto",
+          "label": "t:options.auto"
+        },
+        {
+          "value": "60svh",
+          "label": "t:options.small"
+        },
+        {
+          "value": "80svh",
+          "label": "t:options.medium"
+        },
+        {
+          "value": "100svh",
+          "label": "t:options.full_screen"
+        }
+      ],
+      "default": "80svh"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.club_invite",
+      "blocks": [
+        {
+          "type": "feature"
+        },
+        {
+          "type": "feature"
+        },
+        {
+          "type": "feature"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

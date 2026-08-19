@@ -9,6 +9,12 @@
  */
 {
   "names": {
+    "press_quote": "Citation",
+    "press_quotes": "Citations de presse",
+    "product_intro": "Présentation du produit",
+    "club_invite_feature": "Atout",
+    "club_invite": "Invitation au club",
+    "product_highlight": "Édition spéciale",
     "product_highlight_spec": "Détail",
     "404": "404",
     "custom_section": "Section personnalisée",
@@ -865,6 +871,7 @@
     "input_field": "Champ de saisie"
   },
   "content": {
+    "wordmark": "Logotype",
     "background_video": "Vidéo de fond",
     "describe_the_video_for": "Décrivez la vidéo pour les clients utilisant des lecteurs d’écran. [En savoir plus](https://help.shopify.com/manual/online-store/themes/theme-structure/theme-features#video-block)",
     "width_is_automatically_optimized": "La largeur est automatiquement optimisée pour les appareils mobiles.",
@@ -1088,6 +1095,9 @@
     "disclosures": "Divulgations"
   },
   "info": {
+    "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
+    "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
+    "club_invite_badge": "Sits beside the heading, tucked under it.",
     "product_highlight_image": "Utilise l'image principale du produit si le champ est vide.",
     "product_highlight_description": "Utilise la description du produit si le champ est vide.",
     "carousel_layout_on_mobile": "Le carrousel est toujours utilisé sur mobile",

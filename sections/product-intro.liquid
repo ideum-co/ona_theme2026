@@ -1,0 +1,354 @@
+{%- liquid
+  assign settings = section.settings
+  assign product = settings.product
+
+  assign image = settings.image
+  if image == blank
+    assign image = product.featured_media.preview_image
+  endif
+
+  assign body = settings.body
+  if body == blank
+    assign body = product.description
+  endif
+
+  assign primary_link = settings.primary_link
+  if primary_link == blank
+    assign primary_link = product.url
+  endif
+-%}
+
+<div
+  class="product-intro"
+  style="
+    --product-intro-background: {{ settings.background_color }};
+    --product-intro-color: {{ settings.text_color }};
+    --product-intro-wordmark-color: {{ settings.wordmark_color }};
+    --product-intro-button-background: {{ settings.button_background }};
+    --product-intro-button-color: {{ settings.button_text }};
+    --product-intro-padding-block-start: {{ settings.padding-block-start }}px;
+    --product-intro-padding-block-end: {{ settings.padding-block-end }}px;
+    {% if settings.background_image != blank %}
+      --product-intro-background-image: url({{ settings.background_image | image_url: width: 2400 }});
+    {% endif %}
+  "
+  {{ section.shopify_attributes }}
+>
+  <div class="product-intro__wordmark">
+    {%- if settings.eyebrow != blank -%}
+      <p class="product-intro__eyebrow">{{ settings.eyebrow }}</p>
+    {%- endif -%}
+
+    {%- if settings.wordmark_image != blank -%}
+      {{
+        settings.wordmark_image
+        | image_url: width: 1200
+        | image_tag: widths: '300, 600, 900, 1200', sizes: '(min-width: 750px) 30vw, 80vw', loading: 'lazy', class: 'product-intro__wordmark-image'
+      }}
+    {%- elsif settings.wordmark_text != blank -%}
+      <p class="product-intro__wordmark-text">{{ settings.wordmark_text }}</p>
+    {%- endif -%}
+  </div>
+
+  <div class="product-intro__media">
+    {%- if image != blank -%}
+      {{
+        image
+        | image_url: width: 1400
+        | image_tag: widths: '400, 700, 1000, 1400', sizes: '(min-width: 750px) 34vw, 80vw', loading: 'lazy', class: 'product-intro__image'
+      }}
+    {%- endif -%}
+  </div>
+
+  <div class="product-intro__details">
+    {%- if settings.heading != blank -%}
+      <h2 class="product-intro__heading">{{ settings.heading }}</h2>
+    {%- endif -%}
+
+    {%- if body != blank -%}
+      <div class="product-intro__body rte">{{ body }}</div>
+    {%- endif -%}
+
+    {%- if settings.primary_label != blank or settings.secondary_label != blank -%}
+      <div class="product-intro__buttons">
+        {%- if settings.primary_label != blank -%}
+          <a
+            class="button product-intro__button"
+            {% if primary_link != blank %}
+              href="{{ primary_link }}"
+            {% endif %}
+          >
+            {{- settings.primary_label -}}
+          </a>
+        {%- endif -%}
+
+        {%- if settings.secondary_label != blank -%}
+          <a
+            class="button product-intro__button"
+            {% if settings.secondary_link != blank %}
+              href="{{ settings.secondary_link }}"
+            {% endif %}
+          >
+            {{- settings.secondary_label -}}
+          </a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% stylesheet %}
+  .product-intro {
+    display: grid;
+    gap: var(--gap-2xl);
+    align-items: center;
+    padding-block: var(--product-intro-padding-block-start) var(--product-intro-padding-block-end);
+    padding-inline: var(--page-margin, 1rem);
+    background-color: var(--product-intro-background);
+    background-image: var(--product-intro-background-image, none);
+    background-size: cover;
+    background-position: center;
+    color: var(--product-intro-color);
+
+    @media screen and (min-width: 750px) {
+      grid-template-columns: 1fr minmax(0, 1.1fr) 1fr;
+    }
+  }
+
+  /* On mobile the pack shot leads, as it carries the product. */
+  .product-intro__media {
+    order: -1;
+
+    @media screen and (min-width: 750px) {
+      order: 0;
+    }
+  }
+
+  .product-intro__image {
+    inline-size: 100%;
+    block-size: auto;
+    display: block;
+  }
+
+  .product-intro__wordmark {
+    display: grid;
+    gap: var(--gap-sm);
+    justify-items: start;
+  }
+
+  .product-intro__eyebrow {
+    margin: 0;
+    font-size: var(--font-size--sm);
+  }
+
+  .product-intro__wordmark-image {
+    inline-size: 100%;
+    block-size: auto;
+    display: block;
+  }
+
+  .product-intro__wordmark-text {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--font-h1--size);
+    line-height: 1.05;
+    color: var(--product-intro-wordmark-color, currentcolor);
+  }
+
+  .product-intro__details {
+    display: grid;
+    gap: var(--gap-lg);
+    justify-items: start;
+    max-inline-size: 28rem;
+  }
+
+  .product-intro__heading {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--font-h2--size);
+    font-weight: var(--font-heading--weight);
+  }
+
+  .product-intro__body {
+    display: grid;
+    gap: var(--gap-sm);
+    font-size: var(--font-size--sm);
+  }
+
+  .product-intro__body :is(p, ul, ol) {
+    margin: 0;
+  }
+
+  .product-intro__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-sm);
+  }
+
+  /* The pair shares one row and only wraps when the column is genuinely too narrow. A fixed
+     min-width made them stack at the design's own column widths. */
+  .product-intro__button.button {
+    --button-background-color: var(--product-intro-button-background);
+    --button-color: var(--product-intro-button-color);
+
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    justify-content: center;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.product_intro",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "t:settings.product"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:settings.eyebrow",
+      "default": "Introducing"
+    },
+    {
+      "type": "header",
+      "content": "t:content.wordmark"
+    },
+    {
+      "type": "image_picker",
+      "id": "wordmark_image",
+      "label": "t:settings.image",
+      "info": "t:info.product_intro_wordmark"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "wordmark_text",
+      "label": "t:settings.text"
+    },
+    {
+      "type": "color",
+      "id": "wordmark_color",
+      "label": "t:settings.color",
+      "default": "#d9a441"
+    },
+    {
+      "type": "header",
+      "content": "t:content.text"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "t:settings.heading",
+      "default": "The <em>sweet</em> spot."
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "t:settings.description",
+      "info": "t:info.product_highlight_description"
+    },
+    {
+      "type": "header",
+      "content": "t:content.buttons"
+    },
+    {
+      "type": "text",
+      "id": "primary_label",
+      "label": "t:settings.label",
+      "default": "Shop now"
+    },
+    {
+      "type": "url",
+      "id": "primary_link",
+      "label": "t:settings.link",
+      "info": "t:info.product_intro_primary_link"
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "t:settings.label",
+      "default": "Subscribe & Save"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "t:settings.link"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "t:settings.background",
+      "default": "#f5f4ea"
+    },
+    {
+      "type": "color",
+      "id": "button_text",
+      "label": "t:settings.text",
+      "default": "#751132"
+    },
+    {
+      "type": "header",
+      "content": "t:content.media"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:settings.image",
+      "info": "t:info.product_highlight_image"
+    },
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "default": "#e488b0"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "t:settings.background_image"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "default": "#f5f4ea"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.product_intro"
+    }
+  ]
+}
+{% endschema %}

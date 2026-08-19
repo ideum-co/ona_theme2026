@@ -9,6 +9,12 @@
  */
 {
   "names": {
+    "press_quote": "Sitat",
+    "press_quotes": "Pressesitater",
+    "product_intro": "Produktintroduksjon",
+    "club_invite_feature": "Funksjon",
+    "club_invite": "Klubbinvitasjon",
+    "product_highlight": "Spesialutgivelse",
     "product_highlight_spec": "Detalj",
     "404": "404",
     "colors": "Fargepalett",
@@ -865,6 +871,7 @@
     "input_field": "Inndatafelt"
   },
   "content": {
+    "wordmark": "Ordmerke",
     "advanced": "Avansert",
     "background_image": "Bakgrunnsbilde",
     "background_video": "Bakgrunnsvideo",
@@ -1088,6 +1095,9 @@
     "disclosures": "Opplysninger"
   },
   "info": {
+    "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
+    "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
+    "club_invite_badge": "Sits beside the heading, tucked under it.",
     "product_highlight_image": "Bruker produktets fremhevede bilde hvis feltet er tomt.",
     "product_highlight_description": "Bruker produktets egen beskrivelse hvis feltet er tomt.",
     "carousel_layout_on_mobile": "Karusell brukes alltid på mobil",

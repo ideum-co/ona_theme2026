@@ -9,6 +9,12 @@
  */
 {
   "names": {
+    "press_quote": "引用",
+    "press_quotes": "メディア掲載",
+    "product_intro": "商品紹介",
+    "club_invite_feature": "特長",
+    "club_invite": "クラブ案内",
+    "product_highlight": "スペシャルリリース",
     "product_highlight_spec": "詳細",
     "404": "404",
     "colors": "カラーパレット",
@@ -865,6 +871,7 @@
     "input_field": "入力フィールド"
   },
   "content": {
+    "wordmark": "ワードマーク",
     "advanced": "高度な設定",
     "background_image": "背景画像",
     "background_video": "背景動画",
@@ -1088,6 +1095,9 @@
     "disclosures": "開示情報"
   },
   "info": {
+    "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
+    "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
+    "club_invite_badge": "Sits beside the heading, tucked under it.",
     "product_highlight_image": "空欄の場合は商品のメイン画像を使用します。",
     "product_highlight_description": "空欄の場合は商品自体の説明を使用します。",
     "video_alt_text": "支援技術のユーザーのために動画の説明を記述します",

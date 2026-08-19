@@ -9,6 +9,12 @@
  */
 {
   "names": {
+    "press_quote": "Cytat",
+    "press_quotes": "Cytaty prasowe",
+    "product_intro": "Prezentacja produktu",
+    "club_invite_feature": "Cecha",
+    "club_invite": "Zaproszenie do klubu",
+    "product_highlight": "Wydanie specjalne",
     "product_highlight_spec": "Szczegół",
     "404": "404",
     "custom_section": "Sekcja niestandardowa",
@@ -865,6 +871,7 @@
     "input_field": "Pole wprowadzania"
   },
   "content": {
+    "wordmark": "Logotyp",
     "background_video": "Wideo w tle",
     "describe_the_video_for": "Opisz film dla klientów korzystających z czytników ekranu. [Dowiedz się więcej](https://help.shopify.com/manual/online-store/themes/theme-structure/theme-features#video-block)",
     "width_is_automatically_optimized": "Szerokość jest automatycznie optymalizowana pod kątem urządzeń mobilnych.",
@@ -1088,6 +1095,9 @@
     "disclosures": "Informacje prawne"
   },
   "info": {
+    "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
+    "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
+    "club_invite_badge": "Sits beside the heading, tucked under it.",
     "product_highlight_image": "Jeśli pole jest puste, używany jest obraz główny produktu.",
     "product_highlight_description": "Jeśli pole jest puste, używany jest opis produktu.",
     "video_alt_text": "Opisz wideo dla użytkowników technologii wspomagających",

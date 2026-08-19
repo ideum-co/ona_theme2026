@@ -9,6 +9,12 @@
  */
 {
   "names": {
+    "press_quote": "Cita",
+    "press_quotes": "Citas de prensa",
+    "product_intro": "Presentación de producto",
+    "club_invite_feature": "Característica",
+    "club_invite": "Invitación al club",
+    "product_highlight": "Lanzamiento especial",
     "product_highlight_spec": "Detalle",
     "404": "404",
     "colors": "Paleta de colores",
@@ -865,6 +871,7 @@
     "input_field": "Campo de entrada"
   },
   "content": {
+    "wordmark": "Logotipo tipográfico",
     "advanced": "Avanzado",
     "background_image": "Imagen de fondo",
     "background_video": "Video de fondo",
@@ -1088,6 +1095,9 @@
     "disclosures": "Divulgaciones"
   },
   "info": {
+    "product_intro_primary_link": "Si se deja vacío, usa la URL del propio producto.",
+    "product_intro_wordmark": "Tiene prioridad sobre el texto del logotipo cuando se definen ambos.",
+    "club_invite_badge": "Se coloca junto al título, superpuesto por debajo.",
     "product_highlight_image": "Si se deja vacío, usa la imagen destacada del producto.",
     "product_highlight_description": "Si se deja vacío, usa la descripción del propio producto.",
     "carousel_layout_on_mobile": "En dispositivos móviles siempre se usa el carrusel",

@@ -9,6 +9,12 @@
  */
 {
   "names": {
+    "press_quote": "引用",
+    "press_quotes": "媒体评价",
+    "product_intro": "商品介绍",
+    "club_invite_feature": "特点",
+    "club_invite": "俱乐部邀请",
+    "product_highlight": "特别发布",
     "product_highlight_spec": "详细信息",
     "404": "404",
     "colors": "调色板",
@@ -865,6 +871,7 @@
     "input_field": "输入字段"
   },
   "content": {
+    "wordmark": "文字标志",
     "advanced": "高级",
     "background_image": "背景图片",
     "background_video": "背景视频",
@@ -1088,6 +1095,9 @@
     "disclosures": "披露信息"
   },
   "info": {
+    "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
+    "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
+    "club_invite_badge": "Sits beside the heading, tucked under it.",
     "product_highlight_image": "留空时使用商品的主图。",
     "product_highlight_description": "留空时使用商品自身的描述。",
     "video_alt_text": "为使用辅助技术的用户描述视频",
