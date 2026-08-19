@@ -27,6 +27,7 @@
             "letter_spacing": "normal",
             "case": "none",
             "wrap": "pretty",
+            "text_color": "",
             "background": false,
             "background_color": "#00000026",
             "corner_radius": 0,
@@ -78,6 +79,7 @@
         "section_height": "",
         "section_height_custom": 50,
         "background_media": "none",
+        "background_color": "",
         "video_position": "cover",
         "background_image_position": "cover",
         "toggle_overlay": false,
@@ -87,6 +89,7 @@
         "border": "none",
         "border_width": 1,
         "border_opacity": 100,
+        "border_color": "",
         "border_radius": 0,
         "padding-block-start": 48,
         "padding-block-end": 48
@@ -107,6 +110,8 @@
             "show_filter_label": false,
             "enable_sorting": true,
             "enable_grid_density": true,
+            "background_color": "",
+            "text_color": "",
             "padding-block-start": 8,
             "padding-block-end": 8,
             "padding-inline-start": 0,
@@ -130,9 +135,11 @@
           "static": true,
           "settings": {
             "product_card_gap": 4,
+            "background_color": "",
             "border": "none",
             "border_width": 1,
             "border_opacity": 100,
+            "border_color": "",
             "border_radius": 0,
             "padding-block-start": 0,
             "padding-block-end": 0,
@@ -147,10 +154,11 @@
                 "border": "none",
                 "border_width": 1,
                 "border_opacity": 100,
+                "border_color": "",
                 "border_radius": 0,
-                "padding-block-start": 0,
-                "padding-block-end": 0,
-                "padding-inline-start": 0,
+                "padding-block-start": 20,
+                "padding-block-end": 20,
+                "padding-inline-start": 20,
                 "padding-inline-end": 0
               },
               "blocks": {}
@@ -169,6 +177,7 @@
                 "letter_spacing": "normal",
                 "case": "none",
                 "wrap": "pretty",
+                "text_color": "",
                 "background": false,
                 "background_color": "#00000026",
                 "corner_radius": 0,
@@ -193,8 +202,32 @@
                 "line_height": "normal",
                 "letter_spacing": "normal",
                 "case": "none",
+                "text_color": "",
                 "padding-block-start": 0,
                 "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
+            "variant_picker": {
+              "type": "variant-picker",
+              "name": "t:names.variant_picker",
+              "settings": {
+                "variant_style": "custom_dropdown",
+                "show_swatches": false,
+                "option_label_text_color": "",
+                "variant_style_class": "default",
+                "custom_variant_background": "{{ settings.color_palette.background }}",
+                "custom_variant_text": "{{ settings.color_palette.foreground }}",
+                "custom_variant_border": "{{ settings.color_palette.foreground }}",
+                "selected_variant_style_class": "default",
+                "custom_selected_variant_background": "{{ settings.color_palette.foreground }}",
+                "custom_selected_variant_text": "{{ settings.color_palette.background }}",
+                "custom_selected_variant_border": "{{ settings.color_palette.foreground }}",
+                "alignment": "left",
+                "padding-block-start": 0,
+                "padding-block-end": 8,
                 "padding-inline-start": 0,
                 "padding-inline-end": 0
               },
@@ -204,28 +237,62 @@
               "type": "buy-buttons",
               "name": "t:names.buy_buttons",
               "settings": {
-                "stacking": true
+                "stacking": true,
+                "text_color": "",
+                "show_pickup_availability": true,
+                "gift_card_form": true,
+                "recipient_button_style": "default",
+                "recipient_button_background": "{{ settings.color_palette.background }}",
+                "recipient_button_text": "{{ settings.color_palette.foreground }}",
+                "recipient_button_border": "{{ settings.color_palette.foreground }}",
+                "selected_recipient_button_style": "default",
+                "selected_recipient_button_background": "{{ settings.color_palette.foreground }}",
+                "selected_recipient_button_text": "{{ settings.color_palette.background }}",
+                "selected_recipient_button_border": "{{ settings.color_palette.foreground }}",
+                "input_style": "default",
+                "input_background_color": "{{ settings.color_palette.background }}",
+                "input_text_color": "{{ settings.color_palette.foreground }}",
+                "input_border_color": "{{ settings.color_palette.foreground }}",
+                "border_width": 1,
+                "border_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
               "blocks": {
+                "quantity": {
+                  "type": "quantity",
+                  "static": true,
+                  "settings": {
+                    "input_style": "default",
+                    "input_background_color": "{{ settings.color_palette.background }}",
+                    "input_text_color": "{{ settings.color_palette.foreground }}",
+                    "input_border_color": "{{ settings.color_palette.foreground }}",
+                    "border_width": 1,
+                    "border_radius": 0
+                  },
+                  "blocks": {}
+                },
                 "add-to-cart": {
                   "type": "add-to-cart",
                   "static": true,
                   "settings": {
-                    "style_class": "button"
-                  }
+                    "style_class": "button",
+                    "custom_button_background": "{{ settings.color_palette.foreground }}",
+                    "custom_button_text": "{{ settings.color_palette.background }}",
+                    "custom_button_border": "{{ settings.color_palette.background }}"
+                  },
+                  "blocks": {}
+                },
+                "accelerated-checkout": {
+                  "type": "accelerated-checkout",
+                  "static": true,
+                  "settings": {},
+                  "blocks": {}
                 }
               },
               "block_order": []
-            },
-            "variant_picker": {
-              "type": "variant-picker",
-              "name": "t:names.variant_picker",
-              "settings": {
-                "variant_style": "custom_dropdown",
-                "show_swatches": false,
-                "padding-block-start": 0,
-                "padding-block-end": 8
-              }
             }
           },
           "block_order": [
@@ -241,12 +308,15 @@
         "layout_type": "grid",
         "product_card_size": "medium",
         "mobile_product_card_size": "medium",
+        "enable_infinite_scroll": true,
+        "products_per_page": 24,
         "product_grid_width": "centered",
         "full_width_on_mobile": true,
         "columns_gap_horizontal": 16,
         "columns_gap_vertical": 24,
         "padding-inline-start": 0,
         "padding-inline-end": 0,
+        "background_color": "",
         "padding-block-start": 0,
         "padding-block-end": 32
       }
@@ -258,7 +328,8 @@
           "type": "custom-liquid",
           "settings": {
             "custom_liquid": "{% liquid\n  assign desc_parts = closest.collection.description | split: '<!-- split -->'\n  assign below_fold_html = desc_parts[1]\n%}\n{% if below_fold_html != blank %}\n  <div class=\"collection-below-fold\">\n    {{ below_fold_html }}\n  </div>\n  <style>\n    .collection-below-fold { width: 100%; }\n    .collection-below-fold h2 { margin: 1.5em 0 0.5em; font-size: 1.5rem; }\n    .collection-below-fold h2:first-child { margin-top: 0; }\n    .collection-below-fold p { margin: 0 0 1em; line-height: 1.6; }\n    .collection-below-fold a { text-decoration: underline; }\n    .collection-below-fold__read-more { margin-top: 8px; }\n  </style>\n  <script>\n    (function () {\n      document.querySelectorAll('.collection-below-fold .readmore-text').forEach(function (block) {\n        if (block.dataset.readmoreInit) return;\n        block.dataset.readmoreInit = '1';\n        var button = document.createElement('button');\n        button.type = 'button';\n        button.className = 'button-secondary collection-below-fold__read-more';\n        button.textContent = 'Read more';\n        button.setAttribute('aria-expanded', 'false');\n        block.parentNode.insertBefore(button, block);\n        button.addEventListener('click', function () {\n          var expanded = block.style.display !== 'none';\n          block.style.display = expanded ? 'none' : '';\n          button.textContent = expanded ? 'Read more' : 'Read less';\n          button.setAttribute('aria-expanded', String(!expanded));\n        });\n      });\n    })();\n  </script>\n{% endif %}"
-          }
+          },
+          "blocks": {}
         }
       },
       "block_order": [
@@ -267,9 +338,29 @@
       "name": "t:names.section",
       "settings": {
         "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
         "horizontal_alignment_flex_direction_column": "flex-start",
+        "vertical_alignment_flex_direction_column": "center",
         "gap": 16,
         "section_width": "page-width",
+        "section_height": "",
+        "section_height_custom": 50,
+        "background_media": "none",
+        "background_color": "",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
         "padding-block-start": 8,
         "padding-block-end": 48
       }
@@ -281,7 +372,8 @@
           "type": "custom-liquid",
           "settings": {
             "custom_liquid": "{% liquid\n  assign faqs = closest.collection.metafields.custom.faqs.value\n%}\n{% if faqs.size > 0 %}\n  <div class=\"collection-faqs\">\n    <h2 class=\"collection-faqs__heading\"><em>FAQs</em></h2>\n    <div class=\"collection-faqs__list\">\n      {% for faq in faqs %}\n        <details class=\"collection-faqs__item\">\n          <summary class=\"collection-faqs__question\">\n            <span>{{ faq.question }}</span>\n            <span class=\"collection-faqs__icon\" aria-hidden=\"true\"></span>\n          </summary>\n          <div class=\"collection-faqs__answer\">{{ faq.answer | metafield_tag }}</div>\n        </details>\n      {% endfor %}\n    </div>\n  </div>\n  <style>\n    .collection-faqs { width: 100%; max-width: 46rem; margin: 0 auto; }\n    .collection-faqs__heading { text-align: center; font-size: 2rem; margin: 0 0 1.5em; }\n    .collection-faqs__list { border-top: 1px solid var(--border-color); }\n    .collection-faqs__item { border-bottom: 1px solid var(--border-color); }\n    .collection-faqs__question {\n      display: flex;\n      align-items: center;\n      justify-content: space-between;\n      gap: 1em;\n      padding: 1em 0;\n      cursor: pointer;\n      font-weight: 600;\n      list-style: none;\n    }\n    .collection-faqs__question::-webkit-details-marker { display: none; }\n    .collection-faqs__icon { position: relative; width: 14px; height: 14px; flex-shrink: 0; }\n    .collection-faqs__icon::before,\n    .collection-faqs__icon::after {\n      content: '';\n      position: absolute;\n      background: currentColor;\n      transition: transform 0.15s ease, opacity 0.15s ease;\n    }\n    .collection-faqs__icon::before { top: 6px; left: 0; width: 14px; height: 2px; }\n    .collection-faqs__icon::after { top: 0; left: 6px; width: 2px; height: 14px; }\n    details[open] .collection-faqs__icon::after { transform: rotate(90deg); opacity: 0; }\n    .collection-faqs__answer { padding: 0 0 1em; line-height: 1.6; }\n    .collection-faqs__answer p { margin: 0; }\n  </style>\n{% endif %}"
-          }
+          },
+          "blocks": {}
         }
       },
       "block_order": [
@@ -290,9 +382,29 @@
       "name": "t:names.section",
       "settings": {
         "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
         "horizontal_alignment_flex_direction_column": "center",
+        "vertical_alignment_flex_direction_column": "center",
         "gap": 16,
         "section_width": "page-width",
+        "section_height": "",
+        "section_height_custom": 50,
+        "background_media": "none",
+        "background_color": "",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
         "padding-block-start": 8,
         "padding-block-end": 64
       }
