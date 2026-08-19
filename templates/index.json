@@ -2155,12 +2155,28 @@
             "source": "",
             "quote": "\"If you've been fortunate enough to visit ONA's Canberra location, or any others for that matter, you'll be aware of the meticulous details found within their cafes\""
           }
+        },
+        "quote_PhjiUN": {
+          "type": "quote",
+          "settings": {
+            "source": "",
+            "quote": "“Since 2012, our partnership with ONA Coffee has demonstrated their commitment to quality.”"
+          }
+        },
+        "quote_Qn84iL": {
+          "type": "quote",
+          "settings": {
+            "source": "",
+            "quote": "“Since 2012, our partnership with ONA Coffee has demonstrated their commitment to quality.”"
+          }
         }
       },
       "block_order": [
         "quote_aCYyE8",
         "quote_efak7r",
-        "quote_NUbmXf"
+        "quote_NUbmXf",
+        "quote_PhjiUN",
+        "quote_Qn84iL"
       ],
       "name": "t:names.press_quotes",
       "settings": {
@@ -2242,7 +2258,7 @@
             "quote": {
               "type": "text",
               "settings": {
-                "text": "<p>&ldquo;If you've been fortunate enough to visit ONA's flagship, you'll know exceptional coffee when you taste it.&rdquo;</p>",
+                "text": "<p>“If you've been fortunate enough to visit ONA's flagship, you'll know exceptional coffee when you taste it.”</p>",
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",
@@ -2337,7 +2353,7 @@
             "quote": {
               "type": "text",
               "settings": {
-                "text": "<p>&ldquo;Since 2012, our partnership with ONA Coffee has demonstrated their commitment to quality.&rdquo;</p>",
+                "text": "<p>“Since 2012, our partnership with ONA Coffee has demonstrated their commitment to quality.”</p>",
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",
