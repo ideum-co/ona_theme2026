@@ -17,15 +17,18 @@
 %}
 
 <div
-  class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+  class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}{% if section.settings.limit_content_width %} section-background--limited{% endif %}"
 ></div>
 <div
-  class="section section--{{ section.settings.section_width }} disable-section-top-offset media-with-content{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %} spacing-style {{ media_class_modifier }}"
+  class="section section--{{ section.settings.section_width }} disable-section-top-offset media-with-content{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %} spacing-style {{ media_class_modifier }}{% if section.settings.limit_content_width %} media-with-content--limited{% endif %}"
   data-testid="media-with-content"
   style="
     {%- render 'spacing-style', settings: section.settings %}
     {% render 'border-override', settings: section.settings %}
     --media-height: {{ section.settings.media_height }};
+    {% if section.settings.limit_content_width %}
+      --media-with-content-max-width: {{ section.settings.max_width }}px;
+    {% endif %}
     {%- case section.settings.media_height %}
       {% when '50svh' %}
         --media-height-mobile: 30svh;
@@ -149,6 +152,15 @@
     @media screen and (min-width: 750px) {
       grid-template-areas: 'margin-left content media media';
     }
+  }
+
+  /* Caps the section on very wide screens. The background is capped with it, so the section reads
+     as one block instead of a colour band running past the media. `inset: 0` plus auto inline
+     margins is what centres the absolutely positioned background. */
+  .media-with-content--limited,
+  .section-background--limited {
+    max-inline-size: var(--media-with-content-max-width, 1280px);
+    margin-inline: auto;
   }
 
   .media-with-content {
@@ -289,6 +301,23 @@
         }
       ],
       "default": "full-width"
+    },
+    {
+      "type": "checkbox",
+      "id": "limit_content_width",
+      "label": "t:settings.limit_content_width",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "t:settings.max_width",
+      "min": 800,
+      "max": 1800,
+      "step": 20,
+      "unit": "px",
+      "default": 1280,
+      "visible_if": "{{ section.settings.limit_content_width }}"
     },
     {
       "type": "checkbox",
