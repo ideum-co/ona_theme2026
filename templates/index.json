@@ -1574,7 +1574,7 @@
           "type": "text",
           "name": "t:names.heading",
           "settings": {
-            "text": "<p>Good coffee. <em>Delivered.</em></p>",
+            "text": "<p>More than coffee. Since 2008.</p>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "center",
@@ -1761,6 +1761,7 @@
         "text",
         "video_photo"
       ],
+      "disabled": true,
       "name": "t:names.section",
       "settings": {
         "content_direction": "column",
