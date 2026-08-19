@@ -179,6 +179,7 @@
     "disclosures": "Informacje prawne"
   },
   "settings": {
+    "button_placement": "Położenie przycisku",
     "heading_dividers": "Linia pod nagłówkami",
     "column_ratios": "Szerokości kolumn",
     "logo_svg": "Kod SVG logo",
@@ -598,6 +599,8 @@
     "title_preset": "Gotowe ustawienie tytułu"
   },
   "options": {
+    "below": "Pod polem",
+    "inline": "Obok pola",
     "apple": "Apple",
     "arrow": "Strzałka",
     "banana": "Banan",

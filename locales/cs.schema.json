@@ -179,6 +179,7 @@
     "disclosures": "Prohlášení"
   },
   "settings": {
+    "button_placement": "Umístění tlačítka",
     "heading_dividers": "Linka pod nadpisy",
     "column_ratios": "Šířky sloupců",
     "logo_svg": "Kód SVG loga",
@@ -598,6 +599,8 @@
     "title_preset": "Předvolba nadpisu"
   },
   "options": {
+    "below": "Pod polem",
+    "inline": "Vedle pole",
     "apple": "Apple",
     "arrow": "Šipka",
     "auto": "Automaticky",

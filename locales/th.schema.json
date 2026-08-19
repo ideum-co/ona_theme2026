@@ -179,6 +179,7 @@
     "disclosures": "การเปิดเผยข้อมูล"
   },
   "settings": {
+    "button_placement": "ตำแหน่งปุ่ม",
     "heading_dividers": "เส้นใต้หัวข้อ",
     "column_ratios": "ความกว้างคอลัมน์",
     "logo_svg": "โค้ด SVG ของโลโก้",
@@ -598,6 +599,8 @@
     "title_preset": "พรีเซ็ตชื่อ"
   },
   "options": {
+    "below": "ใต้ช่องกรอก",
+    "inline": "ข้างช่องกรอก",
     "apple": "Apple",
     "arrow": "ลูกศร",
     "auto": "อัตโนมัติ",

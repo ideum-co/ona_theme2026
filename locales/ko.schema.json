@@ -179,6 +179,7 @@
     "disclosures": "고지 사항"
   },
   "settings": {
+    "button_placement": "버튼 위치",
     "heading_dividers": "제목 아래 구분선",
     "column_ratios": "열 너비",
     "logo_svg": "로고 SVG 코드",
@@ -598,6 +599,8 @@
     "title_preset": "제목 사전 설정"
   },
   "options": {
+    "below": "입력란 아래",
+    "inline": "입력란 옆",
     "apple": "Apple",
     "arrow": "화살표",
     "banana": "바나나",

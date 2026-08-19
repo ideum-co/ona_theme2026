@@ -179,6 +179,7 @@
     "disclosures": "Ilmoitukset"
   },
   "settings": {
+    "button_placement": "Painikkeen sijainti",
     "heading_dividers": "Viiva otsikoiden alla",
     "column_ratios": "Sarakkeiden leveydet",
     "logo_svg": "Logon SVG-koodi",
@@ -598,6 +599,8 @@
     "title_preset": "Otsikon esiasetus"
   },
   "options": {
+    "below": "Kentän alla",
+    "inline": "Kentän vieressä",
     "apple": "Omena",
     "arrow": "Nuoli",
     "auto": "Automaattinen",

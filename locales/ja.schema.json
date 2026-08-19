@@ -179,6 +179,7 @@
     "disclosures": "開示情報"
   },
   "settings": {
+    "button_placement": "ボタンの位置",
     "heading_dividers": "見出し下の罫線",
     "column_ratios": "列幅",
     "logo_svg": "ロゴのSVGコード",
@@ -598,6 +599,8 @@
     "title_preset": "タイトルプリセット"
   },
   "options": {
+    "below": "入力欄の下",
+    "inline": "入力欄の横",
     "apple": "Apple",
     "arrow": "矢印",
     "auto": "自動",

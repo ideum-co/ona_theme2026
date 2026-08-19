@@ -422,6 +422,8 @@
     "comparison_slider": "מחוון השוואה"
   },
   "options": {
+    "below": "מתחת לשדה",
+    "inline": "לצד השדה",
     "above_carousel": "מעל הקרוסלה",
     "accent": "הדגשה",
     "all": "הכול",
@@ -699,6 +701,7 @@
     "below_media": "מתחת למדיה"
   },
   "settings": {
+    "button_placement": "מיקום הכפתור",
     "heading_dividers": "קו מתחת לכותרות",
     "column_ratios": "רוחב עמודות",
     "logo_svg": "קוד SVG של הלוגו",

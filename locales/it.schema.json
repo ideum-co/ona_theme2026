@@ -179,6 +179,7 @@
     "disclosures": "Informative"
   },
   "settings": {
+    "button_placement": "Posizione del pulsante",
     "heading_dividers": "Linea sotto i titoli",
     "column_ratios": "Larghezza delle colonne",
     "logo_svg": "Codice SVG del logo",
@@ -598,6 +599,8 @@
     "title_preset": "Preimpostazione titolo"
   },
   "options": {
+    "below": "Sotto il campo",
+    "inline": "Accanto al campo",
     "apple": "Mela",
     "arrow": "Freccia",
     "auto": "Automatico",

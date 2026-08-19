@@ -38,6 +38,9 @@
       if block_settings.display_type == 'arrow'
         assign input_group_classes = input_group_classes | append: ' email-signup__input-group--arrow'
       endif
+      if block_settings.button_placement == 'below'
+        assign input_group_classes = input_group_classes | append: ' email-signup__input-group--stacked'
+      endif
     -%}
 
     <div
@@ -172,6 +175,27 @@
     @media screen and (max-width: 749px) {
       flex-direction: column;
     }
+  }
+
+  /* Button below a full-width input. Mirrors the specificity of the row rules above so it wins,
+     and only applies where a row is what would otherwise be drawn - an integrated or underlined
+     button is by definition inside the field. */
+  .email-signup__input-group--stacked:not(.email-signup__input-group--integrated):not(
+      .email-signup__input-group--underline
+    ) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--gap-sm);
+  }
+
+  /* The column's `align-items: stretch` already gives the input the full width, so no explicit
+     100% that would depend on box-sizing to not overflow by the border. */
+  .email-signup__input-group--stacked .email-signup__input {
+    flex: none;
+  }
+
+  .email-signup__input-group--stacked .email-signup__button {
+    align-self: start;
   }
 
   .email-signup__input-group--integrated {
@@ -707,6 +731,23 @@
       "label": "t:settings.label",
       "default": "t:text_defaults.sign_up",
       "visible_if": "{{ block.settings.display_type == \"text\" }}"
+    },
+    {
+      "type": "select",
+      "id": "button_placement",
+      "label": "t:settings.button_placement",
+      "options": [
+        {
+          "value": "inline",
+          "label": "t:options.inline"
+        },
+        {
+          "value": "below",
+          "label": "t:options.below"
+        }
+      ],
+      "default": "inline",
+      "visible_if": "{{ block.settings.integrated_button == false and block.settings.border_style != 'underline' }}"
     },
     {
       "type": "checkbox",

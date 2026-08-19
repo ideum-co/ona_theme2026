@@ -422,6 +422,8 @@
     "comparison_slider": "موازنہ کرنے والا سلائیڈر"
   },
   "options": {
+    "below": "فیلڈ کے نیچے",
+    "inline": "فیلڈ کے ساتھ",
     "above_carousel": "کیرول کے اوپر",
     "accent": "ایکسنٹ",
     "all": "سبھی",
@@ -699,6 +701,7 @@
     "below_media": "میڈیا کے نیچے"
   },
   "settings": {
+    "button_placement": "بٹن کی جگہ",
     "heading_dividers": "سرخیوں کے نیچے لکیر",
     "column_ratios": "کالم کی چوڑائی",
     "logo_svg": "لوگو کا SVG کوڈ",

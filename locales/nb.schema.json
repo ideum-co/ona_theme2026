@@ -179,6 +179,7 @@
     "disclosures": "Opplysninger"
   },
   "settings": {
+    "button_placement": "Knappplassering",
     "heading_dividers": "Strek under overskrifter",
     "column_ratios": "Kolonnebredder",
     "logo_svg": "Logo SVG-kode",
@@ -598,6 +599,8 @@
     "title_preset": "Forhåndsinnstilling for tittel"
   },
   "options": {
+    "below": "Under feltet",
+    "inline": "Ved siden av feltet",
     "apple": "Eple",
     "arrow": "Pil",
     "auto": "Auto",
