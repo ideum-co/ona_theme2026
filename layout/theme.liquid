@@ -41,6 +41,9 @@
     {%- render 'fonts' -%}
     {%- render 'scripts' -%}
     {%- render 'theme-styles-variables' -%}
+
+    {%- comment -%} Must follow theme-styles-variables: both write :root and the later one wins. {%- endcomment -%}
+    {%- render 'brand-fonts' -%}
     {%- render 'color-palette' -%}
 
     {% if request.design_mode %}

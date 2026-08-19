@@ -55,6 +55,9 @@
       assign ratio = product.featured_media.preview_image.aspect_ratio | default: '1'
   endcase
 
+  # 'contain' shows the whole pack shot inside the frame instead of cropping it to fill.
+  assign media_fit = block_settings.image_fit | default: 'cover'
+
   if block_settings.image_ratio == 'adapt' and block_settings.constrain_to_viewport
     if block_settings.constrain_to_viewport != ''
       assign constrain_to_viewport = true

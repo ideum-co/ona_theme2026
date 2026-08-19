@@ -1,3 +1,11 @@
+{%- comment -%}
+  The brand faces are theme assets, not Shopify-hosted fonts, so the picker-driven preloads below
+  do not cover them. Only the two that render above the fold are preloaded; the rest are fetched
+  on demand. See `brand-fonts.liquid`.
+{%- endcomment -%}
+{{ 'silk-serif-regular.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2' }}
+{{ 'karla-regular.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2' }}
+
 {%- unless settings.type_body_font.system? -%}
   {{ settings.type_body_font | font_url | preload_tag: as: 'font', type: 'font/woff2', fetchpriority: 'low' }}
 {%- endunless -%}
