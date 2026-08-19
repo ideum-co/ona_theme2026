@@ -216,6 +216,7 @@
     "work_quickly_to_ship": "<p>سنعمل بسرعة لشحن طلبك في أقرب وقت ممكن. بمجرد شحن طلبك، ستتلقى رسالة بريد إلكتروني تحتوي على مزيد من المعلومات. تختلف أوقات التوصيل حسب موقعك.</p>"
   },
   "info": {
+    "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
     "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
@@ -701,6 +702,7 @@
     "below_media": "أسفل الوسائط"
   },
   "settings": {
+    "svg_code": "كود SVG",
     "button_placement": "موضع الزر",
     "heading_dividers": "خط أسفل العناوين",
     "column_ratios": "عرض الأعمدة",
