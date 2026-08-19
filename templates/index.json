@@ -638,7 +638,7 @@
                 "text": {
                   "type": "text",
                   "settings": {
-                    "text": "<p>Ugly Sweater is a cosy blend with notes of milk chocolate and hazelnut &mdash; something a little unconventional that always ends up being a favourite.</p>",
+                    "text": "<p>Ugly Sweater is a cosy blend with notes of milk chocolate and hazelnut — something a little unconventional that always ends up being a favourite.</p>",
                     "width": "fit-content",
                     "max_width": "narrow",
                     "alignment": "left",
@@ -691,6 +691,7 @@
           ]
         }
       },
+      "disabled": true,
       "name": "t:names.media_with_text",
       "settings": {
         "media_position": "right",
@@ -701,6 +702,39 @@
         "background_color": "{{ settings.color_palette.foreground }}",
         "padding-block-start": 80,
         "padding-block-end": 80
+      }
+    },
+    "product_highlight_KkUAVM": {
+      "type": "product-highlight",
+      "blocks": {
+        "spec_G64RtC": {
+          "type": "spec",
+          "settings": {
+            "label": "Tastes like",
+            "value": ""
+          }
+        }
+      },
+      "block_order": [
+        "spec_G64RtC"
+      ],
+      "name": "t:names.featured_product",
+      "settings": {
+        "product": "raspberry-candy-filter",
+        "heading": "Special <em>release</em>",
+        "eyebrow": "Ugly Sweater is a cosy blend with notes of milk chocolate and hazelnut — something a little unconventional that always ends up being a favourite.",
+        "show_product_title": true,
+        "description": "<p>Winey, dark chocolate and dark fruit</p>",
+        "image": "shopify://shop_images/Ugly_wb.png",
+        "media_position": "right",
+        "cta_style": "add_to_cart",
+        "cta_label": "Add to cart",
+        "background_color": "#470a12",
+        "text_color": "#f5f4ea",
+        "button_background": "#751132",
+        "button_text": "#f5f4ea",
+        "padding-block-start": 120,
+        "padding-block-end": 120
       }
     },
     "club_benefits": {
@@ -3100,6 +3134,7 @@
     "find_your_coffee",
     "coffee_spotlight",
     "special_release",
+    "product_highlight_KkUAVM",
     "club_benefits",
     "raspberry_candy",
     "good_coffee_delivered",
