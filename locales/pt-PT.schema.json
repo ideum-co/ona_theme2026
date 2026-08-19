@@ -179,6 +179,7 @@
     "disclosures": "Divulgações"
   },
   "settings": {
+    "button_placement": "Posição do botão",
     "heading_dividers": "Linha sob os títulos",
     "column_ratios": "Largura das colunas",
     "logo_svg": "Código SVG do logótipo",
@@ -598,6 +599,8 @@
     "title_preset": "Predefinição do título"
   },
   "options": {
+    "below": "Abaixo do campo",
+    "inline": "Ao lado do campo",
     "apple": "Maçã",
     "arrow": "Seta",
     "auto": "Automático",

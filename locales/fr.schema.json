@@ -179,6 +179,7 @@
     "disclosures": "Divulgations"
   },
   "settings": {
+    "button_placement": "Position du bouton",
     "heading_dividers": "Filet sous les titres",
     "column_ratios": "Largeur des colonnes",
     "logo_svg": "Code SVG du logo",
@@ -598,6 +599,8 @@
     "title_preset": "Préréglage du titre"
   },
   "options": {
+    "below": "Sous le champ",
+    "inline": "À côté du champ",
     "apple": "Pomme",
     "arrow": "Flèche",
     "banana": "Banane",

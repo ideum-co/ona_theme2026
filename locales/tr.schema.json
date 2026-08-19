@@ -179,6 +179,7 @@
     "disclosures": "Bildirimler"
   },
   "settings": {
+    "button_placement": "Düğme konumu",
     "heading_dividers": "Başlıkların altında çizgi",
     "column_ratios": "Sütun genişlikleri",
     "logo_svg": "Logo SVG kodu",
@@ -598,6 +599,8 @@
     "title_preset": "Başlık ön ayarı"
   },
   "options": {
+    "below": "Alanın altında",
+    "inline": "Alanın yanında",
     "apple": "Apple",
     "arrow": "Ok",
     "banana": "Muz",

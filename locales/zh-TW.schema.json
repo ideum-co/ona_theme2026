@@ -179,6 +179,7 @@
     "disclosures": "資訊揭露"
   },
   "settings": {
+    "button_placement": "按鈕位置",
     "heading_dividers": "標題下方分隔線",
     "column_ratios": "欄寬",
     "logo_svg": "標誌 SVG 代碼",
@@ -598,6 +599,8 @@
     "title_preset": "標題預設設定"
   },
   "options": {
+    "below": "在輸入框下方",
+    "inline": "在輸入框旁",
     "apple": "Apple",
     "arrow": "箭頭",
     "auto": "自動",

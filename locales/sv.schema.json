@@ -179,6 +179,7 @@
     "disclosures": "Upplysningar"
   },
   "settings": {
+    "button_placement": "Knappens placering",
     "heading_dividers": "Linje under rubriker",
     "column_ratios": "Kolumnbredder",
     "logo_svg": "Logotypens SVG-kod",
@@ -598,6 +599,8 @@
     "title_preset": "Förinställning för rubrik"
   },
   "options": {
+    "below": "Under fältet",
+    "inline": "Bredvid fältet",
     "apple": "Apple",
     "arrow": "Pil",
     "auto": "Auto",

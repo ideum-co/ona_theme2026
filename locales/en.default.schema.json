@@ -437,6 +437,8 @@
     "comparison_slider": "Comparison slider"
   },
   "options": {
+    "below": "Below the field",
+    "inline": "Beside the field",
     "above_carousel": "Above carousel",
     "accent": "Accent",
     "all": "All",
@@ -752,6 +754,7 @@
     "below_media": "Below media"
   },
   "settings": {
+    "button_placement": "Button placement",
     "heading_dividers": "Rule under headings",
     "column_ratios": "Column widths",
     "logo_svg": "Logo SVG code",

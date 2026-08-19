@@ -422,6 +422,8 @@
     "comparison_slider": "شريط تمرير المقارنة"
   },
   "options": {
+    "below": "أسفل الحقل",
+    "inline": "بجانب الحقل",
     "above_carousel": "أعلى العرض الدائري",
     "accent": "تمييز",
     "all": "الكل",
@@ -699,6 +701,7 @@
     "below_media": "أسفل الوسائط"
   },
   "settings": {
+    "button_placement": "موضع الزر",
     "heading_dividers": "خط أسفل العناوين",
     "column_ratios": "عرض الأعمدة",
     "logo_svg": "كود SVG للشعار",
