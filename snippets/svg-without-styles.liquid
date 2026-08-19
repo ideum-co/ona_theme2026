@@ -1,0 +1,35 @@
+{%- doc -%}
+  Echoes a pasted SVG with its `<style>` blocks removed.
+
+  A `<style>` element inside an inlined SVG is **not** scoped to that SVG: once the markup is in
+  the document, the browser treats it as a document stylesheet like any other. Illustrator exports
+  routinely ship rules such as `path, rect { fill: #F5F4EA; }`, which then repaint every icon on
+  the page - the header cart and account icons included.
+
+  Inline `style` attributes on the shapes are left alone: those only affect their own element, and
+  they are what keeps these logos looking right once the block is gone.
+
+  @param {string} svg - The pasted SVG markup.
+
+  @example
+  {% render 'svg-without-styles', svg: block.settings.logo_svg %}
+{%- enddoc -%}
+
+{%- liquid
+  assign chunks = svg | split: '<style'
+  assign output = chunks[0]
+
+  for chunk in chunks offset: 1
+    assign tail = chunk | split: '</style>'
+
+    # No closing tag means the markup is malformed; dropping the remainder is safer than echoing
+    # a stylesheet the browser would apply to the whole page.
+    if tail.size > 1
+      for piece in tail offset: 1
+        assign output = output | append: piece
+      endfor
+    endif
+  endfor
+
+  echo output
+-%}

@@ -20,7 +20,7 @@
           these one-colour press logos.
         {%- endcomment -%}
         {%- if block.settings.logo_svg != blank -%}
-          <span class="press-quotes__logo--svg">{{ block.settings.logo_svg }}</span>
+          <span class="press-quotes__logo--svg">{%- render 'svg-without-styles', svg: block.settings.logo_svg -%}</span>
         {%- elsif block.settings.logo != blank -%}
           {{
             block.settings.logo
