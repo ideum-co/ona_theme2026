@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_metafield_text": "Text metapole produktu",
     "footer_brand": "Řádek značky v patičce",
     "press_quote": "Citace",
     "press_quotes": "Citace z médií",
@@ -179,6 +180,7 @@
     "disclosures": "Prohlášení"
   },
   "settings": {
+    "namespace": "Jmenný prostor",
     "svg_code": "Kód SVG",
     "button_placement": "Umístění tlačítka",
     "heading_dividers": "Linka pod nadpisy",
@@ -879,6 +881,7 @@
     "input_field": "Vstupní pole"
   },
   "content": {
+    "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Slovní značka",
     "advanced": "Pokročilé",
     "background_image": "Obrázek na pozadí",

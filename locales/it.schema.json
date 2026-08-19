@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_metafield_text": "Testo del metacampo prodotto",
     "footer_brand": "Riga del brand nel footer",
     "press_quote": "Citazione",
     "press_quotes": "Citazioni stampa",
@@ -179,6 +180,7 @@
     "disclosures": "Informative"
   },
   "settings": {
+    "namespace": "Spazio dei nomi",
     "svg_code": "Codice SVG",
     "button_placement": "Posizione del pulsante",
     "heading_dividers": "Linea sotto i titoli",
@@ -879,6 +881,7 @@
     "input_field": "Campo di inserimento"
   },
   "content": {
+    "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Logotipo",
     "advanced": "Avanzate",
     "background_image": "Immagine di sfondo",

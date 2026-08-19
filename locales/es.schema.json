@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_metafield_text": "Texto de metafield del producto",
     "footer_brand": "Fila de marca del pie",
     "press_quote": "Cita",
     "press_quotes": "Citas de prensa",
@@ -179,6 +180,7 @@
     "disclosures": "Divulgaciones"
   },
   "settings": {
+    "namespace": "Espacio de nombres",
     "svg_code": "Código SVG",
     "button_placement": "Posición del botón",
     "heading_dividers": "Línea bajo los encabezados",
@@ -879,6 +881,7 @@
     "input_field": "Campo de entrada"
   },
   "content": {
+    "resource_reference_product_metafield": "Muestra un metafield del producto principal",
     "wordmark": "Logotipo tipográfico",
     "advanced": "Avanzado",
     "background_image": "Imagen de fondo",

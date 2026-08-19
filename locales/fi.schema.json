@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_metafield_text": "Tuotteen metakentän teksti",
     "footer_brand": "Alatunnisteen brändirivi",
     "press_quote": "Sitaatti",
     "press_quotes": "Lehdistösitaatit",
@@ -179,6 +180,7 @@
     "disclosures": "Ilmoitukset"
   },
   "settings": {
+    "namespace": "Nimiavaruus",
     "svg_code": "SVG-koodi",
     "button_placement": "Painikkeen sijainti",
     "heading_dividers": "Viiva otsikoiden alla",
@@ -879,6 +881,7 @@
     "input_field": "Syöttökenttä"
   },
   "content": {
+    "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Sanamerkki",
     "advanced": "Lisäasetukset",
     "background_image": "Taustakuva",

@@ -30,6 +30,7 @@
     "text": "نص"
   },
   "content": {
+    "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "شعار نصي",
     "visible_if_collection_has_more_products": "مرئي إذا كانت المجموعة تحتوي على منتجات أكثر من المعروضة",
     "advanced": "متقدم",
@@ -253,6 +254,7 @@
     "media_type_info": "تمت تعبئة الميزات من روابط القائمة الخاصة بك"
   },
   "names": {
+    "product_metafield_text": "نص حقل تعريف المنتج",
     "footer_brand": "صف العلامة في التذييل",
     "press_quote": "اقتباس",
     "press_quotes": "اقتباسات صحفية",
@@ -702,6 +704,7 @@
     "below_media": "أسفل الوسائط"
   },
   "settings": {
+    "namespace": "مساحة الاسم",
     "svg_code": "كود SVG",
     "button_placement": "موضع الزر",
     "heading_dividers": "خط أسفل العناوين",

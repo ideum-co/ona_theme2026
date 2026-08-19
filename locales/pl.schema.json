@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_metafield_text": "Tekst z metapola produktu",
     "footer_brand": "Wiersz marki w stopce",
     "press_quote": "Cytat",
     "press_quotes": "Cytaty prasowe",
@@ -179,6 +180,7 @@
     "disclosures": "Informacje prawne"
   },
   "settings": {
+    "namespace": "Przestrzeń nazw",
     "svg_code": "Kod SVG",
     "button_placement": "Położenie przycisku",
     "heading_dividers": "Linia pod nagłówkami",
@@ -879,6 +881,7 @@
     "input_field": "Pole wprowadzania"
   },
   "content": {
+    "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Logotyp",
     "background_video": "Wideo w tle",
     "describe_the_video_for": "Opisz film dla klientów korzystających z czytników ekranu. [Dowiedz się więcej](https://help.shopify.com/manual/online-store/themes/theme-structure/theme-features#video-block)",

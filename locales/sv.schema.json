@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_metafield_text": "Text från produktmetafält",
     "footer_brand": "Varumärkesrad i sidfot",
     "press_quote": "Citat",
     "press_quotes": "Presscitat",
@@ -179,6 +180,7 @@
     "disclosures": "Upplysningar"
   },
   "settings": {
+    "namespace": "Namnrymd",
     "svg_code": "SVG-kod",
     "button_placement": "Knappens placering",
     "heading_dividers": "Linje under rubriker",
@@ -879,6 +881,7 @@
     "input_field": "Inmatningsfält"
   },
   "content": {
+    "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Ordmärke",
     "advanced": "Avancerat",
     "background_image": "Bakgrundsbild",
