@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_metafield_text": "Tekst uit productmetaveld",
     "footer_brand": "Merkrij in footer",
     "press_quote": "Quote",
     "press_quotes": "Persquotes",
@@ -179,6 +180,7 @@
     "disclosures": "Toelichtingen"
   },
   "settings": {
+    "namespace": "Naamruimte",
     "svg_code": "SVG-code",
     "button_placement": "Knoppositie",
     "heading_dividers": "Lijn onder koppen",
@@ -879,6 +881,7 @@
     "input_field": "Invoerveld"
   },
   "content": {
+    "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Woordmerk",
     "background_video": "Achtergrondvideo",
     "describe_the_video_for": "Geef een beschrijving van de video voor klanten die schermlezers gebruiken. [Meer informatie](https://help.shopify.com/manual/online-store/themes/theme-structure/theme-features#video-block)",

@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_metafield_text": "Produktmetafelt-tekst",
     "footer_brand": "Merkerad i bunntekst",
     "press_quote": "Sitat",
     "press_quotes": "Pressesitater",
@@ -179,6 +180,7 @@
     "disclosures": "Opplysninger"
   },
   "settings": {
+    "namespace": "Navnerom",
     "svg_code": "SVG-kode",
     "button_placement": "Knappplassering",
     "heading_dividers": "Strek under overskrifter",
@@ -879,6 +881,7 @@
     "input_field": "Inndatafelt"
   },
   "content": {
+    "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Ordmerke",
     "advanced": "Avansert",
     "background_image": "Bakgrunnsbilde",

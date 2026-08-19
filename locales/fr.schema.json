@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_metafield_text": "Texte de métachamp produit",
     "footer_brand": "Ligne de marque du pied de page",
     "press_quote": "Citation",
     "press_quotes": "Citations de presse",
@@ -179,6 +180,7 @@
     "disclosures": "Divulgations"
   },
   "settings": {
+    "namespace": "Espace de noms",
     "svg_code": "Code SVG",
     "button_placement": "Position du bouton",
     "heading_dividers": "Filet sous les titres",
@@ -879,6 +881,7 @@
     "input_field": "Champ de saisie"
   },
   "content": {
+    "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Logotype",
     "background_video": "Vidéo de fond",
     "describe_the_video_for": "Décrivez la vidéo pour les clients utilisant des lecteurs d’écran. [En savoir plus](https://help.shopify.com/manual/online-store/themes/theme-structure/theme-features#video-block)",

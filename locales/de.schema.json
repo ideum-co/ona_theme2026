@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_metafield_text": "Produkt-Metafeld-Text",
     "footer_brand": "Footer-Markenzeile",
     "press_quote": "Zitat",
     "press_quotes": "Pressestimmen",
@@ -179,6 +180,7 @@
     "disclosures": "Pflichtangaben"
   },
   "settings": {
+    "namespace": "Namespace",
     "svg_code": "SVG-Code",
     "button_placement": "Button-Position",
     "heading_dividers": "Linie unter Überschriften",
@@ -879,6 +881,7 @@
     "input_field": "Eingabefeld"
   },
   "content": {
+    "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Wortmarke",
     "background_video": "Hintergrundvideo",
     "describe_the_video_for": "Beschreibe das Video für Kunden, die Bildschirmlesegeräte benutzen. [Mehr Informationen](https://help.shopify.com/manual/online-store/themes/theme-structure/theme-features#video-block)",

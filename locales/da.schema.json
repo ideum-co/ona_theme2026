@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_metafield_text": "Produktmetafelt-tekst",
     "footer_brand": "Brandrække i sidefod",
     "press_quote": "Citat",
     "press_quotes": "Pressecitater",
@@ -179,6 +180,7 @@
     "disclosures": "Oplysninger"
   },
   "settings": {
+    "namespace": "Navnerum",
     "svg_code": "SVG-kode",
     "button_placement": "Knapplacering",
     "heading_dividers": "Streg under overskrifter",
@@ -879,6 +881,7 @@
     "input_field": "Indtastningsfelt"
   },
   "content": {
+    "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Ordmærke",
     "advanced": "Avanceret",
     "background_image": "Baggrundsbillede",

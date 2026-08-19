@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_metafield_text": "商品中繼欄位文字",
     "footer_brand": "頁尾品牌列",
     "press_quote": "引用",
     "press_quotes": "媒體評價",
@@ -179,6 +180,7 @@
     "disclosures": "資訊揭露"
   },
   "settings": {
+    "namespace": "命名空間",
     "svg_code": "SVG 代碼",
     "button_placement": "按鈕位置",
     "heading_dividers": "標題下方分隔線",
@@ -879,6 +881,7 @@
     "input_field": "輸入欄位"
   },
   "content": {
+    "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "文字標誌",
     "advanced": "進階",
     "background_image": "背景圖片",

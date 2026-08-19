@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_metafield_text": "ข้อความจากเมตาฟิลด์สินค้า",
     "footer_brand": "แถวแบรนด์ในส่วนท้าย",
     "press_quote": "คำอ้างอิง",
     "press_quotes": "คำวิจารณ์จากสื่อ",
@@ -179,6 +180,7 @@
     "disclosures": "การเปิดเผยข้อมูล"
   },
   "settings": {
+    "namespace": "เนมสเปซ",
     "svg_code": "โค้ด SVG",
     "button_placement": "ตำแหน่งปุ่ม",
     "heading_dividers": "เส้นใต้หัวข้อ",
@@ -879,6 +881,7 @@
     "input_field": "ช่องกรอกข้อมูล"
   },
   "content": {
+    "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "โลโก้ตัวอักษร",
     "advanced": "ขั้นสูง",
     "background_image": "รูปภาพพื้นหลัง",

@@ -30,6 +30,7 @@
     "text": "ٹیکسٹ"
   },
   "content": {
+    "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "ورڈ مارک",
     "visible_if_collection_has_more_products": "اگر کلیکشن میں دکھائے گئے پروڈکٹ سے زیادہ پروڈکٹ ہوں تو ظاہر ہوتا ہے",
     "advanced": "ایڈوانسڈ",
@@ -253,6 +254,7 @@
     "media_type_info": "خصوصیات آپ کے مینو کے لنک سے پُر کی گئی ہیں"
   },
   "names": {
+    "product_metafield_text": "پروڈکٹ میٹا فیلڈ ٹیکسٹ",
     "footer_brand": "فوٹر برانڈ قطار",
     "press_quote": "اقتباس",
     "press_quotes": "پریس اقتباسات",
@@ -702,6 +704,7 @@
     "below_media": "میڈیا کے نیچے"
   },
   "settings": {
+    "namespace": "نیم اسپیس",
     "svg_code": "SVG کوڈ",
     "button_placement": "بٹن کی جگہ",
     "heading_dividers": "سرخیوں کے نیچے لکیر",

@@ -33,6 +33,7 @@
     "text": "Text"
   },
   "content": {
+    "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Wordmark",
     "visible_if_collection_has_more_products": "Visible if collection has more products than shown",
     "advanced": "Advanced",
@@ -261,6 +262,7 @@
     "media_type_info": "Features are populated from your menu links"
   },
   "names": {
+    "product_metafield_text": "Product metafield text",
     "footer_brand": "Footer brand row",
     "press_quote": "Quote",
     "press_quotes": "Press quotes",
@@ -755,6 +757,7 @@
     "below_media": "Below media"
   },
   "settings": {
+    "namespace": "Namespace",
     "svg_code": "SVG code",
     "button_placement": "Button placement",
     "heading_dividers": "Rule under headings",

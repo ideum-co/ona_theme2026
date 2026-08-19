@@ -187,11 +187,69 @@
                 "padding-block-start": 0,
                 "padding-block-end": 8
               }
+            },
+            "roast_line": {
+              "type": "product-metafield-text",
+              "name": "t:names.product_metafield_text",
+              "settings": {
+                "namespace": "accentuate",
+                "key": "roast",
+                "label": "",
+                "type_preset": "paragraph",
+                "width": "100%",
+                "max_width": "normal",
+                "alignment": "center",
+                "font": "var(--font-body--family)",
+                "font_size": "0.875rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "uppercase",
+                "wrap": "pretty",
+                "color": "",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
+            "tastes_line": {
+              "type": "product-metafield-text",
+              "name": "t:names.product_metafield_text",
+              "settings": {
+                "namespace": "accentuate",
+                "key": "tastes_like",
+                "label": "",
+                "type_preset": "paragraph",
+                "width": "100%",
+                "max_width": "normal",
+                "alignment": "center",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "color": "",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
             }
           },
           "block_order": [
             "product_card_gallery_cFExAi",
             "product_title_j7qXTx",
+            "roast_line",
+            "tastes_line",
             "price_fYkUgG",
             "variant_picker",
             "buy_buttons"
