@@ -2526,7 +2526,7 @@
           "static": true,
           "settings": {
             "media_type": "image",
-            "image": "shopify://shop_images/ona_coffee_canberra_Cup-1.jpg",
+            "image": "shopify://shop_images/13_092a364b-4942-4c30-b2ae-a61262a9ac7e.jpg",
             "link": "",
             "video_loop": true,
             "video_autoplay": false,
@@ -2669,12 +2669,12 @@
       "settings": {
         "media_position": "right",
         "media_width": "wide",
-        "media_height": "small",
+        "media_height": "80svh",
         "section_width": "full-width",
         "extend_media": false,
         "background_color": "{{ settings.color_palette.color3 }}",
-        "padding-block-start": 80,
-        "padding-block-end": 80
+        "padding-block-start": 50,
+        "padding-block-end": 50
       }
     },
     "discover_by_category": {
