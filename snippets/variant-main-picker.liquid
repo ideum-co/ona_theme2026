@@ -43,6 +43,11 @@
     data-product-title="{{ product_resource.title | escape }}"
     data-block-id="{{ block.id }}"
     data-product-url="{{ product_resource.url }}"
+    {% comment %}
+      Read by variant-picker.js before it morphs in a re-render: a card and the product page can
+      be configured with different styles, and morphing one into the other swaps the control.
+    {% endcomment %}
+    data-variant-style="{{ block_settings.variant_style }}"
     ref="mainVariantPicker"
     {% if product.id == product_resource.id %}
       data-template-product-match="true"

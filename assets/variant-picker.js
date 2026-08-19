@@ -459,6 +459,24 @@ export default class VariantPicker extends Component {
       this.dataset.productUrl = newProductUrl;
     }
 
+    // A picker inside a product card has no entry in SECTION_ID_MAP, so buildRequestUrl falls back
+    // to fetching the product page. When the card and the product page are configured with
+    // different variant styles, that markup is a different control altogether - morphing it in
+    // replaces the card's dropdown with the product page's buttons, which is also why the card
+    // changed height. Keep our own markup in that case: price, media and the add to cart button
+    // are updated by the ProductSelectEvent listeners, not by this morph.
+    //
+    // The trade-off is that a mismatched card does not refresh option availability from the
+    // server. That only matters for multi-option products, where picking one option can change
+    // which values of another are in stock.
+    const currentStyle = this.dataset.variantStyle;
+    const newStyle = /** @type {HTMLElement} */ (newVariantPickerSource).dataset?.variantStyle;
+
+    if (currentStyle && newStyle && currentStyle !== newStyle) {
+      this.updateVariantPickerCss();
+      return newProduct;
+    }
+
     morph(this, newVariantPickerSource, {
       ...MORPH_OPTIONS,
       getNodeKey: (node) => {
