@@ -178,6 +178,7 @@
     "disclosures": "資訊揭露"
   },
   "settings": {
+    "logo_svg": "標誌 SVG 代碼",
     "eyebrow": "眉題",
     "alignment": "對齊",
     "autoplay": "自動播放",
@@ -1095,6 +1096,7 @@
     "disclosures": "資訊揭露"
   },
   "info": {
+    "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
     "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
     "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
     "club_invite_badge": "Sits beside the heading, tucked under it.",
