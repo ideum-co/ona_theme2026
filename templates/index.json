@@ -123,11 +123,11 @@
           "static": true,
           "settings": {
             "media_type": "image",
-            "image": "shopify://shop_images/ona_coffee_candles_aspen_gateway_raspberry_candy_maple.jpg",
+            "image": "shopify://shop_images/banner-quiz.png",
             "link": "",
             "video_loop": true,
             "video_autoplay": false,
-            "image_position": "cover",
+            "image_position": "contain",
             "video_position": "cover"
           },
           "blocks": {}
@@ -265,13 +265,13 @@
       "name": "t:names.media_with_text",
       "settings": {
         "media_position": "right",
-        "media_width": "medium",
-        "media_height": "small",
-        "section_width": "full-width",
-        "extend_media": false,
+        "media_width": "wide",
+        "media_height": "80svh",
+        "section_width": "page-width",
+        "extend_media": true,
         "background_color": "{{ settings.color_palette.color1 }}",
-        "padding-block-start": 80,
-        "padding-block-end": 80
+        "padding-block-start": 0,
+        "padding-block-end": 0
       }
     },
     "coffee_spotlight": {
