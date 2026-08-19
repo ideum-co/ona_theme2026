@@ -224,6 +224,7 @@
     "work_quickly_to_ship": "<p>We will work quickly to ship your order as soon as possible. Once your order has shipped, you will receive an email with further information. Delivery times vary depending on your location.</p>"
   },
   "info": {
+    "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
     "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
     "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
     "club_invite_badge": "Sits beside the heading, tucked under it.",
@@ -749,6 +750,7 @@
     "below_media": "Below media"
   },
   "settings": {
+    "logo_svg": "Logo SVG code",
     "eyebrow": "Eyebrow",
     "accordion": "Accordion",
     "account": "Account",

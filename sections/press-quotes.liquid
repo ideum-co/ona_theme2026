@@ -14,7 +14,14 @@
         class="press-quotes__item"
         {{ block.shopify_attributes }}
       >
-        {%- if block.settings.logo != blank -%}
+        {%- comment -%}
+          SVG first: Shopify's image picker cannot select an SVG, and pasted markup also lets the
+          logo pick up the section's colour through currentColor, which is how the design treats
+          these one-colour press logos.
+        {%- endcomment -%}
+        {%- if block.settings.logo_svg != blank -%}
+          <span class="press-quotes__logo--svg">{{ block.settings.logo_svg }}</span>
+        {%- elsif block.settings.logo != blank -%}
           {{
             block.settings.logo
             | image_url: width: 600
@@ -57,6 +64,7 @@
       show_arrows: show_arrows,
       icon_style: settings.icons_style,
       icon_shape: 'none',
+      arrows_position: 'center',
       auto_hide_controls: true,
       infinite: false,
       initial_slide: 0
@@ -82,22 +90,55 @@
     inline-size: 100%;
   }
 
+  /* The theme's slideshow paints its own page-coloured background, which showed up as a pale
+     band across this section. */
+  .press-quotes__carousel slideshow-container {
+    background: transparent;
+  }
+
+  /* Arrows sit at the edges and stay visible, as in the design, instead of fading in on hover
+     and blending against the background. */
+  .press-quotes__carousel slideshow-arrows {
+    mix-blend-mode: normal;
+  }
+
+  .press-quotes__carousel slideshow-arrows .slideshow-control {
+    opacity: 1;
+    color: currentcolor;
+
+    /* stylelint-disable-next-line declaration-no-important */
+    /* The hover-reveal animation in base.css is matched by a selector too specific to outrank
+       without an unreadable one of our own, and it starts from opacity 0 - which would make
+       always-visible arrows blink on hover. */
+    animation: none !important;
+  }
+
   .press-quotes__item {
     display: grid;
     justify-items: center;
     align-content: start;
     gap: var(--gap-xl);
     margin: 0;
-    padding-inline: var(--padding-lg);
+
+    /* Room for the arrows, which are absolutely positioned at the edges of the carousel and
+       would otherwise sit on top of the first and last quote. */
+    padding-inline: var(--press-quotes-item-inline, 3rem);
     text-align: center;
   }
 
-  .press-quotes__logo {
-    max-inline-size: min(100%, 12rem);
-    max-block-size: 3rem;
+  /* Height-driven so logos of different proportions line up as one band, which is how the
+     design reads. Width follows each logo's own ratio. */
+  .press-quotes__logo,
+  .press-quotes__logo--svg svg {
+    block-size: var(--press-quotes-logo-height, 3rem);
     inline-size: auto;
-    block-size: auto;
+    max-inline-size: 100%;
     object-fit: contain;
+  }
+
+  .press-quotes__logo--svg {
+    display: block;
+    line-height: 0;
   }
 
   .press-quotes__source {
@@ -124,9 +165,15 @@
       "name": "t:names.press_quote",
       "settings": [
         {
+          "type": "textarea",
+          "id": "logo_svg",
+          "label": "t:settings.logo_svg",
+          "info": "t:info.press_quotes_logo_svg"
+        },
+        {
           "type": "image_picker",
           "id": "logo",
-          "label": "t:settings.image"
+          "label": "t:settings.logo"
         },
         {
           "type": "text",

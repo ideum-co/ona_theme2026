@@ -178,6 +178,7 @@
     "disclosures": "Divulgaciones"
   },
   "settings": {
+    "logo_svg": "Código SVG del logo",
     "eyebrow": "Antetítulo",
     "alignment": "Alineación",
     "autoplay": "Reproducción automática",
@@ -1095,6 +1096,7 @@
     "disclosures": "Divulgaciones"
   },
   "info": {
+    "press_quotes_logo_svg": "Tiene prioridad sobre la imagen del logo. Usar currentColor en el SVG hace que tome el color de texto de la sección.",
     "product_intro_primary_link": "Si se deja vacío, usa la URL del propio producto.",
     "product_intro_wordmark": "Tiene prioridad sobre el texto del logotipo cuando se definen ambos.",
     "club_invite_badge": "Se coloca junto al título, superpuesto por debajo.",
