@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_highlight_spec": "Dettaglio",
     "404": "404",
     "colors": "Palette colori",
     "custom_section": "Sezione personalizzata",
@@ -171,6 +172,7 @@
     "disclosures": "Informative"
   },
   "settings": {
+    "eyebrow": "Occhiello",
     "alignment": "Allineamento",
     "autoplay": "Riproduzione automatica",
     "background": "Sfondo",
@@ -1086,6 +1088,8 @@
     "disclosures": "Informative"
   },
   "info": {
+    "product_highlight_image": "Se vuoto, usa l'immagine in evidenza del prodotto.",
+    "product_highlight_description": "Se vuoto, usa la descrizione del prodotto.",
     "carousel_layout_on_mobile": "Sui dispositivi mobili viene sempre utilizzato il carosello.",
     "video_alt_text": "Descrivi il video per gli utenti di tecnologie assistive",
     "video_autoplay": "I video saranno senza audio per impostazione predefinita",

@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_highlight_spec": "Detalj",
     "404": "404",
     "colors": "Färgpalett",
     "custom_section": "Anpassad sektion",
@@ -171,6 +172,7 @@
     "disclosures": "Upplysningar"
   },
   "settings": {
+    "eyebrow": "Överrubrik",
     "alignment": "Justering",
     "autoplay": "Autouppspelning",
     "background": "Bakgrund",
@@ -1086,6 +1088,8 @@
     "disclosures": "Upplysningar"
   },
   "info": {
+    "product_highlight_image": "Använder produktens utvalda bild om fältet lämnas tomt.",
+    "product_highlight_description": "Använder produktens egen beskrivning om fältet lämnas tomt.",
     "video_alt_text": "Beskriv videon för användare av hjälpmedelsteknik",
     "video_autoplay": "Videor kommer att vara tystade som standard",
     "video_external": "Använd en URL från YouTube eller Vimeo",

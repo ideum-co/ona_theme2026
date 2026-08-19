@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_highlight_spec": "Detail",
     "404": "404",
     "colors": "Paleta barev",
     "custom_section": "Vlastní sekce",
@@ -171,6 +172,7 @@
     "disclosures": "Prohlášení"
   },
   "settings": {
+    "eyebrow": "Nadtitulek",
     "alignment": "Zarovnání",
     "autoplay": "Automatické přehrávání",
     "background": "Pozadí",
@@ -1086,6 +1088,8 @@
     "disclosures": "Prohlášení"
   },
   "info": {
+    "product_highlight_image": "Když zůstane prázdné, použije se hlavní obrázek produktu.",
+    "product_highlight_description": "Když zůstane prázdné, použije se popis produktu.",
     "video_alt_text": "Popište video pro uživatele asistivních technologií",
     "video_autoplay": "Videa budou ve výchozím nastavení ztlumená",
     "video_external": "Použijte URL z YouTube nebo Vimeo",

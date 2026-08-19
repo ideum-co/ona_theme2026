@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_highlight_spec": "Detail",
     "404": "404",
     "custom_section": "Benutzerdefinierter Abschnitt",
     "icon": "Symbol",
@@ -171,6 +172,7 @@
     "disclosures": "Pflichtangaben"
   },
   "settings": {
+    "eyebrow": "Dachzeile",
     "autoplay": "Autoplay",
     "background": "Hintergrund",
     "border_radius": "Eckenradius",
@@ -1086,6 +1088,8 @@
     "disclosures": "Pflichtangaben"
   },
   "info": {
+    "product_highlight_image": "Bleibt das Feld leer, wird das Hauptbild des Produkts verwendet.",
+    "product_highlight_description": "Bleibt das Feld leer, wird die Beschreibung des Produkts verwendet.",
     "video_alt_text": "Beschreibe das Video für Benutzer von Hilfstechnologien",
     "video_autoplay": "Videos werden standardmäßig stummgeschaltet",
     "video_external": "Verwende eine YouTube- oder Vimeo-URL",

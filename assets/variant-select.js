@@ -53,12 +53,52 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
 
     const target = this.querySelector('.variant-select__trigger-value');
 
-    if (!target) return;
+    if (target) {
+      const optionTitle = input.closest('.variant-select__option')?.querySelector('.variant-select__option-title');
+      target.textContent = (optionTitle?.textContent ?? input.value).trim();
+    }
 
-    const optionTitle = input.closest('.variant-select__option')?.querySelector('.variant-select__option-title');
-
-    target.textContent = (optionTitle?.textContent ?? input.value).trim();
+    if (this.dataset.mode === 'cart') this.#pointFormAtVariant(input);
   };
+
+  /**
+   * Points a standalone add to cart form at the picked variant.
+   *
+   * Only used by `variant-select-dropdown`, where the dropdown is not inside a `<variant-picker>`
+   * and so nothing re-renders the section: the form has to be updated here. The form lives outside
+   * this element - the radios must stay out of it so they are not posted to /cart/add - so it is
+   * addressed by id.
+   *
+   * @param {HTMLInputElement} input - The selected radio.
+   */
+  #pointFormAtVariant(input) {
+    const formId = this.dataset.formId;
+
+    if (!formId) return;
+
+    const form = /** @type {any} */ (document.getElementById(formId));
+
+    if (!form) return;
+
+    const unavailable = input.dataset.variantAvailable === 'false';
+    const variantIdInput =
+      form.refs?.variantId instanceof HTMLInputElement
+        ? form.refs.variantId
+        : form.querySelector('input[ref="variantId"]');
+
+    if (variantIdInput instanceof HTMLInputElement) {
+      variantIdInput.value = input.value;
+      variantIdInput.disabled = unavailable;
+    }
+
+    const price = form.querySelector('[data-variant-select-price]');
+
+    if (price && input.dataset.variantPrice) price.textContent = input.dataset.variantPrice;
+
+    const submit = form.querySelector('button[type="submit"]');
+
+    if (submit instanceof HTMLButtonElement) submit.disabled = unavailable;
+  }
 
   /**
    * Closes the panel once a value is picked.

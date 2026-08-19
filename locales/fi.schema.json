@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_highlight_spec": "Yksityiskohta",
     "404": "404",
     "colors": "Väripaletti",
     "custom_section": "Mukautettu osio",
@@ -171,6 +172,7 @@
     "disclosures": "Ilmoitukset"
   },
   "settings": {
+    "eyebrow": "Yläotsikko",
     "alignment": "Tasaus",
     "autoplay": "Automaattinen toisto",
     "background": "Tausta",
@@ -1086,6 +1088,8 @@
     "disclosures": "Ilmoitukset"
   },
   "info": {
+    "product_highlight_image": "Jos kenttä on tyhjä, käytetään tuotteen pääkuvaa.",
+    "product_highlight_description": "Jos kenttä on tyhjä, käytetään tuotteen omaa kuvausta.",
     "carousel_layout_on_mobile": "Mobiilissa käytetään aina karusellia.",
     "video_alt_text": "Kuvaile video avustavan teknologian käyttäjille",
     "video_autoplay": "Videot mykistetään oletusarvoisesti",

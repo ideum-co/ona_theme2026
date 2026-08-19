@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_highlight_spec": "Détail",
     "404": "404",
     "custom_section": "Section personnalisée",
     "icon": "Icône",
@@ -171,6 +172,7 @@
     "disclosures": "Divulgations"
   },
   "settings": {
+    "eyebrow": "Surtitre",
     "autoplay": "Lecture automatique",
     "background": "Arrière-plan",
     "border_radius": "Rayon de la bordure",
@@ -1086,6 +1088,8 @@
     "disclosures": "Divulgations"
   },
   "info": {
+    "product_highlight_image": "Utilise l'image principale du produit si le champ est vide.",
+    "product_highlight_description": "Utilise la description du produit si le champ est vide.",
     "carousel_layout_on_mobile": "Le carrousel est toujours utilisé sur mobile",
     "video_alt_text": "Décrivez la vidéo pour les utilisateurs de technologies d’assistance",
     "video_autoplay": "Les vidéos seront mises en sourdine par défaut",

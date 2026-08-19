@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_highlight_spec": "详细信息",
     "404": "404",
     "colors": "调色板",
     "custom_section": "自定义分区",
@@ -171,6 +172,7 @@
     "disclosures": "披露信息"
   },
   "settings": {
+    "eyebrow": "眉题",
     "alignment": "对齐方式",
     "autoplay": "自动播放",
     "background": "背景",
@@ -1086,6 +1088,8 @@
     "disclosures": "披露信息"
   },
   "info": {
+    "product_highlight_image": "留空时使用商品的主图。",
+    "product_highlight_description": "留空时使用商品自身的描述。",
     "video_alt_text": "为使用辅助技术的用户描述视频",
     "video_autoplay": "视频将默认静音",
     "video_external": "使用 YouTube 或 Vimeo URL",
