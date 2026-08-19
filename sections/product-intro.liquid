@@ -59,7 +59,7 @@
       the section colour through currentColor.
     {%- endcomment -%}
     {%- if settings.wordmark_svg != blank -%}
-      <div class="product-intro__wordmark-svg">{{ settings.wordmark_svg }}</div>
+      <div class="product-intro__wordmark-svg">{%- render 'svg-without-styles', svg: settings.wordmark_svg -%}</div>
     {%- elsif settings.wordmark_image != blank -%}
       {{
         settings.wordmark_image
