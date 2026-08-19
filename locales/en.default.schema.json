@@ -224,6 +224,7 @@
     "work_quickly_to_ship": "<p>We will work quickly to ship your order as soon as possible. Once your order has shipped, you will receive an email with further information. Delivery times vary depending on your location.</p>"
   },
   "info": {
+    "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
     "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
@@ -754,6 +755,7 @@
     "below_media": "Below media"
   },
   "settings": {
+    "svg_code": "SVG code",
     "button_placement": "Button placement",
     "heading_dividers": "Rule under headings",
     "column_ratios": "Column widths",

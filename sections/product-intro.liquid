@@ -16,6 +16,11 @@
   if primary_link == blank
     assign primary_link = product.url
   endif
+
+  # The wordmark is display-scale, so it gets a fluid ramp against a 1440px reference instead of a
+  # fixed size that would overflow a phone. The smaller texts keep the size as typed.
+  assign wordmark_min = settings.wordmark_size | times: 0.5 | round
+  assign wordmark_vw = settings.wordmark_size | times: 100.0 | divided_by: 1440
 -%}
 
 <div
@@ -24,6 +29,16 @@
     --product-intro-background: {{ settings.background_color }};
     --product-intro-color: {{ settings.text_color }};
     --product-intro-wordmark-color: {{ settings.wordmark_color }};
+    --product-intro-wordmark-size: clamp({{ wordmark_min }}px, {{ wordmark_vw }}vw, {{ settings.wordmark_size }}px);
+    --product-intro-eyebrow-size: {{ settings.eyebrow_size }}px;
+    --product-intro-heading-size: {{ settings.heading_size }}px;
+    --product-intro-body-size: {{ settings.body_size }}px;
+    {% if settings.wordmark_style == 'gradient' %}
+      --product-intro-wordmark-gradient: {{ settings.wordmark_gradient }};
+    {% endif %}
+    {% if settings.wordmark_shadow_color != blank and settings.wordmark_shadow_color.alpha > 0 %}
+      --product-intro-wordmark-shadow: 0 {{ settings.wordmark_shadow_offset }}px {{ settings.wordmark_shadow_blur }}px rgba({{ settings.wordmark_shadow_color.rgba }});
+    {% endif %}
     --product-intro-button-background: {{ settings.button_background }};
     --product-intro-button-color: {{ settings.button_text }};
     --product-intro-padding-block-start: {{ settings.padding-block-start }}px;
@@ -39,14 +54,22 @@
       <p class="product-intro__eyebrow">{{ settings.eyebrow }}</p>
     {%- endif -%}
 
-    {%- if settings.wordmark_image != blank -%}
+    {%- comment -%}
+      SVG first: Shopify's image picker cannot select an SVG, and inline markup can also pick up
+      the section colour through currentColor.
+    {%- endcomment -%}
+    {%- if settings.wordmark_svg != blank -%}
+      <div class="product-intro__wordmark-svg">{{ settings.wordmark_svg }}</div>
+    {%- elsif settings.wordmark_image != blank -%}
       {{
         settings.wordmark_image
         | image_url: width: 1200
         | image_tag: widths: '300, 600, 900, 1200', sizes: '(min-width: 750px) 30vw, 80vw', loading: 'lazy', class: 'product-intro__wordmark-image'
       }}
     {%- elsif settings.wordmark_text != blank -%}
-      <p class="product-intro__wordmark-text">{{ settings.wordmark_text }}</p>
+      <p class="product-intro__wordmark-text product-intro__wordmark-text--{{ settings.wordmark_style }}">
+        {{- settings.wordmark_text -}}
+      </p>
     {%- endif -%}
   </div>
 
@@ -138,7 +161,7 @@
 
   .product-intro__eyebrow {
     margin: 0;
-    font-size: var(--font-size--sm);
+    font-size: var(--product-intro-eyebrow-size, var(--font-size--sm));
   }
 
   .product-intro__wordmark-image {
@@ -147,12 +170,31 @@
     display: block;
   }
 
+  .product-intro__wordmark-svg svg {
+    inline-size: 100%;
+    block-size: auto;
+    display: block;
+  }
+
   .product-intro__wordmark-text {
     margin: 0;
     font-family: var(--font-heading--family);
-    font-size: var(--font-h1--size);
+    font-size: var(--product-intro-wordmark-size, var(--font-h1--size));
     line-height: 1.05;
     color: var(--product-intro-wordmark-color, currentcolor);
+    text-shadow: var(--product-intro-wordmark-shadow, none);
+  }
+
+  /* Gradient lettering: the gradient is painted behind the text and clipped to the glyphs, so the
+     fill has to go transparent. `-webkit-` prefixes included - Safari still needs them. */
+  .product-intro__wordmark-text--gradient {
+    /* The fallback is a flat currentcolor gradient, not `none`: with the fill forced transparent,
+       a missing gradient would make the lettering vanish outright. */
+    background-image: var(--product-intro-wordmark-gradient, linear-gradient(currentcolor, currentcolor));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
   }
 
   .product-intro__details {
@@ -165,14 +207,14 @@
   .product-intro__heading {
     margin: 0;
     font-family: var(--font-heading--family);
-    font-size: var(--font-h2--size);
+    font-size: var(--product-intro-heading-size, var(--font-h2--size));
     font-weight: var(--font-heading--weight);
   }
 
   .product-intro__body {
     display: grid;
     gap: var(--gap-sm);
-    font-size: var(--font-size--sm);
+    font-size: var(--product-intro-body-size, var(--font-size--sm));
   }
 
   .product-intro__body :is(p, ul, ol) {
@@ -214,8 +256,24 @@
       "default": "Introducing"
     },
     {
+      "type": "range",
+      "id": "eyebrow_size",
+      "label": "t:settings.size",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
       "type": "header",
       "content": "t:content.wordmark"
+    },
+    {
+      "type": "textarea",
+      "id": "wordmark_svg",
+      "label": "t:settings.svg_code",
+      "info": "t:info.svg_code"
     },
     {
       "type": "image_picker",
@@ -229,10 +287,71 @@
       "label": "t:settings.text"
     },
     {
+      "type": "range",
+      "id": "wordmark_size",
+      "label": "t:settings.size",
+      "min": 24,
+      "max": 160,
+      "step": 2,
+      "unit": "px",
+      "default": 72
+    },
+    {
+      "type": "select",
+      "id": "wordmark_style",
+      "label": "t:settings.color",
+      "options": [
+        {
+          "value": "solid",
+          "label": "t:options.solid"
+        },
+        {
+          "value": "gradient",
+          "label": "t:options.gradient"
+        }
+      ],
+      "default": "solid"
+    },
+    {
       "type": "color",
       "id": "wordmark_color",
       "label": "t:settings.color",
-      "default": "#d9a441"
+      "default": "#d9a441",
+      "visible_if": "{{ section.settings.wordmark_style == 'solid' }}"
+    },
+    {
+      "type": "color_background",
+      "id": "wordmark_gradient",
+      "label": "t:options.gradient",
+      "default": "linear-gradient(120deg, #d9a441 20%, #f3dda0 50%, #b8862b 80%)",
+      "visible_if": "{{ section.settings.wordmark_style == 'gradient' }}"
+    },
+    {
+      "type": "color",
+      "id": "wordmark_shadow_color",
+      "label": "t:settings.shadow_color",
+      "alpha": true,
+      "default": "#00000000"
+    },
+    {
+      "type": "range",
+      "id": "wordmark_shadow_offset",
+      "label": "t:settings.vertical_offset",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "wordmark_shadow_blur",
+      "label": "t:settings.blur",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 8
     },
     {
       "type": "header",
@@ -245,10 +364,30 @@
       "default": "The <em>sweet</em> spot."
     },
     {
+      "type": "range",
+      "id": "heading_size",
+      "label": "t:settings.size",
+      "min": 20,
+      "max": 96,
+      "step": 1,
+      "unit": "px",
+      "default": 40
+    },
+    {
       "type": "richtext",
       "id": "body",
       "label": "t:settings.description",
       "info": "t:info.product_highlight_description"
+    },
+    {
+      "type": "range",
+      "id": "body_size",
+      "label": "t:settings.size",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 14
     },
     {
       "type": "header",

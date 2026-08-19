@@ -179,6 +179,7 @@
     "disclosures": "Divulgaciones"
   },
   "settings": {
+    "svg_code": "Código SVG",
     "button_placement": "Posición del botón",
     "heading_dividers": "Línea bajo los encabezados",
     "column_ratios": "Ancho de columnas",
@@ -1102,6 +1103,7 @@
     "disclosures": "Divulgaciones"
   },
   "info": {
+    "svg_code": "Tiene prioridad sobre la imagen. Usar currentColor en el SVG hace que tome el color de texto de la sección.",
     "footer_column_ratios": "Tamaños CSS de las columnas en escritorio, por ejemplo «1fr 1fr 2fr 1.5fr». Vacío = columnas iguales.",
     "press_quotes_logo_svg": "Tiene prioridad sobre la imagen del logo. Usar currentColor en el SVG hace que tome el color de texto de la sección.",
     "product_intro_primary_link": "Si se deja vacío, usa la URL del propio producto.",

@@ -179,6 +179,7 @@
     "disclosures": "Informacje prawne"
   },
   "settings": {
+    "svg_code": "Kod SVG",
     "button_placement": "Położenie przycisku",
     "heading_dividers": "Linia pod nagłówkami",
     "column_ratios": "Szerokości kolumn",
@@ -1102,6 +1103,7 @@
     "disclosures": "Informacje prawne"
   },
   "info": {
+    "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
     "product_intro_primary_link": "Falls back to the product's own URL when left empty.",

@@ -179,6 +179,7 @@
     "disclosures": "資訊揭露"
   },
   "settings": {
+    "svg_code": "SVG 代碼",
     "button_placement": "按鈕位置",
     "heading_dividers": "標題下方分隔線",
     "column_ratios": "欄寬",
@@ -1102,6 +1103,7 @@
     "disclosures": "資訊揭露"
   },
   "info": {
+    "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
     "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
