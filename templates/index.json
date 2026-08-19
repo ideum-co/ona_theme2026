@@ -265,7 +265,7 @@
       "name": "t:names.media_with_text",
       "settings": {
         "media_position": "right",
-        "media_width": "wide",
+        "media_width": "medium",
         "media_height": "80svh",
         "section_width": "page-width",
         "extend_media": true,
