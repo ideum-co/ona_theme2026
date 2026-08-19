@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "footer_brand": "Merkrij in footer",
     "press_quote": "Quote",
     "press_quotes": "Persquotes",
     "product_intro": "Productintroductie",
@@ -178,6 +179,8 @@
     "disclosures": "Toelichtingen"
   },
   "settings": {
+    "heading_dividers": "Lijn onder koppen",
+    "column_ratios": "Kolombreedtes",
     "logo_svg": "SVG-code van logo",
     "eyebrow": "Bovenkop",
     "autoplay": "Automatisch afspelen",
@@ -1096,6 +1099,7 @@
     "disclosures": "Toelichtingen"
   },
   "info": {
+    "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
     "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
     "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",

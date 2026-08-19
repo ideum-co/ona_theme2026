@@ -216,6 +216,7 @@
     "work_quickly_to_ship": "<p>ہم جلد از جلد آپ کا آرڈر شپ کرنے کے لیے تیزی سے کام کریں گے۔ آپ کا آرڈر شپ ہونے کے بعد، آپ کو مزید معلومات کے ساتھ ایک ای میل موصول ہوگی۔ آپ کے مقام کے لحاظ سے ترسیل کے اوقات مختلف ہو سکتے ہیں۔</p>"
   },
   "info": {
+    "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
     "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
     "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
@@ -251,6 +252,7 @@
     "media_type_info": "خصوصیات آپ کے مینو کے لنک سے پُر کی گئی ہیں"
   },
   "names": {
+    "footer_brand": "فوٹر برانڈ قطار",
     "press_quote": "اقتباس",
     "press_quotes": "پریس اقتباسات",
     "product_intro": "پروڈکٹ کا تعارف",
@@ -697,6 +699,8 @@
     "below_media": "میڈیا کے نیچے"
   },
   "settings": {
+    "heading_dividers": "سرخیوں کے نیچے لکیر",
+    "column_ratios": "کالم کی چوڑائی",
     "logo_svg": "لوگو کا SVG کوڈ",
     "eyebrow": "ذیلی سرخی",
     "accordion": "ایکارڈین",

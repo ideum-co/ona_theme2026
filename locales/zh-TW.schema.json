@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "footer_brand": "頁尾品牌列",
     "press_quote": "引用",
     "press_quotes": "媒體評價",
     "product_intro": "商品介紹",
@@ -178,6 +179,8 @@
     "disclosures": "資訊揭露"
   },
   "settings": {
+    "heading_dividers": "標題下方分隔線",
+    "column_ratios": "欄寬",
     "logo_svg": "標誌 SVG 代碼",
     "eyebrow": "眉題",
     "alignment": "對齊",
@@ -1096,6 +1099,7 @@
     "disclosures": "資訊揭露"
   },
   "info": {
+    "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
     "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
     "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",

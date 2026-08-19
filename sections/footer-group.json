@@ -170,7 +170,9 @@
         "gap": 40,
         "background_color": "{{ settings.color_palette.foreground }}",
         "padding-block-start": 64,
-        "padding-block-end": 48
+        "padding-block-end": 48,
+        "column_ratios": "1.1fr 1fr 2.2fr 1.6fr",
+        "heading_dividers": true
       }
     },
     "utilities": {
@@ -192,6 +194,37 @@
             "case": "none",
             "text_color": "{{ settings.color_palette.background }}"
           }
+        }
+      },
+      "block_order": [
+        "copyright",
+        "policy_list"
+      ],
+      "settings": {
+        "section_width": "page-width",
+        "gap": 24,
+        "background_color": "{{ settings.color_palette.foreground }}",
+        "divider_thickness": 1,
+        "padding-block-start": 12,
+        "padding-block-end": 16
+      }
+    },
+    "brand": {
+      "type": "footer-brand",
+      "blocks": {
+        "wordmark": {
+          "type": "text",
+          "settings": {
+            "text": "<p>ONA COFFEE</p>",
+            "width": "fit-content",
+            "max_width": "normal",
+            "alignment": "left",
+            "type_preset": "h4",
+            "letter_spacing": "0.18em",
+            "case": "uppercase",
+            "text_color": "{{ settings.color_palette.background }}"
+          },
+          "blocks": {}
         },
         "social_icons": {
           "type": "social-links",
@@ -204,22 +237,21 @@
         }
       },
       "block_order": [
-        "copyright",
-        "policy_list",
+        "wordmark",
         "social_icons"
       ],
       "settings": {
         "section_width": "page-width",
         "gap": 24,
         "background_color": "{{ settings.color_palette.foreground }}",
-        "divider_thickness": 1,
-        "padding-block-start": 12,
-        "padding-block-end": 16
+        "padding-block-start": 24,
+        "padding-block-end": 32
       }
     }
   },
   "order": [
     "footer",
+    "brand",
     "utilities"
   ]
 }

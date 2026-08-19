@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "footer_brand": "Linha da marca no rodapé",
     "press_quote": "Citação",
     "press_quotes": "Citações da imprensa",
     "product_intro": "Apresentação do produto",
@@ -178,6 +179,8 @@
     "disclosures": "Divulgações"
   },
   "settings": {
+    "heading_dividers": "Linha sob os títulos",
+    "column_ratios": "Largura das colunas",
     "logo_svg": "Código SVG do logótipo",
     "eyebrow": "Antetítulo",
     "alignment": "Alinhamento",
@@ -1096,6 +1099,7 @@
     "disclosures": "Divulgações"
   },
   "info": {
+    "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
     "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
     "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",

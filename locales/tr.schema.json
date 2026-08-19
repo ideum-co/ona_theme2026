@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "footer_brand": "Alt bilgi marka satırı",
     "press_quote": "Alıntı",
     "press_quotes": "Basın alıntıları",
     "product_intro": "Ürün tanıtımı",
@@ -178,6 +179,8 @@
     "disclosures": "Bildirimler"
   },
   "settings": {
+    "heading_dividers": "Başlıkların altında çizgi",
+    "column_ratios": "Sütun genişlikleri",
     "logo_svg": "Logo SVG kodu",
     "eyebrow": "Üst başlık",
     "autoplay": "Otomatik oynatma",
@@ -1096,6 +1099,7 @@
     "disclosures": "Bildirimler"
   },
   "info": {
+    "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
     "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
     "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",

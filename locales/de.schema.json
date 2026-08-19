@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "footer_brand": "Footer-Markenzeile",
     "press_quote": "Zitat",
     "press_quotes": "Pressestimmen",
     "product_intro": "Produktvorstellung",
@@ -178,6 +179,8 @@
     "disclosures": "Pflichtangaben"
   },
   "settings": {
+    "heading_dividers": "Linie unter Überschriften",
+    "column_ratios": "Spaltenbreiten",
     "logo_svg": "Logo-SVG-Code",
     "eyebrow": "Dachzeile",
     "autoplay": "Autoplay",
@@ -1096,6 +1099,7 @@
     "disclosures": "Pflichtangaben"
   },
   "info": {
+    "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
     "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
     "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
