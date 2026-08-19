@@ -2139,6 +2139,7 @@
           "type": "quote",
           "settings": {
             "logo_svg": "",
+            "logo": "shopify://shop_images/broadsheet.png",
             "source": "",
             "quote": "\"If you've been fortunate enough to visit ONA's Canberra location, or any others for that matter, you'll be aware of the meticulous details found within their cafes\""
           }
