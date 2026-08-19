@@ -21,13 +21,44 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
     super.connectedCallback();
 
     this.addEventListener('click', this.#handleOptionClick);
+    this.addEventListener('change', this.#showSelectedValue);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
 
     this.removeEventListener('click', this.#handleOptionClick);
+    this.removeEventListener('change', this.#showSelectedValue);
   }
+
+  /**
+   * Writes the picked value onto the trigger.
+   *
+   * The trigger label is server-rendered, so on the product page the re-render brings it back
+   * updated on its own. Inside a product card it does not: `VariantPicker#updateVariantPicker`
+   * skips the morph when the card and the product page are configured with different variant
+   * styles, which is what keeps the card from turning into the product page's buttons. Price,
+   * media and availability are handled by `product-card.js` straight off the fetched HTML, so
+   * this label was the one thing left showing a stale value - and on a card with no price block
+   * it is the only feedback there is.
+   *
+   * Doing it here also means the trigger updates on the spot instead of waiting for the fetch.
+   *
+   * @param {Event} event - The change event.
+   */
+  #showSelectedValue = (event) => {
+    const input = event.target;
+
+    if (!(input instanceof HTMLInputElement) || input.type !== 'radio') return;
+
+    const target = this.querySelector('.variant-select__trigger-value');
+
+    if (!target) return;
+
+    const optionTitle = input.closest('.variant-select__option')?.querySelector('.variant-select__option-title');
+
+    target.textContent = (optionTitle?.textContent ?? input.value).trim();
+  };
 
   /**
    * Closes the panel once a value is picked.
