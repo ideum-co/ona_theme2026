@@ -2138,6 +2138,7 @@
         "quote_aCYyE8": {
           "type": "quote",
           "settings": {
+            "logo_svg": "",
             "source": "",
             "quote": "\"If you've been fortunate enough to visit ONA's Canberra location, or any others for that matter, you'll be aware of the meticulous details found within their cafes\""
           }
@@ -2145,6 +2146,7 @@
         "quote_efak7r": {
           "type": "quote",
           "settings": {
+            "logo_svg": "",
             "source": "",
             "quote": "\"If you've been fortunate enough to visit ONA's Canberra location, or any others for that matter, you'll be aware of the meticulous details found within their cafes\""
           }
@@ -2152,6 +2154,7 @@
         "quote_NUbmXf": {
           "type": "quote",
           "settings": {
+            "logo_svg": "",
             "source": "",
             "quote": "\"If you've been fortunate enough to visit ONA's Canberra location, or any others for that matter, you'll be aware of the meticulous details found within their cafes\""
           }
@@ -2159,6 +2162,7 @@
         "quote_PhjiUN": {
           "type": "quote",
           "settings": {
+            "logo_svg": "",
             "source": "",
             "quote": "“Since 2012, our partnership with ONA Coffee has demonstrated their commitment to quality.”"
           }
@@ -2166,6 +2170,7 @@
         "quote_Qn84iL": {
           "type": "quote",
           "settings": {
+            "logo_svg": "",
             "source": "",
             "quote": "“Since 2012, our partnership with ONA Coffee has demonstrated their commitment to quality.”"
           }
@@ -2482,6 +2487,7 @@
         "espresso_room",
         "broadsheet"
       ],
+      "disabled": true,
       "name": "t:names.section",
       "settings": {
         "content_direction": "row",
