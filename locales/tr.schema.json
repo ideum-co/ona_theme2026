@@ -9,6 +9,12 @@
  */
 {
   "names": {
+    "press_quote": "Alıntı",
+    "press_quotes": "Basın alıntıları",
+    "product_intro": "Ürün tanıtımı",
+    "club_invite_feature": "Özellik",
+    "club_invite": "Kulüp daveti",
+    "product_highlight": "Özel sürüm",
     "product_highlight_spec": "Ayrıntı",
     "404": "404",
     "custom_section": "Özel bölüm",
@@ -865,6 +871,7 @@
     "input_field": "Giriş alanı"
   },
   "content": {
+    "wordmark": "Kelime logosu",
     "background_video": "Arka plan videosu",
     "describe_the_video_for": "Ekran okuyucu kullanan müşteriler için videoyu açıklayın. [Daha fazla bilgi edinin](https://help.shopify.com/manual/online-store/themes/theme-structure/theme-features#video-block)",
     "width_is_automatically_optimized": "Genişlik, mobil cihazlar için otomatik olarak optimize edilir.",
@@ -1088,6 +1095,9 @@
     "disclosures": "Bildirimler"
   },
   "info": {
+    "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
+    "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
+    "club_invite_badge": "Sits beside the heading, tucked under it.",
     "product_highlight_image": "Boş bırakılırsa ürünün öne çıkan görseli kullanılır.",
     "product_highlight_description": "Boş bırakılırsa ürünün kendi açıklaması kullanılır.",
     "video_alt_text": "Yardımcı teknoloji kullanıcıları için videoyu açıklayın",

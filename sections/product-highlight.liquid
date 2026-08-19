@@ -182,7 +182,7 @@
     flex-direction: column;
     gap: var(--gap-2xl);
     padding-block: var(--product-highlight-padding-block-start) var(--product-highlight-padding-block-end);
-    padding-inline: var(--util-page-margin, var(--padding-2xl));
+    padding-inline: var(--page-margin, 1rem);
   }
 
   .product-highlight__heading {
@@ -290,7 +290,7 @@
 
 {% schema %}
 {
-  "name": "t:names.featured_product",
+  "name": "t:names.product_highlight",
   "tag": "section",
   "blocks": [
     {
@@ -448,7 +448,7 @@
   ],
   "presets": [
     {
-      "name": "t:names.featured_product",
+      "name": "t:names.product_highlight",
       "blocks": [
         {
           "type": "spec"

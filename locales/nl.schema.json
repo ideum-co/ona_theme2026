@@ -9,6 +9,12 @@
  */
 {
   "names": {
+    "press_quote": "Quote",
+    "press_quotes": "Persquotes",
+    "product_intro": "Productintroductie",
+    "club_invite_feature": "Kenmerk",
+    "club_invite": "Clubuitnodiging",
+    "product_highlight": "Speciale release",
     "product_highlight_spec": "Detail",
     "404": "404",
     "custom_section": "Aangepaste sectie",
@@ -865,6 +871,7 @@
     "input_field": "Invoerveld"
   },
   "content": {
+    "wordmark": "Woordmerk",
     "background_video": "Achtergrondvideo",
     "describe_the_video_for": "Geef een beschrijving van de video voor klanten die schermlezers gebruiken. [Meer informatie](https://help.shopify.com/manual/online-store/themes/theme-structure/theme-features#video-block)",
     "width_is_automatically_optimized": "Breedte wordt automatisch geoptimaliseerd voor mobiel.",
@@ -1088,6 +1095,9 @@
     "disclosures": "Toelichtingen"
   },
   "info": {
+    "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
+    "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
+    "club_invite_badge": "Sits beside the heading, tucked under it.",
     "product_highlight_image": "Gebruikt de uitgelichte afbeelding van het product als dit leeg blijft.",
     "product_highlight_description": "Gebruikt de beschrijving van het product als dit leeg blijft.",
     "carousel_layout_on_mobile": "Op mobiel wordt altijd een carrousel gebruikt",

@@ -30,6 +30,7 @@
     "text": "ٹیکسٹ"
   },
   "content": {
+    "wordmark": "ورڈ مارک",
     "visible_if_collection_has_more_products": "اگر کلیکشن میں دکھائے گئے پروڈکٹ سے زیادہ پروڈکٹ ہوں تو ظاہر ہوتا ہے",
     "advanced": "ایڈوانسڈ",
     "appearance": "ظاہری شکل",
@@ -215,6 +216,9 @@
     "work_quickly_to_ship": "<p>ہم جلد از جلد آپ کا آرڈر شپ کرنے کے لیے تیزی سے کام کریں گے۔ آپ کا آرڈر شپ ہونے کے بعد، آپ کو مزید معلومات کے ساتھ ایک ای میل موصول ہوگی۔ آپ کے مقام کے لحاظ سے ترسیل کے اوقات مختلف ہو سکتے ہیں۔</p>"
   },
   "info": {
+    "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
+    "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
+    "club_invite_badge": "Sits beside the heading, tucked under it.",
     "product_highlight_image": "خالی چھوڑنے پر پروڈکٹ کی نمایاں تصویر استعمال ہوتی ہے۔",
     "product_highlight_description": "خالی چھوڑنے پر پروڈکٹ کی اپنی تفصیل استعمال ہوتی ہے۔",
     "actions_display_style": "موبائل پر ہمیشہ آئیکن استعمال ہوتے ہیں",
@@ -246,6 +250,12 @@
     "media_type_info": "خصوصیات آپ کے مینو کے لنک سے پُر کی گئی ہیں"
   },
   "names": {
+    "press_quote": "اقتباس",
+    "press_quotes": "پریس اقتباسات",
+    "product_intro": "پروڈکٹ کا تعارف",
+    "club_invite_feature": "خصوصیت",
+    "club_invite": "کلب کی دعوت",
+    "product_highlight": "خصوصی ریلیز",
     "product_highlight_spec": "تفصیل",
     "column": "کالم",
     "product_title": "پروڈکٹ کا ٹائٹل",

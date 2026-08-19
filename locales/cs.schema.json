@@ -9,6 +9,12 @@
  */
 {
   "names": {
+    "press_quote": "Citace",
+    "press_quotes": "Citace z médií",
+    "product_intro": "Představení produktu",
+    "club_invite_feature": "Vlastnost",
+    "club_invite": "Pozvánka do klubu",
+    "product_highlight": "Speciální edice",
     "product_highlight_spec": "Detail",
     "404": "404",
     "colors": "Paleta barev",
@@ -865,6 +871,7 @@
     "input_field": "Vstupní pole"
   },
   "content": {
+    "wordmark": "Slovní značka",
     "advanced": "Pokročilé",
     "background_image": "Obrázek na pozadí",
     "background_video": "Video na pozadí",
@@ -1088,6 +1095,9 @@
     "disclosures": "Prohlášení"
   },
   "info": {
+    "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
+    "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
+    "club_invite_badge": "Sits beside the heading, tucked under it.",
     "product_highlight_image": "Když zůstane prázdné, použije se hlavní obrázek produktu.",
     "product_highlight_description": "Když zůstane prázdné, použije se popis produktu.",
     "video_alt_text": "Popište video pro uživatele asistivních technologií",

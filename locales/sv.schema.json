@@ -9,6 +9,12 @@
  */
 {
   "names": {
+    "press_quote": "Citat",
+    "press_quotes": "Presscitat",
+    "product_intro": "Produktintroduktion",
+    "club_invite_feature": "Funktion",
+    "club_invite": "Klubbinbjudan",
+    "product_highlight": "Specialsläpp",
     "product_highlight_spec": "Detalj",
     "404": "404",
     "colors": "Färgpalett",
@@ -865,6 +871,7 @@
     "input_field": "Inmatningsfält"
   },
   "content": {
+    "wordmark": "Ordmärke",
     "advanced": "Avancerat",
     "background_image": "Bakgrundsbild",
     "background_video": "Bakgrundsvideo",
@@ -1088,6 +1095,9 @@
     "disclosures": "Upplysningar"
   },
   "info": {
+    "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
+    "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
+    "club_invite_badge": "Sits beside the heading, tucked under it.",
     "product_highlight_image": "Använder produktens utvalda bild om fältet lämnas tomt.",
     "product_highlight_description": "Använder produktens egen beskrivning om fältet lämnas tomt.",
     "video_alt_text": "Beskriv videon för användare av hjälpmedelsteknik",

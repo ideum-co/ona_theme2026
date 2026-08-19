@@ -33,6 +33,7 @@
     "text": "Text"
   },
   "content": {
+    "wordmark": "Wordmark",
     "visible_if_collection_has_more_products": "Visible if collection has more products than shown",
     "advanced": "Advanced",
     "appearance": "Appearance",
@@ -223,6 +224,9 @@
     "work_quickly_to_ship": "<p>We will work quickly to ship your order as soon as possible. Once your order has shipped, you will receive an email with further information. Delivery times vary depending on your location.</p>"
   },
   "info": {
+    "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
+    "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
+    "club_invite_badge": "Sits beside the heading, tucked under it.",
     "product_highlight_image": "Falls back to the product's featured image when left empty.",
     "product_highlight_description": "Falls back to the product's own description when left empty.",
     "actions_display_style": "Icons are always used on mobile",
@@ -254,6 +258,12 @@
     "media_type_info": "Features are populated from your menu links"
   },
   "names": {
+    "press_quote": "Quote",
+    "press_quotes": "Press quotes",
+    "product_intro": "Product introduction",
+    "club_invite_feature": "Feature",
+    "club_invite": "Club invite",
+    "product_highlight": "Special release",
     "product_highlight_spec": "Detail",
     "column": "Column",
     "product_title": "Product title",

@@ -9,6 +9,12 @@
  */
 {
   "names": {
+    "press_quote": "Sitaatti",
+    "press_quotes": "Lehdistösitaatit",
+    "product_intro": "Tuote-esittely",
+    "club_invite_feature": "Ominaisuus",
+    "club_invite": "Kutsu klubiin",
+    "product_highlight": "Erikoisjulkaisu",
     "product_highlight_spec": "Yksityiskohta",
     "404": "404",
     "colors": "Väripaletti",
@@ -865,6 +871,7 @@
     "input_field": "Syöttökenttä"
   },
   "content": {
+    "wordmark": "Sanamerkki",
     "advanced": "Lisäasetukset",
     "background_image": "Taustakuva",
     "background_video": "Taustavideo",
@@ -1088,6 +1095,9 @@
     "disclosures": "Ilmoitukset"
   },
   "info": {
+    "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
+    "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
+    "club_invite_badge": "Sits beside the heading, tucked under it.",
     "product_highlight_image": "Jos kenttä on tyhjä, käytetään tuotteen pääkuvaa.",
     "product_highlight_description": "Jos kenttä on tyhjä, käytetään tuotteen omaa kuvausta.",
     "carousel_layout_on_mobile": "Mobiilissa käytetään aina karusellia.",
