@@ -838,7 +838,7 @@
       ],
       "name": "t:names.club_invite",
       "settings": {
-        "badge": "shopify://shop_images/banner2732height.jpg",
+        "badge": "shopify://shop_images/coffee-club.svg",
         "heading": "Join the <em>club</em>",
         "body": "<p>Freshly roasted coffee delivered on your schedule.<br/>Choose your favourites, delivery anytime, and discover new coffees as they're released.</p>",
         "button_label": "Explore subscriptions",
