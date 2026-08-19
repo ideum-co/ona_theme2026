@@ -17,7 +17,7 @@
 %}
 
 <div
-  class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}{% if section.settings.limit_content_width %} section-background--limited{% endif %}"
+  class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
 ></div>
 <div
   class="section section--{{ section.settings.section_width }} disable-section-top-offset media-with-content{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %} spacing-style {{ media_class_modifier }}{% if section.settings.limit_content_width %} media-with-content--limited{% endif %}"
@@ -154,11 +154,9 @@
     }
   }
 
-  /* Caps the section on very wide screens. The background is capped with it, so the section reads
-     as one block instead of a colour band running past the media. `inset: 0` plus auto inline
-     margins is what centres the absolutely positioned background. */
-  .media-with-content--limited,
-  .section-background--limited {
+  /* Caps the media and text on very wide screens. The section background deliberately stays
+     edge to edge: capping it too left the page colour showing down both sides of the section. */
+  .media-with-content--limited {
     max-inline-size: var(--media-with-content-max-width, 1280px);
     margin-inline: auto;
   }
