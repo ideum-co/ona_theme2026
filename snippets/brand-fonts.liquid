@@ -1,0 +1,109 @@
+{%- doc -%}
+  Declares the brand typefaces and points the theme's font variables at them.
+
+  Silk Serif and Karla are licensed files shipped with the theme, not Shopify-hosted fonts, so
+  they cannot come from the `font_picker` settings. This snippet declares them and then overrides
+  `--font-*--family` from `theme-styles-variables`, which is why `theme.liquid` renders it after
+  that snippet - both write to `:root`, so the later one wins.
+
+  Which family goes where comes from the homepage comp: Silk Serif is used only for section
+  headings and the hero, everything else - product titles included - is Karla.
+
+  @example
+  {% render 'brand-fonts' %}
+{%- enddoc -%}
+
+{% style %}
+  @font-face {
+    font-family: 'Silk Serif';
+    src: url({{ 'silk-serif-regular.woff2' | asset_url }}) format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Silk Serif';
+    src: url({{ 'silk-serif-italic.woff2' | asset_url }}) format('woff2');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Silk Serif';
+    src: url({{ 'silk-serif-medium.woff2' | asset_url }}) format('woff2');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Silk Serif';
+    src: url({{ 'silk-serif-medium-italic.woff2' | asset_url }}) format('woff2');
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Karla';
+    src: url({{ 'karla-regular.woff2' | asset_url }}) format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Karla';
+    src: url({{ 'karla-italic.woff2' | asset_url }}) format('woff2');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Karla';
+    src: url({{ 'karla-medium.woff2' | asset_url }}) format('woff2');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Karla';
+    src: url({{ 'karla-bold.woff2' | asset_url }}) format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Karla';
+    src: url({{ 'karla-bold-italic.woff2' | asset_url }}) format('woff2');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+  }
+
+  :root {
+    --font-brand-display: 'Silk Serif', Georgia, 'Times New Roman', serif;
+    --font-brand-text: 'Karla', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+
+    --font-body--family: var(--font-brand-text);
+    --font-body--style: normal;
+    --font-body--weight: 400;
+
+    --font-subheading--family: var(--font-brand-text);
+    --font-subheading--style: normal;
+    --font-subheading--weight: 400;
+
+    --font-heading--family: var(--font-brand-display);
+    --font-heading--style: normal;
+    --font-heading--weight: 400;
+
+    --font-accent--family: var(--font-brand-display);
+    --font-accent--style: normal;
+    --font-accent--weight: 400;
+  }
+{% endstyle %}

@@ -556,6 +556,14 @@
     --hero-height-offset: var(--header-group-height, 0);
   }
 
+  /* A transparent header pulls the first section up under itself (see sections/header.liquid),
+     so the hero already starts at the top of the viewport and must not also subtract the header
+     height - that is what left a full-screen hero ending short of the fold. Needs to outrank the
+     rule above, hence the same selector plus the attribute. */
+  body:has(#header-group > .header-section > #header-component[transparent]) .hero-wrapper:first-child {
+    --hero-height-offset: 0px;
+  }
+
   .hero {
     position: relative;
     min-height: calc(var(--hero-min-height) - var(--hero-height-offset));
