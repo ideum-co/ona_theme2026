@@ -1462,6 +1462,7 @@
         "media",
         "content"
       ],
+      "disabled": true,
       "name": "t:names.section",
       "settings": {
         "content_direction": "row",
@@ -2129,6 +2130,46 @@
         "border_radius": 0,
         "padding-block-start": 80,
         "padding-block-end": 80
+      }
+    },
+    "press_quotes_4kW9eF": {
+      "type": "press-quotes",
+      "blocks": {
+        "quote_aCYyE8": {
+          "type": "quote",
+          "settings": {
+            "source": "",
+            "quote": "\"If you've been fortunate enough to visit ONA's Canberra location, or any others for that matter, you'll be aware of the meticulous details found within their cafes\""
+          }
+        },
+        "quote_efak7r": {
+          "type": "quote",
+          "settings": {
+            "source": "",
+            "quote": "\"If you've been fortunate enough to visit ONA's Canberra location, or any others for that matter, you'll be aware of the meticulous details found within their cafes\""
+          }
+        },
+        "quote_NUbmXf": {
+          "type": "quote",
+          "settings": {
+            "source": "",
+            "quote": "\"If you've been fortunate enough to visit ONA's Canberra location, or any others for that matter, you'll be aware of the meticulous details found within their cafes\""
+          }
+        }
+      },
+      "block_order": [
+        "quote_aCYyE8",
+        "quote_efak7r",
+        "quote_NUbmXf"
+      ],
+      "name": "t:names.press_quotes",
+      "settings": {
+        "columns": 3,
+        "icons_style": "arrow",
+        "background_color": "#751132",
+        "text_color": "#f5f4ea",
+        "padding-block-start": 64,
+        "padding-block-end": 64
       }
     },
     "press_band": {
@@ -3209,6 +3250,7 @@
     "good_coffee_delivered",
     "more_than_coffee",
     "learn_with_ona",
+    "press_quotes_4kW9eF",
     "press_band",
     "find_ona",
     "discover_by_category",
