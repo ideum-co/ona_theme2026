@@ -1,0 +1,125 @@
+{%- liquid
+  if section.settings.background_color != blank
+    render 'contrast-override', background_color: section.settings.background_color, section_id: section.id
+  endif
+-%}
+
+<div
+  class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+></div>
+<div
+  class="section section--{{ section.settings.section_width }}{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+  {{ section.shopify_attributes }}
+>
+  <div
+    class="footer-brand spacing-style"
+    style="
+      {% render 'spacing-style', settings: section.settings %}
+      --footer-brand-gap: {{ section.settings.gap }}px;
+    "
+  >
+    {% content_for 'blocks' %}
+  </div>
+</div>
+
+{% stylesheet %}
+  /* One row: whatever is first sits at the start, whatever is last at the end. With a single
+     block it just aligns to the start. */
+  .footer-brand {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--footer-brand-gap);
+    inline-size: 100%;
+  }
+
+  @media screen and (max-width: 749px) {
+    .footer-brand {
+      justify-content: center;
+      text-align: center;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.footer_brand",
+  "class": "section-wrapper",
+  "max_blocks": 4,
+  "blocks": [
+    { "type": "text" },
+    { "type": "image" },
+    { "type": "logo" },
+    { "type": "social-links" },
+    { "type": "group" },
+    { "type": "@app" }
+  ],
+  "enabled_on": {
+    "groups": ["footer"]
+  },
+  "settings": [
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "t:settings.gap",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "placeholder": "t:settings.default"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.footer_brand"
+    }
+  ]
+}
+{% endschema %}

@@ -216,6 +216,7 @@
     "work_quickly_to_ship": "<p>سنعمل بسرعة لشحن طلبك في أقرب وقت ممكن. بمجرد شحن طلبك، ستتلقى رسالة بريد إلكتروني تحتوي على مزيد من المعلومات. تختلف أوقات التوصيل حسب موقعك.</p>"
   },
   "info": {
+    "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
     "product_intro_primary_link": "Falls back to the product's own URL when left empty.",
     "product_intro_wordmark": "Takes priority over the wordmark text when both are set.",
@@ -251,6 +252,7 @@
     "media_type_info": "تمت تعبئة الميزات من روابط القائمة الخاصة بك"
   },
   "names": {
+    "footer_brand": "صف العلامة في التذييل",
     "press_quote": "اقتباس",
     "press_quotes": "اقتباسات صحفية",
     "product_intro": "تقديم المنتج",
@@ -697,6 +699,8 @@
     "below_media": "أسفل الوسائط"
   },
   "settings": {
+    "heading_dividers": "خط أسفل العناوين",
+    "column_ratios": "عرض الأعمدة",
     "logo_svg": "كود SVG للشعار",
     "eyebrow": "عنوان علوي",
     "accordion": "أكورديون",
