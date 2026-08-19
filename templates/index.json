@@ -340,7 +340,7 @@
         "media_width": "medium",
         "media_height": "80svh",
         "section_width": "page-width",
-        "limit_content_width": false,
+        "limit_content_width": true,
         "max_width": 1280,
         "extend_media": false,
         "background_color": "{{ settings.color_palette.color1 }}",
