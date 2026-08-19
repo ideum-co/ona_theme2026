@@ -2186,7 +2186,7 @@
       "name": "t:names.press_quotes",
       "settings": {
         "columns": 3,
-        "icons_style": "chevron",
+        "icons_style": "arrow",
         "background_color": "#751132",
         "text_color": "#f5f4ea",
         "padding-block-start": 64,
