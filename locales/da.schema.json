@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_highlight_spec": "Detalje",
     "404": "404",
     "colors": "Farvepalet",
     "custom_section": "Brugerdefineret sektion",
@@ -171,6 +172,7 @@
     "disclosures": "Oplysninger"
   },
   "settings": {
+    "eyebrow": "Overrubrik",
     "alignment": "Justering",
     "autoplay": "Automatisk afspilning",
     "background": "Baggrund",
@@ -1086,6 +1088,8 @@
     "disclosures": "Oplysninger"
   },
   "info": {
+    "product_highlight_image": "Bruger produktets fremhævede billede, hvis feltet er tomt.",
+    "product_highlight_description": "Bruger produktets egen beskrivelse, hvis feltet er tomt.",
     "carousel_layout_on_mobile": "Karrusellen bruges altid på mobil",
     "video_alt_text": "Beskriv videoen for brugere af hjælpeteknologi",
     "video_autoplay": "Videoer vil som standard være uden lyd",

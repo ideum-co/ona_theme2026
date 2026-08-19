@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_highlight_spec": "Detail",
     "404": "404",
     "custom_section": "Aangepaste sectie",
     "icon": "Pictogram",
@@ -171,6 +172,7 @@
     "disclosures": "Toelichtingen"
   },
   "settings": {
+    "eyebrow": "Bovenkop",
     "autoplay": "Automatisch afspelen",
     "background": "Achtergrond",
     "border_radius": "Hoekradius",
@@ -1086,6 +1088,8 @@
     "disclosures": "Toelichtingen"
   },
   "info": {
+    "product_highlight_image": "Gebruikt de uitgelichte afbeelding van het product als dit leeg blijft.",
+    "product_highlight_description": "Gebruikt de beschrijving van het product als dit leeg blijft.",
     "carousel_layout_on_mobile": "Op mobiel wordt altijd een carrousel gebruikt",
     "video_alt_text": "Beschrijf de video voor gebruikers van ondersteunende technologie",
     "video_autoplay": "Video's worden standaard gedempt",

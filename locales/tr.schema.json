@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_highlight_spec": "Ayrıntı",
     "404": "404",
     "custom_section": "Özel bölüm",
     "icon": "Simge",
@@ -171,6 +172,7 @@
     "disclosures": "Bildirimler"
   },
   "settings": {
+    "eyebrow": "Üst başlık",
     "autoplay": "Otomatik oynatma",
     "background": "Arka plan",
     "border_radius": "Köşe yarıçapı",
@@ -1086,6 +1088,8 @@
     "disclosures": "Bildirimler"
   },
   "info": {
+    "product_highlight_image": "Boş bırakılırsa ürünün öne çıkan görseli kullanılır.",
+    "product_highlight_description": "Boş bırakılırsa ürünün kendi açıklaması kullanılır.",
     "video_alt_text": "Yardımcı teknoloji kullanıcıları için videoyu açıklayın",
     "video_autoplay": "Videolar varsayılan olarak sessize alınır",
     "video_external": "Bir YouTube veya Vimeo URL'si kullanın",

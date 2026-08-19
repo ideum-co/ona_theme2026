@@ -223,6 +223,8 @@
     "work_quickly_to_ship": "<p>We will work quickly to ship your order as soon as possible. Once your order has shipped, you will receive an email with further information. Delivery times vary depending on your location.</p>"
   },
   "info": {
+    "product_highlight_image": "Falls back to the product's featured image when left empty.",
+    "product_highlight_description": "Falls back to the product's own description when left empty.",
     "actions_display_style": "Icons are always used on mobile",
     "applies_on_image_only": "Applies to images only",
     "aspect_ratio_adjusted": "Adjusted in some layouts",
@@ -252,6 +254,7 @@
     "media_type_info": "Features are populated from your menu links"
   },
   "names": {
+    "product_highlight_spec": "Detail",
     "column": "Column",
     "product_title": "Product title",
     "custom_liquid": "Custom Liquid",
@@ -736,6 +739,7 @@
     "below_media": "Below media"
   },
   "settings": {
+    "eyebrow": "Eyebrow",
     "accordion": "Accordion",
     "account": "Account",
     "actions_display_style": "Menu style",

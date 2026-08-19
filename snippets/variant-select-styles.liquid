@@ -36,13 +36,16 @@
   }
 
   .variant-select__field:hover {
-    border-color: var(--color-foreground);
+    border-color: currentcolor;
   }
 
   .variant-select__legend {
     padding-inline: var(--padding-2xs, 0.25rem);
     margin-inline-start: calc(var(--padding-2xs, 0.25rem) * -1);
-    color: var(--variant-option-label-color, var(--color-foreground));
+
+    /* currentcolor, not --color-foreground: the control also sits on dark sections, where the
+       page foreground would be invisible. */
+    color: var(--variant-option-label-color, currentcolor);
     font-size: var(--variant-select-legend-font-size);
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -56,7 +59,7 @@
     inline-size: 100%;
     padding: 0;
     background: transparent;
-    color: var(--variant-option-label-color, var(--color-foreground));
+    color: var(--variant-option-label-color, currentcolor);
     border: 0;
     border-radius: 0;
     text-align: start;

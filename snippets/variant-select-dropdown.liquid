@@ -1,0 +1,139 @@
+{%- doc -%}
+  Renders the custom variant dropdown for a single product outside of a variant picker: it lists
+  the product's variants and points an add to cart form at whichever one is picked.
+
+  Use it where there is no `<variant-picker>` to drive - a section highlighting one product, for
+  example. Inside a product card or on the product page the `variant-picker` block's
+  `custom_dropdown` style is the one to use, because there the selection has to re-render the
+  section.
+
+  @param {object} product - The product object.
+  @param {string} unique_id - Suffix that keeps ids and the radio group unique on the page.
+  @param {string} form_component_id - Id of the `product-form-component` this dropdown points at.
+
+  @example
+  {% render 'variant-select-dropdown', product: product, unique_id: section.id, form_component_id: form_id %}
+{%- enddoc -%}
+
+{%- liquid
+  assign selected_variant = product.selected_or_first_available_variant
+  assign trigger_id = 'VariantSelectTrigger-' | append: unique_id
+  assign panel_id = 'VariantSelectPanel-' | append: unique_id
+  assign anchor_slug = unique_id | handleize
+  assign anchor_name = '--variant-select-trigger-' | append: anchor_slug
+
+  assign option_names = product.options | join: ' / '
+  assign panel_title = 'actions.select_option' | t: option: option_names
+-%}
+
+<variant-select-component
+  class="variant-select"
+  data-mode="cart"
+  data-form-id="{{ form_component_id }}"
+>
+  <fieldset
+    class="variant-select__field"
+    ref="trigger"
+    style="anchor-name: {{ anchor_name }};"
+  >
+    <legend class="variant-select__legend">{{ panel_title }}</legend>
+    <button
+      type="button"
+      id="{{ trigger_id }}"
+      class="variant-select__trigger"
+      popovertarget="{{ panel_id }}"
+    >
+      <span class="variant-select__trigger-value">{{ selected_variant.title }}</span>
+      <span
+        aria-hidden="true"
+        class="variant-select__trigger-icon"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          class="icon icon-caret"
+          viewBox="0 0 10 6"
+        >
+          {%- render 'icon', icon: 'caret' -%}
+        </svg>
+      </span>
+    </button>
+  </fieldset>
+
+  <div
+    id="{{ panel_id }}"
+    class="variant-select__panel"
+    ref="popover"
+    popover="auto"
+    on:click="/handlePanelClick"
+    style="position-anchor: {{ anchor_name }};"
+  >
+    <div class="variant-select__header">
+      <span class="variant-select__title">{{ panel_title }}</span>
+      <button
+        type="button"
+        class="button button-unstyled variant-select__close"
+        popovertarget="{{ panel_id }}"
+        popovertargetaction="hide"
+        aria-label="{{ 'actions.close' | t }}"
+      >
+        {{- 'icon-close.svg' | inline_asset_content -}}
+      </button>
+    </div>
+
+    {% comment %}
+      Outside any form on purpose: these radios choose which variant the add to cart form submits,
+      they are not fields of it. A named radio inside the form would be posted to /cart/add.
+    {% endcomment %}
+    <fieldset class="variant-select__list">
+      <legend class="visually-hidden">{{ panel_title }}</legend>
+      {%- for variant in product.variants -%}
+        {%- liquid
+          assign variant_image = variant.featured_media.preview_image
+          if variant_image == blank
+            assign variant_image = product.featured_media.preview_image
+          endif
+        -%}
+        <label class="variant-select__option{% unless variant.available %} variant-select__option--unavailable{% endunless %}">
+          <input
+            type="radio"
+            class="variant-select__input"
+            name="variant-select-{{ unique_id }}"
+            value="{{ variant.id }}"
+            data-variant-id="{{ variant.id }}"
+            data-variant-available="{{ variant.available }}"
+            data-variant-price="{{ variant.price | money }}"
+            {% unless variant.available %}
+              disabled
+            {% endunless %}
+            {% if variant.id == selected_variant.id %}
+              checked
+            {% endif %}
+          >
+          {%- if variant_image != blank -%}
+            <span class="variant-select__media">
+              <img
+                src="{{ variant_image | image_url: width: 120 }}"
+                alt="{{ variant_image.alt | escape }}"
+                width="60"
+                height="60"
+                loading="lazy"
+              >
+            </span>
+          {%- endif -%}
+          <span class="variant-select__option-text">
+            <span class="variant-select__option-title">{{ variant.title }}</span>
+            <span class="variant-select__option-meta">
+              {{- variant.price | money -}}
+              {%- unless variant.available %} &middot; {{ 'products.product.sold_out' | t }}{% endunless -%}
+            </span>
+          </span>
+          <span
+            class="variant-select__radio"
+            aria-hidden="true"
+          ></span>
+        </label>
+      {%- endfor -%}
+    </fieldset>
+  </div>
+</variant-select-component>

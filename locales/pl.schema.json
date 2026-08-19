@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "product_highlight_spec": "Szczegół",
     "404": "404",
     "custom_section": "Sekcja niestandardowa",
     "icon": "Ikona",
@@ -171,6 +172,7 @@
     "disclosures": "Informacje prawne"
   },
   "settings": {
+    "eyebrow": "Nadtytuł",
     "autoplay": "Autoodtwarzanie",
     "background": "Tło",
     "border_radius": "Promień narożnika",
@@ -1086,6 +1088,8 @@
     "disclosures": "Informacje prawne"
   },
   "info": {
+    "product_highlight_image": "Jeśli pole jest puste, używany jest obraz główny produktu.",
+    "product_highlight_description": "Jeśli pole jest puste, używany jest opis produktu.",
     "video_alt_text": "Opisz wideo dla użytkowników technologii wspomagających",
     "video_autoplay": "Domyślnie filmy będą wyciszone",
     "video_external": "Użyj adresu URL z YouTube lub Vimeo",

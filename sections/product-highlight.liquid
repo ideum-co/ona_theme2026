@@ -1,0 +1,460 @@
+{%- liquid
+  assign product = section.settings.product
+  assign settings = section.settings
+
+  assign variant = product.selected_or_first_available_variant
+  assign form_id = 'ProductHighlight-ProductForm-' | append: section.id
+  assign form_component_id = 'ProductHighlight-Form-' | append: section.id
+
+  assign image = settings.image
+  if image == blank
+    assign image = variant.featured_media.preview_image
+  endif
+  if image == blank
+    assign image = product.featured_media.preview_image
+  endif
+
+  assign description = settings.description
+  if description == blank
+    assign description = product.description
+  endif
+
+  assign has_variants = false
+  if product.has_only_default_variant == false and product.variants_count > 1
+    assign has_variants = true
+  endif
+
+  assign adds_to_cart = false
+  if settings.cta_style == 'add_to_cart' and product != blank
+    assign adds_to_cart = true
+  endif
+-%}
+
+{%- if product == blank and request.design_mode == false -%}
+  {%- comment -%} Nothing to highlight, so the section stays out of the page entirely. {%- endcomment -%}
+{%- else -%}
+  <div
+    class="product-highlight product-highlight--media-{{ settings.media_position }}"
+    style="
+      --product-highlight-background: {{ settings.background_color }};
+      --product-highlight-color: {{ settings.text_color }};
+      --product-highlight-button-background: {{ settings.button_background }};
+      --product-highlight-button-color: {{ settings.button_text }};
+      --product-highlight-padding-block-start: {{ settings.padding-block-start }}px;
+      --product-highlight-padding-block-end: {{ settings.padding-block-end }}px;
+    "
+    {{ section.shopify_attributes }}
+  >
+    <div class="product-highlight__content">
+      {%- if settings.heading != blank -%}
+        <h2 class="product-highlight__heading">{{ settings.heading }}</h2>
+      {%- endif -%}
+
+      <div class="product-highlight__details">
+        {%- if settings.eyebrow != blank -%}
+          <p class="product-highlight__eyebrow">{{ settings.eyebrow }}</p>
+        {%- endif -%}
+
+        {%- if settings.show_product_title and product.title != blank -%}
+          <h3 class="product-highlight__title">{{ product.title }}</h3>
+        {%- endif -%}
+
+        {%- if description != blank -%}
+          <div class="product-highlight__description rte">{{ description }}</div>
+        {%- endif -%}
+
+        {%- if section.blocks.size > 0 -%}
+          <dl class="product-highlight__specs">
+            {%- for block in section.blocks -%}
+              {%- if block.settings.label != blank or block.settings.value != blank -%}
+                <div
+                  class="product-highlight__spec"
+                  {{ block.shopify_attributes }}
+                >
+                  <dt class="product-highlight__spec-label">{{ block.settings.label }}</dt>
+                  <dd class="product-highlight__spec-value">{{ block.settings.value }}</dd>
+                </div>
+              {%- endif -%}
+            {%- endfor -%}
+          </dl>
+        {%- endif -%}
+
+        {%- if adds_to_cart -%}
+          {%- if has_variants -%}
+            {%- render 'variant-select-dropdown',
+              product: product,
+              unique_id: section.id,
+              form_component_id: form_component_id
+            -%}
+          {%- endif -%}
+
+          <product-form-component
+            id="{{ form_component_id }}"
+            class="product-highlight__form"
+            data-section-id="{{ section.id }}"
+            data-product-id="{{ product.id }}"
+            on:submit="/handleSubmit"
+          >
+            <div
+              class="visually-hidden"
+              aria-live="assertive"
+              role="status"
+              aria-atomic="true"
+              ref="liveRegion"
+            ></div>
+            {%- form 'product', product, id: form_id, novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+              <input
+                type="hidden"
+                name="id"
+                ref="variantId"
+                value="{{ variant.id }}"
+                {% if variant.available == false %}
+                  disabled
+                {% endif %}
+              >
+              <input
+                type="hidden"
+                name="quantity"
+                value="{% if variant.quantity_rule.min %}{{ variant.quantity_rule.min }}{% else %}1{% endif %}"
+              >
+              {%- render 'add-to-cart-button',
+                add_to_cart_text: settings.cta_label,
+                class: 'product-highlight__button add-to-cart-button',
+                can_add_to_cart: variant.available,
+                show_icon: false,
+                product: product
+              -%}
+            {%- endform -%}
+          </product-form-component>
+        {%- elsif product != blank -%}
+          <a
+            class="button product-highlight__button product-highlight__button--link"
+            href="{{ product.url }}"
+          >
+            {{- settings.cta_label -}}
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="product-highlight__media">
+      {%- if image != blank -%}
+        {{
+          image
+          | image_url: width: 1600
+          | image_tag:
+            widths: '400, 600, 800, 1200, 1600',
+            sizes: '(min-width: 750px) 50vw, 100vw',
+            loading: 'lazy',
+            class: 'product-highlight__image'
+        }}
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- render 'add-to-cart-button-styles' -%}
+  {%- if has_variants and adds_to_cart -%}
+    {%- render 'variant-select-styles' -%}
+  {%- endif -%}
+{%- endif -%}
+
+{% stylesheet %}
+  .product-highlight {
+    display: grid;
+    background: var(--product-highlight-background, var(--color-foreground));
+    color: var(--product-highlight-color, var(--color-background));
+
+    @media screen and (min-width: 750px) {
+      grid-template-columns: 1fr 1fr;
+      align-items: stretch;
+    }
+  }
+
+  .product-highlight--media-left .product-highlight__media {
+    @media screen and (min-width: 750px) {
+      grid-column: 1;
+      grid-row: 1;
+    }
+  }
+
+  .product-highlight__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-2xl);
+    padding-block: var(--product-highlight-padding-block-start) var(--product-highlight-padding-block-end);
+    padding-inline: var(--util-page-margin, var(--padding-2xl));
+  }
+
+  .product-highlight__heading {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--font-h2--size);
+    font-weight: var(--font-heading--weight);
+  }
+
+  /* The heading sits at the top and the rest floats in the leftover space, as in the design. */
+  .product-highlight__details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-lg);
+    margin-block: auto;
+    max-inline-size: 34rem;
+  }
+
+  .product-highlight__eyebrow {
+    margin: 0;
+    font-size: var(--font-size--sm);
+    letter-spacing: var(--letter-spacing-sm);
+    text-transform: uppercase;
+  }
+
+  .product-highlight__title {
+    margin: 0;
+    font-size: var(--font-h4--size);
+    font-weight: var(--font-body--weight);
+  }
+
+  .product-highlight__description {
+    display: grid;
+    gap: var(--gap-md);
+    font-size: var(--font-size--sm);
+  }
+
+  .product-highlight__description :is(p, ul, ol) {
+    margin: 0;
+  }
+
+  .product-highlight__specs {
+    margin: 0;
+    display: grid;
+  }
+
+  .product-highlight__spec {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--gap-lg);
+    align-items: baseline;
+    padding-block: var(--padding-sm);
+    border-block-start: 1px solid rgb(var(--color-background-rgb) / var(--opacity-40));
+  }
+
+  .product-highlight__spec:last-child {
+    border-block-end: 1px solid rgb(var(--color-background-rgb) / var(--opacity-40));
+  }
+
+  .product-highlight__spec-label {
+    margin: 0;
+    font-size: var(--font-size--sm);
+    letter-spacing: var(--letter-spacing-sm);
+    text-transform: uppercase;
+  }
+
+  .product-highlight__spec-value {
+    margin: 0;
+    font-size: var(--font-size--sm);
+    text-align: end;
+  }
+
+  .product-highlight .variant-select {
+    --variant-select-field-border-color: currentcolor;
+    --variant-select-legend-font-size: var(--font-size--3xs);
+
+    max-inline-size: 20rem;
+  }
+
+  .product-highlight__form {
+    display: block;
+  }
+
+  .product-highlight__button.button {
+    --button-background-color: var(--product-highlight-button-background);
+    --button-color: var(--product-highlight-button-color);
+
+    justify-content: center;
+    min-inline-size: 12rem;
+    inline-size: fit-content;
+  }
+
+  .product-highlight__media {
+    position: relative;
+    min-block-size: 20rem;
+  }
+
+  .product-highlight__image {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    display: block;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.featured_product",
+  "tag": "section",
+  "blocks": [
+    {
+      "type": "spec",
+      "name": "t:names.product_highlight_spec",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "t:settings.label",
+          "default": "Tastes like"
+        },
+        {
+          "type": "text",
+          "id": "value",
+          "label": "t:settings.text"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "t:settings.product"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "t:settings.heading",
+      "default": "Special <em>release</em>"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:settings.eyebrow"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_title",
+      "label": "t:names.product_title",
+      "default": true
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "t:settings.description",
+      "info": "t:info.product_highlight_description"
+    },
+    {
+      "type": "header",
+      "content": "t:content.media"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:settings.image",
+      "info": "t:info.product_highlight_image"
+    },
+    {
+      "type": "select",
+      "id": "media_position",
+      "label": "t:settings.media_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "header",
+      "content": "t:content.buttons"
+    },
+    {
+      "type": "select",
+      "id": "cta_style",
+      "label": "t:settings.style",
+      "options": [
+        {
+          "value": "add_to_cart",
+          "label": "t:names.add_to_cart"
+        },
+        {
+          "value": "link",
+          "label": "t:options.link"
+        }
+      ],
+      "default": "add_to_cart"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "t:settings.label",
+      "default": "Add to cart"
+    },
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "default": "#470a12"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "default": "#f5f4ea"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "t:settings.background",
+      "default": "#751132"
+    },
+    {
+      "type": "color",
+      "id": "button_text",
+      "label": "t:settings.text",
+      "default": "#f5f4ea"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.featured_product",
+      "blocks": [
+        {
+          "type": "spec"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
