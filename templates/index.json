@@ -1887,7 +1887,7 @@
           "settings": {
             "text": "<p>Whether you're just getting started or refining your craft, explore our barista courses, brewing guides and the latest stories from the world of specialty coffee.</p>",
             "width": "fit-content",
-            "max_width": "narrow",
+            "max_width": "normal",
             "alignment": "center",
             "type_preset": "paragraph",
             "font": "var(--font-body--family)",
