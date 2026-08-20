@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "subscribe_button": "定期購入ボタン",
     "story_video": "ストーリーと動画",
     "product_metafield_text": "商品メタフィールドのテキスト",
     "footer_brand": "フッターのブランド行",
@@ -883,6 +884,7 @@
     "input_field": "入力フィールド"
   },
   "content": {
+    "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "ワードマーク",
     "advanced": "高度な設定",

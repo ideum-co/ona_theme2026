@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "subscribe_button": "Botón de suscripción",
     "story_video": "Historia con video",
     "product_metafield_text": "Texto de metafield del producto",
     "footer_brand": "Fila de marca del pie",
@@ -883,6 +884,7 @@
     "input_field": "Campo de entrada"
   },
   "content": {
+    "resource_reference_subscribe_button": "Abre las opciones de compra del producto en un panel. Se oculta si el producto no tiene planes de venta.",
     "resource_reference_product_metafield": "Muestra un metafield del producto principal",
     "wordmark": "Logotipo tipográfico",
     "advanced": "Avanzado",

@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "subscribe_button": "Abo-Button",
     "story_video": "Story mit Video",
     "product_metafield_text": "Produkt-Metafeld-Text",
     "footer_brand": "Footer-Markenzeile",
@@ -883,6 +884,7 @@
     "input_field": "Eingabefeld"
   },
   "content": {
+    "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Wortmarke",
     "background_video": "Hintergrundvideo",

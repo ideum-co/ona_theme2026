@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "subscribe_button": "訂閱按鈕",
     "story_video": "品牌故事與影片",
     "product_metafield_text": "商品中繼欄位文字",
     "footer_brand": "頁尾品牌列",
@@ -883,6 +884,7 @@
     "input_field": "輸入欄位"
   },
   "content": {
+    "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "文字標誌",
     "advanced": "進階",

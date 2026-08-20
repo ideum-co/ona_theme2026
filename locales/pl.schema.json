@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "subscribe_button": "Przycisk subskrypcji",
     "story_video": "Historia z wideo",
     "product_metafield_text": "Tekst z metapola produktu",
     "footer_brand": "Wiersz marki w stopce",
@@ -883,6 +884,7 @@
     "input_field": "Pole wprowadzania"
   },
   "content": {
+    "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Logotyp",
     "background_video": "Wideo w tle",

@@ -27,6 +27,7 @@
       "@theme/variant-picker": "{{ 'variant-picker.js' | asset_url }}",
       "@theme/anchored-popover": "{{ 'anchored-popover.js' | asset_url }}",
       "@theme/variant-select": "{{ 'variant-select.js' | asset_url }}",
+      "@theme/subscribe-popover": "{{ 'subscribe-popover.js' | asset_url }}",
       "@theme/variant-resolution": "{{ 'variant-resolution.js' | asset_url }}",
       "@theme/media-gallery": "{{ 'media-gallery.js' | asset_url }}",
       "@theme/quick-add": "{{ 'quick-add.js' | asset_url }}",
@@ -161,6 +162,11 @@
 ></script>
 <script
   src="{{ 'variant-select.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+<script
+  src="{{ 'subscribe-popover.js' | asset_url }}"
   type="module"
   fetchpriority="low"
 ></script>

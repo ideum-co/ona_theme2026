@@ -1,0 +1,309 @@
+{%- doc -%}
+  Renders the subscription purchase options: one-time purchase plus each selling plan group, with
+  its price, saving and delivery frequency.
+
+  Extracted from the `purchase-options` block so the product card's subscribe modal can show the
+  same control as the product page instead of a second copy of it.
+
+  The radios carry `form="..."` rather than living inside the form, which is how they reach an add
+  to cart form that is elsewhere in the markup.
+
+  @param {object} product - The product object.
+  @param {string} form_id - Id of the form the `selling_plan` radios submit with.
+  @param {string} unique_id - Suffix that keeps the ids and the script scoped to this instance.
+  @param {string} [label] - Optional label above the list.
+  @param {string} [shopify_attributes] - Theme editor attributes, when rendered from a block.
+
+  @example
+  {% render 'purchase-options', product: product, form_id: form_id, unique_id: block.id %}
+{%- enddoc -%}
+
+{% liquid
+  assign variant = product.selected_or_first_available_variant
+  assign groups = product.selling_plan_groups
+%}
+
+{% unless product == blank or groups.size == 0 %}
+  <div
+    class="purchase-options"
+    data-purchase-options-id="{{ unique_id }}"
+    {{ shopify_attributes }}
+  >
+    {% if label != blank %}
+      <p class="purchase-options__label">{{ label }}</p>
+    {% endif %}
+
+    <div
+      class="purchase-options__list"
+      role="radiogroup"
+      aria-label="{{ label | default: 'Purchase options' }}"
+    >
+      <label class="purchase-options__card is-selected">
+        <input
+          type="radio"
+          name="selling_plan"
+          value=""
+          form="{{ form_id }}"
+          class="purchase-options__radio"
+          checked
+        >
+        <span class="purchase-options__row">
+          <span class="purchase-options__title">{{ 'products.product.one_time_purchase' | t }}</span>
+          <span class="purchase-options__price">{{ variant.price | money }}</span>
+        </span>
+      </label>
+
+      {% for group in groups %}
+        {% liquid
+          assign has_multi_plan = false
+          if group.selling_plans.size > 1
+            assign has_multi_plan = true
+          endif
+          assign allocation = variant.selling_plan_allocations | where: 'selling_plan_group_id', group.id | first
+        %}
+        {% unless allocation == blank %}
+          {% liquid
+            assign save_pct = 0
+            if allocation.compare_at_price > allocation.price
+              assign save_pct = allocation.compare_at_price | minus: allocation.price | times: 100.0 | divided_by: allocation.compare_at_price | round
+            endif
+            assign card_title = 'products.product.subscribe_and_save' | t
+          %}
+          <label class="purchase-options__card">
+            <input
+              type="radio"
+              name="selling_plan"
+              value="{{ allocation.selling_plan.id }}"
+              form="{{ form_id }}"
+              class="purchase-options__radio"
+            >
+            <span class="purchase-options__body">
+              <span class="purchase-options__row">
+                <span class="purchase-options__title">
+                  {{ card_title }}
+                  {% if save_pct > 0 %}
+                    <span class="purchase-options__badge">{{ 'products.product.save_percentage' | t: percentage: save_pct }}</span>
+                  {% endif %}
+                </span>
+                <span class="purchase-options__price">
+                  {{ allocation.price | money }}
+                  {% if allocation.compare_at_price > allocation.price %}
+                    <s class="purchase-options__compare-price">{{ allocation.compare_at_price | money }}</s>
+                  {% endif %}
+                </span>
+              </span>
+              {% if has_multi_plan %}
+                <select
+                  class="purchase-options__frequency"
+                  data-plan-select
+                  aria-label="{{ 'products.product.delivery_frequency' | t }}"
+                >
+                  {% for plan in group.selling_plans %}
+                    {% liquid
+                      assign plan_allocation = blank
+                      for candidate_allocation in variant.selling_plan_allocations
+                        if candidate_allocation.selling_plan_group_id == group.id and candidate_allocation.selling_plan.id == plan.id
+                          assign plan_allocation = candidate_allocation
+                          break
+                        endif
+                      endfor
+                    %}
+                    <option
+                      value="{{ plan.id }}"
+                      data-price="{{ plan_allocation.price | money }}"
+                      data-compare-at="{{ plan_allocation.compare_at_price | money }}"
+                      {% if plan.id == allocation.selling_plan.id %}
+                        selected
+                      {% endif %}
+                    >
+                      {{ plan.name }}
+                    </option>
+                  {% endfor %}
+                </select>
+              {% endif %}
+            </span>
+          </label>
+        {% endunless %}
+      {% endfor %}
+    </div>
+
+    {% assign detail_plan = groups.first.selling_plans.first %}
+    {% if detail_plan.description != blank %}
+      <details class="purchase-options__details">
+        <summary>{{ 'products.product.subscription_details' | t }}</summary>
+        <div class="purchase-options__details-body">{{ detail_plan.description }}</div>
+      </details>
+    {% endif %}
+  </div>
+
+  <script>
+    (function () {
+      var root = document.querySelector('.purchase-options[data-purchase-options-id="{{ unique_id }}"]');
+      if (!root) return;
+
+      var radios = root.querySelectorAll('.purchase-options__radio');
+      var selects = root.querySelectorAll('[data-plan-select]');
+
+      function syncCardState() {
+        radios.forEach(function (radio) {
+          radio.closest('.purchase-options__card').classList.toggle('is-selected', radio.checked);
+        });
+      }
+
+      radios.forEach(function (radio) {
+        radio.addEventListener('change', function () {
+          if (radio.checked) {
+            var select = radio.closest('.purchase-options__card').querySelector('[data-plan-select]');
+            if (select) radio.value = select.value;
+          }
+          syncCardState();
+        });
+      });
+
+      selects.forEach(function (select) {
+        select.addEventListener('change', function () {
+          var card = select.closest('.purchase-options__card');
+          var radio = card.querySelector('.purchase-options__radio');
+          radio.value = select.value;
+          radio.checked = true;
+
+          var option = select.options[select.selectedIndex];
+          var priceEl = card.querySelector('.purchase-options__price');
+          if (priceEl && option) {
+            var html = option.getAttribute('data-price');
+            var compareAt = option.getAttribute('data-compare-at');
+            if (compareAt && compareAt !== option.getAttribute('data-price')) {
+              html += ' <s class="purchase-options__compare-price">' + compareAt + '</s>';
+            }
+            priceEl.innerHTML = html;
+          }
+          syncCardState();
+        });
+      });
+
+      syncCardState();
+    })();
+  </script>
+{% endunless %}
+
+{% stylesheet %}
+  .purchase-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-xs);
+    width: 100%;
+  }
+
+  .purchase-options__label {
+    font-size: var(--font-size--sm);
+    color: var(--color-foreground-secondary);
+    margin: 0 0 var(--gap-2xs);
+  }
+
+  .purchase-options__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-xs);
+  }
+
+  .purchase-options__card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--gap-xs);
+    border: 1px solid var(--border-color);
+    border-radius: var(--style-border-radius-inputs);
+    padding: var(--gap-sm) var(--gap-md);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .purchase-options__card:hover {
+    border-color: rgb(var(--color-foreground-rgb) / var(--opacity-50));
+  }
+
+  .purchase-options__card.is-selected {
+    border-color: var(--color-foreground);
+    background: rgb(var(--color-foreground-rgb) / var(--opacity-5));
+  }
+
+  .purchase-options__radio {
+    margin-top: 3px;
+    accent-color: var(--color-foreground);
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .purchase-options__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-2xs);
+    min-width: 0;
+  }
+
+  .purchase-options__row {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-sm);
+    font-size: var(--font-size--sm);
+  }
+
+  .purchase-options__title {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gap-2xs);
+    font-weight: 500;
+  }
+
+  .purchase-options__price {
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  .purchase-options__compare-price {
+    color: var(--color-foreground-secondary);
+    font-weight: 400;
+    margin-left: 4px;
+  }
+
+  .purchase-options__badge {
+    display: inline-block;
+    font-size: var(--font-size--3xs);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--color-background);
+    background: var(--color-foreground);
+    border-radius: var(--style-border-radius-pills);
+    padding: 2px 8px;
+  }
+
+  .purchase-options__frequency {
+    width: fit-content;
+    max-width: 100%;
+    font-size: var(--font-size--xs);
+    border: 1px solid var(--border-color);
+    border-radius: var(--style-border-radius-inputs);
+    padding: 4px 8px;
+    background: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  .purchase-options__details {
+    font-size: var(--font-size--xs);
+    color: var(--color-foreground-secondary);
+  }
+
+  .purchase-options__details summary {
+    cursor: pointer;
+    text-decoration: underline;
+    width: fit-content;
+  }
+
+  .purchase-options__details-body {
+    margin-top: var(--gap-2xs);
+  }
+{% endstylesheet %}

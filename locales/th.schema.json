@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "subscribe_button": "ปุ่มสมัครสมาชิก",
     "story_video": "เรื่องราวพร้อมวิดีโอ",
     "product_metafield_text": "ข้อความจากเมตาฟิลด์สินค้า",
     "footer_brand": "แถวแบรนด์ในส่วนท้าย",
@@ -883,6 +884,7 @@
     "input_field": "ช่องกรอกข้อมูล"
   },
   "content": {
+    "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "โลโก้ตัวอักษร",
     "advanced": "ขั้นสูง",

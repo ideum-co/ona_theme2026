@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "subscribe_button": "Botão de subscrição",
     "story_video": "História com vídeo",
     "product_metafield_text": "Texto de metacampo do produto",
     "footer_brand": "Linha da marca no rodapé",
@@ -883,6 +884,7 @@
     "input_field": "Campo de introdução"
   },
   "content": {
+    "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Logótipo",
     "advanced": "Avançado",

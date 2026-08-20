@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "subscribe_button": "Abonnementsknop",
     "story_video": "Verhaal met video",
     "product_metafield_text": "Tekst uit productmetaveld",
     "footer_brand": "Merkrij in footer",
@@ -883,6 +884,7 @@
     "input_field": "Invoerveld"
   },
   "content": {
+    "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Woordmerk",
     "background_video": "Achtergrondvideo",
