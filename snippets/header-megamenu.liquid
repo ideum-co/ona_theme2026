@@ -199,12 +199,12 @@
 
   @media screen and (min-width: 750px) {
     .header-megamenu {
-      /* Same trick the theme's own submenus use: absolute against the header row, dropped by its
-         full height. No measured variable is involved, so an announcement bar, a transparent
-         header or a sticky one cannot move it off its anchor. `.header__row` is made the
-         containing block below. */
-      position: absolute;
-      inset-block-start: 100%;
+      /* `.header` is `display: block` with `contain: layout`, so it is this fixed panel's
+         containing block: offset 0 puts the panel on the header's own top edge and it spans the
+         header's full width. The header's content is lifted over it and takes the panel's colours,
+         so the two read as one surface. */
+      position: fixed;
+      inset-block-start: 0;
       inset-inline: 0;
       z-index: var(--layer-menu-drawer);
       display: block;
@@ -213,8 +213,11 @@
       background-color: var(--color-background);
       color: var(--color-foreground);
       border-block-end: var(--style-border-drawer);
-      /* What is left below the header once the whole header group is stuck to the top. */
-      max-block-size: calc(100dvh - var(--header-group-height, 60px));
+      /* The header's own height clears the row the panel sits under; the padding goes on this
+         fixed wrapper and not on the scroller, so it cannot travel away with the content.
+         `group - header` is whatever sits above the header, so the panel stops at the viewport. */
+      padding-block-start: calc(var(--header-height, 60px) + var(--padding-2xl));
+      max-block-size: calc(100dvh - var(--header-group-height, 60px) + var(--header-height, 60px));
       overflow: hidden;
     }
 
@@ -235,19 +238,8 @@
       display: none;
     }
 
-    /* The panel hangs off the row, and every element between the two is forced static so none of
-       them can become the containing block instead. */
-    #header-component:has(.menu-open) .header__row {
-      position: relative;
-    }
-
-    #header-component:has(.menu-open)
-      :is(.header__columns, .header__column, header-drawer, .menu-drawer-container) {
-      position: static;
-    }
-
-    /* The panel slides down from behind the header, so the header's own content still has to sit
-       above it during the transition. Lifted item by item rather than by column: `header-row` puts
+    /* The panel covers the header, so the header's own content has to sit above it - the design
+       shows the logo and the icons on the panel, not behind it. Lifted item by item rather than by column: `header-row` puts
        the toggle in the right column next to the cart, and the columns are `display: contents` in
        drawer mode. `header-drawer` is skipped because it holds the panel. */
     #header-component:has(.menu-open) .header__column > *:not(header-drawer) {
@@ -277,10 +269,13 @@
       grid-template-columns: minmax(12rem, 1fr) minmax(0, 3fr);
       gap: var(--gap-3xl, 3rem);
 
-      padding-block: var(--padding-2xl) var(--padding-5xl);
+      padding-block-end: var(--padding-5xl);
       padding-inline: var(--util-page-margin, var(--padding-2xl));
 
-      max-block-size: calc(100dvh - var(--header-group-height, 60px));
+      /* Only the content scrolls, so the clearance above it always holds. */
+      max-block-size: calc(
+        100dvh - var(--header-group-height, 60px) - var(--padding-2xl)
+      );
       overflow-y: auto;
       overscroll-behavior: contain;
     }
