@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "subscribe_button": "Bouton d'abonnement",
     "story_video": "Histoire avec vidéo",
     "product_metafield_text": "Texte de métachamp produit",
     "footer_brand": "Ligne de marque du pied de page",
@@ -883,6 +884,7 @@
     "input_field": "Champ de saisie"
   },
   "content": {
+    "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Logotype",
     "background_video": "Vidéo de fond",

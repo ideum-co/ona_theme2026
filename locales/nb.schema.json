@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "subscribe_button": "Abonnementsknapp",
     "story_video": "Historie med video",
     "product_metafield_text": "Produktmetafelt-tekst",
     "footer_brand": "Merkerad i bunntekst",
@@ -883,6 +884,7 @@
     "input_field": "Inndatafelt"
   },
   "content": {
+    "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Ordmerke",
     "advanced": "Avansert",

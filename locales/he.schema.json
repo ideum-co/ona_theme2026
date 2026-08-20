@@ -30,6 +30,7 @@
     "text": "טקסט"
   },
   "content": {
+    "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "לוגו טקסטואלי",
     "visible_if_collection_has_more_products": "גלוי אם באוסף יש יותר מוצרים ממה שמוצג",
@@ -255,6 +256,7 @@
     "media_type_info": "התכונות מאוכלסות מקישורי התפריט שלך"
   },
   "names": {
+    "subscribe_button": "כפתור מנוי",
     "story_video": "סיפור עם וידאו",
     "product_metafield_text": "טקסט משדה מטא של מוצר",
     "footer_brand": "שורת מותג בכותרת התחתונה",

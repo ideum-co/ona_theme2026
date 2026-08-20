@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "subscribe_button": "Abonelik düğmesi",
     "story_video": "Videolu hikâye",
     "product_metafield_text": "Ürün meta alanı metni",
     "footer_brand": "Alt bilgi marka satırı",
@@ -883,6 +884,7 @@
     "input_field": "Giriş alanı"
   },
   "content": {
+    "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Kelime logosu",
     "background_video": "Arka plan videosu",

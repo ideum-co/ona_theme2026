@@ -1,0 +1,206 @@
+{%- doc -%}
+  A subscribe button for the product card that opens the product page's own purchase options in an
+  anchored panel, so a shopper can start a subscription without leaving the grid.
+{%- enddoc -%}
+
+{%- liquid
+  assign block_settings = block.settings
+  assign product = closest.product
+  assign variant = product.selected_or_first_available_variant
+
+  assign unique_id = block.id | append: '-' | append: product.id
+  assign trigger_id = 'SubscribeTrigger-' | append: unique_id
+  assign panel_id = 'SubscribePanel-' | append: unique_id
+  assign form_id = 'SubscribeForm-' | append: unique_id
+  assign form_component_id = 'SubscribeFormComponent-' | append: unique_id
+  assign anchor_slug = unique_id | handleize
+  assign anchor_name = '--subscribe-trigger-' | append: anchor_slug
+
+  assign has_variants = false
+  if product.has_only_default_variant == false and product.variants_count > 1
+    assign has_variants = true
+  endif
+-%}
+
+{%- comment -%}
+  Nothing to subscribe to without a selling plan, so the button stays out of the card entirely
+  rather than opening an empty panel.
+{%- endcomment -%}
+{%- unless product == blank or product.selling_plan_groups.size == 0 -%}
+  {%- comment -%}
+    Carries `variant-select` as well: the panel's custom properties - gap, border colour, viewport
+    margin - are declared on that class, and without it `top: calc(anchor(bottom) + var(--gap))`
+    is invalid at computed-value time and the panel loses its anchoring.
+  {%- endcomment -%}
+  <subscribe-popover-component
+    class="variant-select subscribe-block"
+    {{ block.shopify_attributes }}
+  >
+    <button
+      type="button"
+      id="{{ trigger_id }}"
+      class="button subscribe-block__trigger {{ block_settings.style_class }}"
+      ref="trigger"
+      popovertarget="{{ panel_id }}"
+      style="anchor-name: {{ anchor_name }};"
+    >
+      {{- block_settings.label | default: 'Subscribe' -}}
+    </button>
+
+    <div
+      id="{{ panel_id }}"
+      class="variant-select__panel subscribe-block__panel"
+      ref="popover"
+      popover="auto"
+      on:click="/handlePanelClick"
+      style="position-anchor: {{ anchor_name }};"
+    >
+      <div class="variant-select__header">
+        <span class="variant-select__title">{{ block_settings.label | default: 'Subscribe' }}</span>
+        <button
+          type="button"
+          class="button button-unstyled variant-select__close"
+          popovertarget="{{ panel_id }}"
+          popovertargetaction="hide"
+          aria-label="{{ 'actions.close' | t }}"
+        >
+          {{- 'icon-close.svg' | inline_asset_content -}}
+        </button>
+      </div>
+
+      <div class="subscribe-block__body">
+        {%- if has_variants -%}
+          {%- render 'variant-select-dropdown',
+            product: product,
+            unique_id: unique_id,
+            form_component_id: form_component_id
+          -%}
+        {%- endif -%}
+
+        {%- render 'purchase-options', product: product, form_id: form_id, unique_id: unique_id -%}
+
+        <product-form-component
+          id="{{ form_component_id }}"
+          data-section-id="{{ section.id }}"
+          data-product-id="{{ product.id }}"
+          on:submit="/handleSubmit"
+        >
+          <div
+            class="visually-hidden"
+            aria-live="assertive"
+            role="status"
+            aria-atomic="true"
+            ref="liveRegion"
+          ></div>
+          {%- form 'product', product, id: form_id, novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+            <input
+              type="hidden"
+              name="id"
+              ref="variantId"
+              value="{{ variant.id }}"
+              {% if variant.available == false %}
+                disabled
+              {% endif %}
+            >
+            <input
+              type="hidden"
+              name="quantity"
+              value="{% if variant.quantity_rule.min %}{{ variant.quantity_rule.min }}{% else %}1{% endif %}"
+            >
+            {%- render 'add-to-cart-button',
+              add_to_cart_text: block_settings.submit_label | default: 'Add to cart',
+              class: 'subscribe-block__submit add-to-cart-button',
+              can_add_to_cart: variant.available,
+              show_icon: false,
+              product: product
+            -%}
+          {%- endform -%}
+        </product-form-component>
+      </div>
+    </div>
+  </subscribe-popover-component>
+
+  {%- render 'variant-select-styles' -%}
+  {%- render 'add-to-cart-button-styles' -%}
+{%- endunless -%}
+
+{% stylesheet %}
+  .subscribe-block {
+    display: block;
+    inline-size: 100%;
+  }
+
+  .subscribe-block__trigger.button {
+    inline-size: 100%;
+    justify-content: center;
+  }
+
+  /* Wider than the variant panel: it holds the size picker, the plan cards and the submit. */
+  .subscribe-block__panel {
+    min-inline-size: min(22rem, calc(100vw - 2rem));
+  }
+
+  .subscribe-block__body {
+    display: grid;
+    gap: var(--gap-lg);
+    padding: var(--padding-lg);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .subscribe-block__submit.button {
+    inline-size: 100%;
+    justify-content: center;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.subscribe_button",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:content.resource_reference_subscribe_button"
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "t:settings.label",
+      "default": "Subscribe"
+    },
+    {
+      "type": "text",
+      "id": "submit_label",
+      "label": "t:names.add_to_cart",
+      "default": "Add to cart"
+    },
+    {
+      "type": "select",
+      "id": "style_class",
+      "label": "t:settings.style",
+      "options": [
+        {
+          "value": "button",
+          "label": "t:options.button_primary"
+        },
+        {
+          "value": "button-secondary",
+          "label": "t:options.button_secondary"
+        },
+        {
+          "value": "button-unstyled",
+          "label": "t:options.link"
+        }
+      ],
+      "default": "button"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.subscribe_button",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "subscribe_button": "Prenumerationsknapp",
     "story_video": "Berättelse med video",
     "product_metafield_text": "Text från produktmetafält",
     "footer_brand": "Varumärkesrad i sidfot",
@@ -883,6 +884,7 @@
     "input_field": "Inmatningsfält"
   },
   "content": {
+    "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Ordmärke",
     "advanced": "Avancerat",

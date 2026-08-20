@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "subscribe_button": "Tlačítko předplatného",
     "story_video": "Příběh s videem",
     "product_metafield_text": "Text metapole produktu",
     "footer_brand": "Řádek značky v patičce",
@@ -883,6 +884,7 @@
     "input_field": "Vstupní pole"
   },
   "content": {
+    "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Slovní značka",
     "advanced": "Pokročilé",
