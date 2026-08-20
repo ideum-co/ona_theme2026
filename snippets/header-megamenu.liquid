@@ -71,11 +71,26 @@
 {%- if header_foreground != blank -%}
   {% style %}
     @media screen and (min-width: 750px) {
+      {%- if header_background != blank %}
+        /* `.header__row` is `background-color: transparent !important` - the header is painted by
+           its underlays, and their colours come from an inline style on `#header-component`, so
+           this is the only way in. `--closed-underlay-height` is 0 while the header is transparent
+           and not sticky, which is why the home page showed the hero straight through. */
+        #header-component:has(.menu-open) {
+          --closed-underlay-height: 100%;
+
+          /* stylelint-disable declaration-no-important */
+          --color-background-top-row: {{ header_background }} !important;
+          --color-background-bottom-row: {{ header_background }} !important;
+          --color-submenu: {{ header_background }} !important;
+          /* stylelint-enable declaration-no-important */
+        }
+      {%- endif %}
+
       /* The row carries the page's own `color-custom-*` class, so this needs the id and the `:has()`
          to outrank it. Set on the row rather than on each item, so everything inside inherits. */
       #header-component:has(.menu-open) .header__row {
         {%- if header_background != blank %}
-          background-color: {{ header_background }};
           --color-background: {{ header_background }};
           --color-background-rgb: {{ header_background.rgb }};
         {%- endif %}
@@ -255,6 +270,16 @@
     /* The drawer stays in the DOM for mobile; from here up the mega menu replaces it. */
     .menu-open > .menu-drawer {
       display: none;
+    }
+
+    /* The drawer's backdrop only fades: at opacity 0 it still covers the viewport and swallows the
+       next click, so closing the mega menu took a second click to register. */
+    .menu-drawer__backdrop {
+      pointer-events: none;
+    }
+
+    .menu-open > .menu-drawer__backdrop {
+      pointer-events: auto;
     }
 
     /* The design has the panel starting at the top of the page, so anything else in the header
