@@ -151,8 +151,12 @@
       background-color: var(--color-background);
       color: var(--color-foreground);
       border-block-end: var(--style-border-drawer);
+      /* The header clearance sits on the fixed wrapper, not on the scrolling element: with the
+         padding inside the scroller it travelled with the content and the first row slid under
+         the header. */
+      padding-block-start: calc(var(--header-group-height, 60px) + var(--padding-2xl));
       max-block-size: 100dvh;
-      overflow-y: auto;
+      overflow: hidden;
     }
 
     .menu-open > .header-megamenu {
@@ -174,17 +178,29 @@
 
     /* The panel is fixed and covers the header, so the header's own content has to be lifted over
        it - the design shows the logo and the icons sitting on the panel, not hidden behind it.
-       The column that holds the panel is excluded: raising it would raise the panel with it. */
-    #header-component:has(.menu-open) .header__column:not(:has(.menu-drawer-container)) {
+       Lifted item by item rather than by column: `header-row` puts the toggle in the right column
+       next to the cart, so raising whole columns would either raise the panel with them or leave
+       the cart behind it. `header-drawer` is skipped because it holds the panel. */
+    #header-component:has(.menu-open) .header__column > *:not(header-drawer) {
       position: relative;
       z-index: calc(var(--layer-menu-drawer) + 1);
     }
 
-    /* The toggle lives in the excluded column and already swaps to a close icon when open, so it
-       is the design's X. Lifted on its own so it stays clickable over the panel. */
+    /* The toggle lives in the excluded column, lifted on its own so it stays clickable. */
     .menu-drawer-container.menu-open > summary {
       position: relative;
       z-index: calc(var(--layer-menu-drawer) + 1);
+    }
+
+    /* The theme hides the close icon from 750px up and keeps the hamburger, because on desktop the
+       drawer was never the menu. Now it is, so the swap has to happen here too. Scoped to this
+       container, so the mobile behaviour is untouched. */
+    .menu-drawer-container.menu-open .header__icon--menu .header-drawer-icon--close {
+      display: flex;
+    }
+
+    .menu-drawer-container.menu-open .header__icon--menu .header-drawer-icon--open {
+      display: none;
     }
 
     .header-megamenu__panel {
@@ -192,9 +208,13 @@
       grid-template-columns: minmax(12rem, 1fr) minmax(0, 3fr);
       gap: var(--gap-3xl, 3rem);
 
-      /* Clears the header, so the logo and the icons stay readable on top of the panel. */
-      padding-block: calc(var(--header-group-height, 5rem) + var(--padding-2xl)) var(--padding-5xl);
+      padding-block-end: var(--padding-5xl);
       padding-inline: var(--util-page-margin, var(--padding-2xl));
+
+      /* Only the content scrolls, so the clearance above it always holds. */
+      max-block-size: calc(100dvh - var(--header-group-height, 60px) - var(--padding-2xl));
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
 
     .header-megamenu__primary {
