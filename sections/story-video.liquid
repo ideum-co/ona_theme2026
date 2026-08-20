@@ -19,6 +19,9 @@
     --story-video-overhang: {{ settings.video_overhang }}px;
     --story-video-button-background: {{ settings.button_background }};
     --story-video-button-color: {{ settings.button_text }};
+    --story-video-play-background: {{ settings.play_background }};
+    --story-video-play-color: {{ settings.play_color }};
+    --story-video-play-size: {{ settings.play_size }}px;
     --story-video-padding-block-start: {{ settings.padding-block-start }}px;
     --story-video-padding-block-end: {{ settings.padding-block-end }}px;
   "
@@ -59,10 +62,24 @@
       <video> element, the YouTube/Vimeo iframe, the poster and the play button.
     {%- endcomment -%}
     <div class="story-video__media">
+      {%- capture video_style -%}
+        --size-style-width: 100%;
+        --size-style-width-mobile: 100%;
+        --size-style-aspect-ratio:
+        {%- if settings.source == 'uploaded' -%}
+          {{ settings.video.aspect_ratio | default: 'auto' }}
+        {%- elsif settings.cover_image == blank -%}
+          {{ settings.aspect_ratio }}
+        {%- else -%}
+          auto
+        {%- endif -%};
+      {%- endcapture -%}
+
       {%- if settings.source == 'uploaded' -%}
         {%- render 'video',
           video: settings.video,
-          video_class: 'story-video__player',
+          video_class: 'story-video__player size-style',
+          video_style: video_style,
           video_loop: settings.video_loop,
           video_autoplay: settings.video_autoplay,
           video_preview_image: settings.cover_image | default: settings.video.preview_image
@@ -72,7 +89,8 @@
           video_from_url: true,
           video: settings.video_url.id,
           video_type: settings.video_url.type,
-          video_class: 'story-video__player',
+          video_class: 'story-video__player size-style',
+          video_style: video_style,
           video_alt: settings.alt,
           video_preview_image: settings.cover_image
         -%}
@@ -84,6 +102,10 @@
 {% stylesheet %}
   .story-video {
     display: grid;
+
+    /* An implicit auto column would take its width from the intro text, leaving the player
+       narrower than the section and unable to reach its own max width. */
+    grid-template-columns: minmax(0, 1fr);
     justify-items: center;
     gap: var(--gap-2xl);
     padding-block: var(--story-video-padding-block-start) var(--story-video-padding-block-end);
@@ -132,16 +154,49 @@
   /* A negative bottom margin lets the player hang over whatever section follows, as in the
      design. It also shortens this section, so the background stops above the video's bottom
      edge, which is the effect being asked for. The stacking context keeps it above. */
+  /* justify-items: center on the grid sizes items to their content, and the player inside asks
+     for 100% of its parent - the two resolve to zero. Stretching the area and capping it with a
+     max width is what gives the player a real box to lay out in. */
+  /* A definite width plus `justify-self: center`, not `stretch` with auto margins: an auto margin
+     in the alignment axis cancels stretch, which left the player at its intrinsic 300px. */
   .story-video__media {
     position: relative;
     z-index: var(--layer-flat, 1);
-    inline-size: 100%;
-    max-inline-size: var(--story-video-max-width, 1280px);
+    justify-self: center;
+    inline-size: min(100%, var(--story-video-max-width, 1280px));
     margin-block-end: calc(var(--story-video-overhang, 0px) * -1);
   }
 
+  /* `deferred-media` is a custom element with no display of its own, so it stays inline unless a
+     flex or grid parent blockifies it - which is what happens inside the theme's own video block,
+     and why this only showed up here. Inline meant its width and height were ignored and the
+     absolutely positioned iframe and play button resolved against a 640px box. */
   .story-video__player {
-    inline-size: 100%;
+    display: block;
+  }
+
+  /* Play button per the design: a solid disc with the triangle drawn as an outline. The theme's
+     icon is a filled path, so it is stroked instead of filled here. */
+  .story-video .deferred-media__poster-icon {
+    inline-size: var(--story-video-play-size, 6rem);
+    block-size: var(--story-video-play-size, 6rem);
+    background: var(--story-video-play-background);
+    color: var(--story-video-play-color);
+  }
+
+  .story-video .deferred-media__poster-icon svg {
+    inline-size: 40%;
+    block-size: 40%;
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 1;
+    filter: none;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .story-video .deferred-media__poster-icon svg path {
+    fill: none;
+    stroke: currentcolor;
   }
 {% endstylesheet %}
 
@@ -267,6 +322,31 @@
       "visible_if": "{{ section.settings.source == 'url' }}"
     },
     {
+      "type": "select",
+      "id": "aspect_ratio",
+      "label": "t:settings.aspect_ratio",
+      "visible_if": "{{ section.settings.source == 'url' and section.settings.cover_image == blank }}",
+      "options": [
+        {
+          "value": "auto",
+          "label": "t:options.auto"
+        },
+        {
+          "value": "9/16",
+          "label": "t:options.portrait"
+        },
+        {
+          "value": "1/1",
+          "label": "t:options.square"
+        },
+        {
+          "value": "16/9",
+          "label": "t:options.landscape"
+        }
+      ],
+      "default": "16/9"
+    },
+    {
       "type": "range",
       "id": "video_max_width",
       "label": "t:settings.max_width",
@@ -286,6 +366,28 @@
       "unit": "px",
       "default": 0,
       "info": "t:info.video_overhang"
+    },
+    {
+      "type": "color",
+      "id": "play_background",
+      "label": "t:settings.background",
+      "default": "#751132"
+    },
+    {
+      "type": "color",
+      "id": "play_color",
+      "label": "t:settings.color",
+      "default": "#f5f4ea"
+    },
+    {
+      "type": "range",
+      "id": "play_size",
+      "label": "t:settings.size",
+      "min": 40,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 96
     },
     {
       "type": "header",
