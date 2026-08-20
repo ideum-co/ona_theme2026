@@ -27,6 +27,55 @@
 -%}
 
 {%- comment -%}
+  The panel covers the header, and the header keeps the page's colours: on a dark panel the logo
+  and the icons end up dark on dark. Only the close icon stayed visible, because it sits inside the
+  drawer's own colour scope. The same effective foreground `contrast-override` computes for the
+  panel is pushed onto the rest of the header while the menu is open - the brightness fallback is
+  the one that snippet uses when no explicit text colour is set.
+{%- endcomment -%}
+{%- liquid
+  assign megamenu_foreground = block_settings.text_color
+  if megamenu_foreground != blank
+    assign megamenu_foreground_rgb = megamenu_foreground.rgb
+  elsif block_settings.background_color != blank and block_settings.background_color.alpha != 0
+    assign background_brightness = block_settings.background_color | color_brightness
+    if background_brightness > 128
+      assign megamenu_foreground = 'var(--palette-darkest)'
+      assign megamenu_foreground_rgb = 'var(--palette-darkest-rgb)'
+    else
+      assign megamenu_foreground = 'var(--palette-lightest)'
+      assign megamenu_foreground_rgb = 'var(--palette-lightest-rgb)'
+    endif
+  endif
+-%}
+
+{%- if megamenu_foreground != blank -%}
+  {% style %}
+    @media screen and (min-width: 750px) {
+      #header-component:has(.menu-open) .header__column > *:not(header-drawer) {
+        --color: {{ megamenu_foreground }};
+        --color-rgb: {{ megamenu_foreground_rgb }};
+        --color-foreground: {{ megamenu_foreground }};
+        --color-foreground-rgb: {{ megamenu_foreground_rgb }};
+        --color-border: {{ megamenu_foreground }};
+        --color-border-rgb: {{ megamenu_foreground_rgb }};
+
+        color: {{ megamenu_foreground }};
+      }
+
+      /* An image logo cannot be recoloured, so the theme's transparent-header logo takes over.
+         Guarded on that container existing: without an inverse logo uploaded the swap would hide
+         the logo instead of lightening it. */
+      #header-component:has(.menu-open)
+        .header-logo:has(.header-logo__transparent-header-image-container) {
+        --header-logo-display: none;
+        --header-logo-inverse-display: block;
+      }
+    }
+  {% endstyle %}
+{%- endif -%}
+
+{%- comment -%}
   Same colour class the drawer uses, so the block's Background and Text settings reach this panel
   too - without it the mega menu ignored them and fell back to the page colours.
 {%- endcomment -%}
