@@ -1932,10 +1932,21 @@
         "video_loop": true,
         "alt": "",
         "video_max_width": 1280,
-        "video_overhang": 0,
+        "video_overhang": 160,
         "background_color": "#751132",
         "text_color": "#f5f4ea",
         "padding-block-start": 80,
+        "padding-block-end": 80
+      }
+    },
+    "custom_liquid_RCcpAV": {
+      "type": "custom-liquid",
+      "name": "t:names.custom_liquid",
+      "settings": {
+        "custom_liquid": "",
+        "background_color": "{{ settings.color_palette.background }}",
+        "section_width": "page-width",
+        "padding-block-start": 0,
         "padding-block-end": 80
       }
     },
@@ -2350,7 +2361,7 @@
         "border_opacity": 100,
         "border_color": "",
         "border_radius": 0,
-        "padding-block-start": 80,
+        "padding-block-start": 100,
         "padding-block-end": 80
       }
     },
@@ -3496,6 +3507,7 @@
     "good_coffee_delivered",
     "more_than_coffee",
     "story_video_URBFL6",
+    "custom_liquid_RCcpAV",
     "learn_with_ona",
     "press_quotes_4kW9eF",
     "press_band",
