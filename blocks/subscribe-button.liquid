@@ -41,7 +41,9 @@
       id="{{ trigger_id }}"
       class="button subscribe-block__trigger {{ block_settings.style_class }}"
       ref="trigger"
-      popovertarget="{{ panel_id }}"
+      on:click="/toggle"
+      aria-expanded="false"
+      aria-controls="{{ panel_id }}"
       style="anchor-name: {{ anchor_name }};"
     >
       {{- block_settings.label | default: 'Subscribe' -}}
@@ -50,8 +52,7 @@
     <div
       id="{{ panel_id }}"
       class="variant-select__panel subscribe-block__panel"
-      ref="popover"
-      popover="auto"
+      ref="panel"
       on:click="/handlePanelClick"
       style="position-anchor: {{ anchor_name }};"
     >
@@ -60,8 +61,7 @@
         <button
           type="button"
           class="button button-unstyled variant-select__close"
-          popovertarget="{{ panel_id }}"
-          popovertargetaction="hide"
+          on:click="/close"
           aria-label="{{ 'actions.close' | t }}"
         >
           {{- 'icon-close.svg' | inline_asset_content -}}
@@ -135,9 +135,37 @@
     justify-content: center;
   }
 
-  /* Wider than the variant panel: it holds the size picker, the plan cards and the submit. */
-  .subscribe-block__panel {
-    min-inline-size: min(22rem, calc(100vw - 2rem));
+  /* Positioned inside the card rather than in the top layer: the card's own overflow clips it, so
+     it can never lie across the next card in a grid or a carousel. The containing block is
+     `.product-card__content`, which is the nearest positioned ancestor, so `inset-inline: 0` is
+     the full width of the card.
+
+     `anchor(top)` puts its bottom edge on the top of the button row. Where anchor positioning is
+     not supported the panel simply reaches the bottom of the card instead - still inside it. */
+  .subscribe-block .subscribe-block__panel {
+    /* Overrides the variant panel's own positioning, including the `position: fixed` it falls back
+       to without CSS anchor positioning - fixed would escape the card just like the top layer did. */
+    position: absolute;
+    inset-block-start: auto;
+    inset-inline: 0;
+    inset-block-end: 0;
+    inset-block-end: anchor(top);
+    display: none;
+    inline-size: auto;
+    min-inline-size: 0;
+    max-inline-size: none;
+    max-block-size: 100%;
+    z-index: var(--layer-raised, 2);
+  }
+
+  .subscribe-block[open] .subscribe-block__panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .subscribe-block__trigger[aria-expanded='true'] {
+    position: relative;
+    z-index: var(--layer-raised, 2);
   }
 
   .subscribe-block__body {
