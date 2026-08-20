@@ -1,0 +1,13 @@
+<!doctype html><html><body style="margin:0">
+<div style="block-size:44px;background:#ccc">announcement</div>
+<div id="hdr" style="contain:layout style;background:#eee">
+  <div style="block-size:74px">header row</div>
+  <div id="fixed" style="position:fixed;inset-block-start:0;inset-inline:0;block-size:20px;background:red"></div>
+</div>
+<script>
+  window.result = JSON.stringify({
+    headerTop: document.getElementById('hdr').getBoundingClientRect().top,
+    fixedTop: document.getElementById('fixed').getBoundingClientRect().top
+  });
+</script>
+</body></html>
