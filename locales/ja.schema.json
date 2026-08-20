@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "story_video": "ストーリーと動画",
     "product_metafield_text": "商品メタフィールドのテキスト",
     "footer_brand": "フッターのブランド行",
     "press_quote": "引用",
@@ -180,6 +181,7 @@
     "disclosures": "開示情報"
   },
   "settings": {
+    "video_overhang": "動画のはみ出し",
     "namespace": "ネームスペース",
     "svg_code": "SVGコード",
     "button_placement": "ボタンの位置",
@@ -1106,6 +1108,7 @@
     "disclosures": "開示情報"
   },
   "info": {
+    "video_overhang": "How far the video hangs over the section below. The section background stops above it.",
     "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",

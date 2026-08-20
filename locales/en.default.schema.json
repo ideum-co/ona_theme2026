@@ -225,6 +225,7 @@
     "work_quickly_to_ship": "<p>We will work quickly to ship your order as soon as possible. Once your order has shipped, you will receive an email with further information. Delivery times vary depending on your location.</p>"
   },
   "info": {
+    "video_overhang": "How far the video hangs over the section below. The section background stops above it.",
     "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
@@ -262,6 +263,7 @@
     "media_type_info": "Features are populated from your menu links"
   },
   "names": {
+    "story_video": "Story with video",
     "product_metafield_text": "Product metafield text",
     "footer_brand": "Footer brand row",
     "press_quote": "Quote",
@@ -757,6 +759,7 @@
     "below_media": "Below media"
   },
   "settings": {
+    "video_overhang": "Video overhang",
     "namespace": "Namespace",
     "svg_code": "SVG code",
     "button_placement": "Button placement",

@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "story_video": "Tarina ja video",
     "product_metafield_text": "Tuotteen metakentän teksti",
     "footer_brand": "Alatunnisteen brändirivi",
     "press_quote": "Sitaatti",
@@ -180,6 +181,7 @@
     "disclosures": "Ilmoitukset"
   },
   "settings": {
+    "video_overhang": "Videon ylitys",
     "namespace": "Nimiavaruus",
     "svg_code": "SVG-koodi",
     "button_placement": "Painikkeen sijainti",
@@ -1106,6 +1108,7 @@
     "disclosures": "Ilmoitukset"
   },
   "info": {
+    "video_overhang": "How far the video hangs over the section below. The section background stops above it.",
     "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",

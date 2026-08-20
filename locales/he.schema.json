@@ -217,6 +217,7 @@
     "work_quickly_to_ship": "<p>נעבוד מהר כדי לשלוח את ההזמנה שלך בהקדם האפשרי. לאחר שההזמנה שלך תישלח, תקבל דוא&quot;ל עם מידע נוסף. זמני האספקה משתנים בהתאם למיקומך.</p>"
   },
   "info": {
+    "video_overhang": "How far the video hangs over the section below. The section background stops above it.",
     "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
@@ -254,6 +255,7 @@
     "media_type_info": "התכונות מאוכלסות מקישורי התפריט שלך"
   },
   "names": {
+    "story_video": "סיפור עם וידאו",
     "product_metafield_text": "טקסט משדה מטא של מוצר",
     "footer_brand": "שורת מותג בכותרת התחתונה",
     "press_quote": "ציטוט",
@@ -704,6 +706,7 @@
     "below_media": "מתחת למדיה"
   },
   "settings": {
+    "video_overhang": "חריגת הווידאו",
     "namespace": "מרחב שמות",
     "svg_code": "קוד SVG",
     "button_placement": "מיקום הכפתור",

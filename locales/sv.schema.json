@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "story_video": "Berättelse med video",
     "product_metafield_text": "Text från produktmetafält",
     "footer_brand": "Varumärkesrad i sidfot",
     "press_quote": "Citat",
@@ -180,6 +181,7 @@
     "disclosures": "Upplysningar"
   },
   "settings": {
+    "video_overhang": "Videoöverhäng",
     "namespace": "Namnrymd",
     "svg_code": "SVG-kod",
     "button_placement": "Knappens placering",
@@ -1106,6 +1108,7 @@
     "disclosures": "Upplysningar"
   },
   "info": {
+    "video_overhang": "How far the video hangs over the section below. The section background stops above it.",
     "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",

@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "story_video": "Histoire avec vidéo",
     "product_metafield_text": "Texte de métachamp produit",
     "footer_brand": "Ligne de marque du pied de page",
     "press_quote": "Citation",
@@ -180,6 +181,7 @@
     "disclosures": "Divulgations"
   },
   "settings": {
+    "video_overhang": "Débordement de la vidéo",
     "namespace": "Espace de noms",
     "svg_code": "Code SVG",
     "button_placement": "Position du bouton",
@@ -1106,6 +1108,7 @@
     "disclosures": "Divulgations"
   },
   "info": {
+    "video_overhang": "How far the video hangs over the section below. The section background stops above it.",
     "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",

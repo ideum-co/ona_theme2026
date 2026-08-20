@@ -217,6 +217,7 @@
     "work_quickly_to_ship": "<p>ہم جلد از جلد آپ کا آرڈر شپ کرنے کے لیے تیزی سے کام کریں گے۔ آپ کا آرڈر شپ ہونے کے بعد، آپ کو مزید معلومات کے ساتھ ایک ای میل موصول ہوگی۔ آپ کے مقام کے لحاظ سے ترسیل کے اوقات مختلف ہو سکتے ہیں۔</p>"
   },
   "info": {
+    "video_overhang": "How far the video hangs over the section below. The section background stops above it.",
     "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
@@ -254,6 +255,7 @@
     "media_type_info": "خصوصیات آپ کے مینو کے لنک سے پُر کی گئی ہیں"
   },
   "names": {
+    "story_video": "ویڈیو کے ساتھ کہانی",
     "product_metafield_text": "پروڈکٹ میٹا فیلڈ ٹیکسٹ",
     "footer_brand": "فوٹر برانڈ قطار",
     "press_quote": "اقتباس",
@@ -704,6 +706,7 @@
     "below_media": "میڈیا کے نیچے"
   },
   "settings": {
+    "video_overhang": "ویڈیو کا اوور ہینگ",
     "namespace": "نیم اسپیس",
     "svg_code": "SVG کوڈ",
     "button_placement": "بٹن کی جگہ",
