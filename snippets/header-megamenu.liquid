@@ -164,6 +164,21 @@
       display: none;
     }
 
+    /* The panel is fixed and covers the header, so the header's own content has to be lifted over
+       it - the design shows the logo and the icons sitting on the panel, not hidden behind it.
+       The column that holds the panel is excluded: raising it would raise the panel with it. */
+    #header-component:has(.menu-open) .header__column:not(:has(.menu-drawer-container)) {
+      position: relative;
+      z-index: calc(var(--layer-menu-drawer) + 1);
+    }
+
+    /* The toggle lives in the excluded column and already swaps to a close icon when open, so it
+       is the design's X. Lifted on its own so it stays clickable over the panel. */
+    .menu-drawer-container.menu-open > summary {
+      position: relative;
+      z-index: calc(var(--layer-menu-drawer) + 1);
+    }
+
     .header-megamenu__panel {
       display: grid;
       grid-template-columns: minmax(12rem, 1fr) minmax(0, 3fr);
