@@ -1919,6 +1919,7 @@
       "type": "story-video",
       "name": "t:names.story_video",
       "settings": {
+        "logo": "shopify://shop_images/icon-ona.svg",
         "heading": "More than coffee. <em>Since 2008.</em>",
         "heading_size": 44,
         "body": "<p>From Canberra to cafés around the world, ONA has spent over 15 years championing exceptional coffee through innovation, education and meaningful producer partnerships.</p>",
