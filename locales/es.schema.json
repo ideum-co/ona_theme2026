@@ -884,6 +884,7 @@
     "input_field": "Campo de entrada"
   },
   "content": {
+    "mega_menu": "Mega menú",
     "resource_reference_subscribe_button": "Abre las opciones de compra del producto en un panel. Se oculta si el producto no tiene planes de venta.",
     "resource_reference_product_metafield": "Muestra un metafield del producto principal",
     "wordmark": "Logotipo tipográfico",
@@ -1110,6 +1111,8 @@
     "disclosures": "Divulgaciones"
   },
   "info": {
+    "megamenu_badge": "Metafield del producto para la etiqueta. Si está vacío, usa \"En oferta\" cuando el producto tiene descuento.",
+    "megamenu_image": "Metafield del producto para la imagen del menú. Si está vacío, usa la imagen del producto.",
     "video_overhang": "Cuánto sobresale el video sobre la sección siguiente. El fondo de la sección termina por encima.",
     "svg_code": "Tiene prioridad sobre la imagen. Usar currentColor en el SVG hace que tome el color de texto de la sección.",
     "footer_column_ratios": "Tamaños CSS de las columnas en escritorio, por ejemplo «1fr 1fr 2fr 1.5fr». Vacío = columnas iguales.",
