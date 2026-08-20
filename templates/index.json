@@ -1722,6 +1722,7 @@
         "text_hmc9WY",
         "button_RDCLNJ"
       ],
+      "disabled": true,
       "name": "t:names.section",
       "settings": {
         "content_direction": "column",
@@ -1910,6 +1911,30 @@
         "border_opacity": 100,
         "border_color": "",
         "border_radius": 0,
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      }
+    },
+    "story_video_URBFL6": {
+      "type": "story-video",
+      "name": "t:names.story_video",
+      "settings": {
+        "heading": "More than coffee. <em>Since 2008.</em>",
+        "heading_size": 44,
+        "body": "<p>From Canberra to cafés around the world, ONA has spent over 15 years championing exceptional coffee through innovation, education and meaningful producer partnerships.</p>",
+        "button_label": "Learn more",
+        "button_link": "",
+        "button_background": "#f5f4ea",
+        "button_text": "#751132",
+        "source": "uploaded",
+        "video": "shopify://files/videos/Wholesale partner website 9_16.mp4",
+        "video_autoplay": false,
+        "video_loop": true,
+        "alt": "",
+        "video_max_width": 1280,
+        "video_overhang": 0,
+        "background_color": "#751132",
+        "text_color": "#f5f4ea",
         "padding-block-start": 80,
         "padding-block-end": 80
       }
@@ -3470,6 +3495,7 @@
     "raspberry_candy",
     "good_coffee_delivered",
     "more_than_coffee",
+    "story_video_URBFL6",
     "learn_with_ona",
     "press_quotes_4kW9eF",
     "press_band",
