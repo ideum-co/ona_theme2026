@@ -267,9 +267,17 @@
       }
     }
 
-    /* The drawer stays in the DOM for mobile; from here up the mega menu replaces it. */
+    /* The drawer stays in the DOM for mobile; from here up the mega menu replaces it. It is hidden
+       rather than `display: none`, because `header-drawer.js` closes by waiting on that element's
+       animations before removing `open`. With no box there are no animations, the wait resolved in
+       a microtask, and `open` was removed before the summary's own default action ran - which then
+       toggled it straight back on. That left the details open with the scroll locked and the menu
+       unable to reopen. Kept in flow, its transform still transitions and the wait outlasts the
+       default action. */
     .menu-open > .menu-drawer {
-      display: none;
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
     }
 
     /* The drawer's backdrop only fades: at opacity 0 it still covers the viewport and swallows the
