@@ -27,59 +27,79 @@
 -%}
 
 {%- comment -%}
-  While the menu is open the header takes the panel's own colours, whatever the page had set: on
-  the home page it is transparent over the hero, and it still has to turn into the panel's colour
-  so header and panel read as one surface. That also fixes the logo and the icons, which were
-  drawn in the page's dark foreground on top of a dark panel.
+  While the menu is open the header gets its own colour state, on top of whatever the page had:
+  the theme already swaps the header's colours for sticky and for hover, and this is the same idea
+  for the open mega menu. On the home page the header is transparent over the hero, and it still
+  has to take a colour so header and panel read as one surface.
 
-  The brightness fallback below is the one `contrast-override` uses when no text colour is set.
+  The two Header settings override it; unset, it follows the panel, which is the common case. The
+  brightness fallback is the one `contrast-override` uses when no text colour is given, and it also
+  decides which logo to show, since an image logo cannot be recoloured.
 {%- endcomment -%}
 {%- liquid
-  assign megamenu_foreground = block_settings.text_color
-  if megamenu_foreground != blank
-    assign megamenu_foreground_rgb = megamenu_foreground.rgb
-  elsif block_settings.background_color != blank and block_settings.background_color.alpha != 0
-    assign background_brightness = block_settings.background_color | color_brightness
+  assign header_background = block_settings.megamenu_header_background_color
+  if header_background == blank
+    assign header_background = block_settings.background_color
+  endif
+
+  assign header_foreground = block_settings.megamenu_header_text_color
+  if header_foreground == blank
+    assign header_foreground = block_settings.text_color
+  endif
+
+  assign header_logo_is_light = false
+
+  if header_foreground != blank
+    assign header_foreground_rgb = header_foreground.rgb
+    assign foreground_brightness = header_foreground | color_brightness
+    if foreground_brightness > 128
+      assign header_logo_is_light = true
+    endif
+  elsif header_background != blank and header_background.alpha != 0
+    assign background_brightness = header_background | color_brightness
     if background_brightness > 128
-      assign megamenu_foreground = 'var(--palette-darkest)'
-      assign megamenu_foreground_rgb = 'var(--palette-darkest-rgb)'
+      assign header_foreground = 'var(--palette-darkest)'
+      assign header_foreground_rgb = 'var(--palette-darkest-rgb)'
     else
-      assign megamenu_foreground = 'var(--palette-lightest)'
-      assign megamenu_foreground_rgb = 'var(--palette-lightest-rgb)'
+      assign header_foreground = 'var(--palette-lightest)'
+      assign header_foreground_rgb = 'var(--palette-lightest-rgb)'
+      assign header_logo_is_light = true
     endif
   endif
 -%}
 
-{%- if megamenu_foreground != blank -%}
+{%- if header_foreground != blank -%}
   {% style %}
     @media screen and (min-width: 750px) {
       /* The row carries the page's own `color-custom-*` class, so this needs the id and the `:has()`
          to outrank it. Set on the row rather than on each item, so everything inside inherits. */
       #header-component:has(.menu-open) .header__row {
-        {%- if block_settings.background_color != blank %}
-          background-color: {{ block_settings.background_color }};
-          --color-background: {{ block_settings.background_color }};
-          --color-background-rgb: {{ block_settings.background_color.rgb }};
+        {%- if header_background != blank %}
+          background-color: {{ header_background }};
+          --color-background: {{ header_background }};
+          --color-background-rgb: {{ header_background.rgb }};
         {%- endif %}
 
-        --color: {{ megamenu_foreground }};
-        --color-rgb: {{ megamenu_foreground_rgb }};
-        --color-foreground: {{ megamenu_foreground }};
-        --color-foreground-rgb: {{ megamenu_foreground_rgb }};
-        --color-border: {{ megamenu_foreground }};
-        --color-border-rgb: {{ megamenu_foreground_rgb }};
+        --color: {{ header_foreground }};
+        --color-rgb: {{ header_foreground_rgb }};
+        --color-foreground: {{ header_foreground }};
+        --color-foreground-rgb: {{ header_foreground_rgb }};
+        --color-border: {{ header_foreground }};
+        --color-border-rgb: {{ header_foreground_rgb }};
 
-        color: {{ megamenu_foreground }};
+        color: {{ header_foreground }};
       }
 
-      /* An image logo cannot be recoloured, so the theme's transparent-header logo takes over.
-         Guarded on that container existing: without an inverse logo uploaded the swap would hide
-         the logo instead of lightening it. */
-      #header-component:has(.menu-open)
-        .header-logo:has(.header-logo__transparent-header-image-container) {
-        --header-logo-display: none;
-        --header-logo-inverse-display: block;
-      }
+      {%- if header_logo_is_light %}
+        /* An image logo cannot be recoloured, so the theme's transparent-header logo takes over.
+           Guarded on that container existing: without an inverse logo uploaded the swap would hide
+           the logo instead of lightening it. */
+        #header-component:has(.menu-open)
+          .header-logo:has(.header-logo__transparent-header-image-container) {
+          --header-logo-display: none;
+          --header-logo-inverse-display: block;
+        }
+      {%- endif %}
     }
   {% endstyle %}
 {%- endif -%}
