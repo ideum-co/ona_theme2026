@@ -713,7 +713,7 @@
         "icons_shape": "none",
         "section_width": "page-width",
         "horizontal_alignment": "center",
-        "gap": 40,
+        "gap": 80,
         "background_color": "{{ settings.color_palette.background }}",
         "padding-block-start": 80,
         "padding-block-end": 80
