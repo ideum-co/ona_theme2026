@@ -459,7 +459,7 @@
 
 <div
   id="Hero-{{ section.id }}"
-  class="hero{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}{% if section.blocks.size == 0 and section.settings.section_height == 'auto' %} hero--no-blocks-auto-height{% endif %}{% if section.settings.stack_media_on_mobile %} hero--stack-mobile{% endif %}"
+  class="hero{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}{% if section.blocks.size == 0 and section.settings.section_height == 'auto' %} hero--no-blocks-auto-height{% endif %}{% if section.settings.stack_media_on_mobile %} hero--stack-mobile{% endif %}{% if section.settings.animate_content %} hero--animate-content{% endif %}"
   style="
     --hero-border-style: {{ section.settings.border }};
     --hero-border-width: {{ section.settings.border_width }}px;
@@ -759,6 +759,70 @@
       }
     }
   }
+
+  /* ================================
+     * Content reveal
+     * ================================ */
+
+  /* Staggered by role rather than by position: the hero's content is `text` blocks, which carry
+     their type preset as a class, and `button` blocks. Heading, then copy, then the buttons - the
+     reading order, whatever the blocks are nested in.
+
+     `backwards` fill is deliberate: the properties only apply up to the end of the animation, so
+     the finished elements keep no `filter`, which would otherwise leave a containing block and a
+     stacking context behind for the rest of the page's life. */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero--animate-content .hero__content-wrapper :is(.text-block, .button) {
+      /* Expo-out rather than the theme's `--ease-out-cubic`: it decelerates far harder, so the
+         content arrives almost instantly and then settles, instead of drifting into place. */
+      animation: hero-content-reveal var(--hero-reveal-duration, 1.1s) cubic-bezier(0.16, 1, 0.3, 1)
+        var(--hero-reveal-delay, 0.15s) backwards;
+    }
+
+    /* The heading leads: it travels furthest and comes out of the deepest blur, which is what
+       gives the serif display its weight on arrival. */
+    .hero--animate-content .hero__content-wrapper .text-block:is(.h0, .h1, .h2, .h3) {
+      --hero-reveal-duration: 1.3s;
+      --hero-reveal-shift: 2.25rem;
+      --hero-reveal-blur: 14px;
+    }
+
+    .hero--animate-content .hero__content-wrapper .text-block:is(.paragraph, .rte) {
+      --hero-reveal-delay: 0.32s;
+      --hero-reveal-shift: 1.5rem;
+      --hero-reveal-blur: 10px;
+    }
+
+    .hero--animate-content .hero__content-wrapper .button {
+      --hero-reveal-delay: 0.52s;
+      --hero-reveal-duration: 0.9s;
+      --hero-reveal-shift: 1rem;
+      --hero-reveal-blur: 6px;
+    }
+
+    /* Buttons arrive one after the other rather than together. */
+    .hero--animate-content .hero__content-wrapper .button:nth-of-type(2) {
+      --hero-reveal-delay: 0.62s;
+    }
+
+    .hero--animate-content .hero__content-wrapper .button:nth-of-type(3) {
+      --hero-reveal-delay: 0.72s;
+    }
+  }
+
+  @keyframes hero-content-reveal {
+    from {
+      opacity: 0;
+      transform: translate3d(0, var(--hero-reveal-shift, 1.5rem), 0);
+      filter: blur(var(--hero-reveal-blur, 10px));
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+      filter: blur(0);
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -796,6 +860,12 @@
     "groups": ["header"]
   },
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "animate_content",
+      "label": "t:settings.animation",
+      "default": true
+    },
     {
       "type": "header",
       "content": "t:content.media_1"
