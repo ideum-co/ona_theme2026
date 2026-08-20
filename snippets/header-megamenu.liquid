@@ -1,0 +1,282 @@
+{%- doc -%}
+  Desktop mega menu: the whole top level stays visible on the left while the active item's child
+  links and featured products fill the rest of the panel.
+
+  Rendered inside the same `<details>` as the mobile drawer, so opening, closing, the hamburger to
+  close icon swap and the scroll lock are the drawer's and are not reimplemented here. CSS shows
+  this panel from 750px up and the drawer below it, which is why the mobile menu is untouched.
+
+  Featured products come from the first collection child of each top level link - the convention
+  the drawer already uses - and their image comes from a metafield, falling back to the product's
+  own image.
+
+  @param {object} linklist - The menu to render.
+  @param {object} block - The header menu block, for its settings.
+
+  @example
+  {% render 'header-megamenu', linklist: block_settings.menu, block: block %}
+{%- enddoc -%}
+
+{%- liquid
+  assign block_settings = block.settings
+  assign max_featured = block_settings.megamenu_featured_count | default: 3
+  assign image_namespace = block_settings.megamenu_image_namespace | default: 'custom'
+  assign image_key = block_settings.megamenu_image_key | default: 'menu_image'
+  assign badge_namespace = block_settings.megamenu_badge_namespace | default: 'custom'
+  assign badge_key = block_settings.megamenu_badge_key | default: 'menu_badge'
+-%}
+
+<header-megamenu class="header-megamenu" ref="megaMenu">
+  <div class="header-megamenu__panel">
+    <ul
+      class="header-megamenu__primary list-unstyled"
+      ref="primary"
+    >
+      {%- for link in linklist.links -%}
+        <li class="header-megamenu__primary-item">
+          <a
+            class="header-megamenu__primary-link"
+            href="{{ link.url }}"
+            data-index="{{ forloop.index0 }}"
+            ref="primaryLinks[]"
+            {% if forloop.first %}
+              aria-current="true"
+            {% endif %}
+          >
+            {{- link.title | escape -}}
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+
+    <div class="header-megamenu__panels">
+      {%- for link in linklist.links -%}
+        {%- liquid
+          assign collection_link = link.links | where: 'type', 'collection_link' | first
+          assign featured_collection = collection_link.object
+        -%}
+        <div
+          class="header-megamenu__content"
+          data-index="{{ forloop.index0 }}"
+          ref="contents[]"
+          {% unless forloop.first %}
+            hidden
+          {% endunless %}
+        >
+          {%- if link.links.size > 0 and featured_collection == blank -%}
+            <ul class="header-megamenu__secondary list-unstyled">
+              {%- for child in link.links -%}
+                <li>
+                  <a
+                    class="header-megamenu__secondary-link"
+                    href="{{ child.url }}"
+                  >
+                    {{- child.title | escape -}}
+                  </a>
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+
+          {%- if featured_collection.products_count > 0 -%}
+            <ul class="header-megamenu__featured list-unstyled">
+              {%- for product in featured_collection.products limit: max_featured -%}
+                {%- liquid
+                  assign image = product.metafields[image_namespace][image_key].value
+                  if image == blank
+                    assign image = product.featured_media.preview_image
+                  endif
+
+                  assign badge = product.metafields[badge_namespace][badge_key].value
+                  if badge == blank and product.compare_at_price > product.price
+                    assign badge = 'content.product_badge_sale' | t
+                  endif
+                -%}
+                <li class="header-megamenu__featured-item">
+                  <a
+                    class="header-megamenu__card"
+                    href="{{ product.url }}"
+                  >
+                    <span class="header-megamenu__card-media">
+                      {%- if image != blank -%}
+                        {{
+                          image
+                          | image_url: width: 800
+                          | image_tag: widths: '200, 400, 600, 800', sizes: '(min-width: 750px) 22vw, 60vw', loading: 'lazy', class: 'header-megamenu__card-image'
+                        }}
+                      {%- endif -%}
+                      {%- if badge != blank -%}
+                        <span class="header-megamenu__card-badge">{{ badge }}</span>
+                      {%- endif -%}
+                    </span>
+                    <span class="header-megamenu__card-footer">
+                      <span class="header-megamenu__card-title">{{ product.title }}</span>
+                      {%- if product.type != blank -%}
+                        <span class="header-megamenu__card-type">{{ product.type }}</span>
+                      {%- endif -%}
+                    </span>
+                  </a>
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</header-megamenu>
+
+{% stylesheet %}
+  /* Below the drawer's breakpoint the mobile drawer is what renders. */
+  .header-megamenu {
+    display: none;
+  }
+
+  @media screen and (min-width: 750px) {
+    .header-megamenu {
+      position: fixed;
+      inset-block-start: 0;
+      inset-inline: 0;
+      z-index: var(--layer-menu-drawer);
+      display: block;
+      visibility: hidden;
+      translate: 0 -100%;
+      background-color: var(--color-background);
+      border-block-end: var(--style-border-drawer);
+      max-block-size: 100dvh;
+      overflow-y: auto;
+    }
+
+    .menu-open > .header-megamenu {
+      visibility: visible;
+      translate: 0 0;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .header-megamenu {
+        transition: translate var(--drawer-animation-speed, 0.3s) ease-in-out, visibility
+          var(--drawer-animation-speed, 0.3s);
+      }
+    }
+
+    /* The drawer stays in the DOM for mobile; from here up the mega menu replaces it. */
+    .menu-open > .menu-drawer {
+      display: none;
+    }
+
+    .header-megamenu__panel {
+      display: grid;
+      grid-template-columns: minmax(12rem, 1fr) minmax(0, 3fr);
+      gap: var(--gap-3xl, 3rem);
+
+      /* Clears the header, so the logo and the icons stay readable on top of the panel. */
+      padding-block: calc(var(--header-group-height, 5rem) + var(--padding-2xl)) var(--padding-5xl);
+      padding-inline: var(--util-page-margin, var(--padding-2xl));
+    }
+
+    .header-megamenu__primary {
+      display: grid;
+      align-content: start;
+      gap: var(--gap-sm);
+      margin: 0;
+      padding: 0;
+    }
+
+    .header-megamenu__primary-link {
+      display: block;
+      font-size: var(--font-size--2xl);
+      text-decoration: none;
+      color: rgb(var(--color-foreground-rgb) / var(--opacity-50));
+      transition: color var(--animation-speed) var(--animation-easing);
+    }
+
+    .header-megamenu__primary-link:is(:hover, :focus-visible),
+    .header-megamenu__primary-link[aria-current='true'] {
+      color: var(--color-foreground);
+    }
+
+    .header-megamenu__content[hidden] {
+      display: none;
+    }
+
+    .header-megamenu__content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+      gap: var(--gap-2xl);
+      align-items: start;
+    }
+
+    .header-megamenu__secondary {
+      display: grid;
+      align-content: start;
+      gap: var(--gap-sm);
+      margin: 0;
+      padding: 0;
+    }
+
+    .header-megamenu__secondary-link {
+      color: rgb(var(--color-foreground-rgb) / var(--opacity-50));
+      text-decoration: none;
+    }
+
+    .header-megamenu__secondary-link:is(:hover, :focus-visible) {
+      color: var(--color-foreground);
+    }
+
+    .header-megamenu__featured {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: repeat(var(--header-megamenu-columns, 3), minmax(0, 1fr));
+      gap: var(--gap-xl);
+      margin: 0;
+      padding: 0;
+    }
+
+    .header-megamenu__card {
+      display: grid;
+      gap: var(--gap-sm);
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .header-megamenu__card-media {
+      position: relative;
+      display: block;
+      aspect-ratio: 1;
+      overflow: hidden;
+    }
+
+    .header-megamenu__card-image {
+      inline-size: 100%;
+      block-size: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .header-megamenu__card-badge {
+      position: absolute;
+      inset-block-start: var(--padding-sm);
+      inset-inline-start: var(--padding-sm);
+      padding: var(--padding-2xs) var(--padding-sm);
+      background: var(--color-foreground);
+      color: var(--color-background);
+      font-size: var(--font-size--3xs);
+      letter-spacing: var(--letter-spacing-sm);
+      text-transform: uppercase;
+    }
+
+    .header-megamenu__card-footer {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--gap-sm);
+    }
+
+    .header-megamenu__card-type {
+      font-size: var(--font-size--xs);
+      letter-spacing: var(--letter-spacing-sm);
+      text-transform: uppercase;
+      opacity: var(--opacity-muted-text);
+    }
+  }
+{% endstylesheet %}

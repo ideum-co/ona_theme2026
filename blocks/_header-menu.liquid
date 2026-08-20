@@ -1040,6 +1040,45 @@
       "visible_if": "{{ block.settings.navigation_bar }}"
     },
     {
+      "type": "header",
+      "content": "t:content.mega_menu"
+    },
+    {
+      "type": "range",
+      "id": "megamenu_featured_count",
+      "label": "t:settings.product_count",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "text",
+      "id": "megamenu_image_namespace",
+      "label": "t:settings.namespace",
+      "default": "custom"
+    },
+    {
+      "type": "text",
+      "id": "megamenu_image_key",
+      "label": "t:settings.key",
+      "default": "menu_image",
+      "info": "t:info.megamenu_image"
+    },
+    {
+      "type": "text",
+      "id": "megamenu_badge_namespace",
+      "label": "t:settings.namespace",
+      "default": "custom"
+    },
+    {
+      "type": "text",
+      "id": "megamenu_badge_key",
+      "label": "t:settings.key",
+      "default": "menu_badge",
+      "info": "t:info.megamenu_badge"
+    },
+    {
       "type": "checkbox",
       "id": "drawer_accordion",
       "label": "t:settings.accordion",

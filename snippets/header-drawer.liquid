@@ -72,6 +72,12 @@
         {{- 'icon-close-menu.svg' | inline_asset_content -}}
       </span>
     </summary>
+    {%- comment -%}
+      Desktop panel. Shares this `<details>` with the drawer, so open, close, the icon swap and the
+      scroll lock are already handled; CSS decides which of the two renders at each breakpoint.
+    {%- endcomment -%}
+    {% render 'header-megamenu', linklist: linklist, block: block %}
+
     <div
       ref="menuDrawer"
       class="

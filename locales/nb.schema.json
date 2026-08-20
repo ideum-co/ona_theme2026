@@ -884,6 +884,7 @@
     "input_field": "Inndatafelt"
   },
   "content": {
+    "mega_menu": "Megameny",
     "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
     "wordmark": "Ordmerke",
@@ -1110,6 +1111,8 @@
     "disclosures": "Opplysninger"
   },
   "info": {
+    "megamenu_badge": "Product metafield used for the badge. Falls back to \"On sale\" when the product is discounted.",
+    "megamenu_image": "Product metafield used for the menu image. Falls back to the product's own image.",
     "video_overhang": "How far the video hangs over the section below. The section background stops above it.",
     "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
