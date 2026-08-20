@@ -125,13 +125,17 @@
 {%- endunless -%}
 
 {% stylesheet %}
+  /* Stretches to the row instead of sizing to its own text, so it always matches whatever the
+     add to cart button next to it measures - that one is taller because it carries an icon. */
   .subscribe-block {
     display: block;
+    align-self: stretch;
     inline-size: 100%;
   }
 
   .subscribe-block__trigger.button {
     inline-size: 100%;
+    block-size: 100%;
     justify-content: center;
   }
 
