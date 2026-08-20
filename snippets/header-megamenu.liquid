@@ -27,11 +27,12 @@
 -%}
 
 {%- comment -%}
-  The panel covers the header, and the header keeps the page's colours: on a dark panel the logo
-  and the icons end up dark on dark. Only the close icon stayed visible, because it sits inside the
-  drawer's own colour scope. The same effective foreground `contrast-override` computes for the
-  panel is pushed onto the rest of the header while the menu is open - the brightness fallback is
-  the one that snippet uses when no explicit text colour is set.
+  While the menu is open the header takes the panel's own colours, whatever the page had set: on
+  the home page it is transparent over the hero, and it still has to turn into the panel's colour
+  so header and panel read as one surface. That also fixes the logo and the icons, which were
+  drawn in the page's dark foreground on top of a dark panel.
+
+  The brightness fallback below is the one `contrast-override` uses when no text colour is set.
 {%- endcomment -%}
 {%- liquid
   assign megamenu_foreground = block_settings.text_color
@@ -52,7 +53,15 @@
 {%- if megamenu_foreground != blank -%}
   {% style %}
     @media screen and (min-width: 750px) {
-      #header-component:has(.menu-open) .header__column > *:not(header-drawer) {
+      /* The row carries the page's own `color-custom-*` class, so this needs the id and the `:has()`
+         to outrank it. Set on the row rather than on each item, so everything inside inherits. */
+      #header-component:has(.menu-open) .header__row {
+        {%- if block_settings.background_color != blank %}
+          background-color: {{ block_settings.background_color }};
+          --color-background: {{ block_settings.background_color }};
+          --color-background-rgb: {{ block_settings.background_color.rgb }};
+        {%- endif %}
+
         --color: {{ megamenu_foreground }};
         --color-rgb: {{ megamenu_foreground_rgb }};
         --color-foreground: {{ megamenu_foreground }};
@@ -191,7 +200,7 @@
   @media screen and (min-width: 750px) {
     .header-megamenu {
       position: fixed;
-      inset-block-start: 0;
+      inset-block-start: var(--header-group-height, 60px);
       inset-inline: 0;
       z-index: var(--layer-menu-drawer);
       display: block;
@@ -200,11 +209,10 @@
       background-color: var(--color-background);
       color: var(--color-foreground);
       border-block-end: var(--style-border-drawer);
-      /* The header clearance sits on the fixed wrapper, not on the scrolling element: with the
-         padding inside the scroller it travelled with the content and the first row slid under
-         the header. */
-      padding-block-start: calc(var(--header-group-height, 60px) + var(--padding-2xl));
-      max-block-size: 100dvh;
+      /* Starts below the header instead of covering it, so nothing can overlap the menu items and
+         the products no matter how the header is stacked. The header takes the panel's background
+         above, so the two still read as one surface. */
+      max-block-size: calc(100dvh - var(--header-group-height, 60px));
       overflow: hidden;
     }
 
@@ -225,11 +233,10 @@
       display: none;
     }
 
-    /* The panel is fixed and covers the header, so the header's own content has to be lifted over
-       it - the design shows the logo and the icons sitting on the panel, not hidden behind it.
-       Lifted item by item rather than by column: `header-row` puts the toggle in the right column
-       next to the cart, so raising whole columns would either raise the panel with them or leave
-       the cart behind it. `header-drawer` is skipped because it holds the panel. */
+    /* The panel slides down from behind the header, so the header's own content still has to sit
+       above it during the transition. Lifted item by item rather than by column: `header-row` puts
+       the toggle in the right column next to the cart, and the columns are `display: contents` in
+       drawer mode. `header-drawer` is skipped because it holds the panel. */
     #header-component:has(.menu-open) .header__column > *:not(header-drawer) {
       position: relative;
       z-index: calc(var(--layer-menu-drawer) + 1);
@@ -257,11 +264,10 @@
       grid-template-columns: minmax(12rem, 1fr) minmax(0, 3fr);
       gap: var(--gap-3xl, 3rem);
 
-      padding-block-end: var(--padding-5xl);
+      padding-block: var(--padding-2xl) var(--padding-5xl);
       padding-inline: var(--util-page-margin, var(--padding-2xl));
 
-      /* Only the content scrolls, so the clearance above it always holds. */
-      max-block-size: calc(100dvh - var(--header-group-height, 60px) - var(--padding-2xl));
+      max-block-size: calc(100dvh - var(--header-group-height, 60px));
       overflow-y: auto;
       overscroll-behavior: contain;
     }
