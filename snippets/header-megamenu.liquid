@@ -26,7 +26,14 @@
   assign badge_key = block_settings.megamenu_badge_key | default: 'menu_badge'
 -%}
 
-<header-megamenu class="header-megamenu" ref="megaMenu">
+{%- comment -%}
+  Same colour class the drawer uses, so the block's Background and Text settings reach this panel
+  too - without it the mega menu ignored them and fell back to the page colours.
+{%- endcomment -%}
+<header-megamenu
+  class="header-megamenu{% if block_settings.background_color != blank or block_settings.text_color != blank %} color-custom-{{ block.id }}{% endif %}"
+  ref="megaMenu"
+>
   <div class="header-megamenu__panel">
     <ul
       class="header-megamenu__primary list-unstyled"
@@ -142,6 +149,7 @@
       visibility: hidden;
       translate: 0 -100%;
       background-color: var(--color-background);
+      color: var(--color-foreground);
       border-block-end: var(--style-border-drawer);
       max-block-size: 100dvh;
       overflow-y: auto;
