@@ -200,7 +200,11 @@
   @media screen and (min-width: 750px) {
     .header-megamenu {
       position: fixed;
-      inset-block-start: var(--header-group-height, 60px);
+      /* `.header` is `contain: layout`, which makes it this fixed panel's containing block, so
+         100% is the header's own height: the panel lands exactly on the header's bottom edge
+         whatever sits above it - announcement bar, transparent header, sticky or not. A measured
+         variable cannot get this right, because it counts the whole header group. */
+      inset-block-start: 100%;
       inset-inline: 0;
       z-index: var(--layer-menu-drawer);
       display: block;
@@ -209,9 +213,8 @@
       background-color: var(--color-background);
       color: var(--color-foreground);
       border-block-end: var(--style-border-drawer);
-      /* Starts below the header instead of covering it, so nothing can overlap the menu items and
-         the products no matter how the header is stacked. The header takes the panel's background
-         above, so the two still read as one surface. */
+      /* The group height is the distance from the top of the viewport down to the header's bottom,
+         which is what is left for the panel once the whole header group is stuck to the top. */
       max-block-size: calc(100dvh - var(--header-group-height, 60px));
       overflow: hidden;
     }
