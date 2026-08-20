@@ -1,0 +1,66 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/assets/base.css">
+<link rel="stylesheet" href="/.harness/drawer.css">
+<link rel="stylesheet" href="/.harness/megamenu.css">
+<link rel="stylesheet" href="/.harness/megamenu-colors.css">
+<style>
+  html { --padding-2xl:1.5rem; --padding-5xl:3rem; --gap-3xl:2rem; --gap-sm:.7rem; --layer-menu-drawer:18; }
+  body { --header-height:74px; --header-group-height:118px; margin:0;
+         --color-foreground:#4A0E1E; --color-background:#fff; color:var(--color-foreground); }
+  .header { display: block; contain: layout style; background: transparent;  }
+  .hero { block-size: 100vh; background: linear-gradient(#2f4f2f, #16301a); }
+  .color-custom-page { background-color:transparent; --color-foreground:#4A0E1E; }
+  .header__row { display:flex; align-items:center; justify-content:space-between;
+    block-size:var(--header-height); padding-inline:2rem; }
+  /* real theme: columns are display:contents in drawer mode */
+  #header-component[data-menu-style='drawer'] .header__column { display: contents; }
+  .header__columns { display:flex; align-items:center; gap:1rem; inline-size:100%; justify-content:space-between; }
+  .header-megamenu { --color-background:#8A1538; --color-foreground:#F5F4EA;
+    background-color:var(--color-background); color:var(--color-foreground); }
+  .menu-drawer-container { --color-foreground:#F5F4EA; color:#F5F4EA; }
+  .header-logo { color: var(--color-foreground); display:flex; align-items:center; }
+  .header-logo__solid-header-image-container { display: var(--header-logo-display, block); }
+  .header-logo__transparent-header-image-container { display: var(--header-logo-inverse-display, none); }
+  .page { block-size:200vh; background:#eee; }
+  .header-drawer-icon { display:flex; inline-size:24px; block-size:24px; }
+  .header-drawer-icon--open::after { content:'HAM'; font-size:9px; }
+  .header-drawer-icon--close::after { content:'X'; font-size:9px; }
+</style></head><body>
+<div id="header-group" style="position:sticky;inset-block-start:0"><div class="shopify-section"><div class="announcement" style="block-size:44px;background:#CFCABE;color:#222;text-align:center;line-height:44px">Free Express Shipping</div></div>
+<div class="shopify-section"><header-component id="header-component" data-menu-style="drawer" class="header"><div class="header__row header__row--top color-custom-page"><div class="header__columns">
+  <div class="header__column header__column--left">
+    <a class="header-logo" href="#">
+      <span class="header-logo__solid-header-image-container" data-testid="header-logo">DARK-LOGO</span>
+      <span class="header-logo__transparent-header-image-container" data-testid="header-logo-inverse">LIGHT-LOGO</span>
+    </a>
+  </div>
+  <div class="header__column header__column--right">
+    <header-actions class="cart">Cart</header-actions>
+    <header-drawer class="header-drawer">
+      <details id="Details-menu-drawer-container" class="menu-drawer-container menu-open" open>
+        <summary class="header__icon header__icon--menu header__icon--summary">
+          <span class="svg-wrapper header-drawer-icon header-drawer-icon--open"></span>
+          <span class="svg-wrapper header-drawer-icon header-drawer-icon--close"></span>
+        </summary>
+        <header-megamenu class="header-megamenu">
+          <div class="header-megamenu__panel">
+            <ul class="header-megamenu__primary" id="primary">
+              <li><a class="header-megamenu__primary-link" id="firstlink" href="#">Shop</a></li>
+              <li><a class="header-megamenu__primary-link" href="#">Learn</a></li>
+            </ul>
+            <div class="header-megamenu__contents"><div class="header-megamenu__content">
+              <div class="header-megamenu__featured" id="featured">
+                <a class="header-megamenu__product" href="#"><div style="aspect-ratio:1;background:#ccc"></div><p>A</p></a>
+                <a class="header-megamenu__product" href="#"><div style="aspect-ratio:1;background:#ccc"></div><p>B</p></a>
+                <a class="header-megamenu__product" href="#"><div style="aspect-ratio:1;background:#ccc"></div><p>C</p></a>
+              </div>
+            </div></div>
+          </div>
+        </header-megamenu>
+        <div class="menu-drawer"></div>
+      </details>
+    </header-drawer>
+  </div>
+</div></div></header-component></div></div>
+<div class="hero"></div><div class="page"></div>
+</body></html>
