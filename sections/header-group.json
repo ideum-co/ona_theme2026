@@ -61,7 +61,7 @@
           "static": true,
           "settings": {
             "menu": "main-menu",
-            "background_color": "{{ settings.color_palette.background }}",
+            "background_color": "{{ settings.color_palette.foreground }}",
             "text_color": "",
             "type_font_primary_size": "0.875rem",
             "menu_font_style": "inverse",
@@ -74,6 +74,11 @@
             "navigation_bar": false,
             "background_color_navigation_bar": "{{ settings.color_palette.background }}",
             "text_color_navigation_bar": "",
+            "megamenu_featured_count": 3,
+            "megamenu_image_namespace": "custom",
+            "megamenu_image_key": "menu_image",
+            "megamenu_badge_namespace": "custom",
+            "megamenu_badge_key": "menu_badge",
             "drawer_accordion": false,
             "drawer_accordion_expand_first": false,
             "drawer_dividers": false
