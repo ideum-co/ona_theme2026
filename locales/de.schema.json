@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "story_video": "Story mit Video",
     "product_metafield_text": "Produkt-Metafeld-Text",
     "footer_brand": "Footer-Markenzeile",
     "press_quote": "Zitat",
@@ -180,6 +181,7 @@
     "disclosures": "Pflichtangaben"
   },
   "settings": {
+    "video_overhang": "Video-Überstand",
     "namespace": "Namespace",
     "svg_code": "SVG-Code",
     "button_placement": "Button-Position",
@@ -1106,6 +1108,7 @@
     "disclosures": "Pflichtangaben"
   },
   "info": {
+    "video_overhang": "How far the video hangs over the section below. The section background stops above it.",
     "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",

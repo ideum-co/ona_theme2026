@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "story_video": "品牌故事与视频",
     "product_metafield_text": "商品元字段文本",
     "footer_brand": "页脚品牌行",
     "press_quote": "引用",
@@ -180,6 +181,7 @@
     "disclosures": "披露信息"
   },
   "settings": {
+    "video_overhang": "视频溢出高度",
     "namespace": "命名空间",
     "svg_code": "SVG 代码",
     "button_placement": "按钮位置",
@@ -1106,6 +1108,7 @@
     "disclosures": "披露信息"
   },
   "info": {
+    "video_overhang": "How far the video hangs over the section below. The section background stops above it.",
     "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",

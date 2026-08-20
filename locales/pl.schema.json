@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "story_video": "Historia z wideo",
     "product_metafield_text": "Tekst z metapola produktu",
     "footer_brand": "Wiersz marki w stopce",
     "press_quote": "Cytat",
@@ -180,6 +181,7 @@
     "disclosures": "Informacje prawne"
   },
   "settings": {
+    "video_overhang": "Wysunięcie wideo",
     "namespace": "Przestrzeń nazw",
     "svg_code": "Kod SVG",
     "button_placement": "Położenie przycisku",
@@ -1106,6 +1108,7 @@
     "disclosures": "Informacje prawne"
   },
   "info": {
+    "video_overhang": "How far the video hangs over the section below. The section background stops above it.",
     "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",

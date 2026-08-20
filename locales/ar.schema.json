@@ -217,6 +217,7 @@
     "work_quickly_to_ship": "<p>سنعمل بسرعة لشحن طلبك في أقرب وقت ممكن. بمجرد شحن طلبك، ستتلقى رسالة بريد إلكتروني تحتوي على مزيد من المعلومات. تختلف أوقات التوصيل حسب موقعك.</p>"
   },
   "info": {
+    "video_overhang": "How far the video hangs over the section below. The section background stops above it.",
     "svg_code": "Takes priority over the image. Using currentColor in the SVG makes it follow the section text colour.",
     "footer_column_ratios": "CSS track sizes for the desktop columns, for example \"1fr 1fr 2fr 1.5fr\". Leave empty for equal columns.",
     "press_quotes_logo_svg": "Takes priority over the logo image. Using currentColor in the SVG makes it follow the section text colour.",
@@ -254,6 +255,7 @@
     "media_type_info": "تمت تعبئة الميزات من روابط القائمة الخاصة بك"
   },
   "names": {
+    "story_video": "قصة مع فيديو",
     "product_metafield_text": "نص حقل تعريف المنتج",
     "footer_brand": "صف العلامة في التذييل",
     "press_quote": "اقتباس",
@@ -704,6 +706,7 @@
     "below_media": "أسفل الوسائط"
   },
   "settings": {
+    "video_overhang": "امتداد الفيديو",
     "namespace": "مساحة الاسم",
     "svg_code": "كود SVG",
     "button_placement": "موضع الزر",

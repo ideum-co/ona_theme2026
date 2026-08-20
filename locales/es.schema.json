@@ -9,6 +9,7 @@
  */
 {
   "names": {
+    "story_video": "Historia con video",
     "product_metafield_text": "Texto de metafield del producto",
     "footer_brand": "Fila de marca del pie",
     "press_quote": "Cita",
@@ -180,6 +181,7 @@
     "disclosures": "Divulgaciones"
   },
   "settings": {
+    "video_overhang": "Desborde del video",
     "namespace": "Espacio de nombres",
     "svg_code": "Código SVG",
     "button_placement": "Posición del botón",
@@ -1106,6 +1108,7 @@
     "disclosures": "Divulgaciones"
   },
   "info": {
+    "video_overhang": "Cuánto sobresale el video sobre la sección siguiente. El fondo de la sección termina por encima.",
     "svg_code": "Tiene prioridad sobre la imagen. Usar currentColor en el SVG hace que tome el color de texto de la sección.",
     "footer_column_ratios": "Tamaños CSS de las columnas en escritorio, por ejemplo «1fr 1fr 2fr 1.5fr». Vacío = columnas iguales.",
     "press_quotes_logo_svg": "Tiene prioridad sobre la imagen del logo. Usar currentColor en el SVG hace que tome el color de texto de la sección.",
