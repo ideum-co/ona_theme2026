@@ -1011,6 +1011,66 @@
         "padding-block-end": 120
       }
     },
+    "club_benefits_QGRDdd": {
+      "type": "club-benefits",
+      "blocks": {
+        "benefit_GzVPJ7": {
+          "type": "benefit",
+          "settings": {
+            "icon_svg": "",
+            "title": "Freshly <em>roasted</em>"
+          }
+        },
+        "benefit_Mdj93W": {
+          "type": "benefit",
+          "settings": {
+            "icon_svg": "",
+            "title": "New <em>releases</em>"
+          }
+        },
+        "benefit_3DmUNx": {
+          "type": "benefit",
+          "settings": {
+            "icon_svg": "",
+            "title": "Flexible <em>delivery</em>"
+          }
+        },
+        "testimonial_qq68zy": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "\"The easiest way to make sure I never run out of great coffee. I love getting to discover new ONA coffees along the way.\"",
+            "author": "Sarah",
+            "author_role": "ONA Coffee Club member"
+          }
+        }
+      },
+      "block_order": [
+        "benefit_GzVPJ7",
+        "benefit_Mdj93W",
+        "benefit_3DmUNx",
+        "testimonial_qq68zy"
+      ],
+      "name": "t:names.club_benefits",
+      "settings": {
+        "heading": "Club <em>benefits</em>",
+        "heading_size": 44,
+        "columns": 3,
+        "icon_size": 112,
+        "benefit_size": 34,
+        "quote_size": 22,
+        "icons_style": "chevron",
+        "autoplay": false,
+        "autoplay_speed": 6,
+        "button_label": "Join the ONA Coffee Club",
+        "button_link": "",
+        "button_background": "#8A1538",
+        "button_text": "#F5F4EA",
+        "background_color": "#4A4340",
+        "text_color": "#F5F4EA",
+        "padding-block-start": 96,
+        "padding-block-end": 96
+      }
+    },
     "product_intro_k9p6yn": {
       "type": "product-intro",
       "name": "t:names.product_intro",
@@ -3623,6 +3683,7 @@
     "product_highlight_KkUAVM",
     "club_invite_QLL4T3",
     "club_invite_TGPaF8",
+    "club_benefits_QGRDdd",
     "product_intro_k9p6yn",
     "club_benefits",
     "raspberry_candy",
