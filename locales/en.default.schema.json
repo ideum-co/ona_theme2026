@@ -33,6 +33,8 @@
     "text": "Text"
   },
   "content": {
+    "result": "Result",
+    "loading": "Loading",
     "button": "Button",
     "testimonials": "Testimonials",
     "mega_menu": "Mega menu",
@@ -229,6 +231,11 @@
     "work_quickly_to_ship": "<p>We will work quickly to ship your order as soon as possible. Once your order has shipped, you will receive an email with further information. Delivery times vary depending on your location.</p>"
   },
   "info": {
+    "coffee_quiz_bag_svg": "Paste the SVG markup. It takes the text colour, and it is what the loading animation repeats.",
+    "coffee_quiz_step_label": "Use [current] and [total] for the numbers.",
+    "coffee_quiz_reasons": "One reason per line.",
+    "coffee_quiz_tag": "The tag this coffee wins on. The coffee whose tag is chosen most often is recommended.",
+    "coffee_quiz_options": "One option per line. Add a tag after a vertical bar to score it, for example \"Espresso | rich\". An option with no tag does not affect the result.",
     "club_benefits_background_image": "Covers the background colour when set.",
     "club_benefits_icon_svg": "Paste the SVG markup. It takes the section text colour, and it wins over an uploaded image.",
     "model_url": "Paste a .glb file URL from Content > Files. Leave empty to use the product's own 3D model.",
@@ -272,6 +279,9 @@
     "media_type_info": "Features are populated from your menu links"
   },
   "names": {
+    "coffee_quiz_match": "Coffee match",
+    "coffee_quiz_question": "Question",
+    "coffee_quiz": "Coffee quiz",
     "club_testimonial": "Testimonial",
     "club_benefit": "Benefit",
     "club_benefits": "Club benefits",
@@ -773,6 +783,17 @@
     "below_media": "Below media"
   },
   "settings": {
+    "button_text_color": "Button text",
+    "button_background_color": "Button background",
+    "duration": "Duration",
+    "subscribe_label": "Subscribe button",
+    "add_to_cart_label": "Add to cart button",
+    "last_next_label": "Last question button",
+    "next_label": "Next button",
+    "step_label": "Step label",
+    "reasons": "Reasons",
+    "tag": "Tag",
+    "options": "Options",
     "text_size": "Text size",
     "author_role": "Author role",
     "author": "Author",
