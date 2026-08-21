@@ -2964,7 +2964,7 @@
       "settings": {
         "media_position": "right",
         "media_width": "wide",
-        "media_height": "80svh",
+        "media_height": "60svh",
         "section_width": "full-width",
         "limit_content_width": false,
         "max_width": 1280,
