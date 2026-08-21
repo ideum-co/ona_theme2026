@@ -1,467 +1,683 @@
-{%- doc -%}
-  Coffee recommendation quiz -- popup modal triggered by any element
-  linking to #coffee-quiz. Matches the DES-8 Formswell design (6
-  questions, reveal slide, recommendation slide).
+{%- comment -%}
+  Coffee recommendation quiz: a modal opened by any link pointing at `#coffee-quiz`, so the trigger
+  can be an ordinary button block anywhere on the page - the Media with text section, for instance.
 
-  Recommendation logic is a placeholder heuristic (flavour-word tags on
-  Q3/Q5 mapped to 3 real products: Raspberry Candy, Ugly Sweater,
-  Maple) -- ONA never answered what should actually drive the matching
-  (see the DES-8 comment thread, 2026-08-10), so this is a reasonable
-  first pass, not a finished recommendation engine.
-{%- enddoc -%}
+  Questions and matches are blocks, so both the wording and the recommendation are edited in the
+  theme editor rather than in this file.
 
-<div class="ona-quiz" id="ona-quiz" aria-hidden="true">
-  <div class="ona-quiz__overlay" data-quiz-close></div>
-  <div class="ona-quiz__modal" role="dialog" aria-modal="true" aria-label="Find your coffee quiz">
-    <div class="ona-quiz__header">
-      <p class="ona-quiz__title">Find your coffee quiz</p>
-      <button type="button" class="ona-quiz__close" data-quiz-close aria-label="Close">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+  Each option can carry a tag. Answers add up per tag, and the match whose tag scores highest wins;
+  the first match block is the fallback when nothing scores.
+{%- endcomment -%}
+
+{%- liquid
+  assign settings = section.settings
+  assign questions = section.blocks | where: 'type', 'question'
+  assign matches = section.blocks | where: 'type', 'match'
+-%}
+
+{%- capture quiz_data -%}
+{
+  "labels": {
+    "step": {{ settings.step_label | json }},
+    "next": {{ settings.next_label | json }},
+    "last": {{ settings.last_label | json }},
+    "addToCart": {{ settings.add_to_cart_label | json }},
+    "subscribe": {{ settings.subscribe_label | json }}
+  },
+  "revealMs": {{ settings.reveal_duration | times: 1000 }},
+  "questions": [
+    {%- for block in questions -%}
+      {
+        "heading": {{ block.settings.heading | json }},
+        "subtext": {{ block.settings.subtext | json }},
+        "options": [
+          {%- assign lines = block.settings.options | newline_to_br | split: '<br />' -%}
+          {%- assign option_index = 0 -%}
+          {%- for line in lines -%}
+            {%- assign trimmed = line | strip -%}
+            {%- if trimmed != blank -%}
+              {%- if option_index > 0 -%},{%- endif -%}
+              {%- assign parts = trimmed | split: '|' -%}
+              {%- assign option_tag = parts[1] | strip -%}
+              {
+                "label": {{ parts[0] | strip | json }},
+                "tag": {{ option_tag | json }}
+              }
+              {%- assign option_index = option_index | plus: 1 -%}
+            {%- endif -%}
+          {%- endfor -%}
+        ]
+      }
+      {%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+  ],
+  "matches": [
+    {%- for block in matches -%}
+      {%- liquid
+        assign match_product = block.settings.product
+        assign match_variant = match_product.selected_or_first_available_variant
+
+        assign match_image = block.settings.image
+        if match_image == blank
+          assign match_image = match_product.featured_media.preview_image
+        endif
+
+        assign match_title = block.settings.title
+        if match_title == blank
+          assign match_title = match_product.title
+        endif
+
+        assign match_image_url = ''
+        if match_image != blank
+          assign match_image_url = match_image | image_url: width: 800
+        endif
+      -%}
+      {
+        "tag": {{ block.settings.tag | json }},
+        "title": {{ match_title | json }},
+        "url": {{ match_product.url | json }},
+        "variantId": {{ match_variant.id | default: 0 | json }},
+        "available": {{ match_variant.available | default: false | json }},
+        "image": {{ match_image_url | json }},
+        "description": {{ block.settings.description | json }},
+        "reasons": [
+          {%- assign reason_lines = block.settings.reasons | newline_to_br | split: '<br />' -%}
+          {%- assign reason_index = 0 -%}
+          {%- for line in reason_lines -%}
+            {%- assign trimmed = line | strip -%}
+            {%- if trimmed != blank -%}
+              {%- if reason_index > 0 -%},{%- endif -%}
+              {{ trimmed | json }}
+              {%- assign reason_index = reason_index | plus: 1 -%}
+            {%- endif -%}
+          {%- endfor -%}
+        ]
+      }
+      {%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+  ]
+}
+{%- endcapture -%}
+
+<script
+  src="{{ 'coffee-quiz.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+
+<coffee-quiz
+  class="coffee-quiz"
+  id="coffee-quiz"
+  hidden
+  style="
+    --coffee-quiz-background: {{ settings.background_color }};
+    --coffee-quiz-color: {{ settings.text_color }};
+    --coffee-quiz-accent-background: {{ settings.accent_background }};
+    --coffee-quiz-accent-color: {{ settings.accent_color }};
+  "
+  {{ section.shopify_attributes }}
+>
+  <script type="application/json" ref="data">{{ quiz_data }}</script>
+
+  <div class="coffee-quiz__overlay" on:click="/close"></div>
+
+  <div
+    class="coffee-quiz__modal"
+    role="dialog"
+    aria-modal="true"
+    aria-label="{{ settings.title | escape }}"
+    ref="modal"
+  >
+    <div class="coffee-quiz__header">
+      <p class="coffee-quiz__title">{{ settings.title }}</p>
+      <button
+        type="button"
+        class="coffee-quiz__close"
+        aria-label="{{ 'accessibility.close_dialog' | t }}"
+        on:click="/close"
+        ref="closeButton"
+      >
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
           <path d="M1 1L19 19M19 1L1 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
       </button>
     </div>
 
-    <div class="ona-quiz__body" data-quiz-body></div>
+    <div class="coffee-quiz__body" ref="body"></div>
 
-    <div class="ona-quiz__footer">
-      <button type="button" class="ona-quiz__next" data-quiz-next disabled>
-        <span data-quiz-next-label>Next Question</span>
-        <svg width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <div class="coffee-quiz__footer" ref="footer">
+      <button
+        type="button"
+        class="coffee-quiz__next"
+        on:click="/next"
+        ref="nextButton"
+        disabled
+      >
+        <span ref="nextLabel">{{ settings.next_label }}</span>
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none" aria-hidden="true">
           <path d="M11 1L17 7L11 13M17 7H1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-      <svg class="ona-quiz__bag-icon" width="72" height="88" viewBox="0 0 72 88" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M10 30 L14 84 H58 L62 30 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-        <path d="M10 30 L4 20 H68 L62 30" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
-        <path d="M20 20 C20 8, 52 8, 52 20" stroke="currentColor" stroke-width="1.5" fill="none"/>
-        <circle cx="30" cy="48" r="2.5" fill="currentColor"/>
-        <circle cx="42" cy="48" r="2.5" fill="currentColor"/>
-        <circle cx="36" cy="58" r="2.5" fill="currentColor"/>
-      </svg>
+
+      {%- comment -%}
+        The bag is both the corner mark on a question and the unit the loader repeats, so it is
+        rendered once here and cloned by the component rather than living twice in the markup.
+      {%- endcomment -%}
+      <span class="coffee-quiz__bag" ref="bag" aria-hidden="true">
+        {%- if settings.bag_svg != blank -%}
+          {%- render 'svg-without-styles', svg: settings.bag_svg -%}
+        {%- else -%}
+          <svg width="72" height="88" viewBox="0 0 72 88" fill="none">
+            <path d="M10 30 L14 84 H58 L62 30 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            <path d="M10 30 L4 20 H68 L62 30" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
+            <path d="M20 20 C20 8, 52 8, 52 20" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            <path d="M30 44 L30 60 M36 42 L36 62 M42 44 L42 60" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        {%- endif -%}
+      </span>
     </div>
   </div>
-</div>
 
-{% style %}
-  .ona-quiz {
+  {%- comment -%}
+    The templates below are the shapes the component clones for each step, so the copy stays in
+    Liquid - translatable and editable - and the component only fills in the data.
+  {%- endcomment -%}
+  <template ref="questionTemplate">
+    <div class="coffee-quiz__step">
+      <p class="coffee-quiz__eyebrow" data-step-label></p>
+      <h2 class="coffee-quiz__question" data-heading></h2>
+      <p class="coffee-quiz__subtext" data-subtext></p>
+      <div class="coffee-quiz__options" data-options></div>
+    </div>
+  </template>
+
+  <template ref="revealTemplate">
+    <div class="coffee-quiz__reveal">
+      <p class="coffee-quiz__reveal-heading">{{ settings.reveal_heading }}</p>
+      <div class="coffee-quiz__reveal-bags" data-bags></div>
+    </div>
+  </template>
+
+  <template ref="resultTemplate">
+    <div class="coffee-quiz__result">
+      <h2 class="coffee-quiz__question coffee-quiz__result-heading">{{ settings.result_heading }}</h2>
+      <img class="coffee-quiz__result-image" data-image alt="" width="800" height="800" loading="lazy">
+      <p class="coffee-quiz__result-description" data-description></p>
+      {%- if settings.reasons_label != blank -%}
+        <p class="coffee-quiz__reasons-label">{{ settings.reasons_label }}</p>
+      {%- endif -%}
+      <ul class="coffee-quiz__reasons list-unstyled" data-reasons></ul>
+
+      <div class="coffee-quiz__actions">
+        <form method="post" action="{{ routes.cart_add_url }}" data-add-form>
+          <input type="hidden" name="form_type" value="product">
+          <input type="hidden" name="utf8" value="✓">
+          <input type="hidden" name="id" data-variant-id>
+          <button type="submit" class="coffee-quiz__action" data-add-button></button>
+        </form>
+        <a class="coffee-quiz__action" data-subscribe></a>
+      </div>
+
+      {%- if settings.explore_label != blank -%}
+        <p class="coffee-quiz__explore">
+          {%- if settings.explore_prompt != blank -%}
+            <span>{{ settings.explore_prompt }}</span>
+          {%- endif -%}
+          <a
+            class="coffee-quiz__action"
+            {% if settings.explore_link != blank %}
+              href="{{ settings.explore_link }}"
+            {% endif %}
+          >
+            {{- settings.explore_label -}}
+          </a>
+        </p>
+      {%- endif -%}
+    </div>
+  </template>
+</coffee-quiz>
+
+{% stylesheet %}
+  .coffee-quiz {
     position: fixed;
     inset: 0;
-    z-index: 999;
+    z-index: var(--layer-modal, 1000);
+    display: grid;
+    place-items: center;
+    padding: var(--padding-2xl, 1.5rem);
+  }
+
+  .coffee-quiz[hidden] {
     display: none;
   }
 
-  .ona-quiz.is-open {
-    display: block;
-  }
-
-  .ona-quiz__overlay {
+  .coffee-quiz__overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.45);
+    background: rgb(0 0 0 / var(--opacity-50, 0.5));
   }
 
-  .ona-quiz__modal {
+  .coffee-quiz__modal {
     position: relative;
-    z-index: 1;
-    margin: 5vh auto;
-    width: min(720px, 92vw);
-    max-height: 90vh;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: var(--gap-2xl, 1.5rem);
+    inline-size: min(100%, 68rem);
+    max-block-size: min(100%, 56rem);
+    padding: var(--padding-5xl, 3rem);
+    border: 1px solid var(--coffee-quiz-color);
+    background: var(--coffee-quiz-background);
+    color: var(--coffee-quiz-color);
     overflow-y: auto;
-    background: {{ settings.color_palette.color1 }};
-    color: {{ settings.color_palette.background }};
-    padding: 40px clamp(24px, 5vw, 56px) 32px;
-    border-radius: 4px;
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
   }
 
-  .ona-quiz__header {
+  .coffee-quiz__header {
     display: flex;
-    align-items: flex-start;
+    align-items: start;
     justify-content: space-between;
-    gap: 16px;
+    gap: var(--gap-xl, 1.25rem);
   }
 
-  .ona-quiz__title {
-    font: var(--font-body--style) var(--font-body--weight) 1rem/1 var(--font-body--family);
+  .coffee-quiz__title {
     margin: 0;
   }
 
-  .ona-quiz__close {
+  .coffee-quiz__close {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
     background: none;
-    border: none;
-    color: inherit;
+    color: currentcolor;
     cursor: pointer;
-    padding: 4px;
-    line-height: 0;
   }
 
-  .ona-quiz__eyebrow {
-    opacity: 0.8;
-    font-size: 0.8125rem;
-    margin: 0 0 8px;
+  .coffee-quiz__eyebrow {
+    margin: 0 0 var(--gap-xs, 0.5rem);
   }
 
-  .ona-quiz__question {
+  .coffee-quiz__question {
+    margin: 0;
     font-family: var(--font-heading--family);
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
-    margin: 0 0 12px;
-    line-height: 1.1;
+    font-size: var(--font-size--3xl, 2rem);
+    font-weight: var(--font-heading--weight);
+    line-height: 1.15;
   }
 
-  .ona-quiz__question em {
-    font-style: italic;
-  }
-
-  .ona-quiz__subtext {
-    margin: 0 0 24px;
-    opacity: 0.9;
-  }
-
-  .ona-quiz__options {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 12px;
-  }
-
-  .ona-quiz__option {
-    border: 1px solid {{ settings.color_palette.background }};
-    background: transparent;
-    color: inherit;
-    padding: 14px 18px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9375rem;
-    text-align: center;
-    transition: background-color 0.15s ease, color 0.15s ease;
-  }
-
-  .ona-quiz__option:hover {
-    background: rgba(255, 255, 255, 0.08);
-  }
-
-  .ona-quiz__option[aria-pressed="true"] {
-    background: {{ settings.color_palette.background }};
-    color: {{ settings.color_palette.color1 }};
-  }
-
-  .ona-quiz__footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: auto;
-  }
-
-  .ona-quiz__next {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: {{ settings.color_palette.background }};
-    color: {{ settings.color_palette.color1 }};
-    border: none;
-    border-radius: 100px;
-    padding: 14px 24px;
-    font-size: 0.9375rem;
-    cursor: pointer;
-  }
-
-  .ona-quiz__next:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
-
-  .ona-quiz__bag-icon {
-    opacity: 0.9;
+  .coffee-quiz__subtext:empty {
     display: none;
   }
 
-  @media (min-width: 700px) {
-    .ona-quiz__bag-icon {
-      display: block;
-    }
+  /* The options wrap into as many columns as fit, so a question with three answers and one with
+     seven both read as a tidy block without a per-question setting. */
+  .coffee-quiz__options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: var(--gap-lg, 1rem);
+    margin-block-start: var(--gap-4xl, 3rem);
   }
 
-  .ona-quiz__reveal {
-    text-align: center;
-    padding: 48px 0;
+  .coffee-quiz__option {
+    padding: var(--padding-xl, 1.25rem);
+    border: 1px solid var(--coffee-quiz-color);
+    border-radius: 0;
+    background: transparent;
+    color: currentcolor;
+    font-size: inherit;
+    cursor: pointer;
   }
 
-  .ona-quiz__reveal p:first-child {
-    font-family: var(--font-heading--family);
-    font-size: 1.75rem;
-    margin: 0 0 8px;
+  .coffee-quiz__option[aria-pressed='true'] {
+    background: var(--coffee-quiz-color);
+    color: var(--coffee-quiz-background);
   }
 
-  .ona-quiz__match {
+  .coffee-quiz__footer {
     display: flex;
-    gap: 24px;
-    align-items: flex-start;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--gap-xl, 1.25rem);
   }
 
-  .ona-quiz__match-image {
-    width: 96px;
-    flex: none;
-    border-radius: 4px;
-    overflow: hidden;
+  .coffee-quiz__next {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gap-lg, 1rem);
+    padding-block: 10px;
+    padding-inline: var(--padding-4xl, 2rem);
+    border: 0;
+    border-radius: 0;
+    background: var(--coffee-quiz-accent-background);
+    color: var(--coffee-quiz-accent-color);
+    font-size: inherit;
+    cursor: pointer;
   }
 
-  .ona-quiz__match-image img {
-    width: 100%;
+  .coffee-quiz__next[disabled] {
+    opacity: var(--opacity-50, 0.5);
+    cursor: not-allowed;
+  }
+
+  .coffee-quiz__bag svg {
     display: block;
+    block-size: 5.5rem;
+    inline-size: auto;
   }
 
-  .ona-quiz__match-label {
-    font-size: 0.8125rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    opacity: 0.75;
-    margin: 0 0 4px;
+  .coffee-quiz__reveal {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: var(--gap-6xl, 4rem);
+    block-size: 100%;
+    text-align: center;
   }
 
-  .ona-quiz__match-name {
+  .coffee-quiz__reveal-heading {
+    max-inline-size: 20ch;
+    margin: 0;
     font-family: var(--font-heading--family);
-    font-size: 1.5rem;
-    margin: 0 0 8px;
+    font-size: var(--font-size--3xl, 2rem);
+    line-height: 1.2;
   }
 
-  .ona-quiz__match-reasons {
-    list-style: none;
+  .coffee-quiz__reveal-bags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--gap-2xl, 1.5rem);
+  }
+
+  /* Each bag lifts and fades in turn, so the row reads as filling up rather than blinking. The
+     delay is set per bag by the component. */
+  @media (prefers-reduced-motion: no-preference) {
+    .coffee-quiz__reveal-bags .coffee-quiz__bag {
+      animation: coffee-quiz-bag 1.4s var(--ease-out-cubic, ease-in-out) infinite;
+      animation-delay: var(--coffee-quiz-bag-delay, 0s);
+    }
+  }
+
+  @keyframes coffee-quiz-bag {
+    0%,
+    100% {
+      opacity: var(--opacity-35, 0.35);
+      translate: 0 0;
+    }
+
+    40% {
+      opacity: 1;
+      translate: 0 -0.75rem;
+    }
+  }
+
+  .coffee-quiz__result {
+    display: grid;
+    justify-items: center;
+    gap: var(--gap-xl, 1.25rem);
+    text-align: center;
+  }
+
+  /* The markup carries intrinsic dimensions so the box is reserved before the image arrives; the
+     aspect ratio is whatever the product shot actually is. */
+  .coffee-quiz__result-image {
+    inline-size: min(100%, 20rem);
+    block-size: auto;
+    object-fit: contain;
+  }
+
+  .coffee-quiz__result-description {
+    max-inline-size: 50ch;
+    margin: 0;
+  }
+
+  .coffee-quiz__reasons-label,
+  .coffee-quiz__reasons {
+    margin: 0;
+  }
+
+  .coffee-quiz__reasons {
+    display: grid;
+    gap: var(--gap-2xs, 0.3rem);
     padding: 0;
-    margin: 12px 0 0;
-    font-size: 0.875rem;
   }
 
-  .ona-quiz__match-reasons li::before {
-    content: "\2713  ";
+  .coffee-quiz__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--gap-lg, 1rem);
+    margin-block-start: var(--gap-xl, 1.25rem);
   }
 
-  .ona-quiz__cta {
+  .coffee-quiz__action {
     display: inline-block;
-    margin-top: 20px;
-    background: {{ settings.color_palette.background }};
-    color: {{ settings.color_palette.color1 }};
-    border-radius: 100px;
-    padding: 14px 24px;
-    font-size: 0.9375rem;
+    padding-block: 10px;
+    padding-inline: var(--padding-4xl, 2rem);
+    border: 1px solid var(--coffee-quiz-color);
+    border-radius: 0;
+    background: transparent;
+    color: currentcolor;
+    font-size: inherit;
     text-decoration: none;
+    cursor: pointer;
   }
-{% endstyle %}
 
-<script>
-  (() => {
-    const QUESTIONS = [
-      {
-        eyebrow: "Question 1 of 6",
-        heading: "How <em>do you</em> brew?",
-        subtext: "How do you make your coffee?",
-        options: ["Espresso", "Pour Over/ Filter", "French Press", "AeroPress", "Stovetop / Moka Pot", "Automatic Machine", "I'm not sure"],
-      },
-      {
-        eyebrow: "Question 2 of 6",
-        heading: "How do you <em>drink it</em>?",
-        subtext: "How do you usually enjoy your coffee?",
-        options: ["Black", "With milk", "Both", "Iced", "It depends"],
-      },
-      {
-        eyebrow: "Question 3 of 6",
-        heading: "What sounds <em>best</em>?",
-        subtext: "What flavours sound best to you?",
-        options: [
-          { label: "🍫 Chocolatey & nutty", tag: "ugly-sweater" },
-          { label: "🍯 Sweet & caramel-like", tag: "maple" },
-          { label: "🍓 Fruity & juicy", tag: "raspberry-candy" },
-          { label: "🌸 Floral & delicate", tag: "raspberry-candy" },
-          { label: "🍊 Bright & citrusy", tag: "raspberry-candy" },
-          { label: "🍇 Rich & wine-like", tag: "ugly-sweater" },
-        ],
-      },
-      {
-        eyebrow: "Question 4 of 6",
-        heading: "How <em>adventurous</em> are you?",
-        subtext: "How adventurous do you like your coffee?",
-        options: [
-          { label: "Keep it familiar", tag: "maple" },
-          { label: "Somewhere in the middle", tag: "maple" },
-          { label: "Take me somewhere new", tag: "raspberry-candy" },
-        ],
-      },
-      {
-        eyebrow: "Question 5 of 6",
-        heading: "What <em>matters most</em>?",
-        subtext: "What matters most in your next coffee?",
-        options: [
-          { label: "Something easy to drink every day", tag: "maple" },
-          { label: "Something sweet & balanced", tag: "maple" },
-          { label: "Something bright & fruity", tag: "raspberry-candy" },
-          { label: "Something complex & interesting", tag: "ugly-sweater" },
-          { label: "Something special / limited", tag: "raspberry-candy" },
-          { label: "I just want the best one!", tag: "" },
-        ],
-      },
-      {
-        eyebrow: "Question 6 of 6",
-        heading: "What are you <em>shopping for</em>?",
-        subtext: "What are you shopping for?",
-        options: ["My everyday coffee", "Something for the weekend", "A coffee to explore", "A gift", "Not sure yet"],
-      },
-    ];
+  .coffee-quiz__action:hover {
+    background: var(--coffee-quiz-color);
+    color: var(--coffee-quiz-background);
+  }
 
-    const MATCHES = {
-      "raspberry-candy": {
-        name: "Raspberry Candy",
-        handle: "raspberry-candy",
-        image: "{{ 'Candy.png' | file_img_url: '400x' }}",
-        description: "Bright and juicy with notes of raspberry, caramel and milk chocolate.",
-        reasons: ["Sweet & fruit-forward", "Approachable but interesting", "ONA's signature release"],
-      },
-      "ugly-sweater": {
-        name: "Ugly Sweater",
-        handle: "ugly-sweater",
-        image: "{{ 'Ugly_Sweater.png' | file_img_url: '400x' }}",
-        description: "A cosy, unconventional blend with notes of milk chocolate and hazelnut.",
-        reasons: ["Great with milk", "Rich & comforting", "A little unconventional"],
-      },
-      "maple": {
-        name: "Maple",
-        handle: "maple",
-        image: "{{ 'Maple.png' | file_img_url: '400x' }}",
-        description: "A balanced, easy-drinking everyday coffee with warm caramel sweetness.",
-        reasons: ["Classic & balanced", "Easy to drink every day", "A dependable favourite"],
-      },
-    };
+  .coffee-quiz__explore {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--gap-lg, 1rem);
+    margin-block-start: var(--gap-2xl, 1.5rem);
+  }
 
-    const root = document.getElementById("ona-quiz");
-    if (!root) return;
-    const body = root.querySelector("[data-quiz-body]");
-    const nextButton = root.querySelector("[data-quiz-next]");
-    const nextLabel = root.querySelector("[data-quiz-next-label]");
-
-    let step = 0; // 0..5 questions, 6 = reveal, 7 = results
-    let selected = null;
-    const tally = {};
-
-    function openQuiz(event) {
-      if (event) event.preventDefault();
-      step = 0;
-      selected = null;
-      nextButton.style.display = "";
-      Object.keys(tally).forEach((k) => delete tally[k]);
-      render();
-      root.classList.add("is-open");
-      root.setAttribute("aria-hidden", "false");
-      document.body.style.overflow = "hidden";
+  @media screen and (max-width: 749px) {
+    .coffee-quiz__modal {
+      padding: var(--padding-2xl, 1.5rem);
     }
 
-    function closeQuiz() {
-      root.classList.remove("is-open");
-      root.setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
+    .coffee-quiz__footer > .coffee-quiz__bag {
+      display: none;
     }
-
-    function pickWinner() {
-      let winner = "maple";
-      let best = -1;
-      Object.entries(tally).forEach(([tag, count]) => {
-        if (count > best) {
-          best = count;
-          winner = tag;
-        }
-      });
-      return MATCHES[winner] || MATCHES.maple;
-    }
-
-    function render() {
-      if (step < QUESTIONS.length) {
-        const q = QUESTIONS[step];
-        nextButton.disabled = true;
-        nextLabel.textContent = step === QUESTIONS.length - 1 ? "See my matches" : "Next Question";
-        body.innerHTML = `
-          <div>
-            <p class="ona-quiz__eyebrow">${q.eyebrow}</p>
-            <h2 class="ona-quiz__question">${q.heading}</h2>
-            <p class="ona-quiz__subtext">${q.subtext}</p>
-            <div class="ona-quiz__options">
-              ${q.options
-                .map((opt, i) => {
-                  const label = typeof opt === "string" ? opt : opt.label;
-                  return `<button type="button" class="ona-quiz__option" data-index="${i}" aria-pressed="false">${label}</button>`;
-                })
-                .join("")}
-            </div>
-          </div>
-        `;
-        selected = null;
-        body.querySelectorAll(".ona-quiz__option").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            body.querySelectorAll(".ona-quiz__option").forEach((b) => b.setAttribute("aria-pressed", "false"));
-            btn.setAttribute("aria-pressed", "true");
-            const idx = Number(btn.dataset.index);
-            selected = q.options[idx];
-            nextButton.disabled = false;
-          });
-        });
-      } else if (step === QUESTIONS.length) {
-        nextButton.style.display = "none";
-        body.innerHTML = `
-          <div class="ona-quiz__reveal">
-            <p>Your coffee match is taking shape&hellip;</p>
-            <p style="opacity:.85; font-style: italic;">Finding the right balance of flavour, character and sweetness.</p>
-          </div>
-        `;
-        window.setTimeout(() => {
-          step += 1;
-          render();
-        }, 1400);
-      } else {
-        nextButton.style.display = "none";
-        const match = pickWinner();
-        body.innerHTML = `
-          <div>
-            <h2 class="ona-quiz__question" style="font-size:1.75rem; margin-bottom:24px;">We think you&rsquo;ll <em>love</em> these.</h2>
-            <div class="ona-quiz__match">
-              <div class="ona-quiz__match-image"><img src="${match.image}" alt="${match.name}" loading="lazy"></div>
-              <div>
-                <p class="ona-quiz__match-label">Your #1 match</p>
-                <p class="ona-quiz__match-name">${match.name}</p>
-                <p>${match.description}</p>
-                <ul class="ona-quiz__match-reasons">
-                  ${match.reasons.map((r) => `<li>${r}</li>`).join("")}
-                </ul>
-                <a class="ona-quiz__cta" href="/products/${match.handle}">Shop ${match.name}</a>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    nextButton.addEventListener("click", () => {
-      if (step < QUESTIONS.length) {
-        if (typeof selected === "object" && selected && selected.tag) {
-          tally[selected.tag] = (tally[selected.tag] || 0) + 1;
-        }
-        step += 1;
-        nextButton.style.display = "";
-        render();
-      }
-    });
-
-    root.querySelectorAll("[data-quiz-close]").forEach((el) => el.addEventListener("click", closeQuiz));
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && root.classList.contains("is-open")) closeQuiz();
-    });
-
-    document.querySelectorAll('a[href="#coffee-quiz"]').forEach((el) => {
-      el.addEventListener("click", openQuiz);
-    });
-  })();
-</script>
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
-  "name": "Coffee quiz",
-  "settings": []
+  "name": "t:names.coffee_quiz",
+  "blocks": [
+    {
+      "type": "question",
+      "name": "t:names.coffee_quiz_question",
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "heading",
+          "label": "t:settings.heading",
+          "default": "How <em>do you</em> brew your coffee?"
+        },
+        {
+          "type": "text",
+          "id": "subtext",
+          "label": "t:settings.text"
+        },
+        {
+          "type": "textarea",
+          "id": "options",
+          "label": "t:settings.options",
+          "info": "t:info.coffee_quiz_options",
+          "default": "Espresso | rich\nPour Over\/ Filter | bright\nFrench Press | rich\nAeroPress | bright\nStovetop \/ Moka Pot | rich\nAutomatic Machine | balanced\nI'm not sure"
+        }
+      ]
+    },
+    {
+      "type": "match",
+      "name": "t:names.coffee_quiz_match",
+      "settings": [
+        {
+          "type": "text",
+          "id": "tag",
+          "label": "t:settings.tag",
+          "info": "t:info.coffee_quiz_tag"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "t:settings.product"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "t:settings.title"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:settings.image"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "t:settings.text"
+        },
+        {
+          "type": "textarea",
+          "id": "reasons",
+          "label": "t:settings.reasons",
+          "info": "t:info.coffee_quiz_reasons"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "t:settings.title",
+      "default": "Find your coffee quiz"
+    },
+    {
+      "type": "text",
+      "id": "step_label",
+      "label": "t:settings.step_label",
+      "info": "t:info.coffee_quiz_step_label",
+      "default": "Question [current] of [total]"
+    },
+    {
+      "type": "text",
+      "id": "next_label",
+      "label": "t:settings.next_label",
+      "default": "Next Question"
+    },
+    {
+      "type": "text",
+      "id": "last_label",
+      "label": "t:settings.last_next_label",
+      "default": "See my match"
+    },
+    {
+      "type": "header",
+      "content": "t:content.loading"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "reveal_heading",
+      "label": "t:settings.heading",
+      "default": "Your <em>coffee match<\/em> is taking shape..."
+    },
+    {
+      "type": "range",
+      "id": "reveal_duration",
+      "label": "t:settings.duration",
+      "min": 1,
+      "max": 8,
+      "step": 1,
+      "unit": "s",
+      "default": 3
+    },
+    {
+      "type": "textarea",
+      "id": "bag_svg",
+      "label": "t:settings.icon_svg",
+      "info": "t:info.coffee_quiz_bag_svg"
+    },
+    {
+      "type": "header",
+      "content": "t:content.result"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "result_heading",
+      "label": "t:settings.heading",
+      "default": "We think <em>you'll love<\/em>..."
+    },
+    {
+      "type": "text",
+      "id": "reasons_label",
+      "label": "t:settings.reasons",
+      "default": "Why we picked it:"
+    },
+    {
+      "type": "text",
+      "id": "add_to_cart_label",
+      "label": "t:settings.add_to_cart_label",
+      "default": "Add to cart"
+    },
+    {
+      "type": "text",
+      "id": "subscribe_label",
+      "label": "t:settings.subscribe_label",
+      "default": "Subscribe"
+    },
+    {
+      "type": "text",
+      "id": "explore_prompt",
+      "label": "t:settings.text",
+      "default": "Want to see more?"
+    },
+    {
+      "type": "text",
+      "id": "explore_label",
+      "label": "t:settings.label",
+      "default": "Explore all our coffees"
+    },
+    {
+      "type": "url",
+      "id": "explore_link",
+      "label": "t:settings.link"
+    },
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "default": "#6B1235"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "default": "#F5F4EA"
+    },
+    {
+      "type": "color",
+      "id": "accent_background",
+      "label": "t:settings.button_background_color",
+      "default": "#F5F4EA"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "t:settings.button_text_color",
+      "default": "#6B1235"
+    }
+  ]
 }
 {% endschema %}
