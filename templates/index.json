@@ -3675,7 +3675,6 @@
     },
     "coffee_quiz": {
       "type": "coffee-quiz",
-      "settings": {},
       "blocks": {
         "question_1": {
           "type": "question",
@@ -3729,7 +3728,9 @@
           "type": "match",
           "settings": {
             "tag": "raspberry-candy",
+            "product": "raspberry-candy-filter",
             "title": "Raspberry Candy",
+            "image": "shopify://shop_images/Raspberry-Candy_fe2a7355-15f3-474c-b3a2-43956e9a48dc.png",
             "description": "Bright and juicy with notes of raspberry, caramel and milk chocolate.",
             "reasons": "Sweet & fruit-forward\nApproachable but interesting\nONA's signature release"
           }
@@ -3738,7 +3739,9 @@
           "type": "match",
           "settings": {
             "tag": "ugly-sweater",
+            "product": "espresso-singleorigin-santa-ana-guatemala-washed",
             "title": "Ugly Sweater",
+            "image": "shopify://shop_images/coffee_hero_soe_81e98f72-f7cc-4c49-b279-6219feb399f6.png",
             "description": "A cosy, unconventional blend with notes of milk chocolate and hazelnut.",
             "reasons": "Great with milk\nRich & comforting\nA little unconventional"
           }
@@ -3747,7 +3750,9 @@
           "type": "match",
           "settings": {
             "tag": "maple",
+            "product": "aspen",
             "title": "Maple",
+            "image": "shopify://shop_images/coffee_hero_sof_a7e4180c-16e4-4705-bde0-038f3f438350.png",
             "description": "A balanced, easy-drinking everyday coffee with warm caramel sweetness.",
             "reasons": "Classic & balanced\nEasy to drink every day\nA dependable favourite"
           }
@@ -3763,7 +3768,27 @@
         "match_raspberry_candy",
         "match_ugly_sweater",
         "match_maple"
-      ]
+      ],
+      "settings": {
+        "title": "Find your coffee quiz",
+        "step_label": "Question [current] of [total]",
+        "next_label": "Next Question",
+        "last_label": "See my match",
+        "reveal_heading": "Your <em>coffee match</em> is taking shape...",
+        "reveal_duration": 3,
+        "bag_svg": "",
+        "result_heading": "We think <em>you'll love</em>...",
+        "reasons_label": "Why we picked it:",
+        "add_to_cart_label": "Add to cart",
+        "subscribe_label": "Subscribe",
+        "explore_prompt": "Want to see more?",
+        "explore_label": "Explore all our coffees",
+        "explore_link": "shopify://collections/all-coffee",
+        "background_color": "#6b1235",
+        "text_color": "#f5f4ea",
+        "accent_background": "#f5f4ea",
+        "accent_color": "#6b1235"
+      }
     }
   },
   "order": [
