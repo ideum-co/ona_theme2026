@@ -1,0 +1,13 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+ body{margin:0;background:#6B1235;color:#F5F4EA;display:grid;place-items:center;min-height:100vh}
+ .wrap{display:flex;gap:2rem;align-items:end}
+ .wrap svg{display:block;block-size:5.5rem;inline-size:auto}
+</style></head><body>
+<div class="wrap" id="wrap"></div>
+<script>
+ fetch('/.harness/bag.svg').then(r=>r.text()).then(t=>{
+   document.getElementById('wrap').innerHTML = t.repeat(3);
+   window.ready = true;
+ });
+</script>
+</body></html>
