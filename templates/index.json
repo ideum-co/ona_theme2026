@@ -3675,7 +3675,6 @@
     },
     "coffee_quiz": {
       "type": "coffee-quiz",
-      "settings": {},
       "blocks": {
         "question_1": {
           "type": "question",
@@ -3728,8 +3727,8 @@
         "match_raspberry_candy": {
           "type": "match",
           "settings": {
-            "product": "raspberry-candy",
             "tag": "raspberry-candy",
+            "product": "raspberry-candy",
             "title": "Raspberry Candy",
             "description": "Bright and juicy with notes of raspberry, caramel and milk chocolate.",
             "reasons": "Sweet & fruit-forward\nApproachable but interesting\nONA's signature release"
@@ -3738,8 +3737,8 @@
         "match_ugly_sweater": {
           "type": "match",
           "settings": {
-            "product": "ugly-sweater",
             "tag": "ugly-sweater",
+            "product": "ugly-sweater",
             "title": "Ugly Sweater",
             "description": "A cosy, unconventional blend with notes of milk chocolate and hazelnut.",
             "reasons": "Great with milk\nRich & comforting\nA little unconventional"
@@ -3748,8 +3747,8 @@
         "match_maple": {
           "type": "match",
           "settings": {
-            "product": "maple",
             "tag": "maple",
+            "product": "maple",
             "title": "Maple",
             "description": "A balanced, easy-drinking everyday coffee with warm caramel sweetness.",
             "reasons": "Classic & balanced\nEasy to drink every day\nA dependable favourite"
@@ -3766,7 +3765,93 @@
         "match_raspberry_candy",
         "match_ugly_sweater",
         "match_maple"
-      ]
+      ],
+      "settings": {
+        "title": "Find your coffee quiz",
+        "step_label": "Question [current] of [total]",
+        "next_label": "Next Question",
+        "last_label": "See my match",
+        "reveal_heading": "Your <em>coffee match</em> is taking shape...",
+        "reveal_duration": 3,
+        "bag_svg": "",
+        "result_heading": "We think <em>you'll love</em>...",
+        "reasons_label": "Why we picked it:",
+        "add_to_cart_label": "Add to cart",
+        "subscribe_label": "Subscribe",
+        "explore_prompt": "Want to see more?",
+        "explore_label": "Explore all our coffees",
+        "explore_link": "",
+        "background_color": "#6b1235",
+        "text_color": "#f5f4ea",
+        "accent_background": "#f5f4ea",
+        "accent_color": "#6b1235"
+      }
+    },
+    "collection_carousel_GRkRhJ": {
+      "type": "collection-carousel",
+      "blocks": {
+        "collection_UWHjqR": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "label": "Milk-based",
+            "link": "shopify://collections/milk-based"
+          }
+        },
+        "collection_gPtB4a": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "label": "Filter",
+            "link": "shopify://collections/filter"
+          }
+        },
+        "collection_UGYk6f": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "label": "Espresso",
+            "link": "shopify://collections/espresso"
+          }
+        },
+        "collection_U9LrEc": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "label": "Brew Gear",
+            "link": "shopify://collections/brew-gear"
+          }
+        },
+        "collection_yc389T": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "label": "Merchandise",
+            "link": "shopify://collections/merch"
+          }
+        }
+      },
+      "block_order": [
+        "collection_UWHjqR",
+        "collection_gPtB4a",
+        "collection_UGYk6f",
+        "collection_U9LrEc",
+        "collection_yc389T"
+      ],
+      "name": "t:names.collection_carousel",
+      "settings": {
+        "heading": "Discover by <em>category</em>",
+        "heading_size": 48,
+        "columns": 5,
+        "image_ratio": "1",
+        "label_size": 15,
+        "uppercase_labels": true,
+        "background_color": "#F5F4EA",
+        "heading_color": "#6B1235",
+        "text_color": "#6B1235",
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      }
     }
   },
   "order": [
@@ -3790,6 +3875,7 @@
     "press_band",
     "find_ona",
     "discover_by_category",
-    "coffee_quiz"
+    "coffee_quiz",
+    "collection_carousel_GRkRhJ"
   ]
 }
