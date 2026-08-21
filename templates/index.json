@@ -339,11 +339,11 @@
       "settings": {
         "media_position": "right",
         "media_width": "medium",
-        "media_height": "80svh",
+        "media_height": "60svh",
         "section_width": "page-width",
         "limit_content_width": true,
         "max_width": 1280,
-        "extend_media": false,
+        "extend_media": true,
         "background_color": "{{ settings.color_palette.color1 }}",
         "padding-block-start": 0,
         "padding-block-end": 0
