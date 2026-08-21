@@ -3643,6 +3643,7 @@
         "heading",
         "tiles"
       ],
+      "disabled": true,
       "name": "t:names.section",
       "settings": {
         "content_direction": "column",
@@ -3793,7 +3794,8 @@
         "collection_UWHjqR": {
           "type": "collection",
           "settings": {
-            "collection": "",
+            "collection": "milk-based",
+            "image": "shopify://shop_images/latte_art-1.jpg",
             "label": "Milk-based",
             "link": "shopify://collections/milk-based"
           }
@@ -3801,7 +3803,8 @@
         "collection_gPtB4a": {
           "type": "collection",
           "settings": {
-            "collection": "",
+            "collection": "filter",
+            "image": "shopify://shop_images/Filter_web.png",
             "label": "Filter",
             "link": "shopify://collections/filter"
           }
@@ -3809,7 +3812,8 @@
         "collection_UGYk6f": {
           "type": "collection",
           "settings": {
-            "collection": "",
+            "collection": "espresso",
+            "image": "shopify://shop_images/Espresso_web.png",
             "label": "Espresso",
             "link": "shopify://collections/espresso"
           }
@@ -3817,7 +3821,8 @@
         "collection_U9LrEc": {
           "type": "collection",
           "settings": {
-            "collection": "",
+            "collection": "brew-gear",
+            "image": "shopify://shop_images/coffee_timemore_hand_grinder.jpg",
             "label": "Brew Gear",
             "link": "shopify://collections/brew-gear"
           }
@@ -3825,7 +3830,8 @@
         "collection_yc389T": {
           "type": "collection",
           "settings": {
-            "collection": "",
+            "collection": "merch",
+            "image": "shopify://shop_images/canberra_mug_ona_coffee.jpg",
             "label": "Merchandise",
             "link": "shopify://collections/merch"
           }
