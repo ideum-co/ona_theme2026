@@ -3835,6 +3835,16 @@
             "label": "Merchandise",
             "link": "shopify://collections/merch"
           }
+        },
+        "collection_f8jkdP": {
+          "type": "collection",
+          "disabled": true,
+          "settings": {
+            "collection": "merch",
+            "image": "shopify://shop_images/canberra_mug_ona_coffee.jpg",
+            "label": "Merchandise",
+            "link": "shopify://collections/merch"
+          }
         }
       },
       "block_order": [
@@ -3842,19 +3852,21 @@
         "collection_gPtB4a",
         "collection_UGYk6f",
         "collection_U9LrEc",
-        "collection_yc389T"
+        "collection_yc389T",
+        "collection_f8jkdP"
       ],
       "name": "t:names.collection_carousel",
       "settings": {
         "heading": "Discover by <em>category</em>",
         "heading_size": 48,
         "columns": 5,
+        "columns_mobile": "2",
         "image_ratio": "1",
         "label_size": 15,
         "uppercase_labels": true,
-        "background_color": "#F5F4EA",
-        "heading_color": "#6B1235",
-        "text_color": "#6B1235",
+        "background_color": "#f5f4ea",
+        "heading_color": "#6b1235",
+        "text_color": "#6b1235",
         "padding-block-start": 80,
         "padding-block-end": 80
       }
