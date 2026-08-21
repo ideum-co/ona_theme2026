@@ -1,0 +1,340 @@
+{%- liquid
+  assign settings = section.settings
+  assign show_arrows = false
+  if section.blocks.size > settings.columns
+    assign show_arrows = true
+  endif
+-%}
+
+{%- capture slides -%}
+  {%- for block in section.blocks -%}
+    {%- liquid
+      assign block_collection = block.settings.collection
+
+      assign image = block.settings.image
+      if image == blank
+        assign image = block_collection.featured_image
+      endif
+
+      assign label = block.settings.label
+      if label == blank
+        assign label = block_collection.title
+      endif
+
+      assign url = block.settings.link
+      if url == blank
+        assign url = block_collection.url
+      endif
+    -%}
+    {%- capture slide_content -%}
+      <a
+        class="collection-carousel__item"
+        {% if url != blank %}
+          href="{{ url }}"
+        {% endif %}
+        {{ block.shopify_attributes }}
+      >
+        <span class="collection-carousel__media">
+          {%- if image != blank -%}
+            {{
+              image
+              | image_url: width: 1200
+              | image_tag:
+                widths: '300, 600, 900, 1200',
+                sizes: '(min-width: 750px) 25vw, 70vw',
+                loading: 'lazy',
+                class: 'collection-carousel__image'
+            }}
+          {%- endif -%}
+        </span>
+
+        {%- if label != blank -%}
+          <span class="collection-carousel__label">{{ label }}</span>
+        {%- endif -%}
+      </a>
+    {%- endcapture -%}
+    {%- render 'slideshow-slide',
+      index: forloop.index0,
+      children: slide_content,
+      class: 'collection-carousel__slide'
+    -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+<div
+  class="collection-carousel{% if settings.uppercase_labels %} collection-carousel--uppercase{% endif %}"
+  style="
+    --collection-carousel-background: {{ settings.background_color }};
+    --collection-carousel-color: {{ settings.text_color }};
+    --collection-carousel-heading-color: {{ settings.heading_color | default: settings.text_color }};
+    --collection-carousel-heading-size: {{ settings.heading_size }}px;
+    --collection-carousel-label-size: {{ settings.label_size }}px;
+    --collection-carousel-columns: {{ settings.columns }};
+    --collection-carousel-ratio: {{ settings.image_ratio }};
+    --collection-carousel-padding-block-start: {{ settings.padding-block-start }}px;
+    --collection-carousel-padding-block-end: {{ settings.padding-block-end }}px;
+  "
+  {{ section.shopify_attributes }}
+>
+  {%- if settings.heading != blank -%}
+    <h2 class="collection-carousel__heading">{{ settings.heading }}</h2>
+  {%- endif -%}
+
+  {%- if section.blocks.size > 0 -%}
+    {%- render 'slideshow',
+      ref: 'collectionCarousel',
+      class: 'collection-carousel__carousel',
+      slides: slides,
+      slide_count: section.blocks.size,
+      show_arrows: show_arrows,
+      icon_style: settings.icons_style,
+      icon_shape: 'none',
+      arrows_position: 'center',
+      auto_hide_controls: true,
+      infinite: false,
+      initial_slide: 0
+    -%}
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .collection-carousel {
+    --slide-width: calc(100% / var(--collection-carousel-columns, 5));
+
+    padding-block: var(--collection-carousel-padding-block-start) var(--collection-carousel-padding-block-end);
+    padding-inline: var(--page-margin, 1rem);
+    background: var(--collection-carousel-background);
+    color: var(--collection-carousel-color);
+  }
+
+  .collection-carousel__heading {
+    margin: 0 0 var(--gap-6xl, 4rem);
+    color: var(--collection-carousel-heading-color);
+    font-family: var(--font-heading--family);
+    font-size: var(--collection-carousel-heading-size);
+    font-weight: var(--font-heading--weight);
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  /* The theme's slideshow paints its own page-coloured background, which shows up as a band across
+     a section with a colour of its own. */
+  .collection-carousel__carousel slideshow-container {
+    background: transparent;
+  }
+
+  /* Arrows sit at the edges and stay visible, as in the design, instead of fading in on hover. */
+  .collection-carousel__carousel slideshow-arrows {
+    mix-blend-mode: normal;
+  }
+
+  .collection-carousel__carousel slideshow-arrows .slideshow-control {
+    opacity: 1;
+    color: currentcolor;
+
+    /* stylelint-disable-next-line declaration-no-important */
+    /* The hover-reveal animation in base.css is matched by a selector too specific to outrank
+       without an unreadable one of our own, and it starts from opacity 0 - which would make
+       always-visible arrows blink on hover. */
+    animation: none !important;
+  }
+
+  .collection-carousel__slide {
+    inline-size: 100%;
+    padding-inline: var(--gap-lg, 1rem);
+  }
+
+  .collection-carousel__item {
+    display: grid;
+    gap: var(--gap-xl, 1.25rem);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .collection-carousel__media {
+    display: block;
+    overflow: hidden;
+    aspect-ratio: var(--collection-carousel-ratio, 1);
+  }
+
+  .collection-carousel__image {
+    inline-size: 100%;
+    block-size: 100%;
+
+    /* Collection images come in every shape, and the design wants one clean grid, so they fill the
+       frame rather than letterboxing inside it. */
+    object-fit: cover;
+  }
+
+  .collection-carousel__label {
+    font-size: var(--collection-carousel-label-size);
+    letter-spacing: 0.06em;
+    text-align: center;
+  }
+
+  .collection-carousel--uppercase .collection-carousel__label {
+    text-transform: uppercase;
+  }
+
+  @media screen and (max-width: 749px) {
+    .collection-carousel {
+      --slide-width: 70%;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.collection_carousel",
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "t:names.collection",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "t:settings.collection"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:settings.image",
+          "info": "t:info.collection_carousel_image"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "t:settings.label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:settings.link"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "t:settings.heading",
+      "default": "Discover by <em>category<\/em>"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "t:settings.size",
+      "min": 20,
+      "max": 96,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:settings.columns",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "t:settings.aspect_ratio",
+      "options": [
+        {
+          "value": "0.75",
+          "label": "t:options.portrait"
+        },
+        {
+          "value": "1",
+          "label": "t:options.square"
+        },
+        {
+          "value": "1.33",
+          "label": "t:options.landscape"
+        }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "range",
+      "id": "label_size",
+      "label": "t:settings.size",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "checkbox",
+      "id": "uppercase_labels",
+      "label": "t:settings.uppercase",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "default": "#F5F4EA"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "t:settings.heading_color",
+      "default": "#6B1235"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "default": "#6B1235"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.collection_carousel",
+      "blocks": [
+        { "type": "collection" },
+        { "type": "collection" },
+        { "type": "collection" },
+        { "type": "collection" },
+        { "type": "collection" }
+      ]
+    }
+  ]
+}
+{% endschema %}

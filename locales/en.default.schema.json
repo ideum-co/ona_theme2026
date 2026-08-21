@@ -231,6 +231,7 @@
     "work_quickly_to_ship": "<p>We will work quickly to ship your order as soon as possible. Once your order has shipped, you will receive an email with further information. Delivery times vary depending on your location.</p>"
   },
   "info": {
+    "collection_carousel_image": "Replaces the collection's own image.",
     "coffee_quiz_bag_svg": "Paste the SVG markup. It takes the text colour, and it is what the loading animation repeats.",
     "coffee_quiz_step_label": "Use [current] and [total] for the numbers.",
     "coffee_quiz_reasons": "One reason per line.",
@@ -279,6 +280,7 @@
     "media_type_info": "Features are populated from your menu links"
   },
   "names": {
+    "collection_carousel": "Collection carousel",
     "coffee_quiz_match": "Coffee match",
     "coffee_quiz_question": "Question",
     "coffee_quiz": "Coffee quiz",
@@ -783,6 +785,8 @@
     "below_media": "Below media"
   },
   "settings": {
+    "heading_color": "Heading color",
+    "uppercase": "Uppercase",
     "button_text_color": "Button text",
     "button_background_color": "Button background",
     "duration": "Duration",
