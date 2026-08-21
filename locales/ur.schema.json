@@ -30,6 +30,8 @@
     "text": "ٹیکسٹ"
   },
   "content": {
+    "button": "Button",
+    "testimonials": "Testimonials",
     "mega_menu": "میگا مینو",
     "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
@@ -219,6 +221,8 @@
     "work_quickly_to_ship": "<p>ہم جلد از جلد آپ کا آرڈر شپ کرنے کے لیے تیزی سے کام کریں گے۔ آپ کا آرڈر شپ ہونے کے بعد، آپ کو مزید معلومات کے ساتھ ایک ای میل موصول ہوگی۔ آپ کے مقام کے لحاظ سے ترسیل کے اوقات مختلف ہو سکتے ہیں۔</p>"
   },
   "info": {
+    "club_benefits_background_image": "Covers the background colour when set.",
+    "club_benefits_icon_svg": "Paste the SVG markup. It takes the section text colour, and it wins over an uploaded image.",
     "model_url": "Paste a .glb file URL from Content > Files. Leave empty to use the product's own 3D model.",
     "megamenu_badge": "Product metafield used for the badge. Falls back to \"On sale\" when the product is discounted.",
     "megamenu_image": "Product metafield used for the menu image. Falls back to the product's own image.",
@@ -260,6 +264,9 @@
     "media_type_info": "خصوصیات آپ کے مینو کے لنک سے پُر کی گئی ہیں"
   },
   "names": {
+    "club_testimonial": "Testimonial",
+    "club_benefit": "Benefit",
+    "club_benefits": "Club benefits",
     "subscribe_button": "سبسکرپشن بٹن",
     "story_video": "ویڈیو کے ساتھ کہانی",
     "product_metafield_text": "پروڈکٹ میٹا فیلڈ ٹیکسٹ",
@@ -713,6 +720,10 @@
     "below_media": "میڈیا کے نیچے"
   },
   "settings": {
+    "text_size": "Text size",
+    "author_role": "Author role",
+    "author": "Author",
+    "icon_svg": "Icon SVG code",
     "exposure": "Exposure",
     "shadow": "Shadow",
     "allow_rotation": "Allow drag to rotate",
