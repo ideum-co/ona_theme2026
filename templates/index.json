@@ -3675,7 +3675,95 @@
     },
     "coffee_quiz": {
       "type": "coffee-quiz",
-      "settings": {}
+      "settings": {},
+      "blocks": {
+        "question_1": {
+          "type": "question",
+          "settings": {
+            "heading": "How <em>do you</em> brew?",
+            "subtext": "How do you make your coffee?",
+            "options": "Espresso\nPour Over/ Filter\nFrench Press\nAeroPress\nStovetop / Moka Pot\nAutomatic Machine\nI'm not sure"
+          }
+        },
+        "question_2": {
+          "type": "question",
+          "settings": {
+            "heading": "How do you <em>drink it</em>?",
+            "subtext": "How do you usually enjoy your coffee?",
+            "options": "Black\nWith milk\nBoth\nIced\nIt depends"
+          }
+        },
+        "question_3": {
+          "type": "question",
+          "settings": {
+            "heading": "What sounds <em>best</em>?",
+            "subtext": "What flavours sound best to you?",
+            "options": "🍫 Chocolatey & nutty | ugly-sweater\n🍯 Sweet & caramel-like | maple\n🍓 Fruity & juicy | raspberry-candy\n🌸 Floral & delicate | raspberry-candy\n🍊 Bright & citrusy | raspberry-candy\n🍇 Rich & wine-like | ugly-sweater"
+          }
+        },
+        "question_4": {
+          "type": "question",
+          "settings": {
+            "heading": "How <em>adventurous</em> are you?",
+            "subtext": "How adventurous do you like your coffee?",
+            "options": "Keep it familiar | maple\nSomewhere in the middle | maple\nTake me somewhere new | raspberry-candy"
+          }
+        },
+        "question_5": {
+          "type": "question",
+          "settings": {
+            "heading": "What <em>matters most</em>?",
+            "subtext": "What matters most in your next coffee?",
+            "options": "Something easy to drink every day | maple\nSomething sweet & balanced | maple\nSomething bright & fruity | raspberry-candy\nSomething complex & interesting | ugly-sweater\nSomething special / limited | raspberry-candy\nI just want the best one!"
+          }
+        },
+        "question_6": {
+          "type": "question",
+          "settings": {
+            "heading": "What are you <em>shopping for</em>?",
+            "subtext": "What are you shopping for?",
+            "options": "My everyday coffee\nSomething for the weekend\nA coffee to explore\nA gift\nNot sure yet"
+          }
+        },
+        "match_raspberry_candy": {
+          "type": "match",
+          "settings": {
+            "tag": "raspberry-candy",
+            "title": "Raspberry Candy",
+            "description": "Bright and juicy with notes of raspberry, caramel and milk chocolate.",
+            "reasons": "Sweet & fruit-forward\nApproachable but interesting\nONA's signature release"
+          }
+        },
+        "match_ugly_sweater": {
+          "type": "match",
+          "settings": {
+            "tag": "ugly-sweater",
+            "title": "Ugly Sweater",
+            "description": "A cosy, unconventional blend with notes of milk chocolate and hazelnut.",
+            "reasons": "Great with milk\nRich & comforting\nA little unconventional"
+          }
+        },
+        "match_maple": {
+          "type": "match",
+          "settings": {
+            "tag": "maple",
+            "title": "Maple",
+            "description": "A balanced, easy-drinking everyday coffee with warm caramel sweetness.",
+            "reasons": "Classic & balanced\nEasy to drink every day\nA dependable favourite"
+          }
+        }
+      },
+      "block_order": [
+        "question_1",
+        "question_2",
+        "question_3",
+        "question_4",
+        "question_5",
+        "question_6",
+        "match_raspberry_candy",
+        "match_ugly_sweater",
+        "match_maple"
+      ]
     }
   },
   "order": [

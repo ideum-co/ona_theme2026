@@ -1,0 +1,24 @@
+
+    @media screen and (min-width: 750px) {
+      /* The row carries the page's own `color-custom-*` class, so this needs the id and the `:has()`
+         to outrank it. Set on the row rather than on each item, so everything inside inherits. */
+      #header-component:has(.menu-open) .header__row {
+        
+          background-color: #F5F4EA;
+          --color-background: #F5F4EA;
+          --color-background-rgb: 245 244 234;
+        
+
+        --color: var(--palette-darkest);
+        --color-rgb: var(--palette-darkest-rgb);
+        --color-foreground: var(--palette-darkest);
+        --color-foreground-rgb: var(--palette-darkest-rgb);
+        --color-border: var(--palette-darkest);
+        --color-border-rgb: var(--palette-darkest-rgb);
+
+        color: var(--palette-darkest);
+      }
+
+      
+    }
+  

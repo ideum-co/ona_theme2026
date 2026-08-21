@@ -1,0 +1,39 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports": {"@theme/utilities": "/assets/utilities.js", "@theme/component": "/assets/component.js", "@theme/focus": "/assets/focus.js", "@theme/": "/assets/"}}</script>
+<style>
+  .menu-drawer { position: fixed; top:0; left:0; width:25rem; height:100dvh;
+    transform: translateX(-100%); visibility:hidden; transition: transform .3s ease, visibility .3s ease; }
+  .menu-open > .menu-drawer { transform: translateX(0); visibility:visible; display:flex; }
+  @media (min-width: 750px) {
+    body.old .menu-open > .menu-drawer { display: none; }
+    body.new .menu-open > .menu-drawer { visibility: hidden; opacity: 0; pointer-events: none; }
+  }
+  .menu-drawer__backdrop { position: fixed; inset:0; backdrop-filter: brightness(.75);
+    opacity:0; transition: opacity .3s ease; }
+  .menu-open .menu-drawer__backdrop { opacity:1; }
+  .header-megamenu { position: fixed; inset-inline:0; top:0; height:300px; background:#8A1538;
+    visibility:hidden; translate:0 -100%; transition: translate .3s ease-in-out, visibility .3s; }
+  .menu-open > .header-megamenu { visibility:visible; translate:0 0; }
+</style></head><body>
+<header-drawer class="header-drawer">
+  <details id="d" class="menu-drawer-container" ref="details">
+    <summary class="header__icon header__icon--menu" on:click="/toggle">MENU</summary>
+    <header-megamenu class="header-megamenu" ref="megaMenu"><a data-index="0" ref="primaryLinks[]">Shop</a><div data-index="0" ref="contents[]">c</div></header-megamenu>
+    <div class="menu-drawer" ref="menuDrawer">drawer</div>
+    <div class="menu-drawer__backdrop" on:click="header-drawer/close"></div>
+  </details>
+</header-drawer>
+<script type="module">
+  import '@theme/header-drawer.js';
+  import '@theme/header-megamenu.js';
+  window.animCount = () => document.querySelector('.menu-drawer').getAnimations({subtree:false}).length;
+  window.probe = () => {
+    const d = document.getElementById('d');
+    const b = document.querySelector('.menu-drawer__backdrop');
+    const cs = getComputedStyle(b);
+    return { open: d.hasAttribute('open'), menuOpen: d.classList.contains('menu-open'),
+             backdropOpacity: cs.opacity, backdropVisible: cs.visibility,
+             backdropHitsClicks: document.elementFromPoint(innerWidth/2, innerHeight/2)?.className };
+  };
+</script>
+</body></html>

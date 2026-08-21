@@ -1,0 +1,139 @@
+
+  .product-intro {
+    display: grid;
+    gap: var(--gap-2xl);
+    align-items: center;
+    padding-block: var(--product-intro-padding-block-start) var(--product-intro-padding-block-end);
+    padding-inline: var(--page-margin, 1rem);
+    background-color: var(--product-intro-background);
+    background-image: var(--product-intro-background-image, none);
+    background-size: cover;
+    background-position: center;
+    color: var(--product-intro-color);
+
+    @media screen and (min-width: 750px) {
+      grid-template-columns: 1fr minmax(0, 1.1fr) 1fr;
+    }
+  }
+
+  /* On mobile the pack shot leads, as it carries the product. */
+  .product-intro__media {
+    order: -1;
+
+    @media screen and (min-width: 750px) {
+      order: 0;
+    }
+  }
+
+  /* The model box is sized rather than shrink-wrapped: `<model-viewer>` has no intrinsic size, so
+     without one it collapses. The width has to be a definite length and not `min(100%, …)`: in a
+     cell that sizes itself to its content, the percentage resolves against a width that depends on
+     this element, which lands on zero. `max-inline-size` is what brings it down on narrow screens. */
+  .product-intro__model {
+    display: block;
+    inline-size: var(--product-intro-model-width, 520px);
+    max-inline-size: 100%;
+    block-size: var(--product-intro-model-height, 520px);
+    margin-inline: auto;
+  }
+
+  .product-intro__model :is(model-viewer, .product-intro__model-viewer) {
+    inline-size: 100%;
+    block-size: 100%;
+    background-color: transparent;
+
+    /* The camera control needs the gesture; without this the page cannot be scrolled from on top
+       of the model on touch. `touch-action` on the element pairs with `pan-y` in the markup. */
+    --poster-color: transparent;
+  }
+
+  .product-intro__image {
+    inline-size: 100%;
+    block-size: auto;
+    display: block;
+  }
+
+  .product-intro__wordmark {
+    display: grid;
+    gap: var(--gap-sm);
+    justify-items: start;
+  }
+
+  .product-intro__eyebrow {
+    margin: 0;
+    font-size: var(--product-intro-eyebrow-size, var(--font-size--sm));
+  }
+
+  .product-intro__wordmark-image {
+    inline-size: 100%;
+    block-size: auto;
+    display: block;
+  }
+
+  .product-intro__wordmark-svg svg {
+    inline-size: 100%;
+    block-size: auto;
+    display: block;
+  }
+
+  .product-intro__wordmark-text {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--product-intro-wordmark-size, var(--font-h1--size));
+    line-height: 1.05;
+    color: var(--product-intro-wordmark-color, currentcolor);
+    text-shadow: var(--product-intro-wordmark-shadow, none);
+  }
+
+  /* Gradient lettering: the gradient is painted behind the text and clipped to the glyphs, so the
+     fill has to go transparent. `-webkit-` prefixes included - Safari still needs them. */
+  .product-intro__wordmark-text--gradient {
+    /* The fallback is a flat currentcolor gradient, not `none`: with the fill forced transparent,
+       a missing gradient would make the lettering vanish outright. */
+    background-image: var(--product-intro-wordmark-gradient, linear-gradient(currentcolor, currentcolor));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .product-intro__details {
+    display: grid;
+    gap: var(--gap-lg);
+    justify-items: start;
+    max-inline-size: 28rem;
+  }
+
+  .product-intro__heading {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--product-intro-heading-size, var(--font-h2--size));
+    font-weight: var(--font-heading--weight);
+  }
+
+  .product-intro__body {
+    display: grid;
+    gap: var(--gap-sm);
+    font-size: var(--product-intro-body-size, var(--font-size--sm));
+  }
+
+  .product-intro__body :is(p, ul, ol) {
+    margin: 0;
+  }
+
+  .product-intro__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-sm);
+  }
+
+  /* The pair shares one row and only wraps when the column is genuinely too narrow. A fixed
+     min-width made them stack at the design's own column widths. */
+  .product-intro__button.button {
+    --button-background-color: var(--product-intro-button-background);
+    --button-color: var(--product-intro-button-color);
+
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    justify-content: center;
+  }

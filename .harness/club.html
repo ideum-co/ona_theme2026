@@ -1,0 +1,43 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/assets/base.css">
+<link rel="stylesheet" href="/.harness/slideshow.css">
+<link rel="stylesheet" href="/.harness/club-benefits.css">
+<style>
+  html { --page-margin:2rem; --page-width:90rem; --gap-5xl:3.5rem; --gap-4xl:3rem; --gap-xl:1.25rem;
+         --gap-3xs:.125rem; --padding-5xl:3rem; --opacity-70:.7; --opacity-90:.9;
+         --font-heading--family: Georgia, serif; --font-heading--weight:400; --color-background:#F5F4EA; }
+  body { margin:0; }
+  .list-unstyled { list-style:none; }
+</style></head><body>
+<div class="club-benefits" style="
+  --club-benefits-background:#4A4340; --club-benefits-color:#F5F4EA; --club-benefits-columns:3;
+  --club-benefits-icon-size:112px; --club-benefits-heading-size:44px; --club-benefits-benefit-size:34px;
+  --club-benefits-quote-size:22px; --club-benefits-button-background:#8A1538; --club-benefits-button-color:#F5F4EA;
+  --club-benefits-padding-block-start:96px; --club-benefits-padding-block-end:96px;">
+  <h2 class="club-benefits__heading" id="heading">Club <em>benefits</em></h2>
+  <ul class="club-benefits__list list-unstyled" id="list">
+    <li class="club-benefits__benefit">
+      <span class="club-benefits__icon club-benefits__icon--svg" id="svgicon"><svg viewBox="0 0 100 60" width="300" height="180"><circle cx="30" cy="30" r="18" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="65" cy="35" r="14" fill="none" stroke="currentColor" stroke-width="3"/></svg></span>
+      <p class="club-benefits__benefit-title">Freshly <em>roasted</em></p>
+    </li>
+    <li class="club-benefits__benefit">
+      <img class="club-benefits__icon" id="imgicon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCAxMDAiPjxyZWN0IHg9IjUiIHk9IjUiIHdpZHRoPSIzMCIgaGVpZ2h0PSI5MCIgZmlsbD0iI0Y1RjRFQSIvPjwvc3ZnPg==" alt="">
+      <p class="club-benefits__benefit-title">New <em>releases</em></p>
+    </li>
+    <li class="club-benefits__benefit">
+      <span class="club-benefits__icon club-benefits__icon--svg"><svg viewBox="0 0 120 60" width="600" height="300"><rect x="5" y="15" width="70" height="30" fill="none" stroke="currentColor" stroke-width="3"/></svg></span>
+      <p class="club-benefits__benefit-title">Flexible <em>delivery</em></p>
+    </li>
+  </ul>
+  <div class="club-benefits__carousel" id="carousel"><slideshow-container id="sc"><slideshow-slides>
+    <div class="club-benefits__slide"><figure class="club-benefits__testimonial">
+      <blockquote class="club-benefits__quote" id="quote">"The easiest way to make sure I never run out of great coffee. I love getting to discover new ONA coffees along the way."</blockquote>
+      <figcaption class="club-benefits__attribution">
+        <span class="club-benefits__author">Sarah</span>
+        <span class="club-benefits__role" id="role">ONA Coffee Club member</span>
+      </figcaption>
+    </figure></div>
+  </slideshow-slides></slideshow-container></div>
+  <a class="club-benefits__button" id="btn" href="#">Join the ONA Coffee Club</a>
+</div>
+</body></html>

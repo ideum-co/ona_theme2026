@@ -1,0 +1,138 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/assets/base.css">
+<link rel="stylesheet" href="/.harness/coffee-quiz.css">
+<script type="importmap">{"imports":{"@theme/":"/assets/","@theme/component":"/assets/component.js","@theme/utilities":"/assets/utilities.js","@theme/focus":"/assets/focus.js","@theme/events":"/assets/events.js","@theme/morph":"/assets/morph.js","@theme/performance":"/assets/performance.js","@theme/scrolling":"/assets/scrolling.js"}}</script>
+<style>html{--padding-2xl:1.5rem;--padding-4xl:2rem;--padding-5xl:3rem;--padding-xl:1.25rem;
+--gap-2xs:.3rem;--gap-xs:.5rem;--gap-lg:1rem;--gap-xl:1.25rem;--gap-2xl:1.5rem;--gap-4xl:3rem;--gap-6xl:4rem;
+--opacity-35:.35;--opacity-50:.5;--layer-modal:1000;--font-heading--family:Georgia,serif;--font-heading--weight:400;
+--font-size--3xl:2rem;}
+body{margin:0;font-family:system-ui;padding:40px}
+.list-unstyled{list-style:none}</style></head><body>
+<script src="/assets/coffee-quiz.js" type="module"></script>
+<p><a href="#coffee-quiz" id="trigger">Find your coffee</a></p>
+<coffee-quiz
+  class="coffee-quiz"
+  id="coffee-quiz"
+  hidden
+  style="
+    --coffee-quiz-background: #6B1235;
+    --coffee-quiz-color: #F5F4EA;
+    --coffee-quiz-accent-background: #F5F4EA;
+    --coffee-quiz-accent-color: #6B1235;
+  "
+  
+>
+  <script type="application/json" ref="data">{"labels": {"step": "Question [current] of [total]", "next": "Next Question", "last": "See my match", "addToCart": "Add to cart", "subscribe": "Subscribe"}, "revealMs": 1200, "questions": [{"heading": "How <em>do you</em> brew?", "subtext": "How do you make your coffee?", "options": [{"label": "Espresso", "tag": ""}, {"label": "Pour Over/ Filter", "tag": ""}, {"label": "French Press", "tag": ""}, {"label": "AeroPress", "tag": ""}, {"label": "Stovetop / Moka Pot", "tag": ""}, {"label": "Automatic Machine", "tag": ""}, {"label": "I'm not sure", "tag": ""}]}, {"heading": "How do you <em>drink it</em>?", "subtext": "How do you usually enjoy your coffee?", "options": [{"label": "Black", "tag": ""}, {"label": "With milk", "tag": ""}, {"label": "Both", "tag": ""}, {"label": "Iced", "tag": ""}, {"label": "It depends", "tag": ""}]}, {"heading": "What sounds <em>best</em>?", "subtext": "What flavours sound best to you?", "options": [{"label": "🍫 Chocolatey & nutty", "tag": "ugly-sweater"}, {"label": "🍯 Sweet & caramel-like", "tag": "maple"}, {"label": "🍓 Fruity & juicy", "tag": "raspberry-candy"}, {"label": "🌸 Floral & delicate", "tag": "raspberry-candy"}, {"label": "🍊 Bright & citrusy", "tag": "raspberry-candy"}, {"label": "🍇 Rich & wine-like", "tag": "ugly-sweater"}]}, {"heading": "How <em>adventurous</em> are you?", "subtext": "How adventurous do you like your coffee?", "options": [{"label": "Keep it familiar", "tag": "maple"}, {"label": "Somewhere in the middle", "tag": "maple"}, {"label": "Take me somewhere new", "tag": "raspberry-candy"}]}, {"heading": "What <em>matters most</em>?", "subtext": "What matters most in your next coffee?", "options": [{"label": "Something easy to drink every day", "tag": "maple"}, {"label": "Something sweet & balanced", "tag": "maple"}, {"label": "Something bright & fruity", "tag": "raspberry-candy"}, {"label": "Something complex & interesting", "tag": "ugly-sweater"}, {"label": "Something special / limited", "tag": "raspberry-candy"}, {"label": "I just want the best one!", "tag": ""}]}, {"heading": "What are you <em>shopping for</em>?", "subtext": "What are you shopping for?", "options": [{"label": "My everyday coffee", "tag": ""}, {"label": "Something for the weekend", "tag": ""}, {"label": "A coffee to explore", "tag": ""}, {"label": "A gift", "tag": ""}, {"label": "Not sure yet", "tag": ""}]}], "matches": [{"tag": "raspberry-candy", "title": "Raspberry Candy", "url": "/products/raspberry-candy", "variantId": 2871, "available": true, "image": "", "description": "Bright and juicy with notes of raspberry, caramel and milk chocolate.", "reasons": ["Sweet & fruit-forward", "Approachable but interesting", "ONA's signature release"]}, {"tag": "ugly-sweater", "title": "Ugly Sweater", "url": "/products/ugly-sweater", "variantId": 6353, "available": true, "image": "", "description": "A cosy, unconventional blend with notes of milk chocolate and hazelnut.", "reasons": ["Great with milk", "Rich & comforting", "A little unconventional"]}, {"tag": "maple", "title": "Maple", "url": "/products/maple", "variantId": 8258, "available": true, "image": "", "description": "A balanced, easy-drinking everyday coffee with warm caramel sweetness.", "reasons": ["Classic & balanced", "Easy to drink every day", "A dependable favourite"]}]}</script>
+
+  <div class="coffee-quiz__overlay" on:click="/close"></div>
+
+  <div
+    class="coffee-quiz__modal"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Find your coffee quiz"
+    ref="modal"
+  >
+    <div class="coffee-quiz__header">
+      <p class="coffee-quiz__title">{{ settings.title }}</p>
+      <button
+        type="button"
+        class="coffee-quiz__close"
+        aria-label="Close dialog"
+        on:click="/close"
+        ref="closeButton"
+      >
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M1 1L19 19M19 1L1 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="coffee-quiz__body" ref="body"></div>
+
+    <div class="coffee-quiz__footer" ref="footer">
+      <button
+        type="button"
+        class="coffee-quiz__next"
+        on:click="/next"
+        ref="nextButton"
+        disabled
+      >
+        <span ref="nextLabel">{{ settings.next_label }}</span>
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none" aria-hidden="true">
+          <path d="M11 1L17 7L11 13M17 7H1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      
+      <span class="coffee-quiz__bag" ref="bag" aria-hidden="true">
+        
+          {%- render 'svg-without-styles', svg: settings.bag_svg -%}
+        
+          <svg width="72" height="88" viewBox="0 0 72 88" fill="none">
+            <path d="M10 30 L14 84 H58 L62 30 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            <path d="M10 30 L4 20 H68 L62 30" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
+            <path d="M20 20 C20 8, 52 8, 52 20" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            <path d="M30 44 L30 60 M36 42 L36 62 M42 44 L42 60" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        
+      </span>
+    </div>
+  </div>
+
+  
+  <template ref="questionTemplate">
+    <div class="coffee-quiz__step">
+      <p class="coffee-quiz__eyebrow" data-step-label></p>
+      <h2 class="coffee-quiz__question" data-heading></h2>
+      <p class="coffee-quiz__subtext" data-subtext></p>
+      <div class="coffee-quiz__options" data-options></div>
+    </div>
+  </template>
+
+  <template ref="revealTemplate">
+    <div class="coffee-quiz__reveal">
+      <p class="coffee-quiz__reveal-heading">Your <em>coffee match</em> is taking shape...</p>
+      <div class="coffee-quiz__reveal-bags" data-bags></div>
+    </div>
+  </template>
+
+  <template ref="resultTemplate">
+    <div class="coffee-quiz__result">
+      <h2 class="coffee-quiz__question coffee-quiz__result-heading">We think <em>you'll love</em>...</h2>
+      <img class="coffee-quiz__result-image" data-image alt="" width="800" height="800" loading="lazy">
+      <p class="coffee-quiz__result-description" data-description></p>
+      
+        <p class="coffee-quiz__reasons-label">{{ settings.reasons_label }}</p>
+      
+      <ul class="coffee-quiz__reasons list-unstyled" data-reasons></ul>
+
+      <div class="coffee-quiz__actions">
+        <form method="post" action="/cart/add" data-add-form>
+          <input type="hidden" name="form_type" value="product">
+          <input type="hidden" name="utf8" value="✓">
+          <input type="hidden" name="id" data-variant-id>
+          <button type="submit" class="coffee-quiz__action" data-add-button></button>
+        </form>
+        <a class="coffee-quiz__action" data-subscribe></a>
+      </div>
+
+      
+        <p class="coffee-quiz__explore">
+          
+            <span>{{ settings.explore_prompt }}</span>
+          
+          <a
+            class="coffee-quiz__action"
+            
+              href="{{ settings.explore_link }}"
+            
+          >
+            {{- settings.explore_label -}}
+          </a>
+        </p>
+      
+    </div>
+  </template>
+</coffee-quiz>
+</body></html>
