@@ -2270,7 +2270,7 @@
                   "type": "image",
                   "settings": {
                     "image": "shopify://shop_images/7-top-reasons-for-you-to-enrol-in-barista-training.png",
-                    "link": "/pages/barista-courses",
+                    "link": "shopify://blogs/news-1",
                     "image_ratio": "square",
                     "width": "fill",
                     "custom_width": 100,
