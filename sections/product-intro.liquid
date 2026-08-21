@@ -7,6 +7,24 @@
     assign image = product.featured_media.preview_image
   endif
 
+  ##
+  # The 3D model comes from the product's own media when there is one - that path is native, so it
+  # carries a poster and an iOS AR source for free. A file uploaded to Content > Files is the
+  # fallback, for a model that is not attached to a product.
+  assign model_media = product.media | where: 'media_type', 'model' | first
+  assign model_glb = model_media.sources | where: 'format', 'glb' | first
+  assign model_usdz = model_media.sources | where: 'format', 'usdz' | first
+
+  assign model_src = model_glb.url
+  if model_src == blank
+    assign model_src = settings.model_url
+  endif
+
+  assign show_model = false
+  if settings.media_type == 'model' and model_src != blank
+    assign show_model = true
+  endif
+
   assign body = settings.body
   if body == blank
     assign body = product.description
@@ -41,6 +59,8 @@
     {% endif %}
     --product-intro-button-background: {{ settings.button_background }};
     --product-intro-button-color: {{ settings.button_text }};
+    --product-intro-model-height: {{ settings.model_height }}px;
+    --product-intro-model-width: {{ settings.model_width }}px;
     --product-intro-padding-block-start: {{ settings.padding-block-start }}px;
     --product-intro-padding-block-end: {{ settings.padding-block-end }}px;
     {% if settings.background_image != blank %}
@@ -74,7 +94,49 @@
   </div>
 
   <div class="product-intro__media">
-    {%- if image != blank -%}
+    {%- if show_model -%}
+      <script
+        src="{{ 'product-intro-model.js' | asset_url }}"
+        type="module"
+        fetchpriority="low"
+      ></script>
+
+      <product-intro-model class="product-intro__model">
+        {%- comment -%}
+          The poster is what shows until `<model-viewer>` is defined, and what stays if the
+          storefront cannot load it at all.
+        {%- endcomment -%}
+        <model-viewer
+          class="product-intro__model-viewer"
+          ref="viewer"
+          src="{{ model_src | escape }}"
+          {% if model_usdz %}
+            ios-src="{{ model_usdz.url | escape }}"
+          {% endif %}
+          {% if model_media.preview_image != blank %}
+            poster="{{ model_media.preview_image | image_url: width: 1400 }}"
+          {% elsif image != blank %}
+            poster="{{ image | image_url: width: 1400 }}"
+          {% endif %}
+          alt="{{ model_media.alt | default: product.title | escape }}"
+          loading="lazy"
+          reveal="auto"
+          shadow-intensity="{{ settings.model_shadow }}"
+          exposure="{{ settings.model_exposure }}"
+          {% if settings.model_auto_rotate %}
+            auto-rotate
+            auto-rotate-delay="0"
+            rotation-per-second="{{ settings.model_rotation_speed }}deg"
+          {% endif %}
+          {% if settings.model_allow_rotation %}
+            camera-controls
+            touch-action="pan-y"
+            disable-zoom
+          {% endif %}
+          interaction-prompt="none"
+        ></model-viewer>
+      </product-intro-model>
+    {%- elsif image != blank -%}
       {{
         image
         | image_url: width: 1400
@@ -144,6 +206,41 @@
 
     @media screen and (min-width: 750px) {
       order: 0;
+    }
+  }
+
+  /* The model box is sized rather than shrink-wrapped: `<model-viewer>` has no intrinsic size, so
+     without one it collapses. The width has to be a definite length and not `min(100%, …)`: in a
+     cell that sizes itself to its content, the percentage resolves against a width that depends on
+     this element, which lands on zero. `max-inline-size` is what brings it down on narrow screens. */
+  .product-intro__model {
+    display: block;
+    inline-size: var(--product-intro-model-width, 520px);
+    max-inline-size: 100%;
+    block-size: var(--product-intro-model-height, 520px);
+    margin-inline: auto;
+  }
+
+  .product-intro__model-viewer {
+    inline-size: 100%;
+    block-size: 100%;
+    background-color: transparent;
+
+    /* The camera control needs the gesture; without this the page cannot be scrolled from on top
+       of the model on touch. `touch-action` on the element pairs with `pan-y` in the markup. */
+    --poster-color: transparent;
+  }
+
+  /* Until the element is defined the poster attribute means nothing, so the box is empty. Fading
+     the model in on load keeps that from showing as a pop. */
+  @media (prefers-reduced-motion: no-preference) {
+    .product-intro__model-viewer {
+      opacity: 0;
+      transition: opacity var(--animation-speed-slow, 0.5s) var(--ease-out-cubic, ease-out);
+    }
+
+    .product-intro__model[loaded] .product-intro__model-viewer {
+      opacity: 1;
     }
   }
 
@@ -248,6 +345,100 @@
       "type": "product",
       "id": "product",
       "label": "t:settings.product"
+    },
+    {
+      "type": "header",
+      "content": "t:content.media"
+    },
+    {
+      "type": "select",
+      "id": "media_type",
+      "label": "t:settings.media_type",
+      "options": [
+        {
+          "value": "image",
+          "label": "t:options.image"
+        },
+        {
+          "value": "model",
+          "label": "t:options.three_d_model"
+        }
+      ],
+      "default": "image"
+    },
+    {
+      "type": "text",
+      "id": "model_url",
+      "label": "t:settings.model_url",
+      "info": "t:info.model_url",
+      "visible_if": "{{ section.settings.media_type == 'model' }}"
+    },
+    {
+      "type": "range",
+      "id": "model_width",
+      "label": "t:settings.width",
+      "min": 200,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 520,
+      "visible_if": "{{ section.settings.media_type == 'model' }}"
+    },
+    {
+      "type": "range",
+      "id": "model_height",
+      "label": "t:settings.height",
+      "min": 200,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 520,
+      "visible_if": "{{ section.settings.media_type == 'model' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "model_auto_rotate",
+      "label": "t:settings.auto_rotate",
+      "default": true,
+      "visible_if": "{{ section.settings.media_type == 'model' }}"
+    },
+    {
+      "type": "range",
+      "id": "model_rotation_speed",
+      "label": "t:settings.speed",
+      "min": 5,
+      "max": 90,
+      "step": 5,
+      "unit": "\u00b0",
+      "default": 30,
+      "visible_if": "{{ section.settings.media_type == 'model' and section.settings.model_auto_rotate }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "model_allow_rotation",
+      "label": "t:settings.allow_rotation",
+      "default": true,
+      "visible_if": "{{ section.settings.media_type == 'model' }}"
+    },
+    {
+      "type": "range",
+      "id": "model_shadow",
+      "label": "t:settings.shadow",
+      "min": 0,
+      "max": 3,
+      "step": 0.1,
+      "default": 1,
+      "visible_if": "{{ section.settings.media_type == 'model' }}"
+    },
+    {
+      "type": "range",
+      "id": "model_exposure",
+      "label": "t:settings.exposure",
+      "min": 0.2,
+      "max": 2,
+      "step": 0.1,
+      "default": 1,
+      "visible_if": "{{ section.settings.media_type == 'model' }}"
     },
     {
       "type": "text",

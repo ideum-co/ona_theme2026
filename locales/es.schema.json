@@ -182,6 +182,11 @@
     "disclosures": "Divulgaciones"
   },
   "settings": {
+    "exposure": "Exposure",
+    "shadow": "Shadow",
+    "allow_rotation": "Allow drag to rotate",
+    "auto_rotate": "Auto-rotate",
+    "model_url": "Model file URL",
     "video_overhang": "Desborde del video",
     "namespace": "Espacio de nombres",
     "svg_code": "Código SVG",
@@ -605,6 +610,7 @@
     "title_preset": "Preajuste del título"
   },
   "options": {
+    "three_d_model": "3D model",
     "below": "Debajo del campo",
     "inline": "Junto al campo",
     "apple": "Apple",
@@ -1111,6 +1117,7 @@
     "disclosures": "Divulgaciones"
   },
   "info": {
+    "model_url": "Paste a .glb file URL from Content > Files. Leave empty to use the product's own 3D model.",
     "megamenu_badge": "Metafield del producto para la etiqueta. Si está vacío, usa \"En oferta\" cuando el producto tiene descuento.",
     "megamenu_image": "Metafield del producto para la imagen del menú. Si está vacío, usa la imagen del producto.",
     "video_overhang": "Cuánto sobresale el video sobre la sección siguiente. El fondo de la sección termina por encima.",

@@ -182,6 +182,11 @@
     "disclosures": "Divulgações"
   },
   "settings": {
+    "exposure": "Exposure",
+    "shadow": "Shadow",
+    "allow_rotation": "Allow drag to rotate",
+    "auto_rotate": "Auto-rotate",
+    "model_url": "Model file URL",
     "video_overhang": "Transbordo do vídeo",
     "namespace": "Namespace",
     "svg_code": "Código SVG",
@@ -605,6 +610,7 @@
     "title_preset": "Predefinição do título"
   },
   "options": {
+    "three_d_model": "3D model",
     "below": "Abaixo do campo",
     "inline": "Ao lado do campo",
     "apple": "Maçã",
@@ -1111,6 +1117,7 @@
     "disclosures": "Divulgações"
   },
   "info": {
+    "model_url": "Paste a .glb file URL from Content > Files. Leave empty to use the product's own 3D model.",
     "megamenu_badge": "Product metafield used for the badge. Falls back to \"On sale\" when the product is discounted.",
     "megamenu_image": "Product metafield used for the menu image. Falls back to the product's own image.",
     "video_overhang": "How far the video hangs over the section below. The section background stops above it.",

@@ -227,6 +227,7 @@
     "work_quickly_to_ship": "<p>We will work quickly to ship your order as soon as possible. Once your order has shipped, you will receive an email with further information. Delivery times vary depending on your location.</p>"
   },
   "info": {
+    "model_url": "Paste a .glb file URL from Content > Files. Leave empty to use the product's own 3D model.",
     "megamenu_badge": "Product metafield used for the badge. Falls back to \"On sale\" when the product is discounted.",
     "megamenu_image": "Product metafield used for the menu image. Falls back to the product's own image.",
     "video_overhang": "How far the video hangs over the section below. The section background stops above it.",
@@ -447,6 +448,7 @@
     "comparison_slider": "Comparison slider"
   },
   "options": {
+    "three_d_model": "3D model",
     "below": "Below the field",
     "inline": "Beside the field",
     "above_carousel": "Above carousel",
@@ -764,6 +766,11 @@
     "below_media": "Below media"
   },
   "settings": {
+    "exposure": "Exposure",
+    "shadow": "Shadow",
+    "allow_rotation": "Allow drag to rotate",
+    "auto_rotate": "Auto-rotate",
+    "model_url": "Model file URL",
     "video_overhang": "Video overhang",
     "namespace": "Namespace",
     "svg_code": "SVG code",

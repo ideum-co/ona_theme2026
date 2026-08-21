@@ -219,6 +219,7 @@
     "work_quickly_to_ship": "<p>ہم جلد از جلد آپ کا آرڈر شپ کرنے کے لیے تیزی سے کام کریں گے۔ آپ کا آرڈر شپ ہونے کے بعد، آپ کو مزید معلومات کے ساتھ ایک ای میل موصول ہوگی۔ آپ کے مقام کے لحاظ سے ترسیل کے اوقات مختلف ہو سکتے ہیں۔</p>"
   },
   "info": {
+    "model_url": "Paste a .glb file URL from Content > Files. Leave empty to use the product's own 3D model.",
     "megamenu_badge": "Product metafield used for the badge. Falls back to \"On sale\" when the product is discounted.",
     "megamenu_image": "Product metafield used for the menu image. Falls back to the product's own image.",
     "video_overhang": "How far the video hangs over the section below. The section background stops above it.",
@@ -432,6 +433,7 @@
     "comparison_slider": "موازنہ کرنے والا سلائیڈر"
   },
   "options": {
+    "three_d_model": "3D model",
     "below": "فیلڈ کے نیچے",
     "inline": "فیلڈ کے ساتھ",
     "above_carousel": "کیرول کے اوپر",
@@ -711,6 +713,11 @@
     "below_media": "میڈیا کے نیچے"
   },
   "settings": {
+    "exposure": "Exposure",
+    "shadow": "Shadow",
+    "allow_rotation": "Allow drag to rotate",
+    "auto_rotate": "Auto-rotate",
+    "model_url": "Model file URL",
     "video_overhang": "ویڈیو کا اوور ہینگ",
     "namespace": "نیم اسپیس",
     "svg_code": "SVG کوڈ",
