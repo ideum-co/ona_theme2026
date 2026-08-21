@@ -1006,7 +1006,7 @@
         "overlay_color": "#000000",
         "overlay_opacity": 35,
         "text_color": "#ffffff",
-        "section_height": "100svh",
+        "section_height": "60svh",
         "padding-block-start": 120,
         "padding-block-end": 120
       }
