@@ -124,6 +124,12 @@
         {% unless model_glb %}
           data-src="{{ model_src | escape }}"
           data-alt="{{ product.title | escape }}"
+          {% comment %}
+            Only this path needs the bundled viewer, and only if the page does not already have one.
+            A model held on the product goes through `model_viewer_tag`, which makes Shopify ship
+            the element itself, so it never pays for this.
+          {% endcomment %}
+          data-viewer-src="{{ 'model-viewer.min.js' | asset_url }}"
           {% if image != blank %}
             data-poster="{{ image | image_url: width: 1400 }}"
           {% endif %}
