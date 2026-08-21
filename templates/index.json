@@ -1018,6 +1018,7 @@
           "type": "benefit",
           "settings": {
             "icon_svg": "",
+            "icon": "shopify://shop_images/freshly.svg",
             "title": "Freshly <em>roasted</em>"
           }
         },
@@ -1025,6 +1026,7 @@
           "type": "benefit",
           "settings": {
             "icon_svg": "",
+            "icon": "shopify://shop_images/news.svg",
             "title": "New <em>releases</em>"
           }
         },
@@ -1032,6 +1034,7 @@
           "type": "benefit",
           "settings": {
             "icon_svg": "",
+            "icon": "shopify://shop_images/delivery.svg",
             "title": "Flexible <em>delivery</em>"
           }
         },
@@ -1056,19 +1059,19 @@
         "heading_size": 44,
         "columns": 3,
         "icon_size": 112,
-        "benefit_size": 34,
+        "benefit_size": 30,
         "quote_size": 22,
         "icons_style": "chevron",
         "autoplay": false,
         "autoplay_speed": 6,
         "button_label": "Join the ONA Coffee Club",
         "button_link": "",
-        "button_background": "#8A1538",
-        "button_text": "#F5F4EA",
-        "background_color": "#4A4340",
-        "text_color": "#F5F4EA",
-        "padding-block-start": 96,
-        "padding-block-end": 96
+        "button_background": "#8a1538",
+        "button_text": "#f5f4ea",
+        "background_color": "#4a4340",
+        "text_color": "#f5f4ea",
+        "padding-block-start": 120,
+        "padding-block-end": 120
       }
     },
     "product_intro_k9p6yn": {
