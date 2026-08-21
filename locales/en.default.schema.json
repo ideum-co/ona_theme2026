@@ -785,6 +785,7 @@
     "below_media": "Below media"
   },
   "settings": {
+    "columns_mobile": "Columns on mobile",
     "heading_color": "Heading color",
     "uppercase": "Uppercase",
     "button_text_color": "Button text",

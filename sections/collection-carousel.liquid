@@ -70,6 +70,7 @@
     --collection-carousel-heading-size: {{ settings.heading_size }}px;
     --collection-carousel-label-size: {{ settings.label_size }}px;
     --collection-carousel-columns: {{ settings.columns }};
+    --collection-carousel-columns-mobile: {{ settings.columns_mobile }};
     --collection-carousel-ratio: {{ settings.image_ratio }};
     --collection-carousel-padding-block-start: {{ settings.padding-block-start }}px;
     --collection-carousel-padding-block-end: {{ settings.padding-block-end }}px;
@@ -139,8 +140,9 @@
     animation: none !important;
   }
 
+  /* No width here on purpose: the theme sizes a slide with `slideshow-slide { width: var(--slide-width) }`,
+     and a class setting one of its own would outrank it and leave a single slide per view. */
   .collection-carousel__slide {
-    inline-size: 100%;
     padding-inline: var(--gap-lg, 1rem);
   }
 
@@ -176,9 +178,11 @@
     text-transform: uppercase;
   }
 
+  /* One or two at a time on a phone, where five would be unreadable. Same calculation as the
+     desktop track, so a slide is still an exact fraction of the width and the snap lands clean. */
   @media screen and (max-width: 749px) {
     .collection-carousel {
-      --slide-width: 70%;
+      --slide-width: calc(100% / var(--collection-carousel-columns-mobile, 2));
     }
   }
 {% endstylesheet %}
@@ -240,6 +244,22 @@
       "max": 6,
       "step": 1,
       "default": 5
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "t:settings.columns_mobile",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ],
+      "default": "2"
     },
     {
       "type": "select",
