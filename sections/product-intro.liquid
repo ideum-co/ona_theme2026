@@ -12,8 +12,9 @@
   # carries a poster and an iOS AR source for free. A file uploaded to Content > Files is the
   # fallback, for a model that is not attached to a product.
   assign model_media = product.media | where: 'media_type', 'model' | first
+  # `model_viewer_tag` handles the iOS AR source itself, so only the glb is needed here - and only
+  # to tell whether the product actually carries a model.
   assign model_glb = model_media.sources | where: 'format', 'glb' | first
-  assign model_usdz = model_media.sources | where: 'format', 'usdz' | first
 
   assign model_src = model_glb.url
   if model_src == blank
@@ -101,40 +102,36 @@
         fetchpriority="low"
       ></script>
 
-      <product-intro-model class="product-intro__model">
-        {%- comment -%}
-          The poster is what shows until `<model-viewer>` is defined, and what stays if the
-          storefront cannot load it at all.
-        {%- endcomment -%}
-        <model-viewer
-          class="product-intro__model-viewer"
-          ref="viewer"
-          src="{{ model_src | escape }}"
-          {% if model_usdz %}
-            ios-src="{{ model_usdz.url | escape }}"
+      {%- comment -%}
+        The tag comes from `model_viewer_tag` and not from hand-written markup: Shopify only ships
+        the `<model-viewer>` element to a page that uses this filter, so writing the element by hand
+        left it undefined and the section rendered an empty box with nothing in the console. The
+        section's own settings are applied to it as attributes on the client.
+
+        A model that is not attached to a product has no filter to go through, so that path asks for
+        the element directly and falls back to the image when it cannot get it.
+      {%- endcomment -%}
+      <product-intro-model
+        class="product-intro__model"
+        data-shadow="{{ settings.model_shadow }}"
+        data-exposure="{{ settings.model_exposure }}"
+        {% if settings.model_auto_rotate %}
+          data-auto-rotate="{{ settings.model_rotation_speed }}"
+        {% endif %}
+        {% if settings.model_allow_rotation %}
+          data-allow-rotation
+        {% endif %}
+        {% unless model_glb %}
+          data-src="{{ model_src | escape }}"
+          data-alt="{{ product.title | escape }}"
+          {% if image != blank %}
+            data-poster="{{ image | image_url: width: 1400 }}"
           {% endif %}
-          {% if model_media.preview_image != blank %}
-            poster="{{ model_media.preview_image | image_url: width: 1400 }}"
-          {% elsif image != blank %}
-            poster="{{ image | image_url: width: 1400 }}"
-          {% endif %}
-          alt="{{ model_media.alt | default: product.title | escape }}"
-          loading="lazy"
-          reveal="auto"
-          shadow-intensity="{{ settings.model_shadow }}"
-          exposure="{{ settings.model_exposure }}"
-          {% if settings.model_auto_rotate %}
-            auto-rotate
-            auto-rotate-delay="0"
-            rotation-per-second="{{ settings.model_rotation_speed }}deg"
-          {% endif %}
-          {% if settings.model_allow_rotation %}
-            camera-controls
-            touch-action="pan-y"
-            disable-zoom
-          {% endif %}
-          interaction-prompt="none"
-        ></model-viewer>
+        {% endunless %}
+      >
+        {%- if model_glb -%}
+          {{ model_media | model_viewer_tag: image_size: '1400x', reveal: 'auto', toggleable: false }}
+        {%- endif -%}
       </product-intro-model>
     {%- elsif image != blank -%}
       {{
@@ -221,7 +218,7 @@
     margin-inline: auto;
   }
 
-  .product-intro__model-viewer {
+  .product-intro__model :is(model-viewer, .product-intro__model-viewer) {
     inline-size: 100%;
     block-size: 100%;
     background-color: transparent;
@@ -229,19 +226,6 @@
     /* The camera control needs the gesture; without this the page cannot be scrolled from on top
        of the model on touch. `touch-action` on the element pairs with `pan-y` in the markup. */
     --poster-color: transparent;
-  }
-
-  /* Until the element is defined the poster attribute means nothing, so the box is empty. Fading
-     the model in on load keeps that from showing as a pop. */
-  @media (prefers-reduced-motion: no-preference) {
-    .product-intro__model-viewer {
-      opacity: 0;
-      transition: opacity var(--animation-speed-slow, 0.5s) var(--ease-out-cubic, ease-out);
-    }
-
-    .product-intro__model[loaded] .product-intro__model-viewer {
-      opacity: 1;
-    }
   }
 
   .product-intro__image {
