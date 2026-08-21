@@ -16,6 +16,12 @@ import { SlideshowSelectEvent } from '@theme/events';
 const SLIDE_VISIBLITY_THRESHOLD = 0.7;
 
 /**
+ * How far the pointer has to travel, in pixels, before a press counts as a drag rather than a
+ * click. Matches the distance the snap logic below already treats as "did not really move".
+ */
+const DRAG_THRESHOLD = 10;
+
+/**
  * Shared viewport observer manager for lazy scroll enablement.
  *
  * Limit the number of compositor layers created by slideshows by only enabling scrolling when the slideshow is in the viewport.
@@ -705,6 +711,16 @@ export class Slideshow extends Component {
     const onPointerMove = (event) => {
       const current = event[axis];
       const initialDelta = startPosition - current;
+
+      /**
+       * A drag only starts once the pointer has actually travelled. Committing on the first pixel
+       * turned ordinary clicks into drags: `setPointerCapture` below retargets the resulting click
+       * to this element, so the button, link or input that was clicked never receives it, and the
+       * `dragging` attribute drops `pointer-events` across the whole subtree while it lasts. A
+       * click with any hand movement in it was silently swallowed, and only a perfectly still
+       * second click registered.
+       */
+      if (!moved && Math.abs(initialDelta) < DRAG_THRESHOLD) return;
 
       if (!initialDelta) return;
 
