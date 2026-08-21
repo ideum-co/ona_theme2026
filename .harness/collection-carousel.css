@@ -1,0 +1,87 @@
+
+  .collection-carousel {
+    --slide-width: calc(100% / var(--collection-carousel-columns, 5));
+
+    padding-block: var(--collection-carousel-padding-block-start) var(--collection-carousel-padding-block-end);
+    padding-inline: var(--page-margin, 1rem);
+    background: var(--collection-carousel-background);
+    color: var(--collection-carousel-color);
+  }
+
+  .collection-carousel__heading {
+    margin: 0 0 var(--gap-6xl, 4rem);
+    color: var(--collection-carousel-heading-color);
+    font-family: var(--font-heading--family);
+    font-size: var(--collection-carousel-heading-size);
+    font-weight: var(--font-heading--weight);
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  /* The theme's slideshow paints its own page-coloured background, which shows up as a band across
+     a section with a colour of its own. */
+  .collection-carousel__carousel slideshow-container {
+    background: transparent;
+  }
+
+  /* Arrows sit at the edges and stay visible, as in the design, instead of fading in on hover. */
+  .collection-carousel__carousel slideshow-arrows {
+    mix-blend-mode: normal;
+  }
+
+  .collection-carousel__carousel slideshow-arrows .slideshow-control {
+    opacity: 1;
+    color: currentcolor;
+
+    /* stylelint-disable-next-line declaration-no-important */
+    /* The hover-reveal animation in base.css is matched by a selector too specific to outrank
+       without an unreadable one of our own, and it starts from opacity 0 - which would make
+       always-visible arrows blink on hover. */
+    animation: none !important;
+  }
+
+  /* No width here on purpose: the theme sizes a slide with `slideshow-slide { width: var(--slide-width) }`,
+     and a class setting one of its own would outrank it and leave a single slide per view. */
+  .collection-carousel__slide {
+    padding-inline: var(--gap-lg, 1rem);
+  }
+
+  .collection-carousel__item {
+    display: grid;
+    gap: var(--gap-xl, 1.25rem);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .collection-carousel__media {
+    display: block;
+    overflow: hidden;
+    aspect-ratio: var(--collection-carousel-ratio, 1);
+  }
+
+  .collection-carousel__image {
+    inline-size: 100%;
+    block-size: 100%;
+
+    /* Collection images come in every shape, and the design wants one clean grid, so they fill the
+       frame rather than letterboxing inside it. */
+    object-fit: cover;
+  }
+
+  .collection-carousel__label {
+    font-size: var(--collection-carousel-label-size);
+    letter-spacing: 0.06em;
+    text-align: center;
+  }
+
+  .collection-carousel--uppercase .collection-carousel__label {
+    text-transform: uppercase;
+  }
+
+  /* One or two at a time on a phone, where five would be unreadable. Same calculation as the
+     desktop track, so a slide is still an exact fraction of the width and the snap lands clean. */
+  @media screen and (max-width: 749px) {
+    .collection-carousel {
+      --slide-width: calc(100% / var(--collection-carousel-columns-mobile, 2));
+    }
+  }
