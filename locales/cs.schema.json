@@ -182,6 +182,11 @@
     "disclosures": "Prohlášení"
   },
   "settings": {
+    "exposure": "Exposure",
+    "shadow": "Shadow",
+    "allow_rotation": "Allow drag to rotate",
+    "auto_rotate": "Auto-rotate",
+    "model_url": "Model file URL",
     "video_overhang": "Přesah videa",
     "namespace": "Jmenný prostor",
     "svg_code": "Kód SVG",
@@ -605,6 +610,7 @@
     "title_preset": "Předvolba nadpisu"
   },
   "options": {
+    "three_d_model": "3D model",
     "below": "Pod polem",
     "inline": "Vedle pole",
     "apple": "Apple",
@@ -1111,6 +1117,7 @@
     "disclosures": "Prohlášení"
   },
   "info": {
+    "model_url": "Paste a .glb file URL from Content > Files. Leave empty to use the product's own 3D model.",
     "megamenu_badge": "Product metafield used for the badge. Falls back to \"On sale\" when the product is discounted.",
     "megamenu_image": "Product metafield used for the menu image. Falls back to the product's own image.",
     "video_overhang": "How far the video hangs over the section below. The section background stops above it.",
