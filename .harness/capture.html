@@ -1,0 +1,33 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+  body { margin:0; font:14px system-ui; }
+  #zone { padding:60px; background:#eee; }
+  #btn { padding:20px 40px; font-size:16px; }
+  #log { padding:10px; white-space:pre; }
+</style></head><body>
+<div id="zone">
+  <button id="btn">Click me</button>
+</div>
+<div id="log">ready</div>
+<script>
+  const zone = document.getElementById('zone');
+  const btn = document.getElementById('btn');
+  const log = document.getElementById('log');
+  window.results = { buttonClicks: 0, capturedMoves: 0, clickTargets: [] };
+  window.reset = () => { window.results = { buttonClicks: 0, capturedMoves: 0, clickTargets: [] }; return 'reset'; };
+
+  // Mirror slideshow.js: on the first pointermove of any distance, capture the pointer.
+  let start = null, moved = false;
+  zone.addEventListener('pointerdown', (e) => { start = e.clientX; moved = false; e.preventDefault(); });
+  document.addEventListener('pointermove', (e) => {
+    if (start === null || moved) return;
+    if (Math.abs(start - e.clientX) < 10) return;   // the new threshold
+    moved = true;
+    zone.setPointerCapture(e.pointerId);
+    window.results.capturedMoves++;
+  });
+  document.addEventListener('pointerup', () => { start = null; });
+
+  btn.addEventListener('click', () => { window.results.buttonClicks++; log.textContent = 'button clicks: ' + window.results.buttonClicks; });
+  document.addEventListener('click', (e) => { window.results.clickTargets.push(e.target.id || e.target.tagName); }, true);
+</script>
+</body></html>

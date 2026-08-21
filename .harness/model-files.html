@@ -1,0 +1,34 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/.harness/product-intro.css">
+<script type="importmap">{"imports":{"@theme/":"/assets/","@theme/component":"/assets/component.js","@theme/utilities":"/assets/utilities.js","@theme/focus":"/assets/focus.js","@theme/events":"/assets/events.js","@theme/scrolling":"/assets/scrolling.js","@theme/morph":"/assets/morph.js","@theme/performance":"/assets/performance.js"}}</script>
+<script>
+  // The pane runs as a background tab, where IntersectionObserver never fires. Stand in for it so
+  // the component's own load path can be exercised.
+  window.IntersectionObserver = class { constructor(cb) { this.cb = cb; }
+    observe(el) { setTimeout(() => this.cb([{ isIntersecting: true, target: el }], this), 0); }
+    disconnect() {} unobserve() {} };
+</script>
+<style>
+  body { margin:0; background:#4A0E1E; display:grid; place-items:center; min-height:100vh;
+         --product-intro-model-width:520px; --product-intro-model-height:520px; }
+</style></head><body>
+<!-- the Content > Files path: no <model-viewer> child, just the data attributes -->
+<product-intro-model class="product-intro__model"
+  data-shadow="1" data-exposure="1" data-auto-rotate="30" data-allow-rotation
+  data-src="/.harness/bag.glb" data-alt="Raspberry Candy"
+  data-viewer-src="/assets/model-viewer.min.js"></product-intro-model>
+<script type="module">import '@theme/product-intro-model.js';</script>
+<script>
+  window.probe = () => {
+    const mv = document.querySelector('model-viewer');
+    if (!mv) return { built: false, defined: !!customElements.get('model-viewer') };
+    return { built: true, defined: !!customElements.get('model-viewer'),
+      upgraded: mv.constructor.name !== 'HTMLElement',
+      src: mv.getAttribute('src'), autoRotate: mv.getAttribute('auto-rotate') !== null,
+      rotationPerSecond: mv.getAttribute('rotation-per-second'),
+      cameraControls: mv.getAttribute('camera-controls') !== null,
+      shadow: mv.getAttribute('shadow-intensity'), exposure: mv.getAttribute('exposure'),
+      loaded: mv.loaded, w: Math.round(mv.getBoundingClientRect().width) };
+  };
+</script>
+</body></html>

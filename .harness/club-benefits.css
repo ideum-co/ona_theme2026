@@ -1,0 +1,148 @@
+
+  .club-benefits {
+    display: grid;
+    justify-items: center;
+    gap: var(--gap-5xl, 3.5rem);
+    padding-block: var(--club-benefits-padding-block-start) var(--club-benefits-padding-block-end);
+    padding-inline: var(--page-margin, 1rem);
+    background-color: var(--club-benefits-background);
+    background-image: var(--club-benefits-background-image, none);
+    background-size: cover;
+    background-position: center;
+    color: var(--club-benefits-color);
+    text-align: center;
+  }
+
+  .club-benefits__heading {
+    max-inline-size: 24ch;
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--club-benefits-heading-size);
+    font-weight: var(--font-heading--weight);
+    line-height: 1.1;
+  }
+
+  /* One column on mobile, the configured count from the tablet breakpoint up. The icons carry the
+     row, so they get room to breathe rather than being packed against the titles. */
+  .club-benefits__list {
+    display: grid;
+    gap: var(--gap-4xl, 3rem);
+    inline-size: 100%;
+    max-inline-size: var(--page-width, 90rem);
+    margin: 0;
+    padding: 0;
+  }
+
+  @media screen and (min-width: 750px) {
+    .club-benefits__list {
+      grid-template-columns: repeat(var(--club-benefits-columns, 3), minmax(0, 1fr));
+    }
+  }
+
+  .club-benefits__benefit {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: var(--gap-xl, 1.25rem);
+  }
+
+  /* The size lands on the box for an image and on the SVG itself for pasted markup, so both kinds
+     of icon end up the same height whatever the artwork's own dimensions are. */
+  .club-benefits__icon,
+  .club-benefits__icon--svg svg {
+    display: block;
+    block-size: var(--club-benefits-icon-size, 7rem);
+    inline-size: auto;
+    max-inline-size: 100%;
+    object-fit: contain;
+  }
+
+  .club-benefits__icon--svg {
+    display: grid;
+    place-items: center;
+    color: currentcolor;
+  }
+
+  .club-benefits__benefit-title {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--club-benefits-benefit-size);
+    font-weight: var(--font-heading--weight);
+    line-height: 1.2;
+  }
+
+  .club-benefits__carousel {
+    --slide-width: 100%;
+
+    inline-size: 100%;
+    max-inline-size: var(--page-width, 90rem);
+  }
+
+  /* The theme's slideshow paints its own page-coloured background, which showed up as a pale band
+     across the section - and with cream text on it, the testimonial was invisible. */
+  .club-benefits__carousel slideshow-container {
+    background: transparent;
+  }
+
+  /* Arrows sit at the edges and stay visible, as in the design, instead of fading in on hover and
+     blending against the background. */
+  .club-benefits__carousel slideshow-arrows {
+    mix-blend-mode: normal;
+  }
+
+  .club-benefits__carousel slideshow-arrows .slideshow-control {
+    opacity: 1;
+    color: currentcolor;
+
+    /* stylelint-disable-next-line declaration-no-important */
+    /* The hover-reveal animation in base.css is matched by a selector too specific to outrank
+       without an unreadable one of our own, and it starts from opacity 0 - which would make
+       always-visible arrows blink on hover. */
+    animation: none !important;
+  }
+
+  /* The slide has to fill the track for the quote to sit in the middle of the section rather than
+     in the middle of whatever width the figure happened to take. */
+  .club-benefits__slide,
+  .club-benefits__testimonial {
+    inline-size: 100%;
+  }
+
+  .club-benefits__testimonial {
+    display: grid;
+    justify-items: center;
+    gap: var(--gap-xl, 1.25rem);
+    margin: 0;
+    padding-inline: var(--padding-5xl, 3rem);
+  }
+
+  .club-benefits__quote {
+    max-inline-size: 55ch;
+    margin: 0;
+    font-size: var(--club-benefits-quote-size);
+    line-height: 1.5;
+  }
+
+  .club-benefits__attribution {
+    display: grid;
+    gap: var(--gap-3xs, 0.125rem);
+    font-family: var(--font-heading--family);
+  }
+
+  .club-benefits__role {
+    font-style: italic;
+    opacity: var(--opacity-70, 0.7);
+  }
+
+  .club-benefits__button {
+    padding-block: 10px;
+    padding-inline: var(--padding-5xl, 3rem);
+    border-radius: 0;
+    background-color: var(--club-benefits-button-background);
+    color: var(--club-benefits-button-color);
+    text-decoration: none;
+  }
+
+  .club-benefits__button:hover {
+    opacity: var(--opacity-90, 0.9);
+  }

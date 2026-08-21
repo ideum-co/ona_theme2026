@@ -1,0 +1,247 @@
+
+  .coffee-quiz {
+    position: fixed;
+    inset: 0;
+    z-index: var(--layer-modal, 1000);
+    display: grid;
+    place-items: center;
+    padding: var(--padding-2xl, 1.5rem);
+  }
+
+  .coffee-quiz[hidden] {
+    display: none;
+  }
+
+  .coffee-quiz__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgb(0 0 0 / var(--opacity-50, 0.5));
+  }
+
+  .coffee-quiz__modal {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: var(--gap-2xl, 1.5rem);
+    inline-size: min(100%, 68rem);
+    max-block-size: min(100%, 56rem);
+    padding: var(--padding-5xl, 3rem);
+    border: 1px solid var(--coffee-quiz-color);
+    background: var(--coffee-quiz-background);
+    color: var(--coffee-quiz-color);
+    overflow-y: auto;
+  }
+
+  .coffee-quiz__header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: var(--gap-xl, 1.25rem);
+  }
+
+  .coffee-quiz__title {
+    margin: 0;
+  }
+
+  .coffee-quiz__close {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: currentcolor;
+    cursor: pointer;
+  }
+
+  .coffee-quiz__eyebrow {
+    margin: 0 0 var(--gap-xs, 0.5rem);
+  }
+
+  .coffee-quiz__question {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--font-size--3xl, 2rem);
+    font-weight: var(--font-heading--weight);
+    line-height: 1.15;
+  }
+
+  .coffee-quiz__subtext:empty {
+    display: none;
+  }
+
+  /* The options wrap into as many columns as fit, so a question with three answers and one with
+     seven both read as a tidy block without a per-question setting. */
+  .coffee-quiz__options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: var(--gap-lg, 1rem);
+    margin-block-start: var(--gap-4xl, 3rem);
+  }
+
+  .coffee-quiz__option {
+    padding: var(--padding-xl, 1.25rem);
+    border: 1px solid var(--coffee-quiz-color);
+    border-radius: 0;
+    background: transparent;
+    color: currentcolor;
+    font-size: inherit;
+    cursor: pointer;
+  }
+
+  .coffee-quiz__option[aria-pressed='true'] {
+    background: var(--coffee-quiz-color);
+    color: var(--coffee-quiz-background);
+  }
+
+  .coffee-quiz__footer {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--gap-xl, 1.25rem);
+  }
+
+  .coffee-quiz__next {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gap-lg, 1rem);
+    padding-block: 10px;
+    padding-inline: var(--padding-4xl, 2rem);
+    border: 0;
+    border-radius: 0;
+    background: var(--coffee-quiz-accent-background);
+    color: var(--coffee-quiz-accent-color);
+    font-size: inherit;
+    cursor: pointer;
+  }
+
+  .coffee-quiz__next[disabled] {
+    opacity: var(--opacity-50, 0.5);
+    cursor: not-allowed;
+  }
+
+  .coffee-quiz__bag svg {
+    display: block;
+    block-size: 5.5rem;
+    inline-size: auto;
+  }
+
+  .coffee-quiz__reveal {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: var(--gap-6xl, 4rem);
+    block-size: 100%;
+    text-align: center;
+  }
+
+  .coffee-quiz__reveal-heading {
+    max-inline-size: 20ch;
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--font-size--3xl, 2rem);
+    line-height: 1.2;
+  }
+
+  .coffee-quiz__reveal-bags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--gap-2xl, 1.5rem);
+  }
+
+  /* Each bag lifts and fades in turn, so the row reads as filling up rather than blinking. The
+     delay is set per bag by the component. */
+  @media (prefers-reduced-motion: no-preference) {
+    .coffee-quiz__reveal-bags .coffee-quiz__bag {
+      animation: coffee-quiz-bag 1.4s var(--ease-out-cubic, ease-in-out) infinite;
+      animation-delay: var(--coffee-quiz-bag-delay, 0s);
+    }
+  }
+
+  @keyframes coffee-quiz-bag {
+    0%,
+    100% {
+      opacity: var(--opacity-35, 0.35);
+      translate: 0 0;
+    }
+
+    40% {
+      opacity: 1;
+      translate: 0 -0.75rem;
+    }
+  }
+
+  .coffee-quiz__result {
+    display: grid;
+    justify-items: center;
+    gap: var(--gap-xl, 1.25rem);
+    text-align: center;
+  }
+
+  /* The markup carries intrinsic dimensions so the box is reserved before the image arrives; the
+     aspect ratio is whatever the product shot actually is. */
+  .coffee-quiz__result-image {
+    inline-size: min(100%, 20rem);
+    block-size: auto;
+    object-fit: contain;
+  }
+
+  .coffee-quiz__result-description {
+    max-inline-size: 50ch;
+    margin: 0;
+  }
+
+  .coffee-quiz__reasons-label,
+  .coffee-quiz__reasons {
+    margin: 0;
+  }
+
+  .coffee-quiz__reasons {
+    display: grid;
+    gap: var(--gap-2xs, 0.3rem);
+    padding: 0;
+  }
+
+  .coffee-quiz__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--gap-lg, 1rem);
+    margin-block-start: var(--gap-xl, 1.25rem);
+  }
+
+  .coffee-quiz__action {
+    display: inline-block;
+    padding-block: 10px;
+    padding-inline: var(--padding-4xl, 2rem);
+    border: 1px solid var(--coffee-quiz-color);
+    border-radius: 0;
+    background: transparent;
+    color: currentcolor;
+    font-size: inherit;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .coffee-quiz__action:hover {
+    background: var(--coffee-quiz-color);
+    color: var(--coffee-quiz-background);
+  }
+
+  .coffee-quiz__explore {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--gap-lg, 1rem);
+    margin-block-start: var(--gap-2xl, 1.5rem);
+  }
+
+  @media screen and (max-width: 749px) {
+    .coffee-quiz__modal {
+      padding: var(--padding-2xl, 1.5rem);
+    }
+
+    .coffee-quiz__footer > .coffee-quiz__bag {
+      display: none;
+    }
+  }

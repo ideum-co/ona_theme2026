@@ -82,7 +82,12 @@ export class CoffeeQuiz extends Component {
 
   /** Opens the quiz at the first question. */
   open() {
-    if (!this.#quiz.questions.length) return;
+    // Silence here reads as a broken trigger, and the cause is never obvious from the page: the
+    // questions are blocks, so a section saved before they existed has none.
+    if (!this.#quiz.questions.length) {
+      console.warn('[coffee-quiz] The quiz has no question blocks, so there is nothing to open. Add them to the Coffee quiz section in the theme editor.');
+      return;
+    }
 
     this.#step = 0;
     this.#selected = null;

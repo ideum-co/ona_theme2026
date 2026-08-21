@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/.harness/product-intro.css">
+<script type="importmap">{"imports": {"@theme/": "/assets/", "@theme/component": "/assets/component.js", "@theme/utilities": "/assets/utilities.js", "@theme/focus": "/assets/focus.js", "@theme/events": "/assets/events.js", "@theme/scrolling": "/assets/scrolling.js", "@theme/morph": "/assets/morph.js", "@theme/performance": "/assets/performance.js"}}</script>
+<script type="module" src="https://unpkg.com/@google/model-viewer@4.0.0/dist/model-viewer.min.js"></script>
+<style>
+  body { margin:0; background:#4A0E1E; display:grid; place-items:center; min-height:100vh;
+         --product-intro-model-width:520px; --product-intro-model-height:520px; }
+</style></head><body>
+<!-- exactly what model_viewer_tag emits: a bare <model-viewer> we did not author -->
+<product-intro-model class="product-intro__model"
+  data-shadow="1" data-exposure="1" data-auto-rotate="30" data-allow-rotation>
+  <model-viewer src="/.harness/bag.glb" alt="Raspberry Candy" reveal="auto" data-shopify-feature="model-viewer"></model-viewer>
+</product-intro-model>
+<script type="module">import '@theme/product-intro-model.js';</script>
+<script>
+  window.probe = () => {
+    const mv = document.querySelector('model-viewer');
+    const wrap = document.querySelector('.product-intro__model');
+    const box = wrap.getBoundingClientRect();
+    return { autoRotate: mv.getAttribute('auto-rotate') !== null,
+             rotationPerSecond: mv.getAttribute('rotation-per-second'),
+             cameraControls: mv.getAttribute('camera-controls') !== null,
+             disableZoom: mv.getAttribute('disable-zoom') !== null,
+             touchAction: mv.getAttribute('touch-action'),
+             shadow: mv.getAttribute('shadow-intensity'), exposure: mv.getAttribute('exposure'),
+             gotClass: mv.classList.contains('product-intro__model-viewer'),
+             wrapperLoaded: wrap.hasAttribute('loaded'),
+             boxW: Math.round(box.width), boxH: Math.round(box.height),
+             viewerW: Math.round(mv.getBoundingClientRect().width) };
+  };
+</script>
+</body></html>
