@@ -64,9 +64,9 @@ export class ProductIntroModel extends Component {
     const shopify = /** @type {any} */ (window).Shopify;
     shopify?.loadFeatures?.([{ name: 'model-viewer-ui', version: '1.0' }]);
 
-    if (!customElements.get('model-viewer')) {
+    if (!customElements.get('model-viewer') && !(await this.#loadViewerLibrary())) {
       console.warn(
-        '[product-intro] The <model-viewer> element is not on this page. Shopify only ships it to pages that render a 3D model through Liquid, so a model held in Content > Files cannot bring it in on its own. Add the model to the product instead.'
+        '[product-intro] The <model-viewer> element could not be loaded, so the 3D model cannot render.'
       );
       return;
     }
@@ -79,6 +79,31 @@ export class ProductIntroModel extends Component {
     viewer.addEventListener('load', () => this.setAttribute('loaded', ''), { once: true });
 
     if (/** @type {any} */ (viewer).loaded) this.setAttribute('loaded', '');
+  }
+
+  /**
+   * Brings in the bundled viewer.
+   *
+   * Only the Content > Files path needs it. `Shopify.loadFeatures('model-viewer-ui')` cannot cover
+   * this: that bundle is the controls wrapper and does not define the element - Shopify ships the
+   * element itself only to pages that render a model through `model_viewer_tag`, which a file that
+   * is not attached to a product never reaches.
+   *
+   * @returns {Promise<boolean>} Whether the element is available afterwards.
+   */
+  async #loadViewerLibrary() {
+    const src = this.dataset.viewerSrc;
+
+    if (!src) return false;
+
+    try {
+      await import(src);
+    } catch (error) {
+      console.warn('[product-intro] Could not load the 3D viewer:', error);
+      return false;
+    }
+
+    return Boolean(customElements.get('model-viewer'));
   }
 
   /**
