@@ -156,6 +156,7 @@
       ],
       "name": "t:names.hero",
       "settings": {
+        "animate_content": true,
         "media_type_1": "image",
         "image_1": "shopify://shop_images/cherries.jpg",
         "media_type_2": "video",
@@ -888,7 +889,7 @@
           "type": "spec",
           "settings": {
             "label": "Tastes like",
-            "value": ""
+            "value": "Winey, dark chocolate and dark fruit"
           }
         }
       },
@@ -901,7 +902,7 @@
         "heading": "Special <em>release</em>",
         "eyebrow": "Ugly Sweater is a cosy blend with notes of milk chocolate and hazelnut — something a little unconventional that always ends up being a favourite.",
         "show_product_title": true,
-        "description": "<p>Winey, dark chocolate and dark fruit</p>",
+        "description": "",
         "image": "shopify://shop_images/Ugly_wb.png",
         "media_position": "right",
         "cta_style": "add_to_cart",
