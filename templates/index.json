@@ -942,12 +942,62 @@
         "feature_NAcjAF",
         "feature_RLWjLd"
       ],
+      "disabled": true,
       "name": "t:names.club_invite",
       "settings": {
         "badge": "shopify://shop_images/coffee-club.svg",
         "heading": "Join the <em>club</em>",
         "body": "<p>Freshly roasted coffee delivered on your schedule.<br/>Choose your favourites, delivery anytime, and discover new coffees as they're released.</p>",
         "button_label": "Explore subscriptions",
+        "button_link": "",
+        "button_background": "#751132",
+        "button_text": "#f5f4ea",
+        "background_media": "image",
+        "background_image": "shopify://shop_images/banner-bg.jpg",
+        "overlay_color": "#000000",
+        "overlay_opacity": 35,
+        "text_color": "#ffffff",
+        "section_height": "100svh",
+        "padding-block-start": 120,
+        "padding-block-end": 120
+      }
+    },
+    "club_invite_TGPaF8": {
+      "type": "club-invite",
+      "blocks": {
+        "feature_FzCGbX": {
+          "type": "feature",
+          "disabled": true,
+          "settings": {
+            "label": "Freshly roasted"
+          }
+        },
+        "feature_UQatmM": {
+          "type": "feature",
+          "disabled": true,
+          "settings": {
+            "label": "Freshly roasted"
+          }
+        },
+        "feature_gyaTRF": {
+          "type": "feature",
+          "disabled": true,
+          "settings": {
+            "label": "Freshly roasted"
+          }
+        }
+      },
+      "block_order": [
+        "feature_FzCGbX",
+        "feature_UQatmM",
+        "feature_gyaTRF"
+      ],
+      "name": "t:names.club_invite",
+      "settings": {
+        "badge": "shopify://shop_images/coffee-club.svg",
+        "heading": "Good coffee. Delivered.",
+        "body": "<p>The ONA Coffee Club connects you with freshly roasted coffee. new releases and the people behind them.</p>",
+        "button_label": "",
         "button_link": "",
         "button_background": "#751132",
         "button_text": "#f5f4ea",
@@ -3563,6 +3613,7 @@
     "special_release",
     "product_highlight_KkUAVM",
     "club_invite_QLL4T3",
+    "club_invite_TGPaF8",
     "product_intro_k9p6yn",
     "club_benefits",
     "raspberry_candy",
