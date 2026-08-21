@@ -9,6 +9,9 @@
  */
 {
   "names": {
+    "club_testimonial": "Testimonial",
+    "club_benefit": "Benefit",
+    "club_benefits": "Club benefits",
     "subscribe_button": "Pulsante di abbonamento",
     "story_video": "Storia con video",
     "product_metafield_text": "Testo del metacampo prodotto",
@@ -182,6 +185,10 @@
     "disclosures": "Informative"
   },
   "settings": {
+    "text_size": "Text size",
+    "author_role": "Author role",
+    "author": "Author",
+    "icon_svg": "Icon SVG code",
     "exposure": "Exposure",
     "shadow": "Shadow",
     "allow_rotation": "Allow drag to rotate",
@@ -890,6 +897,8 @@
     "input_field": "Campo di inserimento"
   },
   "content": {
+    "button": "Button",
+    "testimonials": "Testimonials",
     "mega_menu": "Mega menu",
     "resource_reference_subscribe_button": "Opens the parent product's purchase options in a panel. Hidden when the product has no selling plans.",
     "resource_reference_product_metafield": "Displays a metafield from the parent product",
@@ -1117,6 +1126,8 @@
     "disclosures": "Informative"
   },
   "info": {
+    "club_benefits_background_image": "Covers the background colour when set.",
+    "club_benefits_icon_svg": "Paste the SVG markup. It takes the section text colour, and it wins over an uploaded image.",
     "model_url": "Paste a .glb file URL from Content > Files. Leave empty to use the product's own 3D model.",
     "megamenu_badge": "Product metafield used for the badge. Falls back to \"On sale\" when the product is discounted.",
     "megamenu_image": "Product metafield used for the menu image. Falls back to the product's own image.",

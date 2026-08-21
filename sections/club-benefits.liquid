@@ -1,0 +1,504 @@
+{%- liquid
+  assign settings = section.settings
+
+  assign benefits = section.blocks | where: 'type', 'benefit'
+  assign testimonials = section.blocks | where: 'type', 'testimonial'
+-%}
+
+{%- capture slides -%}
+  {%- for block in testimonials -%}
+    {%- capture slide_content -%}
+      <figure
+        class="club-benefits__testimonial"
+        {{ block.shopify_attributes }}
+      >
+        {%- if block.settings.quote != blank -%}
+          <blockquote class="club-benefits__quote">{{ block.settings.quote }}</blockquote>
+        {%- endif -%}
+
+        {%- if block.settings.author != blank or block.settings.author_role != blank -%}
+          <figcaption class="club-benefits__attribution">
+            {%- if block.settings.author != blank -%}
+              <span class="club-benefits__author">{{ block.settings.author }}</span>
+            {%- endif -%}
+            {%- if block.settings.author_role != blank -%}
+              <span class="club-benefits__role">{{ block.settings.author_role }}</span>
+            {%- endif -%}
+          </figcaption>
+        {%- endif -%}
+      </figure>
+    {%- endcapture -%}
+    {%- render 'slideshow-slide',
+      index: forloop.index0,
+      children: slide_content,
+      class: 'club-benefits__slide'
+    -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+<div
+  class="club-benefits"
+  style="
+    --club-benefits-background: {{ settings.background_color }};
+    --club-benefits-color: {{ settings.text_color }};
+    --club-benefits-columns: {{ settings.columns }};
+    --club-benefits-icon-size: {{ settings.icon_size }}px;
+    --club-benefits-heading-size: {{ settings.heading_size }}px;
+    --club-benefits-benefit-size: {{ settings.benefit_size }}px;
+    --club-benefits-quote-size: {{ settings.quote_size }}px;
+    --club-benefits-button-background: {{ settings.button_background }};
+    --club-benefits-button-color: {{ settings.button_text }};
+    --club-benefits-padding-block-start: {{ settings.padding-block-start }}px;
+    --club-benefits-padding-block-end: {{ settings.padding-block-end }}px;
+    {% if settings.background_image != blank %}
+      --club-benefits-background-image: url({{ settings.background_image | image_url: width: 2400 }});
+    {% endif %}
+  "
+  {{ section.shopify_attributes }}
+>
+  {%- if settings.heading != blank -%}
+    <h2 class="club-benefits__heading">{{ settings.heading }}</h2>
+  {%- endif -%}
+
+  {%- if benefits.size > 0 -%}
+    <ul class="club-benefits__list list-unstyled">
+      {%- for block in benefits -%}
+        <li
+          class="club-benefits__benefit"
+          {{ block.shopify_attributes }}
+        >
+          {%- comment -%}
+            SVG first: Shopify's image picker cannot select an SVG, and pasted markup also lets the
+            icon pick up the section's colour through currentColor, which is how the design draws
+            these one-colour line icons.
+          {%- endcomment -%}
+          {%- if block.settings.icon_svg != blank -%}
+            <span class="club-benefits__icon club-benefits__icon--svg">
+              {%- render 'svg-without-styles', svg: block.settings.icon_svg -%}
+            </span>
+          {%- elsif block.settings.icon != blank -%}
+            {{
+              block.settings.icon
+              | image_url: width: 600
+              | image_tag: widths: '150, 300, 450, 600', sizes: '(min-width: 750px) 12vw, 30vw', loading: 'lazy', class: 'club-benefits__icon'
+            }}
+          {%- endif -%}
+
+          {%- if block.settings.title != blank -%}
+            <p class="club-benefits__benefit-title">{{ block.settings.title }}</p>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+
+  {%- if testimonials.size > 0 -%}
+    {%- render 'slideshow',
+      ref: 'clubBenefits',
+      class: 'club-benefits__carousel',
+      slides: slides,
+      slide_count: testimonials.size,
+      show_arrows: true,
+      icon_style: settings.icons_style,
+      icon_shape: 'none',
+      arrows_position: 'center',
+      auto_hide_controls: true,
+      autoplay: settings.autoplay,
+      autoplay_speed: settings.autoplay_speed,
+      infinite: true,
+      initial_slide: 0
+    -%}
+  {%- endif -%}
+
+  {%- if settings.button_label != blank -%}
+    <a
+      class="club-benefits__button"
+      {% if settings.button_link != blank %}
+        href="{{ settings.button_link }}"
+      {% endif %}
+    >
+      {{- settings.button_label -}}
+    </a>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .club-benefits {
+    display: grid;
+    justify-items: center;
+    gap: var(--gap-5xl, 3.5rem);
+    padding-block: var(--club-benefits-padding-block-start) var(--club-benefits-padding-block-end);
+    padding-inline: var(--page-margin, 1rem);
+    background-color: var(--club-benefits-background);
+    background-image: var(--club-benefits-background-image, none);
+    background-size: cover;
+    background-position: center;
+    color: var(--club-benefits-color);
+    text-align: center;
+  }
+
+  .club-benefits__heading {
+    max-inline-size: 24ch;
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--club-benefits-heading-size);
+    font-weight: var(--font-heading--weight);
+    line-height: 1.1;
+  }
+
+  /* One column on mobile, the configured count from the tablet breakpoint up. The icons carry the
+     row, so they get room to breathe rather than being packed against the titles. */
+  .club-benefits__list {
+    display: grid;
+    gap: var(--gap-4xl, 3rem);
+    inline-size: 100%;
+    max-inline-size: var(--page-width, 90rem);
+    margin: 0;
+    padding: 0;
+  }
+
+  @media screen and (min-width: 750px) {
+    .club-benefits__list {
+      grid-template-columns: repeat(var(--club-benefits-columns, 3), minmax(0, 1fr));
+    }
+  }
+
+  .club-benefits__benefit {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: var(--gap-xl, 1.25rem);
+  }
+
+  /* The size lands on the box for an image and on the SVG itself for pasted markup, so both kinds
+     of icon end up the same height whatever the artwork's own dimensions are. */
+  .club-benefits__icon,
+  .club-benefits__icon--svg svg {
+    display: block;
+    block-size: var(--club-benefits-icon-size, 7rem);
+    inline-size: auto;
+    max-inline-size: 100%;
+    object-fit: contain;
+  }
+
+  .club-benefits__icon--svg {
+    display: grid;
+    place-items: center;
+    color: currentcolor;
+  }
+
+  .club-benefits__benefit-title {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--club-benefits-benefit-size);
+    font-weight: var(--font-heading--weight);
+    line-height: 1.2;
+  }
+
+  .club-benefits__carousel {
+    --slide-width: 100%;
+
+    inline-size: 100%;
+    max-inline-size: var(--page-width, 90rem);
+  }
+
+  .club-benefits__testimonial {
+    display: grid;
+    justify-items: center;
+    gap: var(--gap-xl, 1.25rem);
+    margin: 0;
+    padding-inline: var(--padding-5xl, 3rem);
+  }
+
+  .club-benefits__quote {
+    max-inline-size: 55ch;
+    margin: 0;
+    font-size: var(--club-benefits-quote-size);
+    line-height: 1.5;
+  }
+
+  .club-benefits__attribution {
+    display: grid;
+    gap: var(--gap-3xs, 0.125rem);
+    font-family: var(--font-heading--family);
+  }
+
+  .club-benefits__role {
+    font-style: italic;
+    opacity: var(--opacity-70, 0.7);
+  }
+
+  .club-benefits__button {
+    padding-block: 10px;
+    padding-inline: var(--padding-5xl, 3rem);
+    border-radius: 0;
+    background-color: var(--club-benefits-button-background);
+    color: var(--club-benefits-button-color);
+    text-decoration: none;
+  }
+
+  .club-benefits__button:hover {
+    opacity: var(--opacity-90, 0.9);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.club_benefits",
+  "tag": "section",
+  "blocks": [
+    {
+      "type": "benefit",
+      "name": "t:names.club_benefit",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "icon_svg",
+          "label": "t:settings.icon_svg",
+          "info": "t:info.club_benefits_icon_svg"
+        },
+        {
+          "type": "image_picker",
+          "id": "icon",
+          "label": "t:settings.image"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "title",
+          "label": "t:settings.title",
+          "default": "Freshly <em>roasted</em>"
+        }
+      ]
+    },
+    {
+      "type": "testimonial",
+      "name": "t:names.club_testimonial",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "t:settings.text"
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "t:settings.author"
+        },
+        {
+          "type": "text",
+          "id": "author_role",
+          "label": "t:settings.author_role"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "t:settings.heading",
+      "default": "Club <em>benefits</em>"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "t:settings.size",
+      "min": 24,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 44
+    },
+    {
+      "type": "header",
+      "content": "t:content.icon"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:settings.columns",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "label": "t:settings.size",
+      "min": 40,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 112
+    },
+    {
+      "type": "range",
+      "id": "benefit_size",
+      "label": "t:settings.text_size",
+      "min": 16,
+      "max": 56,
+      "step": 1,
+      "unit": "px",
+      "default": 34
+    },
+    {
+      "type": "header",
+      "content": "t:content.testimonials"
+    },
+    {
+      "type": "range",
+      "id": "quote_size",
+      "label": "t:settings.size",
+      "min": 14,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "select",
+      "id": "icons_style",
+      "label": "t:settings.icon",
+      "options": [
+        {
+          "value": "arrow",
+          "label": "t:options.arrow"
+        },
+        {
+          "value": "chevron",
+          "label": "t:options.chevron"
+        },
+        {
+          "value": "none",
+          "label": "t:options.none"
+        }
+      ],
+      "default": "chevron"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "t:settings.autoplay",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "t:settings.speed",
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "unit": "s",
+      "default": 6,
+      "visible_if": "{{ section.settings.autoplay }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.button"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:settings.label",
+      "default": "Join the ONA Coffee Club"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "t:settings.link"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "t:settings.background_color",
+      "default": "#8A1538"
+    },
+    {
+      "type": "color",
+      "id": "button_text",
+      "label": "t:settings.text_color",
+      "default": "#F5F4EA"
+    },
+    {
+      "type": "header",
+      "content": "t:content.background"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "default": "#4A4340"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "default": "#F5F4EA"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "t:settings.image",
+      "info": "t:info.club_benefits_background_image"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 96
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.club_benefits",
+      "blocks": [
+        {
+          "type": "benefit",
+          "settings": {
+            "title": "Freshly <em>roasted</em>"
+          }
+        },
+        {
+          "type": "benefit",
+          "settings": {
+            "title": "New <em>releases</em>"
+          }
+        },
+        {
+          "type": "benefit",
+          "settings": {
+            "title": "Flexible <em>delivery</em>"
+          }
+        },
+        {
+          "type": "testimonial",
+          "settings": {
+            "quote": "The easiest way to make sure I never run out of great coffee.",
+            "author": "Sarah",
+            "author_role": "ONA Coffee Club member"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
