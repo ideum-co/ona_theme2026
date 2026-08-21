@@ -202,6 +202,36 @@
     max-inline-size: var(--page-width, 90rem);
   }
 
+  /* The theme's slideshow paints its own page-coloured background, which showed up as a pale band
+     across the section - and with cream text on it, the testimonial was invisible. */
+  .club-benefits__carousel slideshow-container {
+    background: transparent;
+  }
+
+  /* Arrows sit at the edges and stay visible, as in the design, instead of fading in on hover and
+     blending against the background. */
+  .club-benefits__carousel slideshow-arrows {
+    mix-blend-mode: normal;
+  }
+
+  .club-benefits__carousel slideshow-arrows .slideshow-control {
+    opacity: 1;
+    color: currentcolor;
+
+    /* stylelint-disable-next-line declaration-no-important */
+    /* The hover-reveal animation in base.css is matched by a selector too specific to outrank
+       without an unreadable one of our own, and it starts from opacity 0 - which would make
+       always-visible arrows blink on hover. */
+    animation: none !important;
+  }
+
+  /* The slide has to fill the track for the quote to sit in the middle of the section rather than
+     in the middle of whatever width the figure happened to take. */
+  .club-benefits__slide,
+  .club-benefits__testimonial {
+    inline-size: 100%;
+  }
+
   .club-benefits__testimonial {
     display: grid;
     justify-items: center;
