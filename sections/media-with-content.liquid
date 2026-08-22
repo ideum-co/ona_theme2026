@@ -12,6 +12,10 @@
   if section.settings.mobile_content_first
     assign media_class_modifier = media_class_modifier | append: ' media-with-content--mobile-content-first'
   endif
+
+  if section.settings.mobile_text_center
+    assign media_class_modifier = media_class_modifier | append: ' media-with-content--mobile-text-center'
+  endif
 %}
 
 {% liquid
@@ -30,6 +34,7 @@
     {%- render 'spacing-style', settings: section.settings %}
     {% render 'border-override', settings: section.settings %}
     --media-height: {{ section.settings.media_height }};
+    --media-with-content-mobile-padding-inline: {{ section.settings.mobile_padding_inline }}px;
     {% if section.settings.limit_content_width %}
       --media-with-content-max-width: {{ section.settings.max_width }}px;
     {% endif %}
@@ -158,6 +163,25 @@
     }
   }
 
+  /* Side padding and centring for the phone only. The padding goes on the content column and not
+     on `.group-block-content`, whose inline padding the theme already zeroes for a page-width
+     section - that is why the text sat flush against the edge - so there is no rule to outrank. */
+  @media screen and (max-width: 749px) {
+    .media-with-content__content {
+      padding-inline: var(--media-with-content-mobile-padding-inline, 0);
+    }
+
+    .media-with-content--mobile-text-center .media-with-content__content {
+      text-align: center;
+    }
+
+    /* The panel aligns its items from `--horizontal-alignment`, which arrives as an inline style,
+       so `align-items` is overridden directly rather than the variable behind it. */
+    .media-with-content--mobile-text-center .media-with-content__content .layout-panel-flex {
+      align-items: center;
+    }
+  }
+
   /* Puts the content above the media on a phone. Scoped to its own query so none of the desktop
      `grid-template-areas` rules above are affected - they all live from 750px up. */
   @media screen and (max-width: 749px) {
@@ -232,6 +256,22 @@
     "groups": ["header"]
   },
   "settings": [
+    {
+      "type": "range",
+      "id": "mobile_padding_inline",
+      "label": "t:settings.mobile_padding_inline",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_text_center",
+      "label": "t:settings.mobile_text_center",
+      "default": false
+    },
     {
       "type": "checkbox",
       "id": "mobile_content_first",
