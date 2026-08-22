@@ -1,0 +1,39 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/.harness/hd.css">
+<link rel="stylesheet" href="/.harness/mm.css">
+<style>
+ html{--layer-menu-drawer:18;--layer-overlay:16;--header-height:74px;--padding-2xl:1.5rem;
+      --gap-xl:1.25rem;--drawer-animation-speed:.3s;--opacity-50:.5}
+ body{margin:0}
+ /* the theme's own: display block + contain make .header the containing block */
+ .header{display:block;contain:layout style;background:transparent}
+ .header__row{display:flex;justify-content:space-between;block-size:74px;padding-inline:2rem;position:relative}
+ .header__column{display:flex;align-items:center;gap:1rem}
+ .logo{font-weight:700}
+</style></head><body>
+<header-component id="header-component" class="header" data-menu-style="menu">
+ <div class="header__row"><div class="header__columns">
+  <div class="header__column header__column--left"><a class="logo" id="logo" href="#">ONA</a></div>
+  <div class="header__column header__column--right">
+   <a class="cart" id="cart" href="#">Cart</a>
+   <header-drawer class="header-drawer">
+    <details id="d" class="menu-drawer-container menu-open" open>
+     <summary class="header__icon header__icon--menu" id="toggle">X</summary>
+     <header-megamenu class="header-megamenu">panel</header-megamenu>
+     <div class="menu-drawer"></div>
+     <div class="menu-drawer__backdrop" id="backdrop"></div>
+    </details>
+   </header-drawer>
+  </div>
+ </div></div>
+</header-component>
+<script>window.probe=()=>{
+ const r=s=>document.querySelector(s).getBoundingClientRect();
+ const at=(x,y)=>{const e=document.elementFromPoint(x,y);return e?(e.id||e.className||e.tagName):null;};
+ const b=r('#backdrop'), logo=r('#logo'), cart=r('#cart'), tg=r('#toggle');
+ return {backdropTop:Math.round(b.top), backdropHeight:Math.round(b.height), headerBottom:Math.round(r('.header__row').bottom),
+  logoHit:at(logo.left+logo.width/2, logo.top+logo.height/2),
+  cartHit:at(cart.left+cart.width/2, cart.top+cart.height/2),
+  toggleHit:at(tg.left+tg.width/2, tg.top+tg.height/2),
+  belowHeaderHit:at(innerWidth/2, 300)};};
+</script></body></html>
