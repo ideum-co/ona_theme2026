@@ -337,6 +337,8 @@
       },
       "name": "t:names.media_with_text",
       "settings": {
+        "mobile_padding_inline": 16,
+        "mobile_text_center": false,
         "mobile_content_first": true,
         "media_position": "right",
         "media_width": "medium",
@@ -871,6 +873,8 @@
       "disabled": true,
       "name": "t:names.media_with_text",
       "settings": {
+        "mobile_padding_inline": 0,
+        "mobile_text_center": false,
         "mobile_content_first": false,
         "media_position": "right",
         "media_width": "wide",
@@ -3086,6 +3090,8 @@
       },
       "name": "t:names.media_with_text",
       "settings": {
+        "mobile_padding_inline": 0,
+        "mobile_text_center": false,
         "mobile_content_first": false,
         "media_position": "right",
         "media_width": "wide",
