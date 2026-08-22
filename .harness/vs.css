@@ -1,0 +1,309 @@
+
+  .variant-select {
+    --variant-select-border-color: rgb(var(--color-foreground-rgb) / var(--opacity-15));
+    --variant-select-field-border-color: var(--color-foreground);
+    --variant-select-selected-color: var(--color-foreground);
+    --variant-select-legend-font-size: var(--font-size--3xs);
+    --variant-select-value-font-size: var(--font-size--xl);
+    --variant-select-media-size: 2.25rem;
+    --variant-select-panel-gap: 4px;
+    --variant-select-panel-margin: 0.75rem;
+
+    display: block;
+  }
+
+  /* Trigger: an outlined field whose legend notches the border, per the design. */
+  .variant-select__field {
+    min-inline-size: 0;
+    margin: 0;
+
+    /* Cards centre their text, and a legend follows the fieldset's alignment. */
+    text-align: start;
+    padding: 0 var(--padding-md) var(--padding-xs);
+    border: 1px solid var(--variant-select-field-border-color);
+    border-radius: 0;
+    transition: border-color var(--animation-speed) var(--animation-easing);
+  }
+
+  .variant-select__field:hover {
+    border-color: currentcolor;
+  }
+
+  .variant-select__legend {
+    padding-inline: var(--padding-2xs, 0.25rem);
+    margin-inline-start: calc(var(--padding-2xs, 0.25rem) * -1);
+
+    /* currentcolor, not --color-foreground: the control also sits on dark sections, where the
+       page foreground would be invisible. */
+    color: var(--variant-option-label-color, currentcolor);
+    font-size: var(--variant-select-legend-font-size);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .variant-select__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-sm);
+    inline-size: 100%;
+    padding: 0;
+    background: transparent;
+    color: var(--variant-option-label-color, currentcolor);
+    border: 0;
+    border-radius: 0;
+    text-align: start;
+    cursor: pointer;
+  }
+
+  .variant-select__trigger-value {
+    font-size: var(--variant-select-value-font-size);
+  }
+
+  .variant-select__trigger-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    inline-size: 0.75rem;
+    transition: rotate var(--animation-speed) var(--animation-easing);
+  }
+
+  /* `popovertarget` exposes the expanded state to assistive tech but not as a DOM attribute,
+     so the open state has to be read off the panel itself. */
+  .variant-select:has(.variant-select__panel:popover-open) .variant-select__trigger-icon {
+    rotate: 180deg;
+  }
+
+  /* Panel */
+  .variant-select__panel {
+    /* The panel is in the top layer but still inherits from the card, which centres its text. */
+    text-align: start;
+    inline-size: max-content;
+    min-inline-size: 16rem;
+    max-inline-size: calc(100vw - var(--variant-select-panel-margin) * 2);
+
+    /* Hard cap so a long option list never outgrows the viewport. The list scrolls inside it. */
+    max-block-size: min(45vh, 22rem);
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--variant-select-border-color);
+    border-radius: var(--style-border-radius-popover, 0);
+    background: var(--color-background);
+    color: var(--color-foreground);
+    box-shadow: var(--shadow-popover);
+    overflow: hidden;
+
+    /* `.quick-add` sets `pointer-events: none` on cards, and a top-layer popover inherits it. */
+    pointer-events: auto;
+  }
+
+  /* Only the open state gets a `display`, so the browser's own
+     `[popover]:not(:popover-open) { display: none }` still wins while it is closed. */
+  .variant-select__panel:popover-open {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Anchor positioning: sit under the trigger and match its width. */
+  .variant-select__panel {
+    inset: unset;
+    top: calc(anchor(bottom) + var(--variant-select-panel-gap));
+    left: anchor(left);
+    min-inline-size: anchor-size(width);
+  }
+
+  /* Flip above and/or to the other edge rather than hang off the viewport. Product cards in a
+     grid put triggers right against the right edge, so the inline flip matters as much as the
+     block one. */
+  @supports (position-try-fallbacks: flip-block) {
+    .variant-select__panel {
+      position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+    }
+  }
+
+  /* Browsers without CSS anchor positioning read the trigger box off
+     `anchored-popover.js` instead. */
+  @supports not (position-anchor: --variant-select-trigger) {
+    .variant-select__panel {
+      position: fixed;
+      top: calc((var(--anchor-top) + var(--anchor-height)) * 1px + var(--variant-select-panel-gap));
+      left: max(
+        var(--variant-select-panel-margin),
+        min(var(--anchor-left) * 1px, 100vw - 16rem - var(--variant-select-panel-margin))
+      );
+      min-inline-size: calc(var(--anchor-width) * 1px);
+
+      /* No `position-try-fallbacks` here, so instead of flipping the panel shrinks to whatever
+         room is left below the trigger. `max()` keeps it usable when that room is tiny. */
+      max-block-size: max(
+        10rem,
+        min(
+          45vh,
+          22rem,
+          calc(
+            100dvh - (var(--anchor-top) + var(--anchor-height)) * 1px - var(--variant-select-panel-gap) -
+              var(--variant-select-panel-margin)
+          )
+        )
+      );
+    }
+  }
+
+  /* Three tracks with the close button mirrored by an empty one, so the title stays optically
+     centred and still reserves its own width instead of running under the button. */
+  .variant-select__header {
+    display: grid;
+    grid-template-columns: 1.25rem 1fr 1.25rem;
+    align-items: center;
+    gap: var(--gap-sm);
+    padding: var(--padding-sm) var(--padding-lg);
+    border-block-end: 1px solid var(--variant-select-border-color);
+  }
+
+  .variant-select__title {
+    grid-column: 2;
+    font-size: var(--font-size--md);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .variant-select__close {
+    grid-column: 3;
+    justify-self: end;
+    display: grid;
+    place-items: center;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  /* Option list */
+  .variant-select__list {
+    display: block;
+    flex: 1 1 auto;
+    min-block-size: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .variant-select__option {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: var(--gap-md);
+    padding: var(--padding-sm) var(--padding-lg);
+    border-block-end: 1px solid var(--variant-select-border-color);
+    cursor: pointer;
+  }
+
+  .variant-select__option:has(> .variant-select__media) {
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .variant-select__option:last-child {
+    border-block-end: 0;
+  }
+
+  .variant-select__option:hover {
+    background: rgb(var(--color-foreground-rgb) / var(--opacity-5));
+  }
+
+  .variant-select__option:has(> .variant-select__input:checked) {
+    box-shadow: inset 0 0 0 2px var(--variant-select-selected-color);
+  }
+
+  .variant-select__option:has(> .variant-select__input:focus-visible) {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: -4px;
+  }
+
+  .variant-select__option--unavailable {
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-50));
+  }
+
+  .variant-select__option--unavailable .variant-select__media {
+    opacity: var(--opacity-50);
+  }
+
+  /* The input stays out of hit testing so every click resolves to the wrapping label, which is
+     what actually selects the radio. It still has to be focusable, so it is not `display: none`. */
+  .variant-select__input {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 0;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    appearance: none;
+    pointer-events: none;
+  }
+
+  .variant-select__media {
+    display: grid;
+    place-items: center;
+    flex: none;
+    inline-size: var(--variant-select-media-size);
+    block-size: var(--variant-select-media-size);
+  }
+
+  .variant-select__media img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: contain;
+  }
+
+  .variant-select__option-title {
+    display: block;
+    font-size: var(--font-size--md);
+  }
+
+  .variant-select__option-meta {
+    display: block;
+    font-size: var(--font-size--xs);
+    opacity: var(--opacity-muted-text);
+  }
+
+  .variant-select__radio {
+    display: grid;
+    place-items: center;
+    flex: none;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    border: 1.5px solid rgb(var(--color-foreground-rgb) / var(--opacity-40));
+    border-radius: 50%;
+  }
+
+  .variant-select__radio::after {
+    content: '';
+    inline-size: 0.625rem;
+    block-size: 0.625rem;
+    border-radius: 50%;
+    background: var(--color-foreground);
+    transform: scale(0);
+  }
+
+  .variant-select__option:has(> .variant-select__input:checked) .variant-select__radio {
+    border-color: var(--variant-select-selected-color);
+  }
+
+  .variant-select__option:has(> .variant-select__input:checked) .variant-select__radio::after {
+    transform: scale(1);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .variant-select__radio::after {
+      transition: transform var(--animation-speed) var(--animation-easing);
+    }
+  }

@@ -1,0 +1,30 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/.harness/vs.css">
+<link rel="stylesheet" href="/.harness/ph.css">
+<style>
+ /* the theme's :root declaration that was winning */
+ :root{--color-foreground:#2A2A2A;--variant-option-label-color:var(--color, var(--color-foreground));
+       --font-size--3xs:11px;--font-size--xl:20px;--padding-2xs:.25rem;--gap-sm:.7rem;--opacity-15:.15;
+       --color-foreground-rgb:42 42 42;--page-margin:1rem}
+ body{margin:0}
+</style></head><body>
+<!-- ANTES: la sección sin las variables nuevas -->
+<div class="product-highlight" id="antes" style="--product-highlight-background:#4A0E1E;--product-highlight-color:#F5F4EA;">
+  <div class="variant-select"><fieldset class="variant-select__field" id="f-antes">
+    <legend class="variant-select__legend" id="l-antes">Select weight</legend>
+    <button class="variant-select__trigger" id="t-antes"><span class="variant-select__trigger-value">200g</span></button>
+  </fieldset></div>
+</div>
+<!-- DESPUÉS: con lo que emite la sección ahora -->
+<div class="product-highlight" id="despues" style="--product-highlight-background:#4A0E1E;--product-highlight-color:#F5F4EA;
+     --variant-option-label-color:#F5F4EA;--variant-select-field-border-color:#F5F4EA;">
+  <div class="variant-select"><fieldset class="variant-select__field" id="f-desp">
+    <legend class="variant-select__legend" id="l-desp">Select weight</legend>
+    <button class="variant-select__trigger" id="t-desp"><span class="variant-select__trigger-value">200g</span></button>
+  </fieldset></div>
+</div>
+<script>window.probe=()=>{const cs=s=>getComputedStyle(document.querySelector(s));
+ return {antes:{label:cs('#l-antes').color, valor:cs('#t-antes').color, borde:cs('#f-antes').borderTopColor},
+         despues:{label:cs('#l-desp').color, valor:cs('#t-desp').color, borde:cs('#f-desp').borderTopColor},
+         fondoSeccion:cs('#antes').backgroundColor};};</script>
+</body></html>
