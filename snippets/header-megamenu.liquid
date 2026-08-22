@@ -288,6 +288,14 @@
 
     .menu-open > .menu-drawer__backdrop {
       pointer-events: auto;
+
+      /* The backdrop is `position: fixed` inside `.header`, which is `contain: layout` and so its
+         containing block: this drops it to the header's bottom edge, the same way the panel is
+         dropped. It covered the whole viewport at `--layer-overlay: 16`, and although the header
+         paints above it at 19, it still sat on top for hit testing - the logo and the icons were
+         visible but not clickable. Below the header it still closes the menu on a click outside. */
+      inset-block-start: var(--header-height, 60px);
+      block-size: calc(100dvh - var(--header-height, 60px));
     }
 
     /* The design has the panel starting at the top of the page, so anything else in the header
