@@ -1,0 +1,43 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/.harness/club.css">
+<link rel="stylesheet" href="/.harness/mwc.css">
+<link rel="stylesheet" href="/.harness/intro.css">
+<style>html{--gap-4xl:3rem;--gap-2xl:1.5rem;--page-margin:1rem;--product-intro-model-width:520px;
+--product-intro-model-height:520px;} body{margin:0}
+/* stand in for the phone: the pane cannot go below 980px, so the layouts are boxed instead */
+.phone{inline-size:390px;border:1px solid #ccc;overflow:hidden}</style>
+</head><body>
+<div class="phone">
+  <ul class="club-benefits__list" id="benefits">
+    <li class="club-benefits__benefit" id="b1">uno</li>
+    <li class="club-benefits__benefit">dos</li>
+    <li class="club-benefits__benefit">tres</li>
+  </ul>
+</div>
+<div class="phone">
+  <div class="media-with-content media-with-content--mobile-content-first" id="mwc">
+    <div class="media-block" id="media">media</div>
+    <div class="media-with-content__content" id="content">content</div>
+  </div>
+</div>
+<div class="phone">
+  <div class="product-intro" id="intro">
+    <div class="product-intro__media"><div class="product-intro__model" id="model">modelo</div></div>
+    <div class="product-intro__details">texto</div>
+  </div>
+</div>
+<script>
+window.probe = () => {
+  const r = s => document.querySelector(s).getBoundingClientRect();
+  const cs = s => getComputedStyle(document.querySelector(s));
+  return {
+    benefits: { display: cs('#benefits').display, snap: cs('#benefits').scrollSnapType,
+                itemWidth: Math.round(r('#b1').width), track: Math.round(r('#benefits').width) },
+    mwc: { areas: cs('#mwc').gridTemplateAreas,
+           mediaTop: Math.round(r('#media').top), contentTop: Math.round(r('#content').top) },
+    intro: { columns: cs('#intro').gridTemplateColumns,
+             sectionW: Math.round(r('#intro').width), modelW: Math.round(r('#model').width),
+             modelLeft: Math.round(r('#model').left - r('#intro').left) }
+  };
+};
+</script></body></html>

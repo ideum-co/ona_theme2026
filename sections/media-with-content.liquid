@@ -8,6 +8,10 @@
   if section.settings.media_position == 'right'
     assign media_class_modifier = media_class_modifier | append: ' media-with-content--media-right'
   endif
+
+  if section.settings.mobile_content_first
+    assign media_class_modifier = media_class_modifier | append: ' media-with-content--mobile-content-first'
+  endif
 %}
 
 {% liquid
@@ -154,6 +158,14 @@
     }
   }
 
+  /* Puts the content above the media on a phone. Scoped to its own query so none of the desktop
+     `grid-template-areas` rules above are affected - they all live from 750px up. */
+  @media screen and (max-width: 749px) {
+    .media-with-content.media-with-content--mobile-content-first {
+      grid-template-areas: 'content content content' 'media media media';
+    }
+  }
+
   /* Caps the media and text on very wide screens. The section background deliberately stays
      edge to edge: capping it too left the page colour showing down both sides of the section. */
   .media-with-content--limited {
@@ -220,6 +232,13 @@
     "groups": ["header"]
   },
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "mobile_content_first",
+      "label": "t:settings.mobile_content_first",
+      "info": "t:info.mobile_content_first",
+      "default": false
+    },
     {
       "type": "select",
       "id": "media_position",

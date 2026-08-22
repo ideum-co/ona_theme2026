@@ -198,6 +198,12 @@
     background-position: center;
     color: var(--product-intro-color);
 
+    /* `minmax(0, 1fr)` and not the implicit `auto`: an auto column is sized by its content, so the
+       model's 520px set the column width, the section grew past the viewport and everything sat
+       off to one side. With a definite column the model's `max-inline-size: 100%` resolves against
+       the screen and it centres. */
+    grid-template-columns: minmax(0, 1fr);
+
     @media screen and (min-width: 750px) {
       grid-template-columns: 1fr minmax(0, 1.1fr) 1fr;
     }

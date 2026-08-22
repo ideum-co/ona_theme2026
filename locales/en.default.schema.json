@@ -231,6 +231,7 @@
     "work_quickly_to_ship": "<p>We will work quickly to ship your order as soon as possible. Once your order has shipped, you will receive an email with further information. Delivery times vary depending on your location.</p>"
   },
   "info": {
+    "mobile_content_first": "Puts the text above the media on phones. Desktop is unchanged.",
     "collection_carousel_image": "Replaces the collection's own image.",
     "coffee_quiz_bag_svg": "Paste the SVG markup. It takes the text colour, and it is what the loading animation repeats.",
     "coffee_quiz_step_label": "Use [current] and [total] for the numbers.",
@@ -785,6 +786,7 @@
     "below_media": "Below media"
   },
   "settings": {
+    "mobile_content_first": "Content first on mobile",
     "columns_mobile": "Columns on mobile",
     "heading_color": "Heading color",
     "uppercase": "Uppercase",

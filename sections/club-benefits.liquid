@@ -163,6 +163,31 @@
     }
   }
 
+  /* On a phone the three stack into a very long column, so they become a swipeable track instead,
+     one at a time. Scroll snapping does it on its own - no component, and nothing above 750px
+     changes, because the desktop grid lives in its own query. */
+  @media screen and (max-width: 749px) {
+    .club-benefits__list {
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      overscroll-behavior-inline: contain;
+
+      /* The bar would sit across the icons, and the track is clearly swipeable without it. */
+      scrollbar-width: none;
+    }
+
+    .club-benefits__list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .club-benefits__benefit {
+      flex: 0 0 100%;
+      scroll-snap-align: center;
+    }
+  }
+
   .club-benefits__benefit {
     display: grid;
     justify-items: center;
