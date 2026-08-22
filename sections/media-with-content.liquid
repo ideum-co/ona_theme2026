@@ -180,6 +180,19 @@
     .media-with-content--mobile-text-center .media-with-content__content .layout-panel-flex {
       align-items: center;
     }
+
+    .media-with-content--mobile-text-center .media-with-content__content .text-block {
+      align-items: center;
+    }
+
+    /* A text block with its own alignment set emits `--text-align` inline, and nothing declared on
+       that element can outrank an inline style. The variable is only read one level down, in
+       `.text-block > * { text-align: var(--text-align, …) }`, so that child is where the property
+       can actually be overridden - which is why the heading and the button centred and the
+       paragraph did not. */
+    .media-with-content--mobile-text-center .media-with-content__content .text-block > * {
+      text-align: center;
+    }
   }
 
   /* Puts the content above the media on a phone. Scoped to its own query so none of the desktop

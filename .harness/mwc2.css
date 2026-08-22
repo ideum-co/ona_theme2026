@@ -1,4 +1,45 @@
 
+  :root {
+    --text-align-default: left;
+  }
+
+  /* Base text-block sizing, spacing, wrapping, and helper classes live in text-block-styles.liquid. */
+  .text-block {
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: var(--horizontal-alignment);
+    color: var(--color, var(--color-foreground));
+  }
+
+  [style*='--horizontal-alignment: center'] .text-block {
+    --text-align-default: center;
+  }
+
+  [style*='--horizontal-alignment: flex-end'] .text-block {
+    --text-align-default: right;
+  }
+
+  [style*='--horizontal-alignment: flex-start'] > .text-block {
+    --text-align-default: left;
+  }
+
+  [style*='--horizontal-alignment: center'] > .text-block {
+    --text-align-default: center;
+  }
+
+  [style*='--horizontal-alignment: flex-end'] > .text-block {
+    --text-align-default: right;
+  }
+
+  .text-block > * {
+    width: var(--width, 100%);
+    max-inline-size: min(100%, var(--max-width, 100%));
+    text-align: var(--text-align, var(--text-align-default));
+    text-wrap: var(--text-wrap);
+  }
+
+
   .section--page-width {
     &.media-with-content {
       grid-template-areas: 'margin-left media margin-right' 'margin-left content margin-right';
@@ -113,6 +154,19 @@
        so `align-items` is overridden directly rather than the variable behind it. */
     .media-with-content--mobile-text-center .media-with-content__content .layout-panel-flex {
       align-items: center;
+    }
+
+    .media-with-content--mobile-text-center .media-with-content__content .text-block {
+      align-items: center;
+    }
+
+    /* A text block with its own alignment set emits `--text-align` inline, and nothing declared on
+       that element can outrank an inline style. The variable is only read one level down, in
+       `.text-block > * { text-align: var(--text-align, …) }`, so that child is where the property
+       can actually be overridden - which is why the heading and the button centred and the
+       paragraph did not. */
+    .media-with-content--mobile-text-center .media-with-content__content .text-block > * {
+      text-align: center;
     }
   }
 
