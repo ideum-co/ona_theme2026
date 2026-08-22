@@ -79,6 +79,8 @@
             "megamenu_image_key": "menu_image",
             "megamenu_badge_namespace": "custom",
             "megamenu_badge_key": "menu_badge",
+            "megamenu_header_background_color": "{{ settings.color_palette.color1 }}",
+            "megamenu_header_text_color": "",
             "drawer_accordion": false,
             "drawer_accordion_expand_first": false,
             "drawer_dividers": false
