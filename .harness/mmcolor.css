@@ -1,0 +1,55 @@
+
+    @media screen and (min-width: 750px) {
+      
+        /* `.header__row` is `background-color: transparent !important` - the header is painted by
+           its underlays, and their colours come from an inline style on `#header-component`, so
+           this is the only way in. `--closed-underlay-height` is 0 while the header is transparent
+           and not sticky, which is why the home page showed the hero straight through. */
+        #header-component:has(.menu-open) {
+          --closed-underlay-height: 100%;
+        }
+
+        /* Set on the underlays and not only on the header: with the menu open the focus is inside
+           the header, so the theme's `[data-transparent-background]:focus-within` rule redeclares
+           these same variables on the underlay itself. A declaration on the element that consumes
+           a custom property beats one inherited from an ancestor, `!important` included, so the
+           override has to land on the same element. */
+        #header-component:has(.menu-open) :is(.header__underlay-closed, .header__underlay-open) {
+          /* stylelint-disable declaration-no-important */
+          --color-background-top-row: #6B1235 !important;
+          --color-background-bottom-row: #6B1235 !important;
+          --color-submenu: #6B1235 !important;
+          /* stylelint-enable declaration-no-important */
+        }
+      
+
+      /* The row carries the page's own `color-custom-*` class, so this needs the id and the `:has()`
+         to outrank it. Set on the row rather than on each item, so everything inside inherits. */
+      #header-component:has(.menu-open) .header__row {
+        
+          --color-background: #6B1235;
+          --color-background-rgb: 107 18 53;
+        
+
+        --color: #F5F4EA;
+        --color-rgb: 245 244 234;
+        --color-foreground: #F5F4EA;
+        --color-foreground-rgb: 245 244 234;
+        --color-border: #F5F4EA;
+        --color-border-rgb: 245 244 234;
+
+        color: #F5F4EA;
+      }
+
+      
+        /* An image logo cannot be recoloured, so the theme's transparent-header logo takes over.
+           Guarded on that container existing: without an inverse logo uploaded the swap would hide
+           the logo instead of lightening it. */
+        #header-component:has(.menu-open)
+          .header-logo:has(.header-logo__transparent-header-image-container) {
+          --header-logo-display: none;
+          --header-logo-inverse-display: block;
+        }
+      
+    }
+  

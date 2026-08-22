@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+ html{--layer-overlay:16;--color-background:#F4F3E9;--top-row-height:74px;--header-height:74px}
+ .header{display:block;contain:layout style;position:relative}
+ .header__underlay{position:absolute;inset:0}
+ .header__underlay-closed{height:var(--closed-underlay-height,100%);
+   background:linear-gradient(var(--color-background-top-row) 0 var(--top-row-height),
+     var(--color-background-bottom-row) var(--top-row-height) var(--header-height))}
+ /* the theme's rule that was winning */
+ [data-transparent-background='both']:hover,
+ [data-transparent-background='both']:focus-within {
+   :is(.header__underlay-open, .header__underlay-closed) { --color-background-top-row: var(--color-background); }
+ }
+ .header__row{position:relative;block-size:74px}
+</style>
+<link rel="stylesheet" href="/.harness/mmcolor.css">
+</head><body>
+<header-component id="header-component" class="header" data-transparent-background="both"
+  style="--color-background-top-row: rgba(244 243 233 / 1.0); --color-background-bottom-row: rgba(244 243 233 / 1.0);">
+  <div class="header__underlay header__underlay-closed" id="under"></div>
+  <div class="header__row">
+    <details id="d" class="menu-drawer-container menu-open" open>
+      <summary id="sum">X</summary><button id="inside">dentro</button>
+    </details>
+  </div>
+</header-component>
+<script>window.probe=()=>{const u=document.querySelector('#under');
+ const cs=getComputedStyle(u);
+ return {topRow:cs.getPropertyValue('--color-background-top-row').trim(),
+         focusWithin:document.querySelector('#header-component').matches(':focus-within'),
+         underlayHeight:cs.height};};</script>
+</body></html>
