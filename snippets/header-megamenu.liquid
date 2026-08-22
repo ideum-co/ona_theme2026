@@ -78,7 +78,14 @@
            and not sticky, which is why the home page showed the hero straight through. */
         #header-component:has(.menu-open) {
           --closed-underlay-height: 100%;
+        }
 
+        /* Set on the underlays and not only on the header: with the menu open the focus is inside
+           the header, so the theme's `[data-transparent-background]:focus-within` rule redeclares
+           these same variables on the underlay itself. A declaration on the element that consumes
+           a custom property beats one inherited from an ancestor, `!important` included, so the
+           override has to land on the same element. */
+        #header-component:has(.menu-open) :is(.header__underlay-closed, .header__underlay-open) {
           /* stylelint-disable declaration-no-important */
           --color-background-top-row: {{ header_background }} !important;
           --color-background-bottom-row: {{ header_background }} !important;

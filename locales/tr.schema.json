@@ -189,6 +189,8 @@
     "disclosures": "Bildirimler"
   },
   "settings": {
+    "description": "Description",
+    "key": "Key",
     "mobile_text_center": "Center text on mobile",
     "mobile_padding_inline": "Side padding on mobile",
     "mobile_content_first": "Content first on mobile",
