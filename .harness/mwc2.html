@@ -1,0 +1,36 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/assets/base.css">
+<link rel="stylesheet" href="/.harness/mwc2.css">
+<style>body{margin:0}.phone{inline-size:390px;border:1px solid #ccc;margin-block-end:1rem}
+html{--page-margin:1rem;--gap:1rem;}</style></head><body>
+<div class="phone">
+ <div class="section section--page-width media-with-content media-with-content--mobile-text-center" id="on"
+      style="--media-with-content-mobile-padding-inline:24px; --horizontal-alignment:flex-start;">
+   <div class="media-block">media</div>
+   <div class="media-with-content__content" id="c-on">
+     <div class="group-block-content layout-panel-flex layout-panel-flex--column" id="p-on">
+       <h2 id="h-on">Find your Coffee</h2><p>texto</p><a class="button">Answer the quiz</a>
+     </div>
+   </div>
+ </div>
+</div>
+<div class="phone">
+ <div class="section section--page-width media-with-content" id="off"
+      style="--horizontal-alignment:flex-start;">
+   <div class="media-block">media</div>
+   <div class="media-with-content__content" id="c-off">
+     <div class="group-block-content layout-panel-flex layout-panel-flex--column" id="p-off">
+       <h2>Find your Coffee</h2><p>texto</p><a class="button">Answer the quiz</a>
+     </div>
+   </div>
+ </div>
+</div>
+<script>window.probe=()=>{const cs=s=>getComputedStyle(document.querySelector(s));
+ const r=s=>document.querySelector(s).getBoundingClientRect();
+ return {on:{contentPadding:cs('#c-on').paddingInlineStart, textAlign:cs('#c-on').textAlign,
+             panelAlign:cs('#p-on').alignItems,
+             headingLeft:Math.round(r('#h-on').left-r('#on').left),
+             innerPadding:cs('#p-on').paddingInlineStart},
+         off:{contentPadding:cs('#c-off').paddingInlineStart, textAlign:cs('#c-off').textAlign,
+              panelAlign:cs('#p-off').alignItems, innerPadding:cs('#p-off').paddingInlineStart}};};
+</script></body></html>
