@@ -79,6 +79,28 @@
     },
     {
       "type": "select",
+      "id": "image_position_mobile",
+      "label": "t:settings.image_position_mobile",
+      "info": "t:info.image_position_mobile",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "cover",
+          "label": "t:options.cover"
+        },
+        {
+          "value": "contain",
+          "label": "t:options.contain"
+        }
+      ],
+      "default": "",
+      "visible_if": "{{ block.settings.media_type == 'image' }}"
+    },
+    {
+      "type": "select",
       "id": "video_position",
       "label": "t:settings.video_position",
       "options": [
