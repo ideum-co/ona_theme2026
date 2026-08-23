@@ -279,6 +279,20 @@
                   },
                   "blocks": {}
                 },
+                "spacer_YKFcAW": {
+                  "type": "spacer",
+                  "name": "t:names.spacer",
+                  "settings": {
+                    "size": "pixel",
+                    "percent_size": 100,
+                    "pixel_size": 252,
+                    "custom_mobile_size": false,
+                    "size_mobile": "percent",
+                    "percent_size_mobile": 100,
+                    "pixel_size_mobile": 120
+                  },
+                  "blocks": {}
+                },
                 "text": {
                   "type": "text",
                   "settings": {
@@ -307,6 +321,7 @@
               },
               "block_order": [
                 "heading",
+                "spacer_YKFcAW",
                 "text"
               ]
             },
@@ -915,6 +930,8 @@
         "cta_label": "Add to cart",
         "background_color": "#470a12",
         "text_color": "#f5f4ea",
+        "select_label_color": "",
+        "select_border_color": "",
         "button_background": "#751132",
         "button_text": "#f5f4ea",
         "padding-block-start": 120,
