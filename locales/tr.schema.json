@@ -189,6 +189,7 @@
     "disclosures": "Bildirimler"
   },
   "settings": {
+    "adaptive_min_card": "Minimum card width",
     "image_position_mobile": "Image position on mobile",
     "adaptive_columns": "Adapt columns to screen",
     "heading_gap": "Space below heading",
@@ -1157,6 +1158,7 @@
     "disclosures": "Bildirimler"
   },
   "info": {
+    "adaptive_min_card": "Cards never get narrower than this; the number shown follows from it. Raise it if button labels wrap.",
     "zero_uses_desktop": "Set to 0 to use the desktop value.",
     "image_position_mobile": "Leave on Default to use the desktop setting. Contain avoids cropping when the image sits in a short box.",
     "adaptive_columns": "Adds or removes cards as the screen changes, instead of stretching them, and shows exactly the number set.",
