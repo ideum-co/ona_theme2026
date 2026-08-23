@@ -3059,7 +3059,7 @@
                     "size": "pixel",
                     "percent_size": 100,
                     "pixel_size": 252,
-                    "custom_mobile_size": false,
+                    "custom_mobile_size": true,
                     "size_mobile": "percent",
                     "percent_size_mobile": 100,
                     "pixel_size_mobile": 120
