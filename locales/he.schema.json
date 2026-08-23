@@ -30,6 +30,7 @@
     "text": "טקסט"
   },
   "content": {
+    "mobile": "Mobile",
     "result": "Result",
     "loading": "Loading",
     "button": "Button",
@@ -223,6 +224,8 @@
     "work_quickly_to_ship": "<p>נעבוד מהר כדי לשלוח את ההזמנה שלך בהקדם האפשרי. לאחר שההזמנה שלך תישלח, תקבל דוא&quot;ל עם מידע נוסף. זמני האספקה משתנים בהתאם למיקומך.</p>"
   },
   "info": {
+    "zero_uses_desktop": "Set to 0 to use the desktop value.",
+    "image_position_mobile": "Leave on Default to use the desktop setting. Contain avoids cropping when the image sits in a short box.",
     "adaptive_columns": "Adds or removes cards as the screen changes, instead of stretching them, and shows exactly the number set.",
     "heading_gap": "Distance from the heading down to the rest of the content.",
     "select_label_color": "Applies to the variant select's label and value. Defaults to the section's text color.",
@@ -736,6 +739,7 @@
     "below_media": "מתחת למדיה"
   },
   "settings": {
+    "image_position_mobile": "Image position on mobile",
     "adaptive_columns": "Adapt columns to screen",
     "heading_gap": "Space below heading",
     "select_border_color": "Select border color",

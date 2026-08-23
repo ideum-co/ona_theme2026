@@ -1,0 +1,54 @@
+
+  .media-block {
+    overflow: hidden;
+    position: relative;
+
+    @media screen and (min-width: 99999px) {
+      min-height: var(--media-height);
+    }
+  }
+
+  .media-block__media {
+    height: var(--media-height-mobile, auto);
+
+    /* Unquoted: `'cover'` is not a valid `object-fit` keyword, so the declaration was invalid
+       whenever the variable was unset and the image fell back to `fill`, stretched.
+
+       The mobile value comes first because this is the base rule, and it falls back to the desktop
+       one when it is not set. A phone puts the media in a much shorter box, so a crop that reads
+       well on a wide screen can cut the subject badly there - hence the separate setting. */
+    object-fit: var(--image-position-mobile, var(--image-position, cover));
+    object-position: center center;
+    width: 100%;
+
+    @media screen and (min-width: 99999px) {
+      height: 100%;
+      position: absolute;
+      object-fit: var(--image-position, cover);
+    }
+  }
+
+  deferred-media[class].media-block__media
+    :is(.deferred-media__poster-button img, .deferred-media__poster-button ~ video) {
+    object-fit: var(--video-position, cover);
+  }
+
+  /* This is to support corner radius on video and align the video to the center of the block */
+  .media-block__placeholder {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: center center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .media-block__media--video {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @media screen and (max-width: 749px) {
+      --media-height-mobile: auto;
+    }
+  }

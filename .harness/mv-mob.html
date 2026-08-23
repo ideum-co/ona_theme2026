@@ -1,0 +1,26 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/.harness/media-mob.css">
+<link rel="stylesheet" href="/.harness/ph-mob.css">
+<style>html{--gap-2xl:1.5rem;--gap-lg:1rem;--page-margin:1rem;--font-size--sm:14px;
+ --font-heading--family:Georgia,serif;font-size:16px} body{margin:0;background:#4A0E1E;color:#F5F4EA}
+ .box{inline-size:390px;position:relative;min-height:220px;overflow:hidden}</style></head><body>
+<!-- media: móvil contain, escritorio cover -->
+<div class="box"><div class="media-block" id="mb" style="--image-position:cover;--image-position-mobile:contain;--media-height:220px;--media-height-mobile:220px">
+  <img class="media-block__media" id="img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='500'%3E%3Crect width='800' height='500' fill='%23888'/%3E%3C/svg%3E" alt=""></div></div>
+<!-- media: sin valor móvil, debe heredar cover -->
+<div class="box"><div class="media-block" id="mb2" style="--image-position:cover;--media-height:220px;--media-height-mobile:220px">
+  <img class="media-block__media" id="img2" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='500'%3E%3Crect width='800' height='500' fill='%23888'/%3E%3C/svg%3E" alt=""></div></div>
+<!-- heading: móvil 28/32, escritorio 48/96 -->
+<div class="product-highlight" id="ph" style="--product-highlight-heading-size:48px;--product-highlight-heading-gap:96px;
+     --product-highlight-heading-size-mobile:28px;--product-highlight-heading-gap-mobile:32px">
+ <div class="product-highlight__content" id="c"><h2 class="product-highlight__heading" id="h">Special release</h2>
+ <div class="product-highlight__details" id="d">contenido</div></div></div>
+<!-- heading: sin valores móviles, debe heredar 48/96 -->
+<div class="product-highlight" id="ph2" style="--product-highlight-heading-size:48px;--product-highlight-heading-gap:96px">
+ <div class="product-highlight__content" id="c2"><h2 class="product-highlight__heading" id="h2">Special release</h2>
+ <div class="product-highlight__details" id="d2">contenido</div></div></div>
+<script>window.probe=()=>{const cs=s=>getComputedStyle(document.querySelector(s));
+ return {vista:'movil', imagen:cs('#img').objectFit, imagenSinMovil:cs('#img2').objectFit,
+   titulo:cs('#h').fontSize, gap:cs('#c').rowGap,
+   tituloSinMovil:cs('#h2').fontSize, gapSinMovil:cs('#c2').rowGap};};</script>
+</body></html>
