@@ -201,6 +201,7 @@
             "video_loop": true,
             "video_autoplay": false,
             "image_position": "cover",
+            "image_position_mobile": "contain",
             "video_position": "cover"
           },
           "blocks": {}
@@ -287,9 +288,9 @@
                     "percent_size": 100,
                     "pixel_size": 252,
                     "custom_mobile_size": true,
-                    "size_mobile": "percent",
+                    "size_mobile": "pixel",
                     "percent_size_mobile": 100,
-                    "pixel_size_mobile": 120
+                    "pixel_size_mobile": 60
                   },
                   "blocks": {}
                 },
@@ -752,6 +753,7 @@
             "video_loop": true,
             "video_autoplay": false,
             "image_position": "cover",
+            "image_position_mobile": "",
             "video_position": "cover"
           },
           "blocks": {}
@@ -924,6 +926,8 @@
         "heading": "Special <em>release</em>",
         "heading_size": 36,
         "heading_gap": 200,
+        "heading_size_mobile": 0,
+        "heading_gap_mobile": 60,
         "eyebrow": "Ugly Sweater is a cosy blend with notes of milk chocolate and hazelnut — something a little unconventional that always ends up being a favourite.",
         "show_product_title": true,
         "description": "",
@@ -2974,6 +2978,7 @@
             "video_loop": true,
             "video_autoplay": false,
             "image_position": "cover",
+            "image_position_mobile": "",
             "video_position": "cover"
           },
           "blocks": {}
@@ -3060,9 +3065,9 @@
                     "percent_size": 100,
                     "pixel_size": 252,
                     "custom_mobile_size": true,
-                    "size_mobile": "percent",
+                    "size_mobile": "pixel",
                     "percent_size_mobile": 100,
-                    "pixel_size_mobile": 120
+                    "pixel_size_mobile": 60
                   },
                   "blocks": {}
                 },
