@@ -198,6 +198,18 @@
     },
     {
       "type": "range",
+      "id": "adaptive_min_card",
+      "label": "t:settings.adaptive_min_card",
+      "info": "t:info.adaptive_min_card",
+      "min": 200,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "default": 300,
+      "visible_if": "{{ section.settings.layout_type == 'carousel' and section.settings.adaptive_columns }}"
+    },
+    {
+      "type": "range",
       "id": "columns_gap",
       "label": "t:settings.horizontal_gap",
       "min": 0,
