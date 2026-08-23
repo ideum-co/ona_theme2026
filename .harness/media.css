@@ -1,0 +1,48 @@
+
+  .media-block {
+    overflow: hidden;
+    position: relative;
+
+    @media screen and (min-width: 750px) {
+      min-height: var(--media-height);
+    }
+  }
+
+  .media-block__media {
+    height: var(--media-height-mobile, auto);
+    /* Unquoted: `'cover'` is not a valid `object-fit` keyword, so the declaration was invalid
+       whenever the variable was unset and the image fell back to `fill`, stretched. */
+    object-fit: var(--image-position, cover);
+    object-position: center center;
+    width: 100%;
+
+    @media screen and (min-width: 750px) {
+      height: 100%;
+      position: absolute;
+    }
+  }
+
+  deferred-media[class].media-block__media
+    :is(.deferred-media__poster-button img, .deferred-media__poster-button ~ video) {
+    object-fit: var(--video-position, cover);
+  }
+
+  /* This is to support corner radius on video and align the video to the center of the block */
+  .media-block__placeholder {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: center center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .media-block__media--video {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @media screen and (max-width: 749px) {
+      --media-height-mobile: auto;
+    }
+  }

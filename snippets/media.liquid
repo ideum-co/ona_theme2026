@@ -91,7 +91,9 @@
 
   .media-block__media {
     height: var(--media-height-mobile, auto);
-    object-fit: var(--image-position, 'cover');
+    /* Unquoted: `'cover'` is not a valid `object-fit` keyword, so the declaration was invalid
+       whenever the variable was unset and the image fell back to `fill`, stretched. */
+    object-fit: var(--image-position, cover);
     object-position: center center;
     width: 100%;
 
@@ -103,7 +105,7 @@
 
   deferred-media[class].media-block__media
     :is(.deferred-media__poster-button img, .deferred-media__poster-button ~ video) {
-    object-fit: var(--video-position, 'cover');
+    object-fit: var(--video-position, cover);
   }
 
   /* This is to support corner radius on video and align the video to the center of the block */
