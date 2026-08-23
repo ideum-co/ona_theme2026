@@ -1,0 +1,38 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/.harness/rlc.css">
+<style>html{--peek-next-slide-size:3rem} body{margin:0;font:12px system-ui}</style>
+</head><body>
+<div style="inline-size:420px;outline:1px solid #ccc;margin-block-end:8px">
+   <div class="resource-list__carousel resource-list__carousel--adaptive" id="w420"
+        style="--resource-list-column-gap:16px;--column-count:3;--adaptive-columns:3;--slide-width-max:450px">
+     <div class="resource-list__slide" id="s420">card</div>
+   </div></div>
+<div style="inline-size:800px;outline:1px solid #ccc;margin-block-end:8px">
+   <div class="resource-list__carousel resource-list__carousel--adaptive" id="w800"
+        style="--resource-list-column-gap:16px;--column-count:3;--adaptive-columns:3;--slide-width-max:450px">
+     <div class="resource-list__slide" id="s800">card</div>
+   </div></div>
+<div style="inline-size:1100px;outline:1px solid #ccc;margin-block-end:8px">
+   <div class="resource-list__carousel resource-list__carousel--adaptive" id="w1100"
+        style="--resource-list-column-gap:16px;--column-count:3;--adaptive-columns:3;--slide-width-max:450px">
+     <div class="resource-list__slide" id="s1100">card</div>
+   </div></div>
+<div style="inline-size:1500px;outline:1px solid #ccc;margin-block-end:8px">
+   <div class="resource-list__carousel resource-list__carousel--adaptive" id="w1500"
+        style="--resource-list-column-gap:16px;--column-count:3;--adaptive-columns:3;--slide-width-max:450px">
+     <div class="resource-list__slide" id="s1500">card</div>
+   </div></div>
+<div style="inline-size:1900px;outline:1px solid #ccc;margin-block-end:8px">
+   <div class="resource-list__carousel resource-list__carousel--adaptive" id="w1900"
+        style="--resource-list-column-gap:16px;--column-count:3;--adaptive-columns:3;--slide-width-max:450px">
+     <div class="resource-list__slide" id="s1900">card</div>
+   </div></div>
+<script>window.probe=()=>{const out={};
+ for (const w of [420, 800, 1100, 1500, 1900]) {
+   const slide=document.querySelector('#s'+w), wrap=document.querySelector('#w'+w);
+   const cs=getComputedStyle(slide);
+   out[w+'px']={columnas:cs.getPropertyValue('--column-count').trim(),
+                peek:getComputedStyle(wrap).getPropertyValue('--peek-next-slide-size').trim(),
+                anchoSlide:Math.round(slide.getBoundingClientRect().width),
+                anchoPista:Math.round(wrap.getBoundingClientRect().width)};
+ } return out;};</script></body></html>

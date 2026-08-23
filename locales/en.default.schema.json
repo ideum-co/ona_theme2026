@@ -231,6 +231,7 @@
     "work_quickly_to_ship": "<p>We will work quickly to ship your order as soon as possible. Once your order has shipped, you will receive an email with further information. Delivery times vary depending on your location.</p>"
   },
   "info": {
+    "adaptive_columns": "Adds or removes cards as the screen changes, instead of stretching them, and shows exactly the number set.",
     "heading_gap": "Distance from the heading down to the rest of the content.",
     "select_label_color": "Applies to the variant select's label and value. Defaults to the section's text color.",
     "mobile_content_first": "Puts the text above the media on phones. Desktop is unchanged.",
@@ -788,6 +789,7 @@
     "below_media": "Below media"
   },
   "settings": {
+    "adaptive_columns": "Adapt columns to screen",
     "heading_gap": "Space below heading",
     "select_border_color": "Select border color",
     "select_label_color": "Select label color",

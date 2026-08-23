@@ -77,9 +77,15 @@
 
     when 'carousel'
       assign resource_list_classes = 'resource-list__carousel'
+      if settings.adaptive_columns
+        assign resource_list_classes = resource_list_classes | append: ' resource-list__carousel--adaptive'
+      endif
       capture resource_list_styles
         echo '--resource-list-column-gap-desktop: ' | append: columns_gap | append: 'px;'
         echo '--column-count: ' | append: columns | append: ';'
+        # Kept apart from --column-count, which the adaptive steps overwrite: a custom property
+        # cannot be defined in terms of itself, so the configured value needs its own name.
+        echo '--adaptive-columns: ' | append: columns | append: ';'
         echo '--column-count-mobile: 1;'
         echo '--mobile-card-size: ' | append: mobile_card_size | append: ';'
       endcapture
