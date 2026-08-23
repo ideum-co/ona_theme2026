@@ -189,6 +189,14 @@
       "visible_if": "{{ section.settings.layout_type == 'carousel' or section.settings.carousel_on_mobile == true }}"
     },
     {
+      "type": "checkbox",
+      "id": "adaptive_columns",
+      "label": "t:settings.adaptive_columns",
+      "info": "t:info.adaptive_columns",
+      "default": false,
+      "visible_if": "{{ section.settings.layout_type == 'carousel' }}"
+    },
+    {
       "type": "range",
       "id": "columns_gap",
       "label": "t:settings.horizontal_gap",
