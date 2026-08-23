@@ -223,6 +223,7 @@
     "work_quickly_to_ship": "<p>ہم جلد از جلد آپ کا آرڈر شپ کرنے کے لیے تیزی سے کام کریں گے۔ آپ کا آرڈر شپ ہونے کے بعد، آپ کو مزید معلومات کے ساتھ ایک ای میل موصول ہوگی۔ آپ کے مقام کے لحاظ سے ترسیل کے اوقات مختلف ہو سکتے ہیں۔</p>"
   },
   "info": {
+    "heading_gap": "Distance from the heading down to the rest of the content.",
     "select_label_color": "Applies to the variant select's label and value. Defaults to the section's text color.",
     "mobile_content_first": "Puts the text above the media on phones. Desktop is unchanged.",
     "collection_carousel_image": "Replaces the collection's own image.",
@@ -734,6 +735,7 @@
     "below_media": "میڈیا کے نیچے"
   },
   "settings": {
+    "heading_gap": "Space below heading",
     "select_border_color": "Select border color",
     "select_label_color": "Select label color",
     "description": "Description",

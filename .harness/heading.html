@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/.harness/ph2.css">
+<style>html{--gap-2xl:1.5rem;--gap-lg:1rem;--page-margin:1rem;--font-size--sm:14px;--letter-spacing-sm:.02em;
+ --font-heading--family:Georgia,serif;--font-heading--weight:400;font-size:16px}
+ body{margin:0;background:#4A0E1E;color:#F5F4EA}</style></head><body>
+<!-- ANTES: sin las variables nuevas, tal como estaba -->
+<div class="product-highlight" id="antes"><div class="product-highlight__content" id="c-antes">
+  <h2 class="product-highlight__heading" id="h-antes">Special release</h2>
+  <div class="product-highlight__details" id="d-antes"><p>contenido</p></div>
+</div></div>
+<!-- DESPUES: con lo que emite la sección ahora -->
+<div class="product-highlight" id="desp" style="--product-highlight-heading-size:48px;--product-highlight-heading-gap:96px;">
+ <div class="product-highlight__content" id="c-desp">
+  <h2 class="product-highlight__heading" id="h-desp">Special release</h2>
+  <div class="product-highlight__details" id="d-desp"><p>contenido</p></div>
+</div></div>
+<script>window.probe=()=>{const cs=s=>getComputedStyle(document.querySelector(s));
+ const r=s=>document.querySelector(s).getBoundingClientRect();
+ return {antes:{tamanoTitulo:cs('#h-antes').fontSize, gap:cs('#c-antes').rowGap,
+                distancia:Math.round(r('#d-antes').top-r('#h-antes').bottom)},
+         despues:{tamanoTitulo:cs('#h-desp').fontSize, gap:cs('#c-desp').rowGap,
+                  distancia:Math.round(r('#d-desp').top-r('#h-desp').bottom)}};};</script>
+</body></html>
