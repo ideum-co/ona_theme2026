@@ -730,7 +730,7 @@
         "rows_gap": 24,
         "icons_style": "arrow",
         "icons_shape": "none",
-        "section_width": "full-width",
+        "section_width": "page-width",
         "horizontal_alignment": "center",
         "gap": 24,
         "background_color": "{{ settings.color_palette.background }}",
