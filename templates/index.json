@@ -357,7 +357,7 @@
         "mobile_content_first": true,
         "media_position": "right",
         "media_width": "medium",
-        "media_height": "60svh",
+        "media_height": "80svh",
         "section_width": "page-width",
         "limit_content_width": true,
         "max_width": 1280,
