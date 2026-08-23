@@ -158,7 +158,6 @@
       "settings": {
         "animate_content": true,
         "media_type_1": "image",
-        "image_1": "shopify://shop_images/cherries.jpg",
         "media_type_2": "video",
         "stack_media_on_mobile": false,
         "custom_mobile_media": false,
@@ -196,12 +195,11 @@
           "static": true,
           "settings": {
             "media_type": "image",
-            "image": "shopify://shop_images/banner-quiz.png",
             "link": "",
             "video_loop": true,
             "video_autoplay": false,
-            "image_position": "cover",
-            "image_position_mobile": "contain",
+            "image_position": "contain",
+            "image_position_mobile": "",
             "video_position": "cover"
           },
           "blocks": {}
@@ -280,13 +278,13 @@
                   },
                   "blocks": {}
                 },
-                "spacer_YKFcAW": {
+                "spacer_KiebfD": {
                   "type": "spacer",
                   "name": "t:names.spacer",
                   "settings": {
                     "size": "pixel",
                     "percent_size": 100,
-                    "pixel_size": 252,
+                    "pixel_size": 120,
                     "custom_mobile_size": true,
                     "size_mobile": "pixel",
                     "percent_size_mobile": 100,
@@ -322,7 +320,7 @@
               },
               "block_order": [
                 "heading",
-                "spacer_YKFcAW",
+                "spacer_KiebfD",
                 "text"
               ]
             },
@@ -353,16 +351,16 @@
       },
       "name": "t:names.media_with_text",
       "settings": {
-        "mobile_padding_inline": 16,
-        "mobile_text_center": true,
-        "mobile_content_first": true,
+        "mobile_padding_inline": 0,
+        "mobile_text_center": false,
+        "mobile_content_first": false,
         "media_position": "right",
         "media_width": "medium",
-        "media_height": "60svh",
+        "media_height": "80svh",
         "section_width": "page-width",
         "limit_content_width": true,
         "max_width": 1280,
-        "extend_media": true,
+        "extend_media": false,
         "background_color": "{{ settings.color_palette.color1 }}",
         "padding-block-start": 0,
         "padding-block-end": 0
@@ -591,121 +589,66 @@
               },
               "blocks": {}
             },
-            "buy_group": {
-              "type": "_product-card-group",
-              "name": "t:names.group",
+            "buy_buttons": {
+              "type": "buy-buttons",
+              "name": "t:names.buy_buttons",
               "settings": {
-                "content_direction": "row",
-                "vertical_on_mobile": false,
-                "horizontal_alignment": "center",
-                "vertical_alignment": "center",
-                "align_baseline": false,
-                "horizontal_alignment_flex_direction_column": "center",
-                "vertical_alignment_flex_direction_column": "center",
-                "gap": 12,
-                "width": "fill",
-                "custom_width": 100,
-                "width_mobile": "fill",
-                "custom_width_mobile": 100,
-                "height": "fit",
-                "custom_height": 100,
-                "background_media": "none",
-                "background_color": "",
-                "video_position": "cover",
-                "background_image_position": "cover",
-                "toggle_overlay": false,
-                "overlay_color": "#00000026",
-                "overlay_style": "solid",
-                "gradient_direction": "to top",
-                "border": "none",
+                "stacking": true,
+                "text_color": "",
+                "show_pickup_availability": true,
+                "gift_card_form": true,
+                "recipient_button_style": "default",
+                "recipient_button_background": "{{ settings.color_palette.background }}",
+                "recipient_button_text": "{{ settings.color_palette.foreground }}",
+                "recipient_button_border": "{{ settings.color_palette.foreground }}",
+                "selected_recipient_button_style": "default",
+                "selected_recipient_button_background": "{{ settings.color_palette.foreground }}",
+                "selected_recipient_button_text": "{{ settings.color_palette.background }}",
+                "selected_recipient_button_border": "{{ settings.color_palette.foreground }}",
+                "input_style": "default",
+                "input_background_color": "{{ settings.color_palette.background }}",
+                "input_text_color": "{{ settings.color_palette.foreground }}",
+                "input_border_color": "{{ settings.color_palette.foreground }}",
                 "border_width": 1,
-                "border_opacity": 100,
-                "border_color": "",
                 "border_radius": 0,
-                "link": "",
-                "open_in_new_tab": false,
                 "padding-block-start": 0,
                 "padding-block-end": 0,
                 "padding-inline-start": 0,
                 "padding-inline-end": 0
               },
               "blocks": {
-                "buy_buttons": {
-                  "type": "buy-buttons",
-                  "name": "t:names.buy_buttons",
+                "quantity": {
+                  "type": "quantity",
+                  "static": true,
                   "settings": {
-                    "stacking": true,
-                    "text_color": "",
-                    "show_pickup_availability": true,
-                    "gift_card_form": true,
-                    "recipient_button_style": "default",
-                    "recipient_button_background": "{{ settings.color_palette.background }}",
-                    "recipient_button_text": "{{ settings.color_palette.foreground }}",
-                    "recipient_button_border": "{{ settings.color_palette.foreground }}",
-                    "selected_recipient_button_style": "default",
-                    "selected_recipient_button_background": "{{ settings.color_palette.foreground }}",
-                    "selected_recipient_button_text": "{{ settings.color_palette.background }}",
-                    "selected_recipient_button_border": "{{ settings.color_palette.foreground }}",
                     "input_style": "default",
                     "input_background_color": "{{ settings.color_palette.background }}",
                     "input_text_color": "{{ settings.color_palette.foreground }}",
                     "input_border_color": "{{ settings.color_palette.foreground }}",
                     "border_width": 1,
-                    "border_radius": 0,
-                    "padding-block-start": 0,
-                    "padding-block-end": 0,
-                    "padding-inline-start": 0,
-                    "padding-inline-end": 0
+                    "border_radius": 0
                   },
-                  "blocks": {
-                    "quantity": {
-                      "type": "quantity",
-                      "static": true,
-                      "settings": {
-                        "input_style": "default",
-                        "input_background_color": "{{ settings.color_palette.background }}",
-                        "input_text_color": "{{ settings.color_palette.foreground }}",
-                        "input_border_color": "{{ settings.color_palette.foreground }}",
-                        "border_width": 1,
-                        "border_radius": 0
-                      },
-                      "blocks": {}
-                    },
-                    "add-to-cart": {
-                      "type": "add-to-cart",
-                      "static": true,
-                      "settings": {
-                        "style_class": "button",
-                        "custom_button_background": "{{ settings.color_palette.foreground }}",
-                        "custom_button_text": "{{ settings.color_palette.background }}",
-                        "custom_button_border": "{{ settings.color_palette.background }}"
-                      },
-                      "blocks": {}
-                    },
-                    "accelerated-checkout": {
-                      "type": "accelerated-checkout",
-                      "static": true,
-                      "settings": {},
-                      "blocks": {}
-                    }
-                  },
-                  "block_order": []
+                  "blocks": {}
                 },
-                "subscribe": {
-                  "type": "subscribe-button",
-                  "name": "t:names.subscribe_button",
+                "add-to-cart": {
+                  "type": "add-to-cart",
+                  "static": true,
                   "settings": {
-                    "label": "Subscribe",
-                    "submit_label": "Add to cart",
-                    "style_class": "button"
+                    "style_class": "button",
+                    "custom_button_background": "{{ settings.color_palette.foreground }}",
+                    "custom_button_text": "{{ settings.color_palette.background }}",
+                    "custom_button_border": "{{ settings.color_palette.background }}"
                   },
+                  "blocks": {}
+                },
+                "accelerated-checkout": {
+                  "type": "accelerated-checkout",
+                  "static": true,
+                  "settings": {},
                   "blocks": {}
                 }
               },
-              "block_order": [
-                "buy_buttons",
-                "subscribe"
-              ]
+              "block_order": []
             }
           },
           "block_order": [
@@ -714,7 +657,7 @@
             "roast_line",
             "tastes_line",
             "variant_picker",
-            "buy_group"
+            "buy_buttons"
           ]
         }
       },
@@ -748,7 +691,6 @@
           "static": true,
           "settings": {
             "media_type": "image",
-            "image": "shopify://shop_images/Ugly_Sweater.png",
             "link": "",
             "video_loop": true,
             "video_autoplay": false,
@@ -913,7 +855,7 @@
           "type": "spec",
           "settings": {
             "label": "Tastes like",
-            "value": "Winey, dark chocolate and dark fruit"
+            "value": ""
           }
         }
       },
@@ -924,14 +866,13 @@
       "settings": {
         "product": "raspberry-candy-filter",
         "heading": "Special <em>release</em>",
-        "heading_size": 36,
-        "heading_gap": 200,
+        "heading_size": 48,
+        "heading_gap": 24,
         "heading_size_mobile": 0,
-        "heading_gap_mobile": 60,
+        "heading_gap_mobile": 0,
         "eyebrow": "Ugly Sweater is a cosy blend with notes of milk chocolate and hazelnut — something a little unconventional that always ends up being a favourite.",
         "show_product_title": true,
-        "description": "",
-        "image": "shopify://shop_images/Ugly_wb.png",
+        "description": "<p>Winey, dark chocolate and dark fruit</p>",
         "media_position": "right",
         "cta_style": "add_to_cart",
         "cta_label": "Add to cart",
@@ -972,10 +913,8 @@
         "feature_NAcjAF",
         "feature_RLWjLd"
       ],
-      "disabled": true,
       "name": "t:names.club_invite",
       "settings": {
-        "badge": "shopify://shop_images/coffee-club.svg",
         "heading": "Join the <em>club</em>",
         "body": "<p>Freshly roasted coffee delivered on your schedule.<br/>Choose your favourites, delivery anytime, and discover new coffees as they're released.</p>",
         "button_label": "Explore subscriptions",
@@ -983,123 +922,10 @@
         "button_background": "#751132",
         "button_text": "#f5f4ea",
         "background_media": "image",
-        "background_image": "shopify://shop_images/banner-bg.jpg",
         "overlay_color": "#000000",
         "overlay_opacity": 35,
         "text_color": "#ffffff",
         "section_height": "100svh",
-        "padding-block-start": 120,
-        "padding-block-end": 120
-      }
-    },
-    "club_invite_TGPaF8": {
-      "type": "club-invite",
-      "blocks": {
-        "feature_FzCGbX": {
-          "type": "feature",
-          "disabled": true,
-          "settings": {
-            "label": "Freshly roasted"
-          }
-        },
-        "feature_UQatmM": {
-          "type": "feature",
-          "disabled": true,
-          "settings": {
-            "label": "Freshly roasted"
-          }
-        },
-        "feature_gyaTRF": {
-          "type": "feature",
-          "disabled": true,
-          "settings": {
-            "label": "Freshly roasted"
-          }
-        }
-      },
-      "block_order": [
-        "feature_FzCGbX",
-        "feature_UQatmM",
-        "feature_gyaTRF"
-      ],
-      "name": "t:names.club_invite",
-      "settings": {
-        "badge": "shopify://shop_images/coffee-club.svg",
-        "heading": "Good coffee. Delivered.",
-        "body": "<p>The ONA Coffee Club connects you with freshly roasted coffee. new releases and the people behind them.</p>",
-        "button_label": "",
-        "button_link": "",
-        "button_background": "#751132",
-        "button_text": "#f5f4ea",
-        "background_media": "image",
-        "background_image": "shopify://shop_images/banner-bg.jpg",
-        "overlay_color": "#000000",
-        "overlay_opacity": 35,
-        "text_color": "#ffffff",
-        "section_height": "60svh",
-        "padding-block-start": 120,
-        "padding-block-end": 120
-      }
-    },
-    "club_benefits_QGRDdd": {
-      "type": "club-benefits",
-      "blocks": {
-        "benefit_GzVPJ7": {
-          "type": "benefit",
-          "settings": {
-            "icon_svg": "",
-            "icon": "shopify://shop_images/freshly.svg",
-            "title": "Freshly <em>roasted</em>"
-          }
-        },
-        "benefit_Mdj93W": {
-          "type": "benefit",
-          "settings": {
-            "icon_svg": "",
-            "icon": "shopify://shop_images/news.svg",
-            "title": "New <em>releases</em>"
-          }
-        },
-        "benefit_3DmUNx": {
-          "type": "benefit",
-          "settings": {
-            "icon_svg": "",
-            "icon": "shopify://shop_images/delivery.svg",
-            "title": "Flexible <em>delivery</em>"
-          }
-        },
-        "testimonial_qq68zy": {
-          "type": "testimonial",
-          "settings": {
-            "quote": "\"The easiest way to make sure I never run out of great coffee. I love getting to discover new ONA coffees along the way.\"",
-            "author": "Sarah",
-            "author_role": "ONA Coffee Club member"
-          }
-        }
-      },
-      "block_order": [
-        "benefit_GzVPJ7",
-        "benefit_Mdj93W",
-        "benefit_3DmUNx",
-        "testimonial_qq68zy"
-      ],
-      "name": "t:names.club_benefits",
-      "settings": {
-        "heading": "Club <em>benefits</em>",
-        "heading_size": 36,
-        "columns": 3,
-        "icon_size": 112,
-        "benefit_size": 30,
-        "quote_size": 22,
-        "icons_style": "chevron",
-        "autoplay": false,
-        "autoplay_speed": 6,
-        "button_label": "Join the ONA Coffee Club",
-        "button_link": "",
-        "button_background": "#8a1538",
-        "button_text": "#f5f4ea",
-        "background_color": "#4a4340",
-        "text_color": "#f5f4ea",
         "padding-block-start": 120,
         "padding-block-end": 120
       }
@@ -1110,7 +936,7 @@
       "settings": {
         "product": "instant-coffee-candy",
         "media_type": "model",
-        "model_url": "https://cdn.shopify.com/3d/models/955a78667da76f07/Raspberry_Candy_Bag_test_compressed_01.glb",
+        "model_url": "https://cdn.shopify.com/3d/models/4f1a19fec07bece6/Raspberry_Candy_Bag_test_compressed_01.glb",
         "model_width": 600,
         "model_height": 520,
         "model_auto_rotate": true,
@@ -1122,7 +948,7 @@
         "eyebrow_size": 14,
         "wordmark_svg": "",
         "wordmark_text": "Raspberry Candy",
-        "wordmark_size": 120,
+        "wordmark_size": 100,
         "wordmark_style": "gradient",
         "wordmark_color": "#d9a441",
         "wordmark_gradient": "linear-gradient(120deg, rgba(217, 164, 65, 1) 20%, rgba(243, 221, 160, 1) 50%, rgba(184, 134, 43, 1) 80%)",
@@ -1844,7 +1670,6 @@
           "name": "t:names.icon",
           "settings": {
             "icon": "price_tag",
-            "image_upload": "shopify://shop_images/icon-ona.svg",
             "width": 90,
             "link": "",
             "open_in_new_tab": false,
@@ -1930,7 +1755,6 @@
         "text_hmc9WY",
         "button_RDCLNJ"
       ],
-      "disabled": true,
       "name": "t:names.section",
       "settings": {
         "content_direction": "column",
@@ -1947,7 +1771,6 @@
         "background_media": "image",
         "background_color": "",
         "video_position": "cover",
-        "background_image": "shopify://shop_images/roastery2732h.jpg",
         "background_image_position": "cover",
         "toggle_overlay": true,
         "overlay_color": "#18191b66",
@@ -2123,47 +1946,6 @@
         "padding-block-end": 80
       }
     },
-    "story_video_URBFL6": {
-      "type": "story-video",
-      "name": "t:names.story_video",
-      "settings": {
-        "logo": "shopify://shop_images/icon-ona.svg",
-        "heading": "More than coffee. <em>Since 2008.</em>",
-        "heading_size": 44,
-        "body": "<p>From Canberra to cafés around the world, ONA has spent over 15 years championing exceptional coffee through innovation, education and meaningful producer partnerships.</p>",
-        "button_label": "Learn more about ONA",
-        "button_link": "",
-        "button_background": "#f5f4ea",
-        "button_text": "#751132",
-        "source": "uploaded",
-        "video": "shopify://files/videos/video (2160p).mp4",
-        "video_url": "",
-        "video_autoplay": false,
-        "video_loop": true,
-        "alt": "",
-        "aspect_ratio": "16/9",
-        "video_max_width": 1280,
-        "video_overhang": 160,
-        "play_background": "#751132",
-        "play_color": "#f5f4ea",
-        "play_size": 96,
-        "background_color": "#751132",
-        "text_color": "#f5f4ea",
-        "padding-block-start": 80,
-        "padding-block-end": 80
-      }
-    },
-    "custom_liquid_RCcpAV": {
-      "type": "custom-liquid",
-      "name": "t:names.custom_liquid",
-      "settings": {
-        "custom_liquid": "",
-        "background_color": "{{ settings.color_palette.background }}",
-        "section_width": "page-width",
-        "padding-block-start": 0,
-        "padding-block-end": 80
-      }
-    },
     "learn_with_ona": {
       "type": "section",
       "blocks": {
@@ -2175,7 +1957,7 @@
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "center",
-            "type_preset": "h3",
+            "type_preset": "h2",
             "font": "var(--font-body--family)",
             "font_size": "1rem",
             "line_height": "normal",
@@ -2299,8 +2081,7 @@
                 "image": {
                   "type": "image",
                   "settings": {
-                    "image": "shopify://shop_images/7-top-reasons-for-you-to-enrol-in-barista-training.png",
-                    "link": "shopify://blogs/news-1",
+                    "link": "/pages/barista-courses",
                     "image_ratio": "square",
                     "width": "fill",
                     "custom_width": 100,
@@ -2392,7 +2173,6 @@
                 "image": {
                   "type": "image",
                   "settings": {
-                    "image": "shopify://shop_images/how-to-brew-instant-coffee.png",
                     "link": "/pages/brewing-guides",
                     "image_ratio": "square",
                     "width": "fill",
@@ -2485,7 +2265,6 @@
                 "image": {
                   "type": "image",
                   "settings": {
-                    "image": "shopify://shop_images/what-is-a-barista-style-coffee.png",
                     "link": "/blogs/news",
                     "image_ratio": "square",
                     "width": "fill",
@@ -2575,7 +2354,7 @@
         "border_opacity": 100,
         "border_color": "",
         "border_radius": 0,
-        "padding-block-start": 100,
+        "padding-block-start": 80,
         "padding-block-end": 80
       }
     },
@@ -3039,7 +2818,7 @@
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "left",
-                    "type_preset": "h3",
+                    "type_preset": "h2",
                     "font": "var(--font-body--family)",
                     "font_size": "1rem",
                     "line_height": "normal",
@@ -3054,20 +2833,6 @@
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
                     "padding-inline-end": 0
-                  },
-                  "blocks": {}
-                },
-                "spacer_qcAYVd": {
-                  "type": "spacer",
-                  "name": "t:names.spacer",
-                  "settings": {
-                    "size": "pixel",
-                    "percent_size": 100,
-                    "pixel_size": 252,
-                    "custom_mobile_size": true,
-                    "size_mobile": "pixel",
-                    "percent_size_mobile": 100,
-                    "pixel_size_mobile": 60
                   },
                   "blocks": {}
                 },
@@ -3099,7 +2864,6 @@
               },
               "block_order": [
                 "heading",
-                "spacer_qcAYVd",
                 "text"
               ]
             },
@@ -3135,7 +2899,7 @@
         "mobile_content_first": false,
         "media_position": "right",
         "media_width": "wide",
-        "media_height": "60svh",
+        "media_height": "80svh",
         "section_width": "full-width",
         "limit_content_width": false,
         "max_width": 1280,
@@ -3255,7 +3019,6 @@
                 "image": {
                   "type": "image",
                   "settings": {
-                    "image": "shopify://shop_images/latte_art-1.jpg",
                     "link": "/collections/milk-based",
                     "image_ratio": "square",
                     "width": "fill",
@@ -3441,7 +3204,6 @@
                 "image": {
                   "type": "image",
                   "settings": {
-                    "image": "shopify://shop_images/Espresso_web.png",
                     "link": "/collections/espresso",
                     "image_ratio": "square",
                     "width": "fill",
@@ -3692,7 +3454,6 @@
         "heading",
         "tiles"
       ],
-      "disabled": true,
       "name": "t:names.section",
       "settings": {
         "content_direction": "column",
@@ -3725,97 +3486,6 @@
     },
     "coffee_quiz": {
       "type": "coffee-quiz",
-      "blocks": {
-        "question_1": {
-          "type": "question",
-          "settings": {
-            "heading": "How <em>do you</em> brew?",
-            "subtext": "How do you make your coffee?",
-            "options": "Espresso\nPour Over/ Filter\nFrench Press\nAeroPress\nStovetop / Moka Pot\nAutomatic Machine\nI'm not sure"
-          }
-        },
-        "question_2": {
-          "type": "question",
-          "settings": {
-            "heading": "How do you <em>drink it</em>?",
-            "subtext": "How do you usually enjoy your coffee?",
-            "options": "Black\nWith milk\nBoth\nIced\nIt depends"
-          }
-        },
-        "question_3": {
-          "type": "question",
-          "settings": {
-            "heading": "What sounds <em>best</em>?",
-            "subtext": "What flavours sound best to you?",
-            "options": "🍫 Chocolatey & nutty | ugly-sweater\n🍯 Sweet & caramel-like | maple\n🍓 Fruity & juicy | raspberry-candy\n🌸 Floral & delicate | raspberry-candy\n🍊 Bright & citrusy | raspberry-candy\n🍇 Rich & wine-like | ugly-sweater"
-          }
-        },
-        "question_4": {
-          "type": "question",
-          "settings": {
-            "heading": "How <em>adventurous</em> are you?",
-            "subtext": "How adventurous do you like your coffee?",
-            "options": "Keep it familiar | maple\nSomewhere in the middle | maple\nTake me somewhere new | raspberry-candy"
-          }
-        },
-        "question_5": {
-          "type": "question",
-          "settings": {
-            "heading": "What <em>matters most</em>?",
-            "subtext": "What matters most in your next coffee?",
-            "options": "Something easy to drink every day | maple\nSomething sweet & balanced | maple\nSomething bright & fruity | raspberry-candy\nSomething complex & interesting | ugly-sweater\nSomething special / limited | raspberry-candy\nI just want the best one!"
-          }
-        },
-        "question_6": {
-          "type": "question",
-          "settings": {
-            "heading": "What are you <em>shopping for</em>?",
-            "subtext": "What are you shopping for?",
-            "options": "My everyday coffee\nSomething for the weekend\nA coffee to explore\nA gift\nNot sure yet"
-          }
-        },
-        "match_raspberry_candy": {
-          "type": "match",
-          "settings": {
-            "tag": "raspberry-candy",
-            "product": "raspberry-candy",
-            "title": "Raspberry Candy",
-            "description": "Bright and juicy with notes of raspberry, caramel and milk chocolate.",
-            "reasons": "Sweet & fruit-forward\nApproachable but interesting\nONA's signature release"
-          }
-        },
-        "match_ugly_sweater": {
-          "type": "match",
-          "settings": {
-            "tag": "ugly-sweater",
-            "product": "ugly-sweater",
-            "title": "Ugly Sweater",
-            "description": "A cosy, unconventional blend with notes of milk chocolate and hazelnut.",
-            "reasons": "Great with milk\nRich & comforting\nA little unconventional"
-          }
-        },
-        "match_maple": {
-          "type": "match",
-          "settings": {
-            "tag": "maple",
-            "product": "maple",
-            "title": "Maple",
-            "description": "A balanced, easy-drinking everyday coffee with warm caramel sweetness.",
-            "reasons": "Classic & balanced\nEasy to drink every day\nA dependable favourite"
-          }
-        }
-      },
-      "block_order": [
-        "question_1",
-        "question_2",
-        "question_3",
-        "question_4",
-        "question_5",
-        "question_6",
-        "match_raspberry_candy",
-        "match_ugly_sweater",
-        "match_maple"
-      ],
       "settings": {
         "title": "Find your coffee quiz",
         "step_label": "Question [current] of [total]",
@@ -3836,89 +3506,6 @@
         "accent_background": "#f5f4ea",
         "accent_color": "#6b1235"
       }
-    },
-    "collection_carousel_GRkRhJ": {
-      "type": "collection-carousel",
-      "blocks": {
-        "collection_UWHjqR": {
-          "type": "collection",
-          "settings": {
-            "collection": "milk-based",
-            "image": "shopify://shop_images/latte_art-1.jpg",
-            "label": "Milk-based",
-            "link": "shopify://collections/milk-based"
-          }
-        },
-        "collection_gPtB4a": {
-          "type": "collection",
-          "settings": {
-            "collection": "filter",
-            "image": "shopify://shop_images/Filter_web.png",
-            "label": "Filter",
-            "link": "shopify://collections/filter"
-          }
-        },
-        "collection_UGYk6f": {
-          "type": "collection",
-          "settings": {
-            "collection": "espresso",
-            "image": "shopify://shop_images/Espresso_web.png",
-            "label": "Espresso",
-            "link": "shopify://collections/espresso"
-          }
-        },
-        "collection_U9LrEc": {
-          "type": "collection",
-          "settings": {
-            "collection": "brew-gear",
-            "image": "shopify://shop_images/coffee_timemore_hand_grinder.jpg",
-            "label": "Brew Gear",
-            "link": "shopify://collections/brew-gear"
-          }
-        },
-        "collection_yc389T": {
-          "type": "collection",
-          "settings": {
-            "collection": "merch",
-            "image": "shopify://shop_images/canberra_mug_ona_coffee.jpg",
-            "label": "Merchandise",
-            "link": "shopify://collections/merch"
-          }
-        },
-        "collection_f8jkdP": {
-          "type": "collection",
-          "disabled": true,
-          "settings": {
-            "collection": "merch",
-            "image": "shopify://shop_images/canberra_mug_ona_coffee.jpg",
-            "label": "Merchandise",
-            "link": "shopify://collections/merch"
-          }
-        }
-      },
-      "block_order": [
-        "collection_UWHjqR",
-        "collection_gPtB4a",
-        "collection_UGYk6f",
-        "collection_U9LrEc",
-        "collection_yc389T",
-        "collection_f8jkdP"
-      ],
-      "name": "t:names.collection_carousel",
-      "settings": {
-        "heading": "Discover by <em>category</em>",
-        "heading_size": 36,
-        "columns": 5,
-        "columns_mobile": "2",
-        "image_ratio": "1",
-        "label_size": 15,
-        "uppercase_labels": true,
-        "background_color": "#f5f4ea",
-        "heading_color": "#6b1235",
-        "text_color": "#6b1235",
-        "padding-block-start": 80,
-        "padding-block-end": 80
-      }
     }
   },
   "order": [
@@ -3928,21 +3515,16 @@
     "special_release",
     "product_highlight_KkUAVM",
     "club_invite_QLL4T3",
-    "club_invite_TGPaF8",
-    "club_benefits_QGRDdd",
     "product_intro_k9p6yn",
     "club_benefits",
     "raspberry_candy",
     "good_coffee_delivered",
     "more_than_coffee",
-    "story_video_URBFL6",
-    "custom_liquid_RCcpAV",
     "learn_with_ona",
     "press_quotes_4kW9eF",
     "press_band",
     "find_ona",
     "discover_by_category",
-    "coffee_quiz",
-    "collection_carousel_GRkRhJ"
+    "coffee_quiz"
   ]
 }
