@@ -231,6 +231,7 @@
     "work_quickly_to_ship": "<p>We will work quickly to ship your order as soon as possible. Once your order has shipped, you will receive an email with further information. Delivery times vary depending on your location.</p>"
   },
   "info": {
+    "heading_gap": "Distance from the heading down to the rest of the content.",
     "select_label_color": "Applies to the variant select's label and value. Defaults to the section's text color.",
     "mobile_content_first": "Puts the text above the media on phones. Desktop is unchanged.",
     "collection_carousel_image": "Replaces the collection's own image.",
@@ -787,6 +788,7 @@
     "below_media": "Below media"
   },
   "settings": {
+    "heading_gap": "Space below heading",
     "select_border_color": "Select border color",
     "select_label_color": "Select label color",
     "description": "Description",

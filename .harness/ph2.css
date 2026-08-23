@@ -1,0 +1,133 @@
+
+  .product-highlight {
+    display: grid;
+    background: var(--product-highlight-background, var(--color-foreground));
+    color: var(--product-highlight-color, var(--color-background));
+
+    @media screen and (min-width: 750px) {
+      grid-template-columns: 1fr 1fr;
+      align-items: stretch;
+    }
+  }
+
+  .product-highlight--media-left .product-highlight__media {
+    @media screen and (min-width: 750px) {
+      grid-column: 1;
+      grid-row: 1;
+    }
+  }
+
+  /* The heading reads as a label in the corner, so the distance down to the content is its own
+     setting rather than the section's generic gap. */
+  .product-highlight__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--product-highlight-heading-gap, var(--gap-2xl));
+    padding-block: var(--product-highlight-padding-block-start) var(--product-highlight-padding-block-end);
+    padding-inline: var(--page-margin, 1rem);
+  }
+
+  .product-highlight__heading {
+    margin: 0;
+    font-family: var(--font-heading--family);
+
+    /* `--font-h2--size` is never defined in the theme - only `--font-h2--spacing` is - so this
+       declaration was invalid and the heading just inherited its size. The setting pins it. */
+    font-size: var(--product-highlight-heading-size, var(--font-h2--size));
+    font-weight: var(--font-heading--weight);
+  }
+
+  /* The heading sits at the top and the rest floats in the leftover space, as in the design. */
+  .product-highlight__details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-lg);
+    margin-block: auto;
+    max-inline-size: 34rem;
+  }
+
+  .product-highlight__eyebrow {
+    margin: 0;
+    font-size: var(--font-size--sm);
+    letter-spacing: var(--letter-spacing-sm);
+    text-transform: uppercase;
+  }
+
+  .product-highlight__title {
+    margin: 0;
+    font-size: var(--font-h4--size);
+    font-weight: var(--font-body--weight);
+  }
+
+  .product-highlight__description {
+    display: grid;
+    gap: var(--gap-md);
+    font-size: var(--font-size--sm);
+  }
+
+  .product-highlight__description :is(p, ul, ol) {
+    margin: 0;
+  }
+
+  .product-highlight__specs {
+    margin: 0;
+    display: grid;
+  }
+
+  .product-highlight__spec {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--gap-lg);
+    align-items: baseline;
+    padding-block: var(--padding-sm);
+    border-block-start: 1px solid rgb(var(--color-background-rgb) / var(--opacity-40));
+  }
+
+  .product-highlight__spec:last-child {
+    border-block-end: 1px solid rgb(var(--color-background-rgb) / var(--opacity-40));
+  }
+
+  .product-highlight__spec-label {
+    margin: 0;
+    font-size: var(--font-size--sm);
+    letter-spacing: var(--letter-spacing-sm);
+    text-transform: uppercase;
+  }
+
+  .product-highlight__spec-value {
+    margin: 0;
+    font-size: var(--font-size--sm);
+    text-align: end;
+  }
+
+  .product-highlight .variant-select {
+    --variant-select-field-border-color: currentcolor;
+    --variant-select-legend-font-size: var(--font-size--3xs);
+
+    max-inline-size: 20rem;
+  }
+
+  .product-highlight__form {
+    display: block;
+  }
+
+  .product-highlight__button.button {
+    --button-background-color: var(--product-highlight-button-background);
+    --button-color: var(--product-highlight-button-color);
+
+    justify-content: center;
+    min-inline-size: 12rem;
+    inline-size: fit-content;
+  }
+
+  .product-highlight__media {
+    position: relative;
+    min-block-size: 20rem;
+  }
+
+  .product-highlight__image {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    display: block;
+  }
