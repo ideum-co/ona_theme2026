@@ -38,7 +38,12 @@
   {% endfor %}
 {% endcapture %}
 
-<div style="{{ gutter_style }} --slide-width-max: {{ slide_width_max | default: '300px' }};">
+{%- comment -%}
+  The number of slides caps the adaptive column count: on a very wide screen the ladder below can
+  ask for more columns than there are products, and the cards would shrink to leave empty track at
+  the end instead of staying a comfortable size.
+{%- endcomment -%}
+<div style="{{ gutter_style }} --slide-width-max: {{ slide_width_max | default: '300px' }}; --adaptive-columns-max: {{ slide_count | default: 99 }};">
   {% render 'slideshow',
     ref: slideshow_ref,
     class: 'resource-list__carousel',
@@ -114,15 +119,47 @@
     }
   }
 
+  /* From here up a step every 400px, which is about one card: the card keeps its size and the
+     count grows, all the way to a 4K screen. Never more columns than there are slides. */
   @container resource-list-carousel (min-width: 1400px) {
     .resource-list__carousel--adaptive .resource-list__slide {
-      --column-count: calc(var(--adaptive-columns, 3) + 1);
+      --column-count: min(calc(var(--adaptive-columns, 3) + 1), var(--adaptive-columns-max, 99));
     }
   }
 
   @container resource-list-carousel (min-width: 1800px) {
     .resource-list__carousel--adaptive .resource-list__slide {
-      --column-count: calc(var(--adaptive-columns, 3) + 2);
+      --column-count: min(calc(var(--adaptive-columns, 3) + 2), var(--adaptive-columns-max, 99));
+    }
+  }
+
+  @container resource-list-carousel (min-width: 2200px) {
+    .resource-list__carousel--adaptive .resource-list__slide {
+      --column-count: min(calc(var(--adaptive-columns, 3) + 3), var(--adaptive-columns-max, 99));
+    }
+  }
+
+  @container resource-list-carousel (min-width: 2600px) {
+    .resource-list__carousel--adaptive .resource-list__slide {
+      --column-count: min(calc(var(--adaptive-columns, 3) + 4), var(--adaptive-columns-max, 99));
+    }
+  }
+
+  @container resource-list-carousel (min-width: 3000px) {
+    .resource-list__carousel--adaptive .resource-list__slide {
+      --column-count: min(calc(var(--adaptive-columns, 3) + 5), var(--adaptive-columns-max, 99));
+    }
+  }
+
+  @container resource-list-carousel (min-width: 3400px) {
+    .resource-list__carousel--adaptive .resource-list__slide {
+      --column-count: min(calc(var(--adaptive-columns, 3) + 6), var(--adaptive-columns-max, 99));
+    }
+  }
+
+  @container resource-list-carousel (min-width: 3800px) {
+    .resource-list__carousel--adaptive .resource-list__slide {
+      --column-count: min(calc(var(--adaptive-columns, 3) + 7), var(--adaptive-columns-max, 99));
     }
   }
 
