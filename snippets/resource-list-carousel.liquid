@@ -176,9 +176,22 @@
        renders around the slideshow, full-width and same box as .resource-list__carousel--
        adaptive itself) rather than the scrollable track: purely a paint-time clip, doesn't
        touch slideshow-slides' width/scrollWidth/scrollLeft/snap at all, so none of the above
-       breaks. Clips off the trailing --arlc-gutter (minus the 15px hover-effect buffer used
-       elsewhere in this file) from the right edge - exactly the dead space past the last
-       visible column, on any viewport/column-count.
+       breaks. Clips off the trailing --arlc-gutter (minus a hover-effect buffer, capped at
+       the actual column gap - see below) from the right edge - exactly the dead space past
+       the last visible column, on any viewport/column-count.
+
+       Two things this needs to get right or it re-introduces a smaller peek / a new crop:
+
+       - The right-edge buffer can't be a flat 15px: sections/product-list.liquid supports
+         gaps down to 0px (default 8px), and a buffer wider than the actual gap eats into
+         where the next card legitimately starts, exposing a sliver of it again. Capping the
+         buffer at min(15px, gap) keeps it inside the gap's own dead space.
+       - clip-path always clips to the element's own border-box, regardless of the 0 0
+         vertical insets below - it doesn't know slideshow-slides (lines 193-203) pairs
+         negative margin-block with padding-block specifically so hover scale/lift/shadow can
+         paint outside its own layout height. Expanding the clip vertically by that same 16px
+         (rather than 0) restores the room those effects need, without affecting the
+         horizontal clip this rule exists for.
 
        Targets .resource-list-carousel-viewport, not .resource-list__carousel--adaptive:
        --adaptive is applied by the section that renders this snippet, one level further OUT
@@ -186,7 +199,9 @@
        this div - custom properties only inherit downward, so --arlc-gutter (declared in this
        div's own inline style) isn't visible on that outer ancestor to read back. */
     .resource-list__carousel--adaptive .resource-list-carousel-viewport {
-      clip-path: inset(0 max(0px, calc(var(--arlc-gutter, 0px) - 15px)) 0 0);
+      clip-path: inset(
+        -16px max(0px, calc(var(--arlc-gutter, 0px) - min(15px, var(--resource-list-column-gap)))) -16px 0
+      );
     }
   }
 
