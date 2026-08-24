@@ -11,6 +11,19 @@ const schemaSource = section.match(/\{% schema %\}\s*([\s\S]*?)\s*\{% endschema 
 assert.ok(schemaSource, 'missing section schema');
 const schemaSettings = new Map(JSON.parse(schemaSource).settings.map((setting) => [setting.id, setting]));
 
+assert.deepEqual(schemaSettings.get('content_gap'), {
+  type: 'range',
+  id: 'content_gap',
+  label: 't:settings.content_gap',
+  min: 0,
+  max: 100,
+  step: 1,
+  unit: 'px',
+  default: 16,
+}, 'content_gap must expose the current large gap as its default');
+assert.match(section, /--story-video-content-gap:\s*\{\{ settings\.content_gap \}\}px;/);
+assert.match(section, /\.story-video__intro\s*\{[\s\S]*?gap:\s*var\(--story-video-content-gap, var\(--gap-lg\)\);/);
+
 for (const suffix of ['type_preset', 'font', 'font_size', 'line_height', 'letter_spacing', 'case', 'wrap']) {
   assert.match(section, new RegExp(`"id"\\s*:\\s*"body_${suffix}"`), `body missing ${suffix}`);
 }

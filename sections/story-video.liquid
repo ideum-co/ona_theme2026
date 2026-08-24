@@ -27,6 +27,7 @@
   class="story-video spacing-style"
   style="
     --section-heading-level-size: var({{ heading_level_size }});
+    --story-video-content-gap: {{ settings.content_gap }}px;
     --story-video-intro-padding-block-start: {{ settings.intro_padding_block_start | default: 0 }}px;
     --story-video-intro-padding-block-end: {{ settings.intro_padding_block_end | default: 0 }}px;
     {% if settings.intro_individual_side_padding %}
@@ -159,7 +160,7 @@
   .story-video__intro {
     display: grid;
     justify-items: center;
-    gap: var(--gap-lg);
+    gap: var(--story-video-content-gap, var(--gap-lg));
     max-inline-size: 42rem;
     padding-block-start: var(--story-video-intro-padding-block-start, 0);
     padding-block-end: var(--story-video-intro-padding-block-end, 0);
@@ -1218,6 +1219,16 @@
     {
       "type": "header",
       "content": "t:content.text"
+    },
+    {
+      "type": "range",
+      "id": "content_gap",
+      "label": "t:settings.content_gap",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 16
     },
     {
       "type": "range",
