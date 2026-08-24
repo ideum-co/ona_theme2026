@@ -938,6 +938,7 @@
     "hotspot_color": "لون نقطة التفاعل",
     "horizontal_offset": "الإزاحة الأفقية للظل",
     "horizontal_padding": "المساحة المتروكة الأفقية",
+    "individual_side_padding": "مساحة داخلية منفصلة لكل جانب",
     "hover_background": "خلفية التمرير",
     "hover_behavior": "سلوك التمرير",
     "hover_borders": "حدود التمرير",

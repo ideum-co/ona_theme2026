@@ -518,6 +518,7 @@
     "divider_width": "ความกว้างของเส้นแบ่ง",
     "hide_logo_on_home_page": "ซ่อนโลโก้บนหน้าแรก",
     "horizontal_padding": "การเว้นขอบด้านในแนวนอน",
+    "individual_side_padding": "การเว้นขอบแต่ละด้าน",
     "inventory_threshold": "เกณฑ์แจ้งเตือนสต็อกสินค้าเหลือน้อย",
     "inverse": "ผกผัน",
     "inverse_logo": "โลโก้แบบผกผัน",

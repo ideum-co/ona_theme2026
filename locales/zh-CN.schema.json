@@ -521,6 +521,7 @@
     "divider_width": "分隔线宽度",
     "hide_logo_on_home_page": "在主页上隐藏 logo",
     "horizontal_padding": "水平内边距",
+    "individual_side_padding": "单独设置各边内边距",
     "inventory_threshold": "低库存阈值",
     "inverse": "反色",
     "inverse_logo": "反色 logo",

@@ -497,6 +497,7 @@
     "gradient_direction": "Direzione sfumatura",
     "headings": "Intestazioni",
     "horizontal_padding": "Spaziatura interna orizzontale",
+    "individual_side_padding": "Spaziatura interna per lato",
     "overlay_style": "Stile di sovrapposizione",
     "shadow_opacity": "Opacità ombra",
     "show_filter_label": "Etichette di testo per i filtri applicati",

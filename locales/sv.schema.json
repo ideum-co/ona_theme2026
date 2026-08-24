@@ -498,6 +498,7 @@
     "custom_mobile_width": "Anpassad bredd för mobil",
     "gradient_direction": "Toningsriktning",
     "horizontal_padding": "Horisontell utfyllnad",
+    "individual_side_padding": "Individuell utfyllnad per sida",
     "overlay_style": "Överlagringsstil",
     "show_count": "Visa antal",
     "transparent_background": "Transparent bakgrund",

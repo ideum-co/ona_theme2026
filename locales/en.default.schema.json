@@ -1003,6 +1003,7 @@
     "hotspot_color": "Hotspot color",
     "horizontal_offset": "Shadow horizontal offset",
     "horizontal_padding": "Horizontal padding",
+    "individual_side_padding": "Individual side padding",
     "hover_background": "Hover background",
     "hover_behavior": "Hover behavior",
     "hover_borders": "Hover borders",

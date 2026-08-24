@@ -517,6 +517,7 @@
     "divider_width": "Ancho del separador",
     "hide_logo_on_home_page": "Ocultar el logo en la página de inicio",
     "horizontal_padding": "Relleno horizontal",
+    "individual_side_padding": "Relleno individual por lado",
     "inverse": "Inverso",
     "inverse_logo": "Logo en inverso",
     "layout_style": "Estilo",

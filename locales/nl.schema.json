@@ -518,6 +518,7 @@
     "default_logo": "Standaardlogo",
     "divider_width": "Breedte scheidingslijn",
     "horizontal_padding": "Horizontale padding",
+    "individual_side_padding": "Individuele zijpadding",
     "inverse": "Invers",
     "inverse_logo": "Invers logo",
     "layout_style": "Stijl",

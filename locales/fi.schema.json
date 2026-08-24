@@ -519,6 +519,7 @@
     "divider_width": "Erottimen leveys",
     "headings": "Otsikot",
     "horizontal_padding": "Vaakasuuntainen reunatäyte",
+    "individual_side_padding": "Yksittäisten sivujen reunatäyte",
     "inventory_threshold": "Alhaisen varaston kynnysarvo",
     "inverse": "Käänteinen",
     "inverse_logo": "Käänteinen logo",
