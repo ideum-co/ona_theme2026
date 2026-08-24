@@ -27,10 +27,14 @@
   class="story-video spacing-style"
   style="
     --section-heading-level-size: var({{ heading_level_size }});
-    --story-video-intro-padding-block: {{ settings.intro_padding_block_start }}px {{ settings.intro_padding_block_end }}px;
-    --story-video-intro-padding-inline: {{ settings.intro_padding_inline }}px;
-    --story-video-media-padding-block: {{ settings.media_padding_block_start }}px {{ settings.media_padding_block_end }}px;
-    --story-video-media-padding-inline: {{ settings.media_padding_inline }}px;
+    --story-video-intro-padding-block-start: {{ settings.intro_padding_block_start | default: 0 }}px;
+    --story-video-intro-padding-block-end: {{ settings.intro_padding_block_end | default: 0 }}px;
+    --story-video-intro-padding-inline-start: {{ settings.intro_padding_inline_start | default: settings.intro_padding_inline | default: 0 }}px;
+    --story-video-intro-padding-inline-end: {{ settings.intro_padding_inline_end | default: settings.intro_padding_inline | default: 0 }}px;
+    --story-video-media-padding-block-start: {{ settings.media_padding_block_start | default: 0 }}px;
+    --story-video-media-padding-block-end: {{ settings.media_padding_block_end | default: 0 }}px;
+    --story-video-media-padding-inline-start: {{ settings.media_padding_inline_start | default: settings.media_padding_inline | default: 0 }}px;
+    --story-video-media-padding-inline-end: {{ settings.media_padding_inline_end | default: settings.media_padding_inline | default: 0 }}px;
     --story-video-background: {{ settings.background_color }};
     --story-video-color: {{ settings.text_color }};
     --color: {{ settings.text_color }};
@@ -147,8 +151,10 @@
     justify-items: center;
     gap: var(--gap-lg);
     max-inline-size: 42rem;
-    padding-block: var(--story-video-intro-padding-block, 0);
-    padding-inline: var(--story-video-intro-padding-inline, 0);
+    padding-block-start: var(--story-video-intro-padding-block-start, 0);
+    padding-block-end: var(--story-video-intro-padding-block-end, 0);
+    padding-inline-start: var(--story-video-intro-padding-inline-start, 0);
+    padding-inline-end: var(--story-video-intro-padding-inline-end, 0);
   }
 
   .story-video__logo {
@@ -205,8 +211,10 @@
   /* A definite width plus `justify-self: center`, not `stretch` with auto margins: an auto margin
      in the alignment axis cancels stretch, which left the player at its intrinsic 300px. */
   .story-video__media {
-    padding-block: var(--story-video-media-padding-block, 0);
-    padding-inline: var(--story-video-media-padding-inline, 0);
+    padding-block-start: var(--story-video-media-padding-block-start, 0);
+    padding-block-end: var(--story-video-media-padding-block-end, 0);
+    padding-inline-start: var(--story-video-media-padding-inline-start, 0);
+    padding-inline-end: var(--story-video-media-padding-inline-end, 0);
     position: relative;
     z-index: var(--layer-flat, 1);
     justify-self: center;
@@ -1222,13 +1230,34 @@
     },
     {
       "type": "range",
+      "id": "intro_padding_inline_start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "intro_padding_inline_end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
       "id": "intro_padding_inline",
       "label": "t:settings.horizontal_padding",
       "min": 0,
       "max": 160,
       "step": 4,
       "unit": "px",
-      "default": 0
+      "default": 0,
+      "visible_if": "{{ false }}"
     },
     {
       "type": "header",
@@ -1256,13 +1285,34 @@
     },
     {
       "type": "range",
+      "id": "media_padding_inline_start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "media_padding_inline_end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
       "id": "media_padding_inline",
       "label": "t:settings.horizontal_padding",
       "min": 0,
       "max": 160,
       "step": 4,
       "unit": "px",
-      "default": 0
+      "default": 0,
+      "visible_if": "{{ false }}"
     }
   ],
   "presets": [
