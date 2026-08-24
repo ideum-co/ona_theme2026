@@ -84,7 +84,7 @@
     "color_palette": {
       "background": "#f4f3e9",
       "foreground": "#d67ba6",
-      "color1": "#751132",
+      "color1": "#d67ba6",
       "color2": "#d67ba6",
       "color3": "#762d0d"
     }
@@ -160,7 +160,7 @@
       "color_palette": {
         "background": "#f4f3e9",
         "foreground": "#d67ba6",
-        "color1": "#751132",
+        "color1": "#d67ba6",
         "color2": "#d67ba6",
         "color3": "#762d0d"
       }
