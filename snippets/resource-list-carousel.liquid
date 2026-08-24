@@ -139,6 +139,18 @@
     padding-block: 16px;
   }
 
+  /* Adaptive carousels round column count down to a whole number specifically so no
+     partial card is meant to show (see the --peek-next-slide-size: 0px override above).
+     But the track itself still stretches to width: 100% of its full-bleed container, so
+     the gap between "where the whole columns end" and "where the box actually ends"
+     silently reveals the start of the next card instead of staying inert slack space.
+     Sizing the track to its own content keeps the "no peek at rest" promise the adaptive
+     math already makes. */
+  .resource-list__carousel--adaptive slideshow-slides {
+    width: fit-content;
+    max-width: 100%;
+  }
+
   .resource-list__carousel slideshow-arrows {
     padding-inline: var(--util-page-margin-offset);
   }
