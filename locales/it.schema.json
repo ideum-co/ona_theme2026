@@ -258,6 +258,7 @@
     "favicon": "Favicon",
     "font_family": "Famiglia di font",
     "gap": "Spaziatura",
+    "content_gap": "Spaziatura contenuto",
     "geometric_translate_y": "Traslazione geometrica Y",
     "heading": "Intestazione",
     "icon": "Icona",

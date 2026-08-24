@@ -258,6 +258,7 @@
     "favicon": "ファビコン",
     "font_family": "フォントファミリー",
     "gap": "間隔",
+    "content_gap": "コンテンツ間隔",
     "geometric_translate_y": "幾何学的なY軸移動",
     "heading": "見出し",
     "icon": "アイコン",

@@ -272,6 +272,7 @@
     "custom_minimum_height": "Niestandardowa minimalna wysokość",
     "font_family": "Rodzina czcionek",
     "gap": "Odstęp",
+    "content_gap": "Odstęp treści",
     "geometric_translate_y": "Przesunięcie geometryczne Y",
     "image": "Obraz",
     "image_opacity": "Krycie obrazu",

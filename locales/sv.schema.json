@@ -258,6 +258,7 @@
     "favicon": "Favoritikon",
     "font_family": "Teckensnittsfamilj",
     "gap": "Mellanrum",
+    "content_gap": "Innehållsavstånd",
     "geometric_translate_y": "Geometrisk translate Y",
     "heading": "Rubrik",
     "icon": "Ikon",

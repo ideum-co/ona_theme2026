@@ -272,6 +272,7 @@
     "custom_minimum_height": "Hauteur minimale personnalisée",
     "font_family": "Famille de polices",
     "gap": "Espacement",
+    "content_gap": "Espacement du contenu",
     "geometric_translate_y": "Translation géométrique Y",
     "image": "Image",
     "image_opacity": "Opacité de l'image",
