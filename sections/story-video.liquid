@@ -56,7 +56,7 @@
 
     {%- if settings.heading != blank -%}
       <{{ heading_tag }}
-      class="story-video__heading {{ heading_preset }}{% if heading_preset == 'custom' %} custom-typography custom-font-size{% elsif heading_preset == 'rte' %} story-video__heading--default{% endif %}"
+      class="story-video__heading {{ heading_preset }} {{ heading_preset }}{% if heading_preset == 'custom' %} custom-typography custom-font-size{% elsif heading_preset == 'rte' %} story-video__heading--default{% endif %}"
       style="{%- render 'typography-style', settings: section.settings, type: 'heading' -%}"
     >{{ settings.heading }}</{{ heading_tag }}>
     {%- endif -%}
