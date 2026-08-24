@@ -4,7 +4,7 @@
 
 **Goal:** Give Story with video independent native typography controls for heading, body, and button, plus four-sided internal padding controls for its text and media containers.
 
-**Architecture:** Keep the section's current markup and video pipeline. Add prefixed typography settings consumed through a small section-specific helper, use native preset/custom classes on each text role, and map independent padding settings to scoped logical CSS variables with legacy horizontal fallbacks.
+**Architecture:** Keep the section's current markup and video pipeline. Add prefixed typography settings consumed through a small section-specific helper, use native preset/custom classes on each text role, and map independent padding settings to scoped logical CSS variables with explicit legacy/individual side modes.
 
 **Tech Stack:** Shopify Liquid, JSON section schema, Horizon typography and spacing tokens, CSS custom properties, Node.js source-level regression harness, Shopify Theme Check.
 
@@ -17,7 +17,8 @@
 - Body rich text must use Horizon's `text-block` cascade for semantic child headings.
 - The section must scope native `--color` to `settings.text_color`; button colors remain explicit and independent.
 - Intro and media containers each expose top, bottom, left, and right internal padding.
-- Existing `intro_padding_inline` and `media_padding_inline` values remain hidden legacy fallbacks when newer side-specific settings are absent.
+- Existing `intro_padding_inline` and `media_padding_inline` values remain active while an explicit per-container individual-side switch is off.
+- Individual left/right values, including intentional zero, apply only while their container's switch is on.
 - Existing defaults render unchanged and mobile must not gain overflow or forced whitespace.
 
 ## File map
@@ -188,20 +189,23 @@ git commit -m "feat(story-video): add button typography controls"
 
 **Interfaces:**
 - Consumes: settings `intro_padding_block_start`, `intro_padding_block_end`, `intro_padding_inline_start`, `intro_padding_inline_end`, `media_padding_block_start`, `media_padding_block_end`, `media_padding_inline_start`, `media_padding_inline_end`.
-- Produces: four scoped leaf variables for each container; hidden legacy settings supply fallback values.
+- Produces: four scoped leaf variables for each container; boolean mode settings select legacy horizontal or individual left/right values.
 
 - [ ] **Step 1: Add failing padding and compatibility assertions**
 
-Add assertions for all eight side-specific IDs and for bindings equivalent to:
+Add assertions for all eight side-specific IDs, mode IDs `intro_individual_side_padding` and `media_individual_side_padding`, and conditional bindings equivalent to:
 
 ```liquid
---story-video-intro-padding-inline-start: {{ settings.intro_padding_inline_start | default: settings.intro_padding_inline | default: 0 }}px;
---story-video-intro-padding-inline-end: {{ settings.intro_padding_inline_end | default: settings.intro_padding_inline | default: 0 }}px;
---story-video-media-padding-inline-start: {{ settings.media_padding_inline_start | default: settings.media_padding_inline | default: 0 }}px;
---story-video-media-padding-inline-end: {{ settings.media_padding_inline_end | default: settings.media_padding_inline | default: 0 }}px;
+{% if settings.intro_individual_side_padding %}
+  --story-video-intro-padding-inline-start: {{ settings.intro_padding_inline_start }}px;
+  --story-video-intro-padding-inline-end: {{ settings.intro_padding_inline_end }}px;
+{% else %}
+  --story-video-intro-padding-inline-start: {{ settings.intro_padding_inline }}px;
+  --story-video-intro-padding-inline-end: {{ settings.intro_padding_inline }}px;
+{% endif %}
 ```
 
-Assert CSS applies separate block/inline start/end variables and the legacy IDs remain in schema with `visible_if: "{{ false }}"`.
+Assert CSS applies separate block/inline start/end variables. Parse the schema JSON and verify each mode defaults to `false`, each legacy horizontal setting is visible only while its mode is off, and each new left/right setting is visible only while its mode is on.
 
 - [ ] **Step 2: Run RED**
 
@@ -211,7 +215,7 @@ Expected: FAIL with `missing intro_padding_inline_start`.
 
 - [ ] **Step 3: Implement four-sided bindings and schema**
 
-Replace shorthand variables and declarations with block-start, block-end, inline-start, and inline-end variables for both containers. Add left/right range settings with `0` defaults. Keep the old horizontal settings hidden and use them only as fallback when new saved values are absent.
+Replace shorthand variables and declarations with block-start, block-end, inline-start, and inline-end variables for both containers. Add a checkbox mode plus left/right range settings with `0` defaults for each container. Keep the old horizontal setting visible while the mode is off; show the two new side controls while it is on. Add a translated schema label for the mode because no suitable existing key is available.
 
 - [ ] **Step 4: Run complete automated validation**
 

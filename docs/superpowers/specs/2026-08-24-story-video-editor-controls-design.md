@@ -56,7 +56,7 @@ Replace each single horizontal-padding editor control with independent physical 
 - Left → inline start.
 - Right → inline end.
 
-This applies independently to the intro/text container and media/video container. New left/right defaults reproduce the existing `0px` internal padding. Existing saved `intro_padding_inline` and `media_padding_inline` values remain hidden legacy fallbacks when the newer side-specific values are absent.
+This applies independently to the intro/text container and media/video container. Each container receives an `Individual side padding` switch. It defaults to off, preserving the existing horizontal-padding setting for old and new instances. When enabled, left and right controls appear and take precedence, including intentional zero values. This explicit mode is required because Shopify exposes a new numeric range's default `0` even on old instances, so Liquid cannot otherwise distinguish an absent key from an intentional zero.
 
 Outer section padding and its existing responsive scaling stay unchanged. No new forced height, distribution, or viewport spacing is introduced.
 
@@ -83,7 +83,7 @@ Implementation must include:
 - A failing-then-passing regression harness covering all three independent preset groups and their Custom fields.
 - Checks that the body uses the native rich-text preset cascade.
 - Checks that the section scopes `--color` to the selected text color.
-- Checks for four independent padding bindings on both intro and media containers, including legacy horizontal fallbacks.
+- Checks for four independent padding bindings on both intro and media containers, including explicit legacy/individual mode switching.
 - Schema parsing or Shopify Theme Check validation for modified files.
 - `git diff --check`.
 - Independent code review before publication.
@@ -95,6 +95,6 @@ Implementation must include:
 3. Custom exposes font, size, line height, letter spacing, case, and wrap.
 4. Preset-controlled text uses the configured section text color; button colors remain independently configurable.
 5. Intro and media padding can each be controlled on all four sides.
-6. Existing saved horizontal padding continues to render when newer side settings are absent.
+6. Existing saved horizontal padding continues to render while individual-side mode is off, including on instances saved before this feature.
 7. Current defaults and video behavior do not regress.
 8. Automated validation passes for all modified files.
