@@ -501,6 +501,7 @@
     "read_only": "Salt okunur",
     "headings": "Başlıklar",
     "horizontal_padding": "Yatay iç boşluk",
+    "individual_side_padding": "Her kenar için ayrı iç boşluk",
     "show_count": "Sayımı göster",
     "vertical_padding": "Dikey iç boşluk",
     "visibility": "Görünürlük",

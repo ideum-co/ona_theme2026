@@ -29,12 +29,22 @@
     --section-heading-level-size: var({{ heading_level_size }});
     --story-video-intro-padding-block-start: {{ settings.intro_padding_block_start | default: 0 }}px;
     --story-video-intro-padding-block-end: {{ settings.intro_padding_block_end | default: 0 }}px;
-    --story-video-intro-padding-inline-start: {{ settings.intro_padding_inline_start | default: settings.intro_padding_inline | default: 0 }}px;
-    --story-video-intro-padding-inline-end: {{ settings.intro_padding_inline_end | default: settings.intro_padding_inline | default: 0 }}px;
+    {% if settings.intro_individual_side_padding %}
+    --story-video-intro-padding-inline-start: {{ settings.intro_padding_inline_start }}px;
+    --story-video-intro-padding-inline-end: {{ settings.intro_padding_inline_end }}px;
+    {% else %}
+    --story-video-intro-padding-inline-start: {{ settings.intro_padding_inline }}px;
+    --story-video-intro-padding-inline-end: {{ settings.intro_padding_inline }}px;
+    {% endif %}
     --story-video-media-padding-block-start: {{ settings.media_padding_block_start | default: 0 }}px;
     --story-video-media-padding-block-end: {{ settings.media_padding_block_end | default: 0 }}px;
-    --story-video-media-padding-inline-start: {{ settings.media_padding_inline_start | default: settings.media_padding_inline | default: 0 }}px;
-    --story-video-media-padding-inline-end: {{ settings.media_padding_inline_end | default: settings.media_padding_inline | default: 0 }}px;
+    {% if settings.media_individual_side_padding %}
+    --story-video-media-padding-inline-start: {{ settings.media_padding_inline_start }}px;
+    --story-video-media-padding-inline-end: {{ settings.media_padding_inline_end }}px;
+    {% else %}
+    --story-video-media-padding-inline-start: {{ settings.media_padding_inline }}px;
+    --story-video-media-padding-inline-end: {{ settings.media_padding_inline }}px;
+    {% endif %}
     --story-video-background: {{ settings.background_color }};
     --story-video-color: {{ settings.text_color }};
     --color: {{ settings.text_color }};
@@ -1229,6 +1239,12 @@
       "default": 0
     },
     {
+      "type": "checkbox",
+      "id": "intro_individual_side_padding",
+      "label": "t:settings.individual_side_padding",
+      "default": false
+    },
+    {
       "type": "range",
       "id": "intro_padding_inline_start",
       "label": "t:settings.left",
@@ -1236,7 +1252,8 @@
       "max": 160,
       "step": 4,
       "unit": "px",
-      "default": 0
+      "default": 0,
+      "visible_if": "{{ section.settings.intro_individual_side_padding }}"
     },
     {
       "type": "range",
@@ -1246,7 +1263,8 @@
       "max": 160,
       "step": 4,
       "unit": "px",
-      "default": 0
+      "default": 0,
+      "visible_if": "{{ section.settings.intro_individual_side_padding }}"
     },
     {
       "type": "range",
@@ -1257,7 +1275,7 @@
       "step": 4,
       "unit": "px",
       "default": 0,
-      "visible_if": "{{ false }}"
+      "visible_if": "{{ section.settings.intro_individual_side_padding == false }}"
     },
     {
       "type": "header",
@@ -1284,6 +1302,12 @@
       "default": 0
     },
     {
+      "type": "checkbox",
+      "id": "media_individual_side_padding",
+      "label": "t:settings.individual_side_padding",
+      "default": false
+    },
+    {
       "type": "range",
       "id": "media_padding_inline_start",
       "label": "t:settings.left",
@@ -1291,7 +1315,8 @@
       "max": 160,
       "step": 4,
       "unit": "px",
-      "default": 0
+      "default": 0,
+      "visible_if": "{{ section.settings.media_individual_side_padding }}"
     },
     {
       "type": "range",
@@ -1301,7 +1326,8 @@
       "max": 160,
       "step": 4,
       "unit": "px",
-      "default": 0
+      "default": 0,
+      "visible_if": "{{ section.settings.media_individual_side_padding }}"
     },
     {
       "type": "range",
@@ -1312,7 +1338,7 @@
       "step": 4,
       "unit": "px",
       "default": 0,
-      "visible_if": "{{ false }}"
+      "visible_if": "{{ section.settings.media_individual_side_padding == false }}"
     }
   ],
   "presets": [

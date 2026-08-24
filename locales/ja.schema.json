@@ -516,6 +516,7 @@
     "default_logo": "デフォルトのロゴ",
     "divider_width": "区切り線の幅",
     "horizontal_padding": "水平方向の余白",
+    "individual_side_padding": "各辺の余白",
     "inverse": "反転",
     "inverse_logo": "反転ロゴ",
     "layout_style": "スタイル",

@@ -3,6 +3,9 @@ import fs from 'node:fs';
 
 const section = fs.readFileSync('sections/story-video.liquid', 'utf8');
 const helperPath = 'snippets/story-video-typography-style.liquid';
+const schemaSource = section.match(/\{% schema %\}\s*([\s\S]*?)\s*\{% endschema %\}/)?.[1];
+assert.ok(schemaSource, 'missing section schema');
+const schemaSettings = new Map(JSON.parse(schemaSource).settings.map((setting) => [setting.id, setting]));
 
 for (const suffix of ['type_preset', 'font', 'font_size', 'line_height', 'letter_spacing', 'case', 'wrap']) {
   assert.match(section, new RegExp(`"id"\\s*:\\s*"body_${suffix}"`), `body missing ${suffix}`);
@@ -45,25 +48,91 @@ for (const id of [
   'media_padding_inline_start',
   'media_padding_inline_end',
 ]) {
-  assert.match(section, new RegExp(`"id"\\s*:\\s*"${id}"`), `missing ${id}`);
+  assert.ok(schemaSettings.has(id), `missing ${id}`);
 }
 
-for (const [variable, setting, fallback] of [
-  ['--story-video-intro-padding-block-start', 'intro_padding_block_start', '0'],
-  ['--story-video-intro-padding-block-end', 'intro_padding_block_end', '0'],
-  ['--story-video-intro-padding-inline-start', 'intro_padding_inline_start', 'settings.intro_padding_inline | default: 0'],
-  ['--story-video-intro-padding-inline-end', 'intro_padding_inline_end', 'settings.intro_padding_inline | default: 0'],
-  ['--story-video-media-padding-block-start', 'media_padding_block_start', '0'],
-  ['--story-video-media-padding-block-end', 'media_padding_block_end', '0'],
-  ['--story-video-media-padding-inline-start', 'media_padding_inline_start', 'settings.media_padding_inline | default: 0'],
-  ['--story-video-media-padding-inline-end', 'media_padding_inline_end', 'settings.media_padding_inline | default: 0'],
-]) {
-  const escapedVariable = variable.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const escapedFallback = fallback.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  assert.match(
-    section,
-    new RegExp(`${escapedVariable}:\\s*\\{\\{ settings\\.${setting} \\| default: ${escapedFallback} \\}\\}px;`),
-    `missing ${variable} binding`,
+for (const container of ['intro', 'media']) {
+  const modeId = `${container}_individual_side_padding`;
+  const legacyId = `${container}_padding_inline`;
+  const startId = `${container}_padding_inline_start`;
+  const endId = `${container}_padding_inline_end`;
+
+  assert.deepEqual(
+    schemaSettings.get(modeId),
+    {
+      type: 'checkbox',
+      id: modeId,
+      label: 't:settings.individual_side_padding',
+      default: false,
+    },
+    `${modeId} must default to legacy horizontal padding`,
+  );
+  assert.equal(
+    schemaSettings.get(legacyId)?.visible_if,
+    `{{ section.settings.${modeId} == false }}`,
+    `${legacyId} must be visible while individual sides are off`,
+  );
+  for (const id of [startId, endId]) {
+    assert.equal(
+      schemaSettings.get(id)?.visible_if,
+      `{{ section.settings.${modeId} }}`,
+      `${id} must be visible while individual sides are on`,
+    );
+    assert.equal(schemaSettings.get(id)?.default, 0, `${id} must permit an intentional zero`);
+  }
+
+  const conditionalBindings = new RegExp(
+    `\\{% if settings\\.${modeId} %\\}([\\s\\S]*?)\\{% else %\\}([\\s\\S]*?)\\{% endif %\\}`,
+  ).exec(section);
+  assert.ok(conditionalBindings, `missing ${container} padding mode binding`);
+
+  const [individualBindings, legacyBindings] = conditionalBindings.slice(1);
+  for (const [side, id] of [
+    ['start', startId],
+    ['end', endId],
+  ]) {
+    assert.match(
+      individualBindings,
+      new RegExp(`--story-video-${container}-padding-inline-${side}:\\s*\\{\\{ settings\\.${id} \\}\\}px;`),
+      `${container} individual ${side} binding is missing`,
+    );
+    assert.match(
+      legacyBindings,
+      new RegExp(`--story-video-${container}-padding-inline-${side}:\\s*\\{\\{ settings\\.${legacyId} \\}\\}px;`),
+      `${container} legacy ${side} binding is missing`,
+    );
+  }
+
+  const renderBindings = (bindings, values) =>
+    Object.fromEntries(
+      [...bindings.matchAll(/(--story-video-[\w-]+):\s*\{\{ settings\.([\w_]+) \}\}px;/g)].map(([, variable, setting]) => [
+        variable,
+        values[setting],
+      ]),
+    );
+  assert.deepEqual(
+    renderBindings(legacyBindings, {
+      [legacyId]: 48,
+      [startId]: 12,
+      [endId]: 36,
+    }),
+    {
+      [`--story-video-${container}-padding-inline-start`]: 48,
+      [`--story-video-${container}-padding-inline-end`]: 48,
+    },
+    `${container} legacy mode must use nonzero horizontal padding for both inline sides`,
+  );
+  assert.deepEqual(
+    renderBindings(individualBindings, {
+      [legacyId]: 48,
+      [startId]: 0,
+      [endId]: 64,
+    }),
+    {
+      [`--story-video-${container}-padding-inline-start`]: 0,
+      [`--story-video-${container}-padding-inline-end`]: 64,
+    },
+    `${container} individual mode must preserve intentional zero and independent side values`,
   );
 }
 
@@ -84,10 +153,10 @@ for (const [selector, property, variable] of [
   );
 }
 
-for (const id of ['intro_padding_inline', 'media_padding_inline']) {
+for (const file of fs.readdirSync('locales').filter((name) => name.endsWith('.schema.json'))) {
   assert.match(
-    section,
-    new RegExp(`"id"\\s*:\\s*"${id}"[\\s\\S]*?"visible_if"\\s*:\\s*"\\{\\{ false \\}\\}"`),
-    `${id} must remain a hidden legacy fallback`,
+    fs.readFileSync(`locales/${file}`, 'utf8'),
+    /"individual_side_padding"\s*:/,
+    `${file} missing the individual-side padding translation`,
   );
 }
