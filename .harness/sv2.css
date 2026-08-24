@@ -1,0 +1,104 @@
+
+  .story-video {
+    display: grid;
+
+    /* An implicit auto column would take its width from the intro text, leaving the player
+       narrower than the section and unable to reach its own max width. */
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: var(--gap-2xl);
+    padding-inline: var(--util-page-margin, var(--padding-2xl));
+    background: var(--story-video-background);
+    color: var(--story-video-color);
+    text-align: center;
+  }
+
+  /* Padding per column rather than one figure for the whole section: the text and the video sit in
+     the same row and almost never want the same breathing room. */
+  .story-video__intro {
+    display: grid;
+    justify-items: center;
+    gap: var(--gap-lg);
+    max-inline-size: 42rem;
+    padding-block: var(--story-video-intro-padding-block, 0);
+    padding-inline: var(--story-video-intro-padding-inline, 0);
+  }
+
+  .story-video__logo {
+    inline-size: clamp(4rem, 7vw, 7rem);
+    block-size: auto;
+  }
+
+  .story-video__heading {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--story-video-heading-size, var(--font-size, var(--section-heading-level-size)));
+    font-weight: var(--font-heading--weight);
+  }
+
+  .story-video__body {
+    display: grid;
+    gap: var(--gap-sm);
+    font-size: var(--font-size--xl);
+  }
+
+  .story-video__body :is(p, ul, ol) {
+    margin: 0;
+  }
+
+  .story-video__button.button {
+    --button-background-color: var(--story-video-button-background);
+    --button-color: var(--story-video-button-color);
+
+    justify-content: center;
+  }
+
+  /* A negative bottom margin lets the player hang over whatever section follows, as in the
+     design. It also shortens this section, so the background stops above the video's bottom
+     edge, which is the effect being asked for. The stacking context keeps it above. */
+  /* justify-items: center on the grid sizes items to their content, and the player inside asks
+     for 100% of its parent - the two resolve to zero. Stretching the area and capping it with a
+     max width is what gives the player a real box to lay out in. */
+  /* A definite width plus `justify-self: center`, not `stretch` with auto margins: an auto margin
+     in the alignment axis cancels stretch, which left the player at its intrinsic 300px. */
+  .story-video__media {
+    padding-block: var(--story-video-media-padding-block, 0);
+    padding-inline: var(--story-video-media-padding-inline, 0);
+    position: relative;
+    z-index: var(--layer-flat, 1);
+    justify-self: center;
+    inline-size: min(100%, var(--story-video-max-width, 1280px));
+    margin-block-end: calc(var(--story-video-overhang, 0px) * -1);
+  }
+
+  /* `deferred-media` is a custom element with no display of its own, so it stays inline unless a
+     flex or grid parent blockifies it - which is what happens inside the theme's own video block,
+     and why this only showed up here. Inline meant its width and height were ignored and the
+     absolutely positioned iframe and play button resolved against a 640px box. */
+  .story-video__player {
+    display: block;
+  }
+
+  /* Play button per the design: a solid disc with the triangle drawn as an outline. The theme's
+     icon is a filled path, so it is stroked instead of filled here. */
+  .story-video .deferred-media__poster-icon {
+    inline-size: var(--story-video-play-size, 6rem);
+    block-size: var(--story-video-play-size, 6rem);
+    background: var(--story-video-play-background);
+    color: var(--story-video-play-color);
+  }
+
+  .story-video .deferred-media__poster-icon svg {
+    inline-size: 40%;
+    block-size: 40%;
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 1;
+    filter: none;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .story-video .deferred-media__poster-icon svg path {
+    fill: none;
+    stroke: currentcolor;
+  }
