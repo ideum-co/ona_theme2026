@@ -436,7 +436,8 @@
       "max": 200,
       "step": 4,
       "unit": "px",
-      "default": 24
+      "default": 24,
+      "visible_if": "{{ section.settings.content_distribution != 'space-between' }}"
     },
     {
       "type": "select",
@@ -454,6 +455,23 @@
         }
       ],
       "default": "together"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:settings.eyebrow"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_title",
+      "label": "t:names.product_title",
+      "default": true
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "t:settings.description",
+      "info": "t:info.product_highlight_description"
     },
     {
       "type": "header",
@@ -479,24 +497,8 @@
       "max": 200,
       "step": 4,
       "unit": "px",
-      "default": 0
-    },
-    {
-      "type": "text",
-      "id": "eyebrow",
-      "label": "t:settings.eyebrow"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_product_title",
-      "label": "t:names.product_title",
-      "default": true
-    },
-    {
-      "type": "richtext",
-      "id": "description",
-      "label": "t:settings.description",
-      "info": "t:info.product_highlight_description"
+      "default": 0,
+      "visible_if": "{{ section.settings.content_distribution != 'space-between' }}"
     },
     {
       "type": "header",
