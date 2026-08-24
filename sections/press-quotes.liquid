@@ -45,13 +45,12 @@
 {%- endcapture -%}
 
 <div
-  class="press-quotes"
+  class="press-quotes spacing-style"
   style="
     --press-quotes-background: {{ settings.background_color }};
     --press-quotes-color: {{ settings.text_color }};
     --press-quotes-columns: {{ settings.columns }};
-    --press-quotes-padding-block-start: {{ settings.padding-block-start }}px;
-    --press-quotes-padding-block-end: {{ settings.padding-block-end }}px;
+    {%- render 'spacing-style', settings: settings %}
   "
   {{ section.shopify_attributes }}
 >
@@ -76,7 +75,6 @@
   .press-quotes {
     --slide-width: calc(100% / var(--press-quotes-columns, 3));
 
-    padding-block: var(--press-quotes-padding-block-start) var(--press-quotes-padding-block-end);
     padding-inline: var(--page-margin, 1rem);
     background: var(--press-quotes-background);
     color: var(--press-quotes-color);

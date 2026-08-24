@@ -37,7 +37,7 @@
 {%- endcapture -%}
 
 <div
-  class="club-benefits"
+  class="club-benefits spacing-style"
   style="
     --club-benefits-background: {{ settings.background_color }};
     --club-benefits-color: {{ settings.text_color }};
@@ -48,11 +48,10 @@
     --club-benefits-quote-size: {{ settings.quote_size }}px;
     --club-benefits-button-background: {{ settings.button_background }};
     --club-benefits-button-color: {{ settings.button_text }};
-    --club-benefits-padding-block-start: {{ settings.padding-block-start }}px;
-    --club-benefits-padding-block-end: {{ settings.padding-block-end }}px;
     {% if settings.background_image != blank %}
       --club-benefits-background-image: url({{ settings.background_image | image_url: width: 2400 }});
     {% endif %}
+    {%- render 'spacing-style', settings: settings %}
   "
   {{ section.shopify_attributes }}
 >
@@ -127,7 +126,6 @@
     display: grid;
     justify-items: center;
     gap: var(--gap-5xl, 3.5rem);
-    padding-block: var(--club-benefits-padding-block-start) var(--club-benefits-padding-block-end);
     padding-inline: var(--page-margin, 1rem);
     background-color: var(--club-benefits-background);
     background-image: var(--club-benefits-background-image, none);

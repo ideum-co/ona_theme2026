@@ -43,7 +43,7 @@
 -%}
 
 <div
-  class="product-intro"
+  class="product-intro spacing-style"
   style="
     --product-intro-background: {{ settings.background_color }};
     --product-intro-color: {{ settings.text_color }};
@@ -62,11 +62,10 @@
     --product-intro-button-color: {{ settings.button_text }};
     --product-intro-model-height: {{ settings.model_height }}px;
     --product-intro-model-width: {{ settings.model_width }}px;
-    --product-intro-padding-block-start: {{ settings.padding-block-start }}px;
-    --product-intro-padding-block-end: {{ settings.padding-block-end }}px;
     {% if settings.background_image != blank %}
       --product-intro-background-image: url({{ settings.background_image | image_url: width: 2400 }});
     {% endif %}
+    {%- render 'spacing-style', settings: settings %}
   "
   {{ section.shopify_attributes }}
 >
@@ -190,7 +189,6 @@
     display: grid;
     gap: var(--gap-2xl);
     align-items: center;
-    padding-block: var(--product-intro-padding-block-start) var(--product-intro-padding-block-end);
     padding-inline: var(--page-margin, 1rem);
     background-color: var(--product-intro-background);
     background-image: var(--product-intro-background-image, none);
