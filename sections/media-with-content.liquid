@@ -20,6 +20,10 @@
   if section.settings.content_distribution == 'space-between'
     assign media_class_modifier = media_class_modifier | append: ' media-with-content--distribute'
   endif
+
+  if section.settings.media_ignores_padding
+    assign media_class_modifier = media_class_modifier | append: ' media-with-content--media-bleed'
+  endif
 %}
 
 {% liquid
@@ -174,6 +178,14 @@
     block-size: 100%;
   }
 
+  /* The section's padding is on the grid, so it insets the media as well as the content and the
+     image ends up cropped by it. This pulls the media area back out by exactly that padding, which
+     `spacing-style` has already published as custom properties, so the image runs to the section's
+     edges while the content keeps its breathing room. */
+  .media-with-content--media-bleed .media-block {
+    margin-block: calc(-1 * var(--padding-block-start, 0px)) calc(-1 * var(--padding-block-end, 0px));
+  }
+
   /* Only the first block separates. `space-between` spread every block - heading, text and button
      all pulled apart - and the design wants the heading at the top with the rest together below. */
   .media-with-content--distribute .media-with-content__content > .group-block-content > :first-child {
@@ -302,6 +314,13 @@
       "type": "checkbox",
       "id": "mobile_text_center",
       "label": "t:settings.mobile_text_center",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "media_ignores_padding",
+      "label": "t:settings.media_ignores_padding",
+      "info": "t:info.media_ignores_padding",
       "default": false
     },
     {
