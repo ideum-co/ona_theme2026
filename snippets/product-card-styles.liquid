@@ -31,16 +31,6 @@
     height: 100%;
   }
 
-  /* Anchor the buy-buttons group to the bottom of the card so it aligns
-     across a row regardless of how many lines the title/description above
-     wrap to. Scoped to groups that actually contain buy buttons or a
-     subscribe control, not just "whatever the last block happens to be" -
-     other card presets (e.g. product-list, product-recommendations) can
-     end in a price or text block instead, which should stay put. */
-  .product-card__content > .group-block:has(.buy-buttons-block, .subscribe-block) {
-    margin-top: auto;
-  }
-
   /* Product card title truncation - applied on mobile regardless of view */
   @media screen and (max-width: 749px) {
     :is(.product-card, .product-grid__card) :is(h4, .h4) {
