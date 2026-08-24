@@ -17,7 +17,7 @@
   if settings.section_width == 'page-width'
     assign slideshow_gutters = 'start end'
     assign gutter_style = '--gutter-slide-width: var(--util-page-margin-offset);'
-    assign adaptive_gutter_style = '--arlc-gutter: max(40px, calc((100cqw - min(90rem, 100cqw - 80px)) / 2));'
+    assign adaptive_gutter_style = '--arlc-gutter: max(var(--page-margin), calc((100cqw - min(var(--page-content-width), 100cqw - (var(--page-margin) * 2))) / 2));'
   else
     assign slideshow_gutters = null
     assign gutter_style = '--gutter-slide-width: 0px;'
@@ -122,16 +122,18 @@
        track needs --arlc-column-count directly to size itself to exactly N columns instead
        of stretching to fill its full-bleed parent.
 
-       Uses a local --arlc-gutter (set in %-page-margin-offset via cqw above, next to
-       --gutter-slide-width) instead of --gutter-slide-width itself: custom properties are
-       re-substituted at each point of use, not frozen where declared, and
-       --gutter-slide-width's formula resolves a bare `%` - fine where it's consumed on the
-       element that declares it (e.g. the arrows padding below), but wrong here, where the
-       value is inherited down to the much narrower .resource-list__slide and its `%` would
-       resolve against the SLIDE's own width instead of the track's. cqw doesn't have that
-       problem - it always resolves against the same query container regardless of which
-       descendant reads it - so the gutter math is duplicated here in cqw terms rather than
-       reused from the page-margin variable. */
+       Uses a local --arlc-gutter (set above, next to --gutter-slide-width) instead of
+       --gutter-slide-width itself: custom properties are re-substituted at each point of
+       use, not frozen where declared, and --gutter-slide-width ultimately resolves to
+       --util-page-margin-offset (assets/base.css), whose formula divides a bare `%` - fine
+       where it's consumed on the element that declares it (e.g. the arrows padding below),
+       but wrong here, where the value is inherited down to the much narrower
+       .resource-list__slide and its `%` would resolve against the SLIDE's own width instead
+       of the track's. cqw doesn't have that problem - it always resolves against the same
+       query container regardless of which descendant reads it - so --arlc-gutter mirrors
+       --util-page-margin-offset's own formula (same --page-margin/--page-content-width
+       tokens, so it stays correct across the narrow/normal/wide page-width setting) with
+       `%` swapped for `100cqw`. */
     .resource-list__carousel--adaptive slideshow-slides {
       --arlc-track: calc(100cqw - (2 * var(--arlc-gutter, 0px)));
       --arlc-step: calc(var(--adaptive-min-card, 300px) + var(--resource-list-column-gap));
