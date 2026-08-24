@@ -258,6 +258,7 @@
     "favicon": "Favicon",
     "font_family": "Familia de fuentes",
     "gap": "Separación",
+    "content_gap": "Separación del contenido",
     "geometric_translate_y": "Traslación geométrica en Y",
     "heading": "Título",
     "icon": "Ícono",

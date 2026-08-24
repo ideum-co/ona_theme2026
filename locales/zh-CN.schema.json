@@ -258,6 +258,7 @@
     "favicon": "网站图标",
     "font_family": "字体系列",
     "gap": "间距",
+    "content_gap": "内容间距",
     "geometric_translate_y": "几何 Y 轴平移",
     "heading": "标题",
     "icon": "图标",

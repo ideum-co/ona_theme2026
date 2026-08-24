@@ -258,6 +258,7 @@
     "favicon": "Favoritikon",
     "font_family": "Skrifttypefamilie",
     "gap": "Afstand",
+    "content_gap": "Indholdsafstand",
     "geometric_translate_y": "Geometrisk Y-forskydning",
     "heading": "Overskrift",
     "icon": "Ikon",

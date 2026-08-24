@@ -272,6 +272,7 @@
     "custom_minimum_height": "사용자 지정 최소 높이",
     "font_family": "글꼴 모음",
     "gap": "간격",
+    "content_gap": "콘텐츠 간격",
     "geometric_translate_y": "기하학적 변환 Y",
     "image": "이미지",
     "image_opacity": "이미지 불투명도",

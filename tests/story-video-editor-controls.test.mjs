@@ -171,8 +171,10 @@ for (const [selector, property, variable] of [
 }
 
 for (const file of fs.readdirSync('locales').filter((name) => name.endsWith('.schema.json'))) {
+  const localeSchema = fs.readFileSync(`locales/${file}`, 'utf8');
+  assert.match(localeSchema, /"content_gap"\s*:/, `${file} missing the content-gap translation`);
   assert.match(
-    fs.readFileSync(`locales/${file}`, 'utf8'),
+    localeSchema,
     /"individual_side_padding"\s*:/,
     `${file} missing the individual-side padding translation`,
   );

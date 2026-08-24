@@ -272,6 +272,7 @@
     "custom_minimum_height": "Benutzerdefinierte Mindesthöhe",
     "font_family": "Schriftfamilie",
     "gap": "Abstand",
+    "content_gap": "Inhaltsabstand",
     "geometric_translate_y": "Geometrische Y-Verschiebung",
     "image": "Bild",
     "image_opacity": "Bilddeckkraft",

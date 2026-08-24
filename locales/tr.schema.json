@@ -272,6 +272,7 @@
     "custom_minimum_height": "Özel minimum yükseklik",
     "font_family": "Yazı tipi ailesi",
     "gap": "Boşluk",
+    "content_gap": "İçerik boşluğu",
     "geometric_translate_y": "Geometrik çeviri Y",
     "image": "Görsel",
     "image_opacity": "Görsel opaklığı",

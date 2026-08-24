@@ -258,6 +258,7 @@
     "favicon": "Favicon",
     "font_family": "ชุดแบบอักษร",
     "gap": "ช่องว่าง",
+    "content_gap": "ระยะห่างเนื้อหา",
     "geometric_translate_y": "การแปลงตำแหน่งแกน Y เชิงเรขาคณิต",
     "heading": "หัวเรื่อง",
     "icon": "ไอคอน",
