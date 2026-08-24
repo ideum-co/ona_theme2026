@@ -45,7 +45,7 @@
   ask for more columns than there are products, and the cards would shrink to leave empty track at
   the end instead of staying a comfortable size.
 {%- endcomment -%}
-<div style="{{ gutter_style }} {{ adaptive_gutter_style }} --slide-width-max: {{ slide_width_max | default: '300px' }}; --adaptive-columns-max: {{ slide_count | default: 99 }};{% if settings.adaptive_min_card %} --adaptive-min-card: {{ settings.adaptive_min_card }}px;{% endif %}">
+<div class="resource-list-carousel-viewport" style="{{ gutter_style }} {{ adaptive_gutter_style }} --slide-width-max: {{ slide_width_max | default: '300px' }}; --adaptive-columns-max: {{ slide_count | default: 99 }};{% if settings.adaptive_min_card %} --adaptive-min-card: {{ settings.adaptive_min_card }}px;{% endif %}">
   {% render 'slideshow',
     ref: slideshow_ref,
     class: 'resource-list__carousel',
@@ -152,6 +152,41 @@
 
     .resource-list__carousel--adaptive .resource-list__slide {
       --section-slide-width: var(--arlc-slide-width);
+    }
+
+    /* The track's own box still stretches to width: 100% of its full-bleed parent, wider
+       than the N visible columns + their shared left gutter. The trailing gutter
+       (slideshow-slides[gutters*='end'], snippets/slideshow-styles.liquid) reserves real
+       padding-inline-end, but that padding sits INSIDE the visible scrollport at rest (it's
+       not a clipping boundary) - it only becomes meaningful once scrolled to the very end.
+       Since the gap between cards (60px here) is smaller than the gutter (148px), the
+       leftover space between "where the whole columns end" and "where the box actually
+       ends" is wide enough for the next card to start poking through.
+
+       Tried shrinking the track's own width + zeroing its trailing padding first - that
+       gets the math right (content ends exactly at --arlc-gutter from the right edge, by
+       construction: count * slide-width + (count - 1) * gap == --arlc-track always), but
+       narrowing the actual scrollable element broke native scrollLeft/scrollTo() on load
+       (CSS scroll-snap re-settling against the new box produced a nonzero initial scroll
+       position, and disabling scroll-snap-type to work around that broke the carousel's
+       own next/previous JS scrollTo() calls outright - scrollLeft stopped responding to
+       any programmatic scroll).
+
+       Fix instead with clip-path on .resource-list-carousel-viewport (the div this snippet
+       renders around the slideshow, full-width and same box as .resource-list__carousel--
+       adaptive itself) rather than the scrollable track: purely a paint-time clip, doesn't
+       touch slideshow-slides' width/scrollWidth/scrollLeft/snap at all, so none of the above
+       breaks. Clips off the trailing --arlc-gutter (minus the 15px hover-effect buffer used
+       elsewhere in this file) from the right edge - exactly the dead space past the last
+       visible column, on any viewport/column-count.
+
+       Targets .resource-list-carousel-viewport, not .resource-list__carousel--adaptive:
+       --adaptive is applied by the section that renders this snippet, one level further OUT
+       than anything this file controls, so it's an ANCESTOR of everything below, including
+       this div - custom properties only inherit downward, so --arlc-gutter (declared in this
+       div's own inline style) isn't visible on that outer ancestor to read back. */
+    .resource-list__carousel--adaptive .resource-list-carousel-viewport {
+      clip-path: inset(0 max(0px, calc(var(--arlc-gutter, 0px) - 15px)) 0 0);
     }
   }
 
