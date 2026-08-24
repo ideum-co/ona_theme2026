@@ -53,7 +53,7 @@
       --variant-option-label-color: {{ settings.select_label_color | default: settings.text_color }};
       --variant-select-field-border-color: {{ settings.select_border_color | default: settings.text_color }};
       {%- if settings.content_distribution == 'space-between' %}
-        --product-highlight-distribution: space-between;
+        --product-highlight-heading-push: auto;
         --product-highlight-details-margin: 0;
       {%- endif %}
       --product-highlight-heading-size: {{ settings.heading_size }}px;
@@ -214,8 +214,6 @@
     display: flex;
     flex-direction: column;
 
-    /* Only meaningful with a definite height, which the media column gives the row on desktop. */
-    justify-content: var(--product-highlight-distribution, flex-start);
 
     /* Mobile first, falling back to the desktop value: the distance that reads as a corner label
        on a wide screen is a lot of empty space on a phone. */
@@ -225,6 +223,13 @@
       gap: var(--product-highlight-heading-gap, var(--gap-2xl));
     }
     padding-inline: var(--page-margin, 1rem);
+  }
+
+  /* An auto margin under the heading, rather than `space-between` on the column: space-between
+     spreads every child, so a column with three or more items comes apart. This pushes everything
+     after the heading down as one group and leaves their own spacing alone. */
+  .product-highlight__content > :first-child {
+    margin-block-end: var(--product-highlight-heading-push, 0);
   }
 
   .product-highlight__heading {

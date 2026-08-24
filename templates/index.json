@@ -259,7 +259,7 @@
                   "type": "text",
                   "name": "t:names.heading",
                   "settings": {
-                    "text": "<h2>Find <em>your</em> Coffee</h2>",
+                    "text": "<h3>Find <em>your</em> Coffee</h3>",
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "left",
@@ -410,7 +410,7 @@
               "type": "_product-list-text",
               "name": "t:names.collection_title",
               "settings": {
-                "text": "<h2>Coffee <em>spotlight</em></h2>",
+                "text": "<h3>Coffee <em>spotlight</em></h3>",
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "center",
@@ -811,7 +811,7 @@
                   "type": "text",
                   "name": "t:names.heading",
                   "settings": {
-                    "text": "<h2>Special <em>release</em></h2>",
+                    "text": "<h3>Special <em>release</em></h3>",
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "left",
@@ -1154,7 +1154,7 @@
           "type": "text",
           "name": "t:names.heading",
           "settings": {
-            "text": "<h2>Club <em>benefits</em></h2>",
+            "text": "<h3>Club <em>benefits</em></h3>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "center",
@@ -1634,7 +1634,7 @@
                   "type": "text",
                   "name": "t:names.heading",
                   "settings": {
-                    "text": "<h2>Raspberry <em>Candy</em></h2>",
+                    "text": "<h3>Raspberry <em>Candy</em></h3>",
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "left",
@@ -2009,7 +2009,7 @@
               "type": "text",
               "name": "t:names.heading",
               "settings": {
-                "text": "<h2>More than coffee. <em>Since 2008.</em></h2>",
+                "text": "<h3>More than coffee. <em>Since 2008.</em></h3>",
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "center",
@@ -2172,7 +2172,7 @@
           "type": "text",
           "name": "t:names.heading",
           "settings": {
-            "text": "<h2>Learn with <em>ONA</em></h2>",
+            "text": "<h3>Learn with <em>ONA</em></h3>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "center",
@@ -3018,7 +3018,7 @@
                   "type": "text",
                   "name": "t:names.heading",
                   "settings": {
-                    "text": "<h2>Find <em>ONA</em></h2>",
+                    "text": "<h3>Find <em>ONA</em></h3>",
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "left",
@@ -3135,7 +3135,7 @@
           "type": "text",
           "name": "t:names.heading",
           "settings": {
-            "text": "<h2>Discover by <em>category</em></h2>",
+            "text": "<h3>Discover by <em>category</em></h3>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "center",
