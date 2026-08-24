@@ -9,7 +9,7 @@
 ></div>
 <div
   class="section section--{{ section.settings.section_width }} spacing-style{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
-  style="{% render 'spacing-padding', settings: section.settings %}"
+  style="{% render 'spacing-style', settings: section.settings %}"
 >
   {{ section.settings.custom_liquid }}
 </div>

@@ -62,7 +62,7 @@
 {%- endcapture -%}
 
 <div
-  class="collection-carousel{% if settings.uppercase_labels %} collection-carousel--uppercase{% endif %}"
+  class="collection-carousel spacing-style{% if settings.uppercase_labels %} collection-carousel--uppercase{% endif %}"
   style="
     --collection-carousel-background: {{ settings.background_color }};
     --collection-carousel-color: {{ settings.text_color }};
@@ -72,8 +72,7 @@
     --collection-carousel-columns: {{ settings.columns }};
     --collection-carousel-columns-mobile: {{ settings.columns_mobile }};
     --collection-carousel-ratio: {{ settings.image_ratio }};
-    --collection-carousel-padding-block-start: {{ settings.padding-block-start }}px;
-    --collection-carousel-padding-block-end: {{ settings.padding-block-end }}px;
+    {%- render 'spacing-style', settings: settings %}
   "
   {{ section.shopify_attributes }}
 >
@@ -102,7 +101,6 @@
   .collection-carousel {
     --slide-width: calc(100% / var(--collection-carousel-columns, 5));
 
-    padding-block: var(--collection-carousel-padding-block-start) var(--collection-carousel-padding-block-end);
     padding-inline: var(--page-margin, 1rem);
     background: var(--collection-carousel-background);
     color: var(--collection-carousel-color);

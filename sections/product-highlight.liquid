@@ -60,12 +60,13 @@
       {%- endif %}
       --product-highlight-button-background: {{ settings.button_background }};
       --product-highlight-button-color: {{ settings.button_text }};
-      --product-highlight-padding-block-start: {{ settings.padding-block-start }}px;
-      --product-highlight-padding-block-end: {{ settings.padding-block-end }}px;
     "
     {{ section.shopify_attributes }}
   >
-    <div class="product-highlight__content">
+    <div
+      class="product-highlight__content spacing-style"
+      style="{%- render 'spacing-style', settings: settings %}"
+    >
       {%- if settings.heading != blank -%}
         <h2 class="product-highlight__heading">{{ settings.heading }}</h2>
       {%- endif -%}
@@ -210,7 +211,6 @@
     @media screen and (min-width: 750px) {
       gap: var(--product-highlight-heading-gap, var(--gap-2xl));
     }
-    padding-block: var(--product-highlight-padding-block-start) var(--product-highlight-padding-block-end);
     padding-inline: var(--page-margin, 1rem);
   }
 
@@ -512,7 +512,7 @@
       "type": "color",
       "id": "button_background",
       "label": "t:settings.background",
-      "default": "#751132"
+      "default": "#470a12"
     },
     {
       "type": "color",

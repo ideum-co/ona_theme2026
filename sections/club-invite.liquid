@@ -9,15 +9,14 @@
 -%}
 
 <div
-  class="club-invite"
+  class="club-invite spacing-style"
   style="
     --club-invite-color: {{ settings.text_color }};
     --club-invite-overlay: rgba({{ settings.overlay_color.rgb }} / {{ settings.overlay_opacity | divided_by: 100.0 }});
     --club-invite-min-height: {{ settings.section_height }};
-    --club-invite-padding-block-start: {{ settings.padding-block-start }}px;
-    --club-invite-padding-block-end: {{ settings.padding-block-end }}px;
     --club-invite-button-background: {{ settings.button_background }};
     --club-invite-button-color: {{ settings.button_text }};
+    {%- render 'spacing-style', settings: settings %}
   "
   {{ section.shopify_attributes }}
 >
@@ -93,7 +92,6 @@
     align-items: center;
     justify-items: center;
     min-block-size: var(--club-invite-min-height, 80svh);
-    padding-block: var(--club-invite-padding-block-start) var(--club-invite-padding-block-end);
     padding-inline: var(--page-margin, 1rem);
     color: var(--club-invite-color, var(--color-background));
     overflow: hidden;

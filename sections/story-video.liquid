@@ -10,7 +10,7 @@
 -%}
 
 <div
-  class="story-video"
+  class="story-video spacing-style"
   style="
     --story-video-background: {{ settings.background_color }};
     --story-video-color: {{ settings.text_color }};
@@ -22,8 +22,7 @@
     --story-video-play-background: {{ settings.play_background }};
     --story-video-play-color: {{ settings.play_color }};
     --story-video-play-size: {{ settings.play_size }}px;
-    --story-video-padding-block-start: {{ settings.padding-block-start }}px;
-    --story-video-padding-block-end: {{ settings.padding-block-end }}px;
+    {%- render 'spacing-style', settings: settings %}
   "
   {{ section.shopify_attributes }}
 >
@@ -108,7 +107,6 @@
     grid-template-columns: minmax(0, 1fr);
     justify-items: center;
     gap: var(--gap-2xl);
-    padding-block: var(--story-video-padding-block-start) var(--story-video-padding-block-end);
     padding-inline: var(--util-page-margin, var(--padding-2xl));
     background: var(--story-video-background);
     color: var(--story-video-color);
