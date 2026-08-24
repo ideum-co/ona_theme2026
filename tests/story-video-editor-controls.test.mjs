@@ -33,6 +33,19 @@ for (const suffix of ['type_preset', 'font', 'font_size', 'line_height', 'letter
   assert.match(section, new RegExp(`"id"\\s*:\\s*"body_${suffix}"`), `body missing ${suffix}`);
 }
 
+assert.deepEqual(schemaSettings.get('body_alignment'), {
+  type: 'text_alignment',
+  id: 'body_alignment',
+  label: 't:settings.alignment',
+  default: 'center',
+}, 'description alignment must be editable and preserve the centered Story design by default');
+assert.match(
+  section,
+  /\.story-video__body\s*\{[\s\S]*?text-align:\s*var\(--story-video-body-alignment, center\);/,
+  'description must apply its own alignment instead of relying on inherited text alignment',
+);
+assert.match(section, /--story-video-body-alignment:\s*\{\{ settings\.body_alignment \| default: 'center' \}\};/);
+
 for (const suffix of ['type_preset', 'font', 'font_size', 'line_height', 'letter_spacing', 'case', 'wrap']) {
   assert.match(section, new RegExp(`"id"\\s*:\\s*"button_${suffix}"`), `button missing ${suffix}`);
 }
