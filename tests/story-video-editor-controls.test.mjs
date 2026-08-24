@@ -19,8 +19,17 @@ assert.match(
   'heading preset needs doubled class specificity',
 );
 assert.match(section, /render 'story-video-typography-style'[\s\S]*?prefix: 'body'/);
-assert.match(section, /class="button story-video__button[^\"]*\{\{ button_preset \}\}/);
+assert.match(
+  section,
+  /class="button story-video__button\s+\{\{ button_preset \}\}\s+\{\{ button_preset \}\}/,
+  'button preset needs doubled class specificity',
+);
 assert.match(section, /render 'story-video-typography-style'[\s\S]*?prefix: 'button'/);
+assert.match(
+  section,
+  /\.story-video__button\.button\.paragraph\s*\{[\s\S]*?font-family:\s*var\(--font-paragraph--family\)[\s\S]*?font-style:\s*var\(--font-paragraph--style\)[\s\S]*?font-weight:\s*var\(--font-paragraph--weight\)[\s\S]*?font-size:\s*var\(--font-paragraph--size\)[\s\S]*?line-height:\s*var\(--font-paragraph--line-height\)[\s\S]*?letter-spacing:\s*var\(--font-paragraph--letter-spacing\)[\s\S]*?text-transform:\s*var\(--font-paragraph--case\)/,
+  'paragraph preset needs native typography on button',
+);
 assert.match(section, /\.story-video__button\.button[\s\S]*?--button-background-color/);
 assert.match(section, /\.story-video__button\.button[\s\S]*?--button-color/);
 assert.match(section, /--color:\s*\{\{ settings\.text_color \}\}/);

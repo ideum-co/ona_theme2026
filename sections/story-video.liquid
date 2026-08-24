@@ -71,7 +71,7 @@
 
     {%- if settings.button_label != blank -%}
       <a
-        class="button story-video__button {{ button_preset }}{% if button_preset == 'custom' %} custom-typography custom-font-size{% endif %}"
+        class="button story-video__button {{ button_preset }} {{ button_preset }}{% if button_preset == 'custom' %} custom-typography custom-font-size{% endif %}"
         style="{%- render 'story-video-typography-style', settings: settings, prefix: 'button', type: 'body' -%}"
         {% if settings.button_link != blank %}
           href="{{ settings.button_link }}"
@@ -184,6 +184,16 @@
     --button-color: var(--story-video-button-color);
 
     justify-content: center;
+  }
+
+  .story-video__button.button.paragraph {
+    font-family: var(--font-paragraph--family);
+    font-style: var(--font-paragraph--style);
+    font-weight: var(--font-paragraph--weight);
+    font-size: var(--font-paragraph--size);
+    line-height: var(--font-paragraph--line-height);
+    letter-spacing: var(--font-paragraph--letter-spacing);
+    text-transform: var(--font-paragraph--case);
   }
 
   /* A negative bottom margin lets the player hang over whatever section follows, as in the
