@@ -174,8 +174,10 @@
     block-size: 100%;
   }
 
-  .media-with-content--distribute .media-with-content__content > .group-block-content {
-    justify-content: space-between;
+  /* Only the first block separates. `space-between` spread every block - heading, text and button
+     all pulled apart - and the design wants the heading at the top with the rest together below. */
+  .media-with-content--distribute .media-with-content__content > .group-block-content > :first-child {
+    margin-block-end: auto;
   }
 
   /* Side padding and centring for the phone only. The padding goes on the content column and not

@@ -1,0 +1,28 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/.harness/mw4.css"><link rel="stylesheet" href="/.harness/ph4.css">
+<style>html{--gap:16px;--page-margin:1rem;--gap-2xl:1.5rem;--gap-lg:1rem}
+ body{margin:0;background:#4A0E1E;color:#F5F4EA}
+ .caja{block-size:420px;inline-size:520px;outline:1px solid #fff;margin-block-end:10px;display:grid}
+ .layout-panel-flex{display:flex;flex-direction:column;gap:var(--gap);height:100%}
+ h3,p,a{margin:0}</style></head><body>
+<!-- Media with text, distribuido: título arriba, los otros DOS juntos abajo -->
+<div class="caja"><div class="media-with-content media-with-content--distribute">
+ <div class="media-with-content__content" id="mc">
+  <div class="group-block-content layout-panel-flex" id="gp">
+    <h3 id="m-h">Find your Coffee</h3>
+    <p id="m-p">Finding great coffee shouldn't be complicated.</p>
+    <a id="m-b">Answer the quiz</a>
+  </div></div></div></div>
+<!-- Product highlight, distribuido -->
+<div class="caja"><div class="product-highlight" style="block-size:100%;--product-highlight-heading-push:auto;--product-highlight-details-margin:0">
+ <div class="product-highlight__content" id="pc" style="block-size:100%">
+  <h3 class="product-highlight__heading" id="p-h">Special release</h3>
+  <div class="product-highlight__details" id="p-d">detalles</div></div></div></div>
+<script>window.probe=()=>{const r=s=>document.querySelector(s).getBoundingClientRect();
+ const c=[...document.querySelectorAll('.caja')].map(e=>e.getBoundingClientRect());
+ return {mediaConTexto:{tituloArriba:Math.round(r('#m-h').top-c[0].top),
+    huecoTituloAParrafo:Math.round(r('#m-p').top-r('#m-h').bottom),
+    huecoParrafoABoton:Math.round(r('#m-b').top-r('#m-p').bottom),
+    botonAlFondo:Math.round(c[0].bottom-r('#m-b').bottom)},
+  productHighlight:{tituloArriba:Math.round(r('#p-h').top-c[1].top),
+    detallesAlFondo:Math.round(c[1].bottom-r('#p-d').bottom)}};};</script></body></html>
