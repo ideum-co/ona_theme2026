@@ -189,6 +189,8 @@
     "disclosures": "Informacje prawne"
   },
   "settings": {
+    "content_distribution": "Content distribution",
+    "heading_tag": "Heading level",
     "adaptive_min_card": "Minimum card width",
     "image_position_mobile": "Image position on mobile",
     "adaptive_columns": "Adapt columns to screen",
@@ -646,6 +648,7 @@
     "title_preset": "Gotowe ustawienie tytułu"
   },
   "options": {
+    "together": "Together",
     "three_d_model": "3D model",
     "below": "Pod polem",
     "inline": "Obok pola",
@@ -1158,6 +1161,8 @@
     "disclosures": "Informacje prawne"
   },
   "info": {
+    "content_distribution": "Top and bottom pushes the heading to the top of the column and the rest to the bottom.",
+    "heading_tag": "Affects the page outline for search engines and screen readers, not the visible size.",
     "adaptive_min_card": "Cards never get narrower than this; the number shown follows from it. Raise it if button labels wrap.",
     "zero_uses_desktop": "Set to 0 to use the desktop value.",
     "image_position_mobile": "Leave on Default to use the desktop setting. Contain avoids cropping when the image sits in a short box.",

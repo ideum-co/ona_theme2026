@@ -1,4 +1,10 @@
 {%- liquid
+  # The level is a setting so the page keeps one heading outline, but only h1 to h6 pass
+  # through - anything else would put an arbitrary tag name straight from a setting.
+  assign heading_tag = section.settings.heading_tag | default: 'h3'
+  unless heading_tag == 'h1' or heading_tag == 'h2' or heading_tag == 'h3' or heading_tag == 'h4' or heading_tag == 'h5' or heading_tag == 'h6'
+    assign heading_tag = 'h3'
+  endunless
   assign product = section.settings.product
   assign settings = section.settings
 
@@ -46,6 +52,10 @@
       {%- endcomment -%}
       --variant-option-label-color: {{ settings.select_label_color | default: settings.text_color }};
       --variant-select-field-border-color: {{ settings.select_border_color | default: settings.text_color }};
+      {%- if settings.content_distribution == 'space-between' %}
+        --product-highlight-distribution: space-between;
+        --product-highlight-details-margin: 0;
+      {%- endif %}
       --product-highlight-heading-size: {{ settings.heading_size }}px;
       --product-highlight-heading-gap: {{ settings.heading_gap }}px;
       {%- comment -%}
@@ -68,7 +78,7 @@
       style="{%- render 'spacing-style', settings: settings %}"
     >
       {%- if settings.heading != blank -%}
-        <h2 class="product-highlight__heading">{{ settings.heading }}</h2>
+        <{{ heading_tag }} class="product-highlight__heading">{{ settings.heading }}</{{ heading_tag }}>
       {%- endif -%}
 
       <div class="product-highlight__details">
@@ -204,6 +214,9 @@
     display: flex;
     flex-direction: column;
 
+    /* Only meaningful with a definite height, which the media column gives the row on desktop. */
+    justify-content: var(--product-highlight-distribution, flex-start);
+
     /* Mobile first, falling back to the desktop value: the distance that reads as a corner label
        on a wide screen is a lot of empty space on a phone. */
     gap: var(--product-highlight-heading-gap-mobile, var(--product-highlight-heading-gap, var(--gap-2xl)));
@@ -236,7 +249,10 @@
     display: flex;
     flex-direction: column;
     gap: var(--gap-lg);
-    margin-block: auto;
+
+    /* `auto` centres the block in the leftover space, which cancels any distribution set above.
+       It is only applied in the default mode. */
+    margin-block: var(--product-highlight-details-margin, auto);
     max-inline-size: 34rem;
   }
 
@@ -353,6 +369,39 @@
   "max_blocks": 4,
   "settings": [
     {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "t:settings.heading_tag",
+      "info": "t:info.heading_tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "h5",
+          "label": "H5"
+        },
+        {
+          "value": "h6",
+          "label": "H6"
+        }
+      ],
+      "default": "h3"
+    },
+    {
       "type": "product",
       "id": "product",
       "label": "t:settings.product"
@@ -383,6 +432,23 @@
       "step": 4,
       "unit": "px",
       "default": 24
+    },
+    {
+      "type": "select",
+      "id": "content_distribution",
+      "label": "t:settings.content_distribution",
+      "info": "t:info.content_distribution",
+      "options": [
+        {
+          "value": "together",
+          "label": "t:options.together"
+        },
+        {
+          "value": "space-between",
+          "label": "t:options.space_between"
+        }
+      ],
+      "default": "together"
     },
     {
       "type": "header",

@@ -1,0 +1,207 @@
+
+  .section--page-width {
+    &.media-with-content {
+      grid-template-areas: 'margin-left media margin-right' 'margin-left content margin-right';
+
+      @media screen and (min-width: 750px) {
+        /* Wide proportion is media 3.5 parts, content 2.5 parts. Which equals 7|5. So divide the central column by 7+5 and multiply accordingly */
+        --media-with-content-grid-columns: var(--full-page-grid-margin)
+          calc((var(--full-page-grid-central-column-width) / 12) * 7)
+          calc((var(--full-page-grid-central-column-width) / 12) * 5) var(--full-page-grid-margin);
+
+        grid-template-areas: 'margin-left media content margin-right';
+      }
+    }
+
+    &.media-with-content--media-right {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: var(--full-page-grid-margin)
+          calc((var(--full-page-grid-central-column-width) / 12) * 5)
+          calc((var(--full-page-grid-central-column-width) / 12) * 7) var(--full-page-grid-margin);
+
+        grid-template-areas: 'margin-left content media margin-right';
+      }
+    }
+
+    &.media-with-content--medium {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: var(--full-page-grid-margin)
+          repeat(2, calc(var(--full-page-grid-central-column-width) / 2)) var(--full-page-grid-margin);
+      }
+    }
+
+    &.media-with-content--narrow.media-with-content--media-right {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: var(--full-page-grid-margin)
+          calc((var(--full-page-grid-central-column-width) / 3) * 2)
+          calc(var(--full-page-grid-central-column-width) / 3) var(--full-page-grid-margin);
+      }
+    }
+
+    &.media-with-content--narrow {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: var(--full-page-grid-margin)
+          calc(var(--full-page-grid-central-column-width) / 3)
+          calc((var(--full-page-grid-central-column-width) / 3) * 2) var(--full-page-grid-margin);
+      }
+    }
+  }
+
+  .section--full-width {
+    &.media-with-content--media-right {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: 2.5fr 3.5fr;
+
+        grid-template-areas: 'content media';
+      }
+    }
+
+    &.media-with-content--medium {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: 1fr 1fr;
+      }
+    }
+
+    &.media-with-content--narrow {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: 2fr 4fr;
+      }
+    }
+
+    &.media-with-content--narrow.media-with-content--media-right {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: 4fr 2fr;
+      }
+    }
+  }
+
+  /* Keep the CSS specificity lower assuming that liquid won't assign this class with a full width section */
+  .media-with-content.media-with-content--media-extend {
+    grid-template-columns: var(--media-with-content-grid-columns);
+    grid-template-areas: 'media media media' 'margin-left content margin-right';
+
+    @media screen and (min-width: 750px) {
+      grid-template-areas: 'media media content margin-right';
+    }
+  }
+
+  .media-with-content--media-extend.media-with-content--media-right {
+    @media screen and (min-width: 750px) {
+      grid-template-areas: 'margin-left content media media';
+    }
+  }
+
+  .media-with-content--media-right {
+    @media screen and (min-width: 750px) {
+      grid-template-areas: 'margin-left content media media';
+    }
+  }
+
+  /* Pushes the first block to the top and the last to the bottom of the content column. The panel
+     is a flex column, so the distribution goes there; the column itself already fills the row. */
+  .media-with-content--distribute .media-with-content__content,
+  .media-with-content--distribute .media-with-content__content > .group-block-content {
+    block-size: 100%;
+  }
+
+  .media-with-content--distribute .media-with-content__content > .group-block-content {
+    justify-content: space-between;
+  }
+
+  /* Side padding and centring for the phone only. The padding goes on the content column and not
+     on `.group-block-content`, whose inline padding the theme already zeroes for a page-width
+     section - that is why the text sat flush against the edge - so there is no rule to outrank. */
+  @media screen and (max-width: 749px) {
+    .media-with-content__content {
+      padding-inline: var(--media-with-content-mobile-padding-inline, 0);
+    }
+
+    .media-with-content--mobile-text-center .media-with-content__content {
+      text-align: center;
+    }
+
+    /* The panel aligns its items from `--horizontal-alignment`, which arrives as an inline style,
+       so `align-items` is overridden directly rather than the variable behind it. */
+    .media-with-content--mobile-text-center .media-with-content__content .layout-panel-flex {
+      align-items: center;
+    }
+
+    .media-with-content--mobile-text-center .media-with-content__content .text-block {
+      align-items: center;
+    }
+
+    /* A text block with its own alignment set emits `--text-align` inline, and nothing declared on
+       that element can outrank an inline style. The variable is only read one level down, in
+       `.text-block > * { text-align: var(--text-align, …) }`, so that child is where the property
+       can actually be overridden - which is why the heading and the button centred and the
+       paragraph did not. */
+    .media-with-content--mobile-text-center .media-with-content__content .text-block > * {
+      text-align: center;
+    }
+  }
+
+  /* Puts the content above the media on a phone. Scoped to its own query so none of the desktop
+     `grid-template-areas` rules above are affected - they all live from 750px up. */
+  @media screen and (max-width: 749px) {
+    .media-with-content.media-with-content--mobile-content-first {
+      grid-template-areas: 'content content content' 'media media media';
+    }
+  }
+
+  /* Caps the media and text on very wide screens. The section background deliberately stays
+     edge to edge: capping it too left the page colour showing down both sides of the section. */
+  .media-with-content--limited {
+    max-inline-size: var(--media-with-content-max-width, 1280px);
+    margin-inline: auto;
+  }
+
+  .media-with-content {
+    --media-with-content-grid-columns: var(--full-page-grid-with-margins);
+
+    grid-template-columns: var(--media-with-content-grid-columns);
+    grid-template-areas: 'media media media' 'content content content';
+
+    @media screen and (min-width: 750px) {
+      --media-with-content-grid-columns: 3.5fr 2.5fr;
+
+      /* Default desktop layout is wide media, on the left, in full page section */
+      grid-template-areas: 'media content';
+    }
+
+    .media-block {
+      grid-area: media;
+    }
+
+    .media-with-content__content {
+      grid-area: content;
+    }
+
+    /* Inner blocks spacing */
+    .media-with-content__content > .group-block-content {
+      padding-inline: var(--page-margin);
+      padding-block: calc(2 * var(--page-margin));
+
+      @media screen and (min-width: 750px) {
+        padding-block: var(--page-margin);
+      }
+    }
+
+    &.section--page-width .media-with-content__content > .group-block-content {
+      padding-inline: 0;
+
+      @media screen and (min-width: 750px) {
+        padding-inline-start: var(--page-margin);
+      }
+    }
+
+    &.section--page-width.media-with-content--media-right .media-with-content__content > .group-block-content {
+      padding-inline-end: var(--page-margin);
+      padding-inline-start: 0;
+    }
+  }
+
+  .media-with-content[data-shopify-visual-preview] {
+    --hero-min-height: 500px;
+
+    min-height: 500px;
+  }

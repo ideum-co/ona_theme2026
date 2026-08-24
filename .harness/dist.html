@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/.harness/ph3.css"><link rel="stylesheet" href="/.harness/mw3.css">
+<style>html{--gap-2xl:1.5rem;--gap-lg:1rem;--page-margin:1rem;--font-size--sm:14px;--gap:1rem;
+ --font-heading--family:Georgia,serif}
+ body{margin:0;background:#4A0E1E;color:#F5F4EA}
+ .caja{block-size:400px;display:grid}
+ .caja > .product-highlight{block-size:100%}
+ .x{inline-size:600px;outline:1px solid #fff;margin-block-end:12px}</style></head><body>
+<div class="caja"><div class="product-highlight" style="--product-highlight-heading-gap:24px;block-size:100%">
+ <div class="product-highlight__content" id="c1" style="block-size:100%">
+  <h3 class="product-highlight__heading" id="h1">Special release</h3>
+  <div class="product-highlight__details" id="d1">contenido</div></div></div></div>
+<div class="caja"><div class="product-highlight" style="block-size:100%;--product-highlight-heading-gap:24px;
+     --product-highlight-distribution:space-between;--product-highlight-details-margin:0">
+ <div class="product-highlight__content" id="c2" style="block-size:100%">
+  <h3 class="product-highlight__heading" id="h2">Special release</h3>
+  <div class="product-highlight__details" id="d2">contenido</div></div></div></div>
+<script>window.probe=()=>{const r=s=>document.querySelector(s).getBoundingClientRect();
+ const caja=[...document.querySelectorAll('.caja')].map(e=>e.getBoundingClientRect());
+ return {porDefecto:{justify:getComputedStyle(document.querySelector('#c1')).justifyContent,
+    tituloArriba:Math.round(r('#h1').top-caja[0].top),
+    contenidoAbajo:Math.round(caja[0].bottom-r('#d1').bottom)},
+  distribuido:{justify:getComputedStyle(document.querySelector('#c2')).justifyContent,
+    tituloArriba:Math.round(r('#h2').top-caja[1].top),
+    contenidoAbajo:Math.round(caja[1].bottom-r('#d2').bottom)}};};</script></body></html>

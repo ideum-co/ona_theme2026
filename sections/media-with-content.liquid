@@ -16,6 +16,10 @@
   if section.settings.mobile_text_center
     assign media_class_modifier = media_class_modifier | append: ' media-with-content--mobile-text-center'
   endif
+
+  if section.settings.content_distribution == 'space-between'
+    assign media_class_modifier = media_class_modifier | append: ' media-with-content--distribute'
+  endif
 %}
 
 {% liquid
@@ -163,6 +167,17 @@
     }
   }
 
+  /* Pushes the first block to the top and the last to the bottom of the content column. The panel
+     is a flex column, so the distribution goes there; the column itself already fills the row. */
+  .media-with-content--distribute .media-with-content__content,
+  .media-with-content--distribute .media-with-content__content > .group-block-content {
+    block-size: 100%;
+  }
+
+  .media-with-content--distribute .media-with-content__content > .group-block-content {
+    justify-content: space-between;
+  }
+
   /* Side padding and centring for the phone only. The padding goes on the content column and not
      on `.group-block-content`, whose inline padding the theme already zeroes for a page-width
      section - that is why the text sat flush against the edge - so there is no rule to outrank. */
@@ -266,7 +281,9 @@
 {
   "name": "t:names.media_with_text",
   "disabled_on": {
-    "groups": ["header"]
+    "groups": [
+      "header"
+    ]
   },
   "settings": [
     {
@@ -284,6 +301,23 @@
       "id": "mobile_text_center",
       "label": "t:settings.mobile_text_center",
       "default": false
+    },
+    {
+      "type": "select",
+      "id": "content_distribution",
+      "label": "t:settings.content_distribution",
+      "info": "t:info.content_distribution",
+      "options": [
+        {
+          "value": "together",
+          "label": "t:options.together"
+        },
+        {
+          "value": "space-between",
+          "label": "t:options.space_between"
+        }
+      ],
+      "default": "together"
     },
     {
       "type": "checkbox",
@@ -479,7 +513,10 @@
                   }
                 }
               },
-              "block_order": ["heading", "text"]
+              "block_order": [
+                "heading",
+                "text"
+              ]
             },
             "button": {
               "type": "button",
@@ -490,7 +527,11 @@
               }
             }
           },
-          "block_order": ["caption", "group", "button"]
+          "block_order": [
+            "caption",
+            "group",
+            "button"
+          ]
         }
       }
     },
@@ -528,7 +569,9 @@
               }
             }
           },
-          "block_order": ["caption"]
+          "block_order": [
+            "caption"
+          ]
         }
       }
     }
