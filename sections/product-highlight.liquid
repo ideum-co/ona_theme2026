@@ -35,6 +35,10 @@
   if description == blank
     assign description = product.description
   endif
+  assign has_heading = false
+  if settings.heading != blank
+    assign has_heading = true
+  endif
 
   assign has_variants = false
   if product.has_only_default_variant == false and product.variants_count > 1
@@ -64,10 +68,6 @@
       {%- endcomment -%}
       --variant-option-label-color: {{ settings.select_label_color | default: settings.text_color }};
       --variant-select-field-border-color: {{ settings.select_border_color | default: settings.text_color }};
-      {%- if settings.content_distribution == 'space-between' %}
-        --product-highlight-heading-push: auto;
-        --product-highlight-details-margin: 0;
-      {%- endif %}
       {%- if settings.eyebrow_size > 0 %}
         --product-highlight-eyebrow-size: {{ settings.eyebrow_size }}px;
       {%- endif %}
@@ -103,10 +103,16 @@
     {{ section.shopify_attributes }}
   >
     <div
-      class="product-highlight__content spacing-style"
-      style="{%- render 'spacing-style', settings: settings %}"
+      class="product-highlight__content spacing-style{% if settings.content_distribution == 'space-between' %} product-highlight__content--space-between{% endif %}{% unless has_heading %} product-highlight__content--without-heading{% endunless %}"
+      style="
+        {%- render 'spacing-style', settings: settings %}
+        --product-highlight-content-padding-inline-start-mobile: {{ settings.mobile_padding_inline_start | default: 16 }}px;
+        --product-highlight-content-padding-inline-end-mobile: {{ settings.mobile_padding_inline_end | default: 16 }}px;
+        --product-highlight-content-padding-inline-start: {{ settings['padding-inline-start'] | default: 40 }}px;
+        --product-highlight-content-padding-inline-end: {{ settings['padding-inline-end'] | default: 40 }}px;
+      "
     >
-      {%- if settings.heading != blank -%}
+      {%- if has_heading -%}
         <{{ heading_tag }}
       class="product-highlight__heading {{ heading_preset }}{% if heading_preset == 'custom' %} custom-typography custom-font-size{% elsif heading_preset == 'rte' %} product-highlight__heading--default{% endif %}"
       style="{%- render 'typography-style', settings: section.settings, type: 'heading' -%}"
@@ -130,7 +136,7 @@
 
         {%- if description != blank -%}
           <div
-            class="product-highlight__description {{ description_preset }}{% if description_preset == 'custom' %} custom-typography custom-font-size{% elsif description_preset == 'rte' %} product-highlight__description--default{% endif %}"
+            class="product-highlight__description text-block {{ description_preset }}{% if description_preset == 'custom' %} custom-typography custom-font-size{% elsif description_preset == 'rte' %} product-highlight__description--default{% endif %}"
             style="{%- render 'product-highlight-typography-style', settings: settings, prefix: 'description', type: 'body' -%}"
           >{{ description }}</div>
         {%- endif -%}
@@ -266,18 +272,26 @@
        on a wide screen is a lot of empty space on a phone. */
     gap: var(--product-highlight-heading-gap-mobile, var(--product-highlight-heading-gap, var(--gap-2xl)));
 
+    padding-inline: var(--product-highlight-content-padding-inline-start-mobile) var(--product-highlight-content-padding-inline-end-mobile);
+
     @media screen and (min-width: 750px) {
       gap: var(--product-highlight-heading-gap, var(--gap-2xl));
+      padding-inline: var(--product-highlight-content-padding-inline-start) var(--product-highlight-content-padding-inline-end);
     }
-    /* spacing-style owns all four content-column padding values. The schema defaults its inline
-       values to the previous page margin, so a saved section keeps its current silhouette. */
   }
 
-  /* An auto margin under the heading, rather than `space-between` on the column: space-between
-     spreads every child, so a column with three or more items comes apart. This pushes everything
-     after the heading down as one group and leaves their own spacing alone. */
-  .product-highlight__content > :first-child {
-    margin-block-end: var(--product-highlight-heading-push, 0);
+  /* Keep the details as one flex child: the heading gets the leftover space when it exists; when
+     it does not, the details themselves receive it. Together mode does not receive either rule. */
+  .product-highlight__content--space-between .product-highlight__heading {
+    margin-block-end: auto;
+  }
+
+  .product-highlight__content--space-between .product-highlight__details {
+    margin-block: 0;
+  }
+
+  .product-highlight__content--space-between.product-highlight__content--without-heading .product-highlight__details {
+    margin-block-start: auto;
   }
 
   .product-highlight__heading {
@@ -377,11 +391,11 @@
 
   .product-highlight__spec-value {
     margin: 0;
+    text-align: end;
   }
 
   .product-highlight__spec-value--default {
     font-size: var(--product-highlight-spec-value-size, var(--font-size--xl));
-    text-align: end;
   }
 
   .product-highlight .variant-select {
@@ -2152,6 +2166,30 @@
       "step": 4,
       "unit": "px",
       "default": 40
+    },
+    {
+      "type": "header",
+      "content": "t:content.mobile"
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_inline_start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_inline_end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 16
     }
   ],
   "presets": [
