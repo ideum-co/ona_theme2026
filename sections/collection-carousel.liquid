@@ -1,4 +1,10 @@
 {%- liquid
+  # The level is a setting so the page keeps one heading outline, but only h1 to h6 pass
+  # through - anything else would put an arbitrary tag name straight from a setting.
+  assign heading_tag = section.settings.heading_tag | default: 'h3'
+  unless heading_tag == 'h1' or heading_tag == 'h2' or heading_tag == 'h3' or heading_tag == 'h4' or heading_tag == 'h5' or heading_tag == 'h6'
+    assign heading_tag = 'h3'
+  endunless
   assign settings = section.settings
   assign show_arrows = false
   if section.blocks.size > settings.columns
@@ -77,7 +83,7 @@
   {{ section.shopify_attributes }}
 >
   {%- if settings.heading != blank -%}
-    <h2 class="collection-carousel__heading">{{ settings.heading }}</h2>
+    <{{ heading_tag }} class="collection-carousel__heading">{{ settings.heading }}</{{ heading_tag }}>
   {%- endif -%}
 
   {%- if section.blocks.size > 0 -%}
@@ -219,10 +225,43 @@
   ],
   "settings": [
     {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "t:settings.heading_tag",
+      "info": "t:info.heading_tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "h5",
+          "label": "H5"
+        },
+        {
+          "value": "h6",
+          "label": "H6"
+        }
+      ],
+      "default": "h3"
+    },
+    {
       "type": "inline_richtext",
       "id": "heading",
       "label": "t:settings.heading",
-      "default": "Discover by <em>category<\/em>"
+      "default": "Discover by <em>category</em>"
     },
     {
       "type": "range",
@@ -346,11 +385,21 @@
     {
       "name": "t:names.collection_carousel",
       "blocks": [
-        { "type": "collection" },
-        { "type": "collection" },
-        { "type": "collection" },
-        { "type": "collection" },
-        { "type": "collection" }
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        }
       ]
     }
   ]
