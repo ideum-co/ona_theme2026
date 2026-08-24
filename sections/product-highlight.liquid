@@ -56,7 +56,24 @@
         --product-highlight-heading-push: auto;
         --product-highlight-details-margin: 0;
       {%- endif %}
-      --product-highlight-heading-size: {{ settings.heading_size }}px;
+      {%- if settings.eyebrow_size > 0 %}
+        --product-highlight-eyebrow-size: {{ settings.eyebrow_size }}px;
+      {%- endif %}
+      {%- if settings.title_size > 0 %}
+        --product-highlight-title-size: {{ settings.title_size }}px;
+      {%- endif %}
+      {%- if settings.description_size > 0 %}
+        --product-highlight-description-size: {{ settings.description_size }}px;
+      {%- endif %}
+      {%- if settings.spec_label_size > 0 %}
+        --product-highlight-spec-label-size: {{ settings.spec_label_size }}px;
+      {%- endif %}
+      {%- if settings.spec_value_size > 0 %}
+        --product-highlight-spec-value-size: {{ settings.spec_value_size }}px;
+      {%- endif %}
+      {%- if settings.heading_size > 0 %}
+        --product-highlight-heading-size: {{ settings.heading_size }}px;
+      {%- endif %}
       --product-highlight-heading-gap: {{ settings.heading_gap }}px;
       {%- comment -%}
         Only emitted when set, so the desktop value keeps coming through by fallback rather than
@@ -238,13 +255,13 @@
 
     /* `--font-h2--size` is never defined in the theme - only `--font-h2--spacing` is - so this
        declaration was invalid and the heading just inherited its size. The setting pins it. */
-    font-size: var(
-      --product-highlight-heading-size-mobile,
-      var(--product-highlight-heading-size, var(--font-h2--size))
-    );
+    /* No fallback on purpose: with the size left at 0 nothing is emitted, the declaration is
+       invalid and the element keeps whatever its heading level gives it. A fallback here would
+       mean the level could never govern the size. */
+    font-size: var(--product-highlight-heading-size-mobile, var(--product-highlight-heading-size));
 
     @media screen and (min-width: 750px) {
-      font-size: var(--product-highlight-heading-size, var(--font-h2--size));
+      font-size: var(--product-highlight-heading-size);
     }
     font-weight: var(--font-heading--weight);
   }
@@ -263,21 +280,21 @@
 
   .product-highlight__eyebrow {
     margin: 0;
-    font-size: var(--font-size--xl);
+    font-size: var(--product-highlight-eyebrow-size, var(--font-size--xl));
     letter-spacing: var(--letter-spacing-sm);
     text-transform: uppercase;
   }
 
   .product-highlight__title {
     margin: 0;
-    font-size: var(--font-size--4xl);
+    font-size: var(--product-highlight-title-size, var(--font-size--4xl));
     font-weight: var(--font-body--weight);
   }
 
   .product-highlight__description {
     display: grid;
     gap: var(--gap-md);
-    font-size: var(--font-size--xl);
+    font-size: var(--product-highlight-description-size, var(--font-size--xl));
   }
 
   .product-highlight__description :is(p, ul, ol) {
@@ -304,14 +321,14 @@
 
   .product-highlight__spec-label {
     margin: 0;
-    font-size: var(--font-size--xl);
+    font-size: var(--product-highlight-spec-label-size, var(--font-size--xl));
     letter-spacing: var(--letter-spacing-sm);
     text-transform: uppercase;
   }
 
   .product-highlight__spec-value {
     margin: 0;
-    font-size: var(--font-size--xl);
+    font-size: var(--product-highlight-spec-value-size, var(--font-size--xl));
     text-align: end;
   }
 
@@ -421,11 +438,12 @@
       "type": "range",
       "id": "heading_size",
       "label": "t:settings.size",
-      "min": 20,
+      "min": 0,
       "max": 96,
       "step": 2,
       "unit": "px",
-      "default": 48
+      "default": 0,
+      "info": "t:info.zero_uses_heading_level"
     },
     {
       "type": "range",
@@ -472,6 +490,65 @@
       "id": "description",
       "label": "t:settings.description",
       "info": "t:info.product_highlight_description"
+    },
+    {
+      "type": "header",
+      "content": "t:content.typography"
+    },
+    {
+      "type": "range",
+      "id": "eyebrow_size",
+      "label": "t:settings.eyebrow",
+      "info": "t:info.zero_uses_theme",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "t:settings.product_title",
+      "info": "t:info.zero_uses_theme",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "label": "t:settings.description",
+      "info": "t:info.zero_uses_theme",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "spec_label_size",
+      "label": "t:settings.label",
+      "info": "t:info.zero_uses_theme",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "spec_value_size",
+      "label": "t:settings.value",
+      "info": "t:info.zero_uses_theme",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "default": 0
     },
     {
       "type": "header",

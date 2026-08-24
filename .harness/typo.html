@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/.harness/ph5.css"><link rel="stylesheet" href="/.harness/mw5.css">
+<style>html{--font-size--xl:20px;--font-size--4xl:40px;--gap-lg:1rem;--gap-2xl:1.5rem;--page-margin:1rem;
+ --letter-spacing-sm:.02em;--font-size--sm:14px}
+ body{margin:0;background:#4A0E1E;color:#F5F4EA} h3{font-size:1.17em;margin:0}
+ .grid{display:grid;grid-template-areas:'media content';grid-template-columns:1fr 1fr;
+   inline-size:640px;outline:1px solid #fff}
+ .media-block{grid-area:media;background:#888;min-block-size:200px}
+ .media-with-content__content{grid-area:content}</style></head><body>
+<!-- A: tamaño 0, manda el nivel de encabezado -->
+<div class="product-highlight" id="a">
+  <h3 class="product-highlight__heading" id="a-h">Special release</h3>
+  <p class="product-highlight__eyebrow" id="a-e">eyebrow</p>
+  <p class="product-highlight__description" id="a-d">descripción</p></div>
+<!-- B: tamaños explícitos -->
+<div class="product-highlight" id="b" style="--product-highlight-heading-size:50px;
+     --product-highlight-eyebrow-size:12px;--product-highlight-description-size:17px">
+  <h3 class="product-highlight__heading" id="b-h">Special release</h3>
+  <p class="product-highlight__eyebrow" id="b-e">eyebrow</p>
+  <p class="product-highlight__description" id="b-d">descripción</p></div>
+<!-- C/D: media con y sin bleed, padding de sección 80px -->
+<div class="media-with-content grid" id="c" style="--padding-block-start:80px;--padding-block-end:80px;padding-block:80px">
+  <div class="media-block" id="c-m"></div><div class="media-with-content__content">texto</div></div>
+<div class="media-with-content media-with-content--media-bleed grid" id="d" style="--padding-block-start:80px;--padding-block-end:80px;padding-block:80px">
+  <div class="media-block" id="d-m"></div><div class="media-with-content__content">texto</div></div>
+<script>window.probe=()=>{const cs=s=>getComputedStyle(document.querySelector(s));
+ const r=s=>document.querySelector(s).getBoundingClientRect();
+ return {tamano0:{titulo:cs('#a-h').fontSize, eyebrow:cs('#a-e').fontSize, descripcion:cs('#a-d').fontSize},
+   tamanoFijado:{titulo:cs('#b-h').fontSize, eyebrow:cs('#b-e').fontSize, descripcion:cs('#b-d').fontSize},
+   mediaNormal:{arriba:Math.round(r('#c-m').top-r('#c').top), abajo:Math.round(r('#c').bottom-r('#c-m').bottom)},
+   mediaBleed:{arriba:Math.round(r('#d-m').top-r('#d').top), abajo:Math.round(r('#d').bottom-r('#d-m').bottom)}};};
+</script></body></html>

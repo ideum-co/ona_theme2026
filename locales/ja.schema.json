@@ -189,6 +189,9 @@
     "disclosures": "開示情報"
   },
   "settings": {
+    "value": "Value",
+    "product_title": "Product title",
+    "media_ignores_padding": "Media fills the section",
     "content_distribution": "Content distribution",
     "heading_tag": "Heading level",
     "adaptive_min_card": "Minimum card width",
@@ -1161,6 +1164,9 @@
     "disclosures": "開示情報"
   },
   "info": {
+    "zero_uses_theme": "Set to 0 to use the theme's size.",
+    "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level.",
+    "media_ignores_padding": "The section's top and bottom padding applies to the grid, so it insets the media too. This lets the media run to the edges.",
     "content_distribution": "Top and bottom pushes the heading to the top of the column and the rest to the bottom.",
     "heading_tag": "Affects the page outline for search engines and screen readers, not the visible size.",
     "adaptive_min_card": "Cards never get narrower than this; the number shown follows from it. Raise it if button labels wrap.",
