@@ -22,6 +22,11 @@ assert.deepEqual(schemaSettings.get('content_gap'), {
   default: 16,
 }, 'content_gap must expose the current large gap as its default');
 assert.match(section, /--story-video-content-gap:\s*\{\{ settings\.content_gap \}\}px;/);
+assert.match(
+  section,
+  /\{% if settings\.content_gap != blank %\}[\s\S]*?--story-video-content-gap:\s*\{\{ settings\.content_gap \}\}px;[\s\S]*?\{% endif %\}/,
+  'content_gap must omit the custom property when legacy settings are blank so CSS fallback remains active',
+);
 assert.match(section, /\.story-video__intro\s*\{[\s\S]*?gap:\s*var\(--story-video-content-gap, var\(--gap-lg\)\);/);
 
 for (const suffix of ['type_preset', 'font', 'font_size', 'line_height', 'letter_spacing', 'case', 'wrap']) {
