@@ -27,7 +27,9 @@
   class="story-video spacing-style"
   style="
     --section-heading-level-size: var({{ heading_level_size }});
+    {% if settings.content_gap != blank %}
     --story-video-content-gap: {{ settings.content_gap }}px;
+    {% endif %}
     --story-video-intro-padding-block-start: {{ settings.intro_padding_block_start | default: 0 }}px;
     --story-video-intro-padding-block-end: {{ settings.intro_padding_block_end | default: 0 }}px;
     {% if settings.intro_individual_side_padding %}
