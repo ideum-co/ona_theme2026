@@ -17,9 +17,11 @@
   if settings.section_width == 'page-width'
     assign slideshow_gutters = 'start end'
     assign gutter_style = '--gutter-slide-width: var(--util-page-margin-offset);'
+    assign adaptive_gutter_style = '--arlc-gutter: max(40px, calc((100cqw - min(90rem, 100cqw - 80px)) / 2));'
   else
     assign slideshow_gutters = null
     assign gutter_style = '--gutter-slide-width: 0px;'
+    assign adaptive_gutter_style = '--arlc-gutter: 0px;'
   endif
 
   assign show_arrows = false
@@ -43,7 +45,7 @@
   ask for more columns than there are products, and the cards would shrink to leave empty track at
   the end instead of staying a comfortable size.
 {%- endcomment -%}
-<div style="{{ gutter_style }} --slide-width-max: {{ slide_width_max | default: '300px' }}; --adaptive-columns-max: {{ slide_count | default: 99 }};{% if settings.adaptive_min_card %} --adaptive-min-card: {{ settings.adaptive_min_card }}px;{% endif %}">
+<div style="{{ gutter_style }} {{ adaptive_gutter_style }} --slide-width-max: {{ slide_width_max | default: '300px' }}; --adaptive-columns-max: {{ slide_count | default: 99 }};{% if settings.adaptive_min_card %} --adaptive-min-card: {{ settings.adaptive_min_card }}px;{% endif %}">
   {% render 'slideshow',
     ref: slideshow_ref,
     class: 'resource-list__carousel',
@@ -113,16 +115,41 @@
   }
 
   @container resource-list-carousel (min-width: 750px) {
-    .resource-list__carousel--adaptive .resource-list__slide {
-      /* The container spans the gutters too, so they come off before the track is divided. */
-      --adaptive-track: calc(100cqw - (2 * var(--gutter-slide-width, 0px)));
-      --adaptive-step: calc(var(--adaptive-min-card, 300px) + var(--resource-list-column-gap));
+    /* Defined on slideshow-slides (a descendant of the container-type element, not the
+       container itself - self-referential container-query sizing on the container is
+       unreliable) so both the track and the individual slide can read the same values:
+       the slide inherits them naturally since slideshow-slides is its ancestor, and the
+       track needs --arlc-column-count directly to size itself to exactly N columns instead
+       of stretching to fill its full-bleed parent.
 
-      --column-count: clamp(
+       Uses a local --arlc-gutter (set in %-page-margin-offset via cqw above, next to
+       --gutter-slide-width) instead of --gutter-slide-width itself: custom properties are
+       re-substituted at each point of use, not frozen where declared, and
+       --gutter-slide-width's formula resolves a bare `%` - fine where it's consumed on the
+       element that declares it (e.g. the arrows padding below), but wrong here, where the
+       value is inherited down to the much narrower .resource-list__slide and its `%` would
+       resolve against the SLIDE's own width instead of the track's. cqw doesn't have that
+       problem - it always resolves against the same query container regardless of which
+       descendant reads it - so the gutter math is duplicated here in cqw terms rather than
+       reused from the page-margin variable. */
+    .resource-list__carousel--adaptive slideshow-slides {
+      --arlc-track: calc(100cqw - (2 * var(--arlc-gutter, 0px)));
+      --arlc-step: calc(var(--adaptive-min-card, 300px) + var(--resource-list-column-gap));
+
+      --arlc-column-count: clamp(
         1,
-        round(down, (var(--adaptive-track) + var(--resource-list-column-gap)) / var(--adaptive-step), 1),
+        round(down, (var(--arlc-track) + var(--resource-list-column-gap)) / var(--arlc-step), 1),
         var(--adaptive-columns-max, 99)
       );
+
+      --arlc-slide-width: calc(
+        (var(--arlc-track) - (var(--resource-list-column-gap) * (var(--arlc-column-count) - 1))) /
+          var(--arlc-column-count)
+      );
+    }
+
+    .resource-list__carousel--adaptive .resource-list__slide {
+      --section-slide-width: var(--arlc-slide-width);
     }
   }
 
@@ -137,18 +164,6 @@
      Using 16px for better alignment with our spacing scale */
     margin-block: -16px;
     padding-block: 16px;
-  }
-
-  /* Adaptive carousels round column count down to a whole number specifically so no
-     partial card is meant to show (see the --peek-next-slide-size: 0px override above).
-     But the track itself still stretches to width: 100% of its full-bleed container, so
-     the gap between "where the whole columns end" and "where the box actually ends"
-     silently reveals the start of the next card instead of staying inert slack space.
-     Sizing the track to its own content keeps the "no peek at rest" promise the adaptive
-     math already makes. */
-  .resource-list__carousel--adaptive slideshow-slides {
-    width: fit-content;
-    max-width: 100%;
   }
 
   .resource-list__carousel slideshow-arrows {
