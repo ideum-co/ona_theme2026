@@ -258,6 +258,7 @@
     "favicon": "Favikona",
     "font_family": "Rodina písma",
     "gap": "Mezera",
+    "content_gap": "Mezera obsahu",
     "geometric_translate_y": "Geometrický posun na ose Y",
     "heading": "Nadpis",
     "icon": "Ikona",

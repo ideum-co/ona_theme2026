@@ -987,6 +987,7 @@
     "full_width_first_image": "Full width first image",
     "full_width_on_mobile": "Full width on mobile",
     "gap": "Gap",
+    "content_gap": "Content gap",
     // CSS Y-axis transform setting for vertical positioning (legacy/unused)
     "geometric_translate_y": "Geometric translate Y",
     "gift_card_form": "Gift card form",

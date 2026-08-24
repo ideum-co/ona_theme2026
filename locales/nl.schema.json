@@ -272,6 +272,7 @@
     "custom_minimum_height": "Aangepaste minimumhoogte",
     "font_family": "Lettertypefamilie",
     "gap": "Tussenruimte",
+    "content_gap": "Inhoudsafstand",
     "geometric_translate_y": "Geometrische translatie Y",
     "image": "Afbeelding",
     "image_opacity": "Afbeeldingsdekking",

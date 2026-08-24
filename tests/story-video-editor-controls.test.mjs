@@ -11,6 +11,24 @@ const schemaSource = section.match(/\{% schema %\}\s*([\s\S]*?)\s*\{% endschema 
 assert.ok(schemaSource, 'missing section schema');
 const schemaSettings = new Map(JSON.parse(schemaSource).settings.map((setting) => [setting.id, setting]));
 
+assert.deepEqual(schemaSettings.get('content_gap'), {
+  type: 'range',
+  id: 'content_gap',
+  label: 't:settings.content_gap',
+  min: 0,
+  max: 100,
+  step: 1,
+  unit: 'px',
+  default: 16,
+}, 'content_gap must expose the current large gap as its default');
+assert.match(section, /--story-video-content-gap:\s*\{\{ settings\.content_gap \}\}px;/);
+assert.match(
+  section,
+  /\{% if settings\.content_gap != blank %\}[\s\S]*?--story-video-content-gap:\s*\{\{ settings\.content_gap \}\}px;[\s\S]*?\{% endif %\}/,
+  'content_gap must omit the custom property when legacy settings are blank so CSS fallback remains active',
+);
+assert.match(section, /\.story-video__intro\s*\{[\s\S]*?gap:\s*var\(--story-video-content-gap, var\(--gap-lg\)\);/);
+
 for (const suffix of ['type_preset', 'font', 'font_size', 'line_height', 'letter_spacing', 'case', 'wrap']) {
   assert.match(section, new RegExp(`"id"\\s*:\\s*"body_${suffix}"`), `body missing ${suffix}`);
 }
@@ -158,8 +176,10 @@ for (const [selector, property, variable] of [
 }
 
 for (const file of fs.readdirSync('locales').filter((name) => name.endsWith('.schema.json'))) {
+  const localeSchema = fs.readFileSync(`locales/${file}`, 'utf8');
+  assert.match(localeSchema, /"content_gap"\s*:/, `${file} missing the content-gap translation`);
   assert.match(
-    fs.readFileSync(`locales/${file}`, 'utf8'),
+    localeSchema,
     /"individual_side_padding"\s*:/,
     `${file} missing the individual-side padding translation`,
   );

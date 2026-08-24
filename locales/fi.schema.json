@@ -258,6 +258,7 @@
     "favicon": "Favicon",
     "font_family": "Fonttiperhe",
     "gap": "Väli",
+    "content_gap": "Sisällön väli",
     "geometric_translate_y": "Geometrinen muunnos Y",
     "heading": "Otsikko",
     "icon": "Kuvake",
