@@ -41,8 +41,8 @@ assert.deepEqual(schemaSettings.get('body_alignment'), {
 }, 'description alignment must be editable and preserve the centered Story design by default');
 assert.match(
   section,
-  /\.story-video__body\s*\{[\s\S]*?text-align:\s*var\(--story-video-body-alignment, center\);/,
-  'description must apply its own alignment instead of relying on inherited text alignment',
+  /\.story-video__body\s*\{[\s\S]*?--text-align:\s*var\(--story-video-body-alignment, center\);/,
+  'description must publish the variable consumed by .text-block > * instead of aligning only its parent',
 );
 assert.match(section, /--story-video-body-alignment:\s*\{\{ settings\.body_alignment \| default: 'center' \}\};/);
 
