@@ -71,7 +71,7 @@
 
     {%- if settings.heading != blank -%}
       <{{ heading_tag }}
-      class="story-video__heading {{ heading_preset }} {{ heading_preset }}{% if heading_preset == 'custom' %} custom-typography custom-font-size{% elsif heading_preset == 'rte' %} story-video__heading--default{% endif %}"
+      class="story-video__heading {{ heading_preset }}{% if heading_preset == 'custom' %} custom-typography custom-font-size{% elsif heading_preset == 'rte' %} story-video__heading--default{% endif %}"
       style="{%- render 'typography-style', settings: section.settings, type: 'heading' -%}"
     >{{ settings.heading }}</{{ heading_tag }}>
     {%- endif -%}
@@ -85,7 +85,7 @@
 
     {%- if settings.button_label != blank -%}
       <a
-        class="button story-video__button {{ button_preset }} {{ button_preset }}{% if button_preset == 'custom' %} custom-typography custom-font-size{% endif %}"
+        class="button story-video__button {{ button_preset }}{% if button_preset == 'custom' %} custom-typography custom-font-size{% endif %}"
         style="{%- render 'story-video-typography-style', settings: settings, prefix: 'button', type: 'body' -%}"
         {% if settings.button_link != blank %}
           href="{{ settings.button_link }}"
@@ -198,6 +198,7 @@
   .story-video__button.button {
     --button-background-color: var(--story-video-button-background);
     --button-color: var(--story-video-button-color);
+    color: var(--story-video-button-color);
 
     justify-content: center;
   }
@@ -323,7 +324,7 @@
       "step": 1,
       "unit": "px",
       "default": 44,
-      "visible_if": "{{ section.settings.type_preset == 'rte' }}"
+      "visible_if": "{{ false }}"
     },
     {
       "type": "header",
