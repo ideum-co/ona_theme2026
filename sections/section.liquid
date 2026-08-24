@@ -185,6 +185,23 @@
       "default": "page-width"
     },
     {
+      "type": "checkbox",
+      "id": "limit_content_width",
+      "label": "t:settings.limit_content_width",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "t:settings.max_width",
+      "min": 800,
+      "max": 1800,
+      "step": 20,
+      "unit": "px",
+      "default": 1280,
+      "visible_if": "{{ section.settings.limit_content_width }}"
+    },
+    {
       "type": "select",
       "id": "section_height",
       "label": "t:settings.height",
