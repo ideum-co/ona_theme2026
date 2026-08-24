@@ -31,6 +31,12 @@
     height: 100%;
   }
 
+  /* Anchor buy buttons to the bottom of the card so they align across a row
+     regardless of how many lines the title/description above wrap to. */
+  .product-card__content > *:last-child {
+    margin-top: auto;
+  }
+
   /* Product card title truncation - applied on mobile regardless of view */
   @media screen and (max-width: 749px) {
     :is(.product-card, .product-grid__card) :is(h4, .h4) {
