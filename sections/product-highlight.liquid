@@ -12,6 +12,12 @@
   assign heading_level_size = '--font-' | append: heading_tag | append: '--size'
   assign product = section.settings.product
   assign settings = section.settings
+  assign heading_preset = settings.type_preset | default: 'rte'
+  assign eyebrow_preset = settings.eyebrow_type_preset | default: 'rte'
+  assign title_preset = settings.title_type_preset | default: 'rte'
+  assign description_preset = settings.description_type_preset | default: 'rte'
+  assign spec_label_preset = settings.spec_label_type_preset | default: 'rte'
+  assign spec_value_preset = settings.spec_value_type_preset | default: 'rte'
 
   assign variant = product.selected_or_first_available_variant
   assign form_id = 'ProductHighlight-ProductForm-' | append: section.id
@@ -102,22 +108,31 @@
     >
       {%- if settings.heading != blank -%}
         <{{ heading_tag }}
-      class="product-highlight__heading"
+      class="product-highlight__heading {{ heading_preset }}{% if heading_preset == 'custom' %} custom-typography custom-font-size{% elsif heading_preset == 'rte' %} product-highlight__heading--default{% endif %}"
       style="{%- render 'typography-style', settings: section.settings, type: 'heading' -%}"
     >{{ settings.heading }}</{{ heading_tag }}>
       {%- endif -%}
 
       <div class="product-highlight__details">
         {%- if settings.eyebrow != blank -%}
-          <p class="product-highlight__eyebrow">{{ settings.eyebrow }}</p>
+          <p
+            class="product-highlight__eyebrow {{ eyebrow_preset }}{% if eyebrow_preset == 'custom' %} custom-typography custom-font-size{% elsif eyebrow_preset == 'rte' %} product-highlight__eyebrow--default{% endif %}"
+            style="{%- render 'product-highlight-typography-style', settings: settings, prefix: 'eyebrow', type: 'body' -%}"
+          >{{ settings.eyebrow }}</p>
         {%- endif -%}
 
         {%- if settings.show_product_title and product.title != blank -%}
-          <h3 class="product-highlight__title">{{ product.title }}</h3>
+          <h3
+            class="product-highlight__title {{ title_preset }}{% if title_preset == 'custom' %} custom-typography custom-font-size{% elsif title_preset == 'rte' %} product-highlight__title--default{% endif %}"
+            style="{%- render 'product-highlight-typography-style', settings: settings, prefix: 'title', type: 'heading' -%}"
+          >{{ product.title }}</h3>
         {%- endif -%}
 
         {%- if description != blank -%}
-          <div class="product-highlight__description rte">{{ description }}</div>
+          <div
+            class="product-highlight__description {{ description_preset }}{% if description_preset == 'custom' %} custom-typography custom-font-size{% elsif description_preset == 'rte' %} product-highlight__description--default{% endif %}"
+            style="{%- render 'product-highlight-typography-style', settings: settings, prefix: 'description', type: 'body' -%}"
+          >{{ description }}</div>
         {%- endif -%}
 
         {%- if section.blocks.size > 0 -%}
@@ -128,8 +143,14 @@
                   class="product-highlight__spec"
                   {{ block.shopify_attributes }}
                 >
-                  <dt class="product-highlight__spec-label">{{ block.settings.label }}</dt>
-                  <dd class="product-highlight__spec-value">{{ block.settings.value }}</dd>
+                  <dt
+                    class="product-highlight__spec-label {{ spec_label_preset }}{% if spec_label_preset == 'custom' %} custom-typography custom-font-size{% elsif spec_label_preset == 'rte' %} product-highlight__spec-label--default{% endif %}"
+                    style="{%- render 'product-highlight-typography-style', settings: settings, prefix: 'spec_label', type: 'body' -%}"
+                  >{{ block.settings.label }}</dt>
+                  <dd
+                    class="product-highlight__spec-value {{ spec_value_preset }}{% if spec_value_preset == 'custom' %} custom-typography custom-font-size{% elsif spec_value_preset == 'rte' %} product-highlight__spec-value--default{% endif %}"
+                    style="{%- render 'product-highlight-typography-style', settings: settings, prefix: 'spec_value', type: 'body' -%}"
+                  >{{ block.settings.value }}</dd>
                 </div>
               {%- endif -%}
             {%- endfor -%}
@@ -248,7 +269,8 @@
     @media screen and (min-width: 750px) {
       gap: var(--product-highlight-heading-gap, var(--gap-2xl));
     }
-    padding-inline: var(--page-margin, 1rem);
+    /* spacing-style owns all four content-column padding values. The schema defaults its inline
+       values to the previous page margin, so a saved section keeps its current silhouette. */
   }
 
   /* An auto margin under the heading, rather than `space-between` on the column: space-between
@@ -260,6 +282,12 @@
 
   .product-highlight__heading {
     margin: 0;
+  }
+
+  /* Legacy size sliders are honoured only while the editor's Default preset is selected. A
+     Horizon preset or Custom therefore owns every typography property without a later section
+     rule overriding it. */
+  .product-highlight__heading--default {
     font-family: var(--font-heading--family);
 
     /* `--font-h2--size` is never defined in the theme - only `--font-h2--spacing` is - so this
@@ -289,6 +317,9 @@
 
   .product-highlight__eyebrow {
     margin: 0;
+  }
+
+  .product-highlight__eyebrow--default {
     font-size: var(--product-highlight-eyebrow-size, var(--font-size--xl));
     letter-spacing: var(--letter-spacing-sm);
     text-transform: uppercase;
@@ -296,6 +327,9 @@
 
   .product-highlight__title {
     margin: 0;
+  }
+
+  .product-highlight__title--default {
     font-size: var(--product-highlight-title-size, var(--font-size--4xl));
     font-weight: var(--font-body--weight);
   }
@@ -303,6 +337,9 @@
   .product-highlight__description {
     display: grid;
     gap: var(--gap-md);
+  }
+
+  .product-highlight__description--default {
     font-size: var(--product-highlight-description-size, var(--font-size--xl));
   }
 
@@ -330,6 +367,9 @@
 
   .product-highlight__spec-label {
     margin: 0;
+  }
+
+  .product-highlight__spec-label--default {
     font-size: var(--product-highlight-spec-label-size, var(--font-size--xl));
     letter-spacing: var(--letter-spacing-sm);
     text-transform: uppercase;
@@ -337,6 +377,9 @@
 
   .product-highlight__spec-value {
     margin: 0;
+  }
+
+  .product-highlight__spec-value--default {
     font-size: var(--product-highlight-spec-value-size, var(--font-size--xl));
     text-align: end;
   }
@@ -452,7 +495,8 @@
       "step": 2,
       "unit": "px",
       "default": 0,
-      "info": "t:info.zero_uses_heading_level"
+      "info": "t:info.zero_uses_heading_level",
+      "visible_if": "{{ false }}"
     },
     {
       "type": "range",
@@ -697,6 +741,1156 @@
       "visible_if": "{{ section.settings.type_preset == 'custom' }}"
     },
     {
+      "type": "header",
+      "content": "t:settings.eyebrow"
+    },
+    {
+      "type": "select",
+      "id": "eyebrow_type_preset",
+      "label": "t:settings.preset",
+      "options": [
+        {
+          "value": "rte",
+          "label": "t:options.default"
+        },
+        {
+          "value": "paragraph",
+          "label": "t:options.paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "t:options.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:options.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:options.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:options.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:options.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:options.h6"
+        },
+        {
+          "value": "custom",
+          "label": "t:options.custom"
+        }
+      ],
+      "default": "rte",
+      "info": "t:info.edit_presets_in_theme_settings"
+    },
+    {
+      "type": "select",
+      "id": "eyebrow_font",
+      "label": "t:settings.font",
+      "options": [
+        {
+          "value": "var(--font-body--family)",
+          "label": "t:options.body"
+        },
+        {
+          "value": "var(--font-subheading--family)",
+          "label": "t:options.subheading"
+        },
+        {
+          "value": "var(--font-heading--family)",
+          "label": "t:options.heading"
+        },
+        {
+          "value": "var(--font-accent--family)",
+          "label": "t:options.accent"
+        }
+      ],
+      "default": "var(--font-body--family)",
+      "visible_if": "{{ section.settings.eyebrow_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "eyebrow_font_size",
+      "label": "t:settings.size",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "0.625rem",
+          "label": "10px"
+        },
+        {
+          "value": "0.75rem",
+          "label": "12px"
+        },
+        {
+          "value": "0.875rem",
+          "label": "14px"
+        },
+        {
+          "value": "1rem",
+          "label": "16px"
+        },
+        {
+          "value": "1.125rem",
+          "label": "18px"
+        },
+        {
+          "value": "1.25rem",
+          "label": "20px"
+        },
+        {
+          "value": "1.5rem",
+          "label": "24px"
+        },
+        {
+          "value": "2rem",
+          "label": "32px"
+        },
+        {
+          "value": "2.5rem",
+          "label": "40px"
+        },
+        {
+          "value": "3rem",
+          "label": "48px"
+        },
+        {
+          "value": "3.5rem",
+          "label": "56px"
+        },
+        {
+          "value": "4.5rem",
+          "label": "72px"
+        },
+        {
+          "value": "5.5rem",
+          "label": "88px"
+        },
+        {
+          "value": "7.5rem",
+          "label": "120px"
+        },
+        {
+          "value": "9.5rem",
+          "label": "152px"
+        },
+        {
+          "value": "11.5rem",
+          "label": "184px"
+        }
+      ],
+      "default": "1rem",
+      "visible_if": "{{ section.settings.eyebrow_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "eyebrow_line_height",
+      "label": "t:settings.line_height",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.eyebrow_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "eyebrow_letter_spacing",
+      "label": "t:settings.letter_spacing",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.eyebrow_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "eyebrow_case",
+      "label": "t:settings.case",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.default"
+        },
+        {
+          "value": "uppercase",
+          "label": "t:options.uppercase"
+        }
+      ],
+      "default": "none",
+      "visible_if": "{{ section.settings.eyebrow_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "eyebrow_wrap",
+      "label": "t:settings.wrap",
+      "options": [
+        {
+          "value": "pretty",
+          "label": "t:options.pretty"
+        },
+        {
+          "value": "balance",
+          "label": "t:options.balance"
+        },
+        {
+          "value": "nowrap",
+          "label": "t:options.none"
+        }
+      ],
+      "visible_if": "{{ section.settings.eyebrow_type_preset == 'custom' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:names.product_title"
+    },
+    {
+      "type": "select",
+      "id": "title_type_preset",
+      "label": "t:settings.preset",
+      "options": [
+        {
+          "value": "rte",
+          "label": "t:options.default"
+        },
+        {
+          "value": "paragraph",
+          "label": "t:options.paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "t:options.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:options.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:options.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:options.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:options.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:options.h6"
+        },
+        {
+          "value": "custom",
+          "label": "t:options.custom"
+        }
+      ],
+      "default": "rte",
+      "info": "t:info.edit_presets_in_theme_settings"
+    },
+    {
+      "type": "select",
+      "id": "title_font",
+      "label": "t:settings.font",
+      "options": [
+        {
+          "value": "var(--font-body--family)",
+          "label": "t:options.body"
+        },
+        {
+          "value": "var(--font-subheading--family)",
+          "label": "t:options.subheading"
+        },
+        {
+          "value": "var(--font-heading--family)",
+          "label": "t:options.heading"
+        },
+        {
+          "value": "var(--font-accent--family)",
+          "label": "t:options.accent"
+        }
+      ],
+      "default": "var(--font-body--family)",
+      "visible_if": "{{ section.settings.title_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "title_font_size",
+      "label": "t:settings.size",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "0.625rem",
+          "label": "10px"
+        },
+        {
+          "value": "0.75rem",
+          "label": "12px"
+        },
+        {
+          "value": "0.875rem",
+          "label": "14px"
+        },
+        {
+          "value": "1rem",
+          "label": "16px"
+        },
+        {
+          "value": "1.125rem",
+          "label": "18px"
+        },
+        {
+          "value": "1.25rem",
+          "label": "20px"
+        },
+        {
+          "value": "1.5rem",
+          "label": "24px"
+        },
+        {
+          "value": "2rem",
+          "label": "32px"
+        },
+        {
+          "value": "2.5rem",
+          "label": "40px"
+        },
+        {
+          "value": "3rem",
+          "label": "48px"
+        },
+        {
+          "value": "3.5rem",
+          "label": "56px"
+        },
+        {
+          "value": "4.5rem",
+          "label": "72px"
+        },
+        {
+          "value": "5.5rem",
+          "label": "88px"
+        },
+        {
+          "value": "7.5rem",
+          "label": "120px"
+        },
+        {
+          "value": "9.5rem",
+          "label": "152px"
+        },
+        {
+          "value": "11.5rem",
+          "label": "184px"
+        }
+      ],
+      "default": "1rem",
+      "visible_if": "{{ section.settings.title_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "title_line_height",
+      "label": "t:settings.line_height",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.title_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "title_letter_spacing",
+      "label": "t:settings.letter_spacing",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.title_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "title_case",
+      "label": "t:settings.case",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.default"
+        },
+        {
+          "value": "uppercase",
+          "label": "t:options.uppercase"
+        }
+      ],
+      "default": "none",
+      "visible_if": "{{ section.settings.title_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "title_wrap",
+      "label": "t:settings.wrap",
+      "options": [
+        {
+          "value": "pretty",
+          "label": "t:options.pretty"
+        },
+        {
+          "value": "balance",
+          "label": "t:options.balance"
+        },
+        {
+          "value": "nowrap",
+          "label": "t:options.none"
+        }
+      ],
+      "visible_if": "{{ section.settings.title_type_preset == 'custom' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:settings.description"
+    },
+    {
+      "type": "select",
+      "id": "description_type_preset",
+      "label": "t:settings.preset",
+      "options": [
+        {
+          "value": "rte",
+          "label": "t:options.default"
+        },
+        {
+          "value": "paragraph",
+          "label": "t:options.paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "t:options.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:options.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:options.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:options.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:options.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:options.h6"
+        },
+        {
+          "value": "custom",
+          "label": "t:options.custom"
+        }
+      ],
+      "default": "rte",
+      "info": "t:info.edit_presets_in_theme_settings"
+    },
+    {
+      "type": "select",
+      "id": "description_font",
+      "label": "t:settings.font",
+      "options": [
+        {
+          "value": "var(--font-body--family)",
+          "label": "t:options.body"
+        },
+        {
+          "value": "var(--font-subheading--family)",
+          "label": "t:options.subheading"
+        },
+        {
+          "value": "var(--font-heading--family)",
+          "label": "t:options.heading"
+        },
+        {
+          "value": "var(--font-accent--family)",
+          "label": "t:options.accent"
+        }
+      ],
+      "default": "var(--font-body--family)",
+      "visible_if": "{{ section.settings.description_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "description_font_size",
+      "label": "t:settings.size",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "0.625rem",
+          "label": "10px"
+        },
+        {
+          "value": "0.75rem",
+          "label": "12px"
+        },
+        {
+          "value": "0.875rem",
+          "label": "14px"
+        },
+        {
+          "value": "1rem",
+          "label": "16px"
+        },
+        {
+          "value": "1.125rem",
+          "label": "18px"
+        },
+        {
+          "value": "1.25rem",
+          "label": "20px"
+        },
+        {
+          "value": "1.5rem",
+          "label": "24px"
+        },
+        {
+          "value": "2rem",
+          "label": "32px"
+        },
+        {
+          "value": "2.5rem",
+          "label": "40px"
+        },
+        {
+          "value": "3rem",
+          "label": "48px"
+        },
+        {
+          "value": "3.5rem",
+          "label": "56px"
+        },
+        {
+          "value": "4.5rem",
+          "label": "72px"
+        },
+        {
+          "value": "5.5rem",
+          "label": "88px"
+        },
+        {
+          "value": "7.5rem",
+          "label": "120px"
+        },
+        {
+          "value": "9.5rem",
+          "label": "152px"
+        },
+        {
+          "value": "11.5rem",
+          "label": "184px"
+        }
+      ],
+      "default": "1rem",
+      "visible_if": "{{ section.settings.description_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "description_line_height",
+      "label": "t:settings.line_height",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.description_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "description_letter_spacing",
+      "label": "t:settings.letter_spacing",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.description_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "description_case",
+      "label": "t:settings.case",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.default"
+        },
+        {
+          "value": "uppercase",
+          "label": "t:options.uppercase"
+        }
+      ],
+      "default": "none",
+      "visible_if": "{{ section.settings.description_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "description_wrap",
+      "label": "t:settings.wrap",
+      "options": [
+        {
+          "value": "pretty",
+          "label": "t:options.pretty"
+        },
+        {
+          "value": "balance",
+          "label": "t:options.balance"
+        },
+        {
+          "value": "nowrap",
+          "label": "t:options.none"
+        }
+      ],
+      "visible_if": "{{ section.settings.description_type_preset == 'custom' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:settings.label"
+    },
+    {
+      "type": "select",
+      "id": "spec_label_type_preset",
+      "label": "t:settings.preset",
+      "options": [
+        {
+          "value": "rte",
+          "label": "t:options.default"
+        },
+        {
+          "value": "paragraph",
+          "label": "t:options.paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "t:options.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:options.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:options.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:options.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:options.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:options.h6"
+        },
+        {
+          "value": "custom",
+          "label": "t:options.custom"
+        }
+      ],
+      "default": "rte",
+      "info": "t:info.edit_presets_in_theme_settings"
+    },
+    {
+      "type": "select",
+      "id": "spec_label_font",
+      "label": "t:settings.font",
+      "options": [
+        {
+          "value": "var(--font-body--family)",
+          "label": "t:options.body"
+        },
+        {
+          "value": "var(--font-subheading--family)",
+          "label": "t:options.subheading"
+        },
+        {
+          "value": "var(--font-heading--family)",
+          "label": "t:options.heading"
+        },
+        {
+          "value": "var(--font-accent--family)",
+          "label": "t:options.accent"
+        }
+      ],
+      "default": "var(--font-body--family)",
+      "visible_if": "{{ section.settings.spec_label_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "spec_label_font_size",
+      "label": "t:settings.size",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "0.625rem",
+          "label": "10px"
+        },
+        {
+          "value": "0.75rem",
+          "label": "12px"
+        },
+        {
+          "value": "0.875rem",
+          "label": "14px"
+        },
+        {
+          "value": "1rem",
+          "label": "16px"
+        },
+        {
+          "value": "1.125rem",
+          "label": "18px"
+        },
+        {
+          "value": "1.25rem",
+          "label": "20px"
+        },
+        {
+          "value": "1.5rem",
+          "label": "24px"
+        },
+        {
+          "value": "2rem",
+          "label": "32px"
+        },
+        {
+          "value": "2.5rem",
+          "label": "40px"
+        },
+        {
+          "value": "3rem",
+          "label": "48px"
+        },
+        {
+          "value": "3.5rem",
+          "label": "56px"
+        },
+        {
+          "value": "4.5rem",
+          "label": "72px"
+        },
+        {
+          "value": "5.5rem",
+          "label": "88px"
+        },
+        {
+          "value": "7.5rem",
+          "label": "120px"
+        },
+        {
+          "value": "9.5rem",
+          "label": "152px"
+        },
+        {
+          "value": "11.5rem",
+          "label": "184px"
+        }
+      ],
+      "default": "1rem",
+      "visible_if": "{{ section.settings.spec_label_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "spec_label_line_height",
+      "label": "t:settings.line_height",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.spec_label_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "spec_label_letter_spacing",
+      "label": "t:settings.letter_spacing",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.spec_label_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "spec_label_case",
+      "label": "t:settings.case",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.default"
+        },
+        {
+          "value": "uppercase",
+          "label": "t:options.uppercase"
+        }
+      ],
+      "default": "none",
+      "visible_if": "{{ section.settings.spec_label_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "spec_label_wrap",
+      "label": "t:settings.wrap",
+      "options": [
+        {
+          "value": "pretty",
+          "label": "t:options.pretty"
+        },
+        {
+          "value": "balance",
+          "label": "t:options.balance"
+        },
+        {
+          "value": "nowrap",
+          "label": "t:options.none"
+        }
+      ],
+      "visible_if": "{{ section.settings.spec_label_type_preset == 'custom' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:settings.value"
+    },
+    {
+      "type": "select",
+      "id": "spec_value_type_preset",
+      "label": "t:settings.preset",
+      "options": [
+        {
+          "value": "rte",
+          "label": "t:options.default"
+        },
+        {
+          "value": "paragraph",
+          "label": "t:options.paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "t:options.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:options.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:options.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:options.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:options.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:options.h6"
+        },
+        {
+          "value": "custom",
+          "label": "t:options.custom"
+        }
+      ],
+      "default": "rte",
+      "info": "t:info.edit_presets_in_theme_settings"
+    },
+    {
+      "type": "select",
+      "id": "spec_value_font",
+      "label": "t:settings.font",
+      "options": [
+        {
+          "value": "var(--font-body--family)",
+          "label": "t:options.body"
+        },
+        {
+          "value": "var(--font-subheading--family)",
+          "label": "t:options.subheading"
+        },
+        {
+          "value": "var(--font-heading--family)",
+          "label": "t:options.heading"
+        },
+        {
+          "value": "var(--font-accent--family)",
+          "label": "t:options.accent"
+        }
+      ],
+      "default": "var(--font-body--family)",
+      "visible_if": "{{ section.settings.spec_value_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "spec_value_font_size",
+      "label": "t:settings.size",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "0.625rem",
+          "label": "10px"
+        },
+        {
+          "value": "0.75rem",
+          "label": "12px"
+        },
+        {
+          "value": "0.875rem",
+          "label": "14px"
+        },
+        {
+          "value": "1rem",
+          "label": "16px"
+        },
+        {
+          "value": "1.125rem",
+          "label": "18px"
+        },
+        {
+          "value": "1.25rem",
+          "label": "20px"
+        },
+        {
+          "value": "1.5rem",
+          "label": "24px"
+        },
+        {
+          "value": "2rem",
+          "label": "32px"
+        },
+        {
+          "value": "2.5rem",
+          "label": "40px"
+        },
+        {
+          "value": "3rem",
+          "label": "48px"
+        },
+        {
+          "value": "3.5rem",
+          "label": "56px"
+        },
+        {
+          "value": "4.5rem",
+          "label": "72px"
+        },
+        {
+          "value": "5.5rem",
+          "label": "88px"
+        },
+        {
+          "value": "7.5rem",
+          "label": "120px"
+        },
+        {
+          "value": "9.5rem",
+          "label": "152px"
+        },
+        {
+          "value": "11.5rem",
+          "label": "184px"
+        }
+      ],
+      "default": "1rem",
+      "visible_if": "{{ section.settings.spec_value_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "spec_value_line_height",
+      "label": "t:settings.line_height",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.spec_value_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "spec_value_letter_spacing",
+      "label": "t:settings.letter_spacing",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.spec_value_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "spec_value_case",
+      "label": "t:settings.case",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.default"
+        },
+        {
+          "value": "uppercase",
+          "label": "t:options.uppercase"
+        }
+      ],
+      "default": "none",
+      "visible_if": "{{ section.settings.spec_value_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "spec_value_wrap",
+      "label": "t:settings.wrap",
+      "options": [
+        {
+          "value": "pretty",
+          "label": "t:options.pretty"
+        },
+        {
+          "value": "balance",
+          "label": "t:options.balance"
+        },
+        {
+          "value": "nowrap",
+          "label": "t:options.none"
+        }
+      ],
+      "visible_if": "{{ section.settings.spec_value_type_preset == 'custom' }}"
+    },
+    {
       "type": "select",
       "id": "content_distribution",
       "label": "t:settings.content_distribution",
@@ -743,7 +1937,8 @@
       "max": 80,
       "step": 1,
       "unit": "px",
-      "default": 0
+      "default": 0,
+      "visible_if": "{{ false }}"
     },
     {
       "type": "range",
@@ -754,7 +1949,8 @@
       "max": 80,
       "step": 1,
       "unit": "px",
-      "default": 0
+      "default": 0,
+      "visible_if": "{{ false }}"
     },
     {
       "type": "range",
@@ -765,7 +1961,8 @@
       "max": 80,
       "step": 1,
       "unit": "px",
-      "default": 0
+      "default": 0,
+      "visible_if": "{{ false }}"
     },
     {
       "type": "range",
@@ -776,7 +1973,8 @@
       "max": 80,
       "step": 1,
       "unit": "px",
-      "default": 0
+      "default": 0,
+      "visible_if": "{{ false }}"
     },
     {
       "type": "range",
@@ -787,7 +1985,8 @@
       "max": 80,
       "step": 1,
       "unit": "px",
-      "default": 0
+      "default": 0,
+      "visible_if": "{{ false }}"
     },
     {
       "type": "header",
@@ -802,7 +2001,8 @@
       "max": 96,
       "step": 2,
       "unit": "px",
-      "default": 0
+      "default": 0,
+      "visible_if": "{{ false }}"
     },
     {
       "type": "range",
@@ -932,6 +2132,26 @@
       "step": 4,
       "unit": "px",
       "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 40
     }
   ],
   "presets": [
