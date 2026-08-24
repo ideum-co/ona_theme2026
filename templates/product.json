@@ -313,13 +313,55 @@
             "properties_table": {
               "type": "custom-liquid",
               "settings": {
-                "custom_liquid": "{% liquid\n  assign tastes_like = closest.product.metafields.accentuate.tastes_like.value\n  assign roast = closest.product.metafields.accentuate.roast.value\n  assign components = closest.product.metafields.accentuate.components.value\n%}\n{% if tastes_like != blank or roast != blank or components != blank %}\n  <div class=\"product-properties\">\n    {% if tastes_like != blank %}\n      <div class=\"product-properties__row\">\n        <span class=\"product-properties__label\">Tastes Like</span>\n        <span class=\"product-properties__value\">{{ tastes_like }}</span>\n      </div>\n    {% endif %}\n    {% if roast != blank %}\n      <div class=\"product-properties__row\">\n        <span class=\"product-properties__label\">Roast</span>\n        <span class=\"product-properties__value\">{{ roast }}</span>\n      </div>\n    {% endif %}\n    {% if components != blank %}\n      <div class=\"product-properties__row\">\n        <span class=\"product-properties__label\">Components</span>\n        <span class=\"product-properties__value\">{{ components }}</span>\n      </div>\n    {% endif %}\n  </div>\n  <style>\n    .product-properties {\n      width: 100%;\n      border-top: 1px solid var(--border-color);\n    }\n    .product-properties__row {\n      display: grid;\n      grid-template-columns: minmax(100px, 0.35fr) 1fr;\n      gap: var(--gap-md);\n      padding: var(--gap-sm) 0;\n      border-bottom: 1px solid var(--border-color);\n    }\n    .product-properties__label {\n      font-size: var(--font-size--xs);\n      font-weight: 600;\n      letter-spacing: 0.04em;\n      text-transform: uppercase;\n      color: var(--color-foreground-secondary);\n    }\n    .product-properties__value {\n      font-size: var(--font-size--sm);\n      line-height: 1.6;\n    }\n  </style>\n{% endif %}"
+                "custom_liquid": "{% liquid\n  assign components = closest.product.metafields.accentuate.components.value\n%}\n{% if components != blank %}\n  <div class=\"product-properties\">\n    <div class=\"product-properties__row\">\n      <span class=\"product-properties__label\">Components</span>\n      <span class=\"product-properties__value\">{{ components }}</span>\n    </div>\n  </div>\n  <style>\n    .product-properties {\n      width: 100%;\n      border-top: 1px solid var(--border-color);\n    }\n    .product-properties__row {\n      display: grid;\n      grid-template-columns: minmax(100px, 0.35fr) 1fr;\n      gap: var(--gap-md);\n      padding: var(--gap-sm) 0;\n      border-bottom: 1px solid var(--border-color);\n    }\n    .product-properties__label {\n      font-size: var(--font-size--xs);\n      font-weight: 600;\n      letter-spacing: 0.04em;\n      text-transform: uppercase;\n      color: var(--color-foreground-secondary);\n    }\n    .product-properties__value {\n      font-size: var(--font-size--sm);\n      line-height: 1.6;\n    }\n  </style>\n{% endif %}\n"
               },
               "blocks": {}
+            },
+            "best_for_pdp": {
+              "type": "product-metafield-text",
+              "settings": {
+                "namespace": "accentuate",
+                "key": "roast",
+                "label": "",
+                "type_preset": "custom",
+                "width": "fit-content",
+                "alignment": "left",
+                "font": "var(--font-body--family)",
+                "font_size": "0.875rem",
+                "line_height": "normal",
+                "letter_spacing": "loose",
+                "case": "uppercase",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            },
+            "tastes_like_pdp": {
+              "type": "product-metafield-text",
+              "settings": {
+                "namespace": "accentuate",
+                "key": "tastes_like",
+                "label": "Tastes like",
+                "type_preset": "custom",
+                "width": "100%",
+                "alignment": "left",
+                "font": "var(--font-body--family)",
+                "font_size": "1.125rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
             }
           },
           "block_order": [
             "group_icgrde",
+            "best_for_pdp",
+            "tastes_like_pdp",
             "divider_VJhene",
             "variant_picker_R3rGDr",
             "purchase_options_SbK4qN",
@@ -717,10 +759,54 @@
         "padding-block-start": 48,
         "padding-block-end": 48
       }
+    },
+    "brew_guide": {
+      "type": "section",
+      "blocks": {
+        "body": {
+          "type": "custom-liquid",
+          "settings": {
+            "custom_liquid": "{% liquid\n  assign raw_handle = closest.product.metafields.accentuate.select_artlice.value\n  assign brew_intro = closest.product.metafields.accentuate.content_brew_guide.value\n  assign titles = closest.product.metafields.accentuate.title_item\n  assign values = closest.product.metafields.accentuate.content_item\n  assign has_recipe = false\n  if titles.size > 0 and values.size > 0\n    assign has_recipe = true\n  endif\n  assign has_content = false\n  if brew_intro != blank or has_recipe\n    assign has_content = true\n  endif\n%}\n{% if raw_handle != blank and has_content %}\n  {% paginate blogs.brewguides.articles by 250 %}\n    {% for a in blogs.brewguides.articles %}\n      {% if a.handle == raw_handle %}\n        <div class=\"brew-guide\">\n          <div class=\"brew-guide__intro\">\n            <p class=\"brew-guide__eyebrow\">Brew Guide</p>\n            {% if brew_intro != blank %}\n              <div class=\"brew-guide__copy rte\">{{ brew_intro }}</div>\n            {% endif %}\n            <a class=\"brew-guide__link\" href=\"{{ a.url }}\">Full brewing guide</a>\n          </div>\n          {% if has_recipe %}\n            <dl class=\"brew-guide__recipe\">\n              {% for title in titles %}\n                {% assign i = forloop.index0 %}\n                {% assign val = values[i] %}\n                {% if title != blank and val != blank %}\n                  <div class=\"brew-guide__recipe-row\">\n                    <dt class=\"brew-guide__recipe-label\">{{ title | strip }}</dt>\n                    <dd class=\"brew-guide__recipe-value\">{{ val }}</dd>\n                  </div>\n                {% endif %}\n              {% endfor %}\n            </dl>\n          {% endif %}\n        </div>\n        <style>\n          .brew-guide { display: grid; gap: var(--gap-2xl); width: 100%; }\n          @media screen and (min-width: 750px) {\n            .brew-guide { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }\n          }\n          .brew-guide__intro { display: grid; gap: var(--gap-md); }\n          .brew-guide__eyebrow { margin: 0; font-family: var(--font-heading--family); font-size: var(--font-size--3xl); color: var(--color-foreground); }\n          .brew-guide__copy { font-size: var(--font-size--md); line-height: 1.6; }\n          .brew-guide__link { justify-self: start; font-size: var(--font-size--sm); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; color: var(--color-foreground); }\n          .brew-guide__recipe { margin: 0; display: grid; border-top: 1px solid var(--border-color); }\n          .brew-guide__recipe-row { display: grid; grid-template-columns: minmax(120px, 0.4fr) 1fr; gap: var(--gap-md); padding: var(--gap-sm) 0; border-bottom: 1px solid var(--border-color); }\n          .brew-guide__recipe-label { margin: 0; font-size: var(--font-size--xs); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-foreground-secondary); }\n          .brew-guide__recipe-value { margin: 0; font-size: var(--font-size--sm); line-height: 1.6; }\n        </style>\n        {% break %}\n      {% endif %}\n    {% endfor %}\n  {% endpaginate %}\n{% endif %}\n"
+          }
+        }
+      },
+      "block_order": [
+        "body"
+      ],
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "center",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 16,
+        "section_width": "page-width",
+        "section_height": "",
+        "section_height_custom": 50,
+        "background_media": "none",
+        "background_color": "",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      }
     }
   },
   "order": [
     "main",
+    "brew_guide",
     "faqs",
     "product_recommendations_qggXJq"
   ]
