@@ -232,6 +232,7 @@
     "work_quickly_to_ship": "<p>We will work quickly to ship your order as soon as possible. Once your order has shipped, you will receive an email with further information. Delivery times vary depending on your location.</p>"
   },
   "info": {
+    "content_padding_custom": "Replaces the built-in inner padding of the content column, which is fixed to the page margin. Off keeps today's behaviour.",
     "zero_uses_theme": "Set to 0 to use the theme's size.",
     "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level.",
     "media_ignores_padding": "The section's top and bottom padding applies to the grid, so it insets the media too. This lets the media run to the edges.",
@@ -799,6 +800,7 @@
     "below_media": "Below media"
   },
   "settings": {
+    "content_padding_custom": "Custom content padding",
     "value": "Value",
     "product_title": "Product title",
     "media_ignores_padding": "Media fills the section",

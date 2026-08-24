@@ -24,6 +24,10 @@
   if section.settings.media_ignores_padding
     assign media_class_modifier = media_class_modifier | append: ' media-with-content--media-bleed'
   endif
+
+  if section.settings.content_padding_custom
+    assign media_class_modifier = media_class_modifier | append: ' media-with-content--content-padding'
+  endif
 %}
 
 {% liquid
@@ -43,6 +47,11 @@
     {% render 'border-override', settings: section.settings %}
     --media-height: {{ section.settings.media_height }};
     --media-with-content-mobile-padding-inline: {{ section.settings.mobile_padding_inline }}px;
+    {%- if section.settings.content_padding_custom %}
+      --media-with-content-content-padding-inline: {{ section.settings.content_padding_inline }}px;
+      --media-with-content-content-padding-block-start: {{ section.settings.content_padding_block_start }}px;
+      --media-with-content-content-padding-block-end: {{ section.settings.content_padding_block_end }}px;
+    {%- endif %}
     {% if section.settings.limit_content_width %}
       --media-with-content-max-width: {{ section.settings.max_width }}px;
     {% endif %}
@@ -192,6 +201,21 @@
     margin-block-end: auto;
   }
 
+  /* The inner padding of the content column was fixed at the page margin, twice over on mobile.
+     With the modifier it becomes three settings. Four classes so it outranks the `page-width` rule
+     below, which zeroes `padding-inline` for a page-width section. */
+  .section.media-with-content.media-with-content--content-padding
+    .media-with-content__content
+    > .group-block-content {
+    /* Longhands, and one class more than the `page-width` rule below: that rule zeroes
+       `padding-inline` and then sets `padding-inline-start` again from 750px up. A shorthand tying
+       on specificity would lose that side to its longhand. */
+    padding-inline-start: var(--media-with-content-content-padding-inline);
+    padding-inline-end: var(--media-with-content-content-padding-inline);
+    padding-block-start: var(--media-with-content-content-padding-block-start);
+    padding-block-end: var(--media-with-content-content-padding-block-end);
+  }
+
   /* Side padding and centring for the phone only. The padding goes on the content column and not
      on `.group-block-content`, whose inline padding the theme already zeroes for a page-width
      section - that is why the text sat flush against the edge - so there is no rule to outrank. */
@@ -315,6 +339,46 @@
       "id": "mobile_text_center",
       "label": "t:settings.mobile_text_center",
       "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "content_padding_custom",
+      "label": "t:settings.content_padding_custom",
+      "info": "t:info.content_padding_custom",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "content_padding_inline",
+      "label": "t:settings.horizontal_padding",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.content_padding_custom }}"
+    },
+    {
+      "type": "range",
+      "id": "content_padding_block_start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.content_padding_custom }}"
+    },
+    {
+      "type": "range",
+      "id": "content_padding_block_end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.content_padding_custom }}"
     },
     {
       "type": "checkbox",

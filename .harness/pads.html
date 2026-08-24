@@ -1,0 +1,21 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/.harness/sv2.css"><link rel="stylesheet" href="/.harness/mw6.css">
+<style>html{--page-margin:16px;--gap-lg:1rem} body{margin:0;background:#2f2a28;color:#eee}
+ .fila{display:grid;grid-template-columns:1fr 1fr;inline-size:700px;outline:1px solid #888;margin-block-end:10px}</style>
+</head><body>
+<!-- story-video: padding por columna -->
+<div class="story-video fila" id="sv" style="--story-video-intro-padding-block:40px 12px;--story-video-intro-padding-inline:24px;
+     --story-video-media-padding-block:0px 60px;--story-video-media-padding-inline:8px">
+  <div class="story-video__intro" id="sv-i">texto</div>
+  <div class="story-video__media" id="sv-m">video</div></div>
+<!-- media-with-content: sin la opción (comportamiento de hoy) -->
+<div class="section media-with-content section--page-width" id="mw1">
+  <div class="media-with-content__content"><div class="group-block-content" id="g1">contenido</div></div></div>
+<!-- con la opción y todo a 0, que es lo que pediste -->
+<div class="section media-with-content media-with-content--content-padding section--page-width" id="mw2"
+     style="--media-with-content-content-padding-inline:0px;--media-with-content-content-padding-block-start:0px;--media-with-content-content-padding-block-end:0px">
+  <div class="media-with-content__content"><div class="group-block-content" id="g2">contenido</div></div></div>
+<script>window.probe=()=>{const cs=s=>getComputedStyle(document.querySelector(s));
+ const pad=s=>{const c=cs(s);return [c.paddingTop,c.paddingRight,c.paddingBottom,c.paddingLeft].join(' ');};
+ return {storyIntro:pad('#sv-i'), storyMedia:pad('#sv-m'), mwSinOpcion:pad('#g1'), mwConOpcionACero:pad('#g2')};};</script>
+</body></html>

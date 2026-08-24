@@ -24,6 +24,10 @@
   class="story-video spacing-style"
   style="
     --section-heading-level-size: var({{ heading_level_size }});
+    --story-video-intro-padding-block: {{ settings.intro_padding_block_start }}px {{ settings.intro_padding_block_end }}px;
+    --story-video-intro-padding-inline: {{ settings.intro_padding_inline }}px;
+    --story-video-media-padding-block: {{ settings.media_padding_block_start }}px {{ settings.media_padding_block_end }}px;
+    --story-video-media-padding-inline: {{ settings.media_padding_inline }}px;
     --story-video-background: {{ settings.background_color }};
     --story-video-color: {{ settings.text_color }};
     --story-video-heading-size: {{ settings.heading_size }}px;
@@ -128,11 +132,15 @@
     text-align: center;
   }
 
+  /* Padding per column rather than one figure for the whole section: the text and the video sit in
+     the same row and almost never want the same breathing room. */
   .story-video__intro {
     display: grid;
     justify-items: center;
     gap: var(--gap-lg);
     max-inline-size: 42rem;
+    padding-block: var(--story-video-intro-padding-block, 0);
+    padding-inline: var(--story-video-intro-padding-inline, 0);
   }
 
   .story-video__logo {
@@ -173,6 +181,8 @@
   /* A definite width plus `justify-self: center`, not `stretch` with auto margins: an auto margin
      in the alignment axis cancels stretch, which left the player at its intrinsic 300px. */
   .story-video__media {
+    padding-block: var(--story-video-media-padding-block, 0);
+    padding-inline: var(--story-video-media-padding-inline, 0);
     position: relative;
     z-index: var(--layer-flat, 1);
     justify-self: center;
@@ -704,6 +714,74 @@
       "step": 4,
       "unit": "px",
       "default": 80
+    },
+    {
+      "type": "header",
+      "content": "t:content.text"
+    },
+    {
+      "type": "range",
+      "id": "intro_padding_block_start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "intro_padding_block_end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "intro_padding_inline",
+      "label": "t:settings.horizontal_padding",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "t:content.media"
+    },
+    {
+      "type": "range",
+      "id": "media_padding_block_start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "media_padding_block_end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "media_padding_inline",
+      "label": "t:settings.horizontal_padding",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0
     }
   ],
   "presets": [

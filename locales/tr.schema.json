@@ -189,6 +189,7 @@
     "disclosures": "Bildirimler"
   },
   "settings": {
+    "content_padding_custom": "Custom content padding",
     "value": "Value",
     "product_title": "Product title",
     "media_ignores_padding": "Media fills the section",
@@ -1164,6 +1165,7 @@
     "disclosures": "Bildirimler"
   },
   "info": {
+    "content_padding_custom": "Replaces the built-in inner padding of the content column, which is fixed to the page margin. Off keeps today's behaviour.",
     "zero_uses_theme": "Set to 0 to use the theme's size.",
     "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level.",
     "media_ignores_padding": "The section's top and bottom padding applies to the grid, so it insets the media too. This lets the media run to the edges.",
