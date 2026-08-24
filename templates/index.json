@@ -935,11 +935,11 @@
         "media_position": "right",
         "cta_style": "add_to_cart",
         "cta_label": "Add to cart",
-        "background_color": "#470a12",
+        "background_color": "#d67ba6",
         "text_color": "#f5f4ea",
         "select_label_color": "",
         "select_border_color": "",
-        "button_background": "#751132",
+        "button_background": "#d67ba6",
         "button_text": "#f5f4ea",
         "padding-block-start": 120,
         "padding-block-end": 120
