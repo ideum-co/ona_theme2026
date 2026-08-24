@@ -53,8 +53,13 @@
   </div>
 
   <div
-    class="border-style custom-section-content"
-    style="{% render 'border-override', settings: section.settings %}"
+    class="border-style custom-section-content{% if section.settings.limit_content_width %} custom-section-content--limited{% endif %}"
+    style="
+      {% render 'border-override', settings: section.settings %}
+      {% if section.settings.limit_content_width %}
+        --custom-section-content-max-width: {{ section.settings.max_width }}px;
+      {% endif %}
+    "
   >
     {% if section.settings.toggle_overlay %}
       {% render 'overlay', settings: section.settings, layer: '0' %}
@@ -107,5 +112,11 @@
 
   .custom-section-content {
     z-index: var(--layer-flat);
+  }
+
+  .custom-section-content--limited {
+    inline-size: 100%;
+    max-inline-size: var(--custom-section-content-max-width, 1280px);
+    margin-inline: auto;
   }
 {% endstylesheet %}
