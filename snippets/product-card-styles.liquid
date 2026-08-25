@@ -31,6 +31,25 @@
     height: 100%;
   }
 
+  /* Keep variant controls aligned when either configured card metafield is empty. */
+  .product-card .product-metafield-text--empty {
+    display: block;
+    visibility: hidden;
+    min-height: 1lh;
+  }
+
+  .product-card .product-title-link,
+  .product-card .product-title-link .text-block {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .product-card .product-title-link .text-block > * {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   /* Product card title truncation - applied on mobile regardless of view */
   @media screen and (max-width: 749px) {
     :is(.product-card, .product-grid__card) :is(h4, .h4) {
