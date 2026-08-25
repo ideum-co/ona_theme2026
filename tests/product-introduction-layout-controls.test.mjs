@@ -51,3 +51,12 @@ test('does not add a misleading screen-edge media control to the centered layout
 test('keeps fixed-size 3D models inside the selected media height', () => {
   assert.match(source, /\.product-intro__model\s*\{[^}]*max-block-size: 100%;/);
 });
+
+test('centers the 3D model without letting it escape its constrained grid column', () => {
+  assert.match(source, /\.product-intro__media\s*\{[^}]*inline-size: 100%;[^}]*min-inline-size: 0;/);
+  assert.match(
+    source,
+    /\.product-intro__model\s*\{[^}]*inline-size: min\(100%, var\(--product-intro-model-width, 520px\)\);/,
+  );
+  assert.match(source, /:is\(\.product-intro__wordmark, \.product-intro__details\)\s*\{[^}]*min-inline-size: 0;/);
+});

@@ -259,6 +259,8 @@
   .product-intro__media {
     display: grid;
     place-items: center;
+    inline-size: 100%;
+    min-inline-size: 0;
     order: -1;
     block-size: var(--product-intro-media-height, 60svh);
     min-block-size: 0;
@@ -274,8 +276,7 @@
      this element, which lands on zero. `max-inline-size` is what brings it down on narrow screens. */
   .product-intro__model {
     display: block;
-    inline-size: var(--product-intro-model-width, 520px);
-    max-inline-size: 100%;
+    inline-size: min(100%, var(--product-intro-model-width, 520px));
     block-size: var(--product-intro-model-height, 520px);
     max-block-size: 100%;
     margin-inline: auto;
@@ -303,6 +304,10 @@
     display: grid;
     gap: var(--gap-sm);
     justify-items: start;
+  }
+
+  :is(.product-intro__wordmark, .product-intro__details) {
+    min-inline-size: 0;
   }
 
   .product-intro__eyebrow {
