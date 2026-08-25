@@ -155,7 +155,12 @@
       );
     }
 
-    @supports (--test: round(down, 1px, 1px)) {
+    /* Tests against a real `width` declaration, not a custom property (`--test: round(...)`):
+       custom properties accept almost any token stream as their value, so a browser considers
+       `--test: round(...)` "supported" whether or not it actually recognizes round() as a
+       function - the @supports check would always pass. `width` has an actual grammar round()
+       has to satisfy, so unsupported browsers correctly fail this check. */
+    @supports (width: round(down, 1px, 1px)) {
       .resource-list__carousel--adaptive .resource-list__slide {
         --section-slide-width: var(--arlc-slide-width);
       }
