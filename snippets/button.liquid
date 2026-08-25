@@ -3,6 +3,7 @@
 
   @param {string} link - link to render
   @param {object} [block] - The block
+  @param {string} [class] - An optional class to apply to the link
 
   @example
   {% render 'button', link: '/collections/all' %}
@@ -20,6 +21,7 @@
   {% endif %}
   class="
     size-style
+    {{ class }}
     {{ block_settings.style_class }}
     {{ block_settings.style_class }}--{{ block.id }}
   "

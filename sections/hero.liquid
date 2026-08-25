@@ -459,13 +459,13 @@
 
 <div
   id="Hero-{{ section.id }}"
-  class="hero{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}{% if section.blocks.size == 0 and section.settings.section_height == 'auto' %} hero--no-blocks-auto-height{% endif %}{% if section.settings.stack_media_on_mobile %} hero--stack-mobile{% endif %}{% if section.settings.animate_content %} hero--animate-content{% endif %}{% if section.settings.pin_button_group_to_bottom %} hero--bottom-actions{% endif %}"
+  class="hero{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}{% if section.blocks.size == 0 and section.settings.section_height == 'auto' %} hero--no-blocks-auto-height{% endif %}{% if section.settings.stack_media_on_mobile %} hero--stack-mobile{% endif %}{% if section.settings.animate_content %} hero--animate-content{% endif %}{% if section.settings.pin_button_group_to_bottom and section.settings.section_height != 'auto' %} hero--bottom-actions{% endif %}"
   style="
     --hero-border-style: {{ section.settings.border }};
     --hero-border-width: {{ section.settings.border_width }}px;
     --hero-border-opacity: {{ section.settings.border_opacity }}%;
     --blur-opacity: {{ section.settings.reflection_opacity | divided_by: 100.0 }};
-    {% if section.settings.pin_button_group_to_bottom %}
+    {% if section.settings.pin_button_group_to_bottom and section.settings.section_height != 'auto' %}
       --hero-bottom-actions-offset: {{ section.settings.button_group_bottom_spacing | default: 60 }}px;
     {% endif %}
     {% if section.settings.section_height == 'custom' %}
@@ -613,7 +613,7 @@
     justify-content: center;
   }
 
-  .hero--bottom-actions .hero__content-wrapper > .group-block:has(> .group-block-content :is(.button, .button-secondary, .button-unstyled, .button-custom)) {
+  .hero--bottom-actions .hero__content-wrapper > .group-block:has(> .group-block-content .button-block) {
     position: absolute;
     inset-inline-start: 50%;
     inset-block-end: var(--hero-bottom-actions-offset, 60px);
@@ -888,7 +888,8 @@
       "type": "checkbox",
       "id": "pin_button_group_to_bottom",
       "label": "Pin button group to bottom",
-      "default": false
+      "default": false,
+      "visible_if": "{{ section.settings.section_height != 'auto' }}"
     },
     {
       "type": "range",
@@ -899,7 +900,7 @@
       "step": 4,
       "unit": "px",
       "default": 60,
-      "visible_if": "{{ section.settings.pin_button_group_to_bottom }}"
+      "visible_if": "{{ section.settings.pin_button_group_to_bottom and section.settings.section_height != 'auto' }}"
     },
     {
       "type": "header",
