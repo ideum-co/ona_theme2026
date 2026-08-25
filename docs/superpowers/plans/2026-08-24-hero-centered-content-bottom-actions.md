@@ -182,4 +182,3 @@ Expected: clean diff and `true` for zero Hero offenses.
 git add sections/hero.liquid templates/index.json tests/hero-centered-content-bottom-actions.test.mjs
 git commit -m "feat(hero): pin action group to bottom"
 ```
-
