@@ -347,6 +347,14 @@
   style="
     --color-background-top-row: rgba({{ section.settings.background_color_top.rgba | default: settings.page_background_color.rgba }});
     --color-background-bottom-row: rgba({{ section.settings.background_color_bottom.rgba | default: settings.page_background_color.rgba }});
+    --header-quick-link-font-size: {{ section.settings.quick_link_font_size | default: 16 }}px;
+    --header-action-icon-size: {{ section.settings.header_icon_size | default: 27 }}px;
+    --header-solid-action-button-background: {{ section.settings.solid_action_button_background | default: '#8a1238' }};
+    --header-solid-action-button-text: {{ section.settings.solid_action_button_text | default: '#ffffff' }};
+    --header-solid-action-icon-color: {{ section.settings.solid_action_icon_color | default: '#4b0b16' }};
+    --header-transparent-action-button-background: {{ section.settings.transparent_action_button_background | default: '#8a1238' }};
+    --header-transparent-action-button-text: {{ section.settings.transparent_action_button_text | default: '#ffffff' }};
+    --header-transparent-action-icon-color: {{ section.settings.transparent_action_icon_color | default: '#ffffff' }};
     {% if transparent and text_color_transparent != blank %}
       --color-transparent-text: {{ text_color_transparent }};
       --color-transparent-text-rgb: {{ text_color_transparent.rgb }};
@@ -483,6 +491,9 @@
     --header-padding: var(--padding-sm);
     --font-paragraph--line-height: 1;
     --header-content-transition-timing: 0s;
+    --header-action-button-background: var(--header-solid-action-button-background);
+    --header-action-button-text: var(--header-solid-action-button-text);
+    --header-action-icon-color: var(--header-solid-action-icon-color);
 
     display: block;
     contain: layout style;
@@ -495,6 +506,14 @@
       /* reset style from base.css */
       transition: color var(--header-content-transition-timing), border-color var(--header-content-transition-timing);
     }
+  }
+
+  .header[transparent]:not([data-sticky-state='active']):not(:has(.menu-list__link:hover)):not(
+      :has(header-menu[aria-expanded='true'])
+    ) {
+    --header-action-button-background: var(--header-transparent-action-button-background);
+    --header-action-button-text: var(--header-transparent-action-button-text);
+    --header-action-icon-color: var(--header-transparent-action-icon-color);
   }
 
   #header-component :is(.header-menu, .dropdown-localization) {
@@ -954,6 +973,8 @@
     cursor: pointer;
     display: flex;
     justify-content: center;
+    min-width: var(--minimum-touch-target);
+    min-height: var(--minimum-touch-target);
 
     &:hover {
       --button-color: var(--color-foreground);
@@ -1194,8 +1215,31 @@
   }
 
   .header-quick-links .button {
+    --button-background-color: var(--header-action-button-background);
+    --button-color: var(--header-action-button-text);
+
     padding-block: 6px;
     padding-inline: 16px;
+    background: var(--button-background-color);
+    color: var(--button-color);
+    font-size: var(--header-quick-link-font-size);
+  }
+
+  #header-component .header-actions__action,
+  #header-component .account-button__icon,
+  #header-component .header__icon--menu {
+    color: var(--header-action-icon-color);
+  }
+
+  #header-component .header-actions__action svg,
+  #header-component .header__icon--menu svg {
+    width: auto;
+    height: var(--header-action-icon-size);
+  }
+
+  #header-component .header__icon--menu {
+    min-width: var(--minimum-touch-target);
+    min-height: var(--minimum-touch-target);
   }
 
   @media (max-width: 749px) {
@@ -1584,6 +1628,74 @@
     {
       "type": "header",
       "content": "t:content.utilities"
+    },
+    {
+      "type": "header",
+      "content": "Header actions"
+    },
+    {
+      "type": "range",
+      "id": "quick_link_font_size",
+      "label": "Button text size",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "header_icon_size",
+      "label": "Icon size",
+      "min": 16,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 27
+    },
+    {
+      "type": "header",
+      "content": "Solid header colors"
+    },
+    {
+      "type": "color",
+      "id": "solid_action_button_background",
+      "label": "Button background",
+      "default": "#8a1238"
+    },
+    {
+      "type": "color",
+      "id": "solid_action_button_text",
+      "label": "Button text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "solid_action_icon_color",
+      "label": "Icon color",
+      "default": "#4b0b16"
+    },
+    {
+      "type": "header",
+      "content": "Transparent header colors"
+    },
+    {
+      "type": "color",
+      "id": "transparent_action_button_background",
+      "label": "Button background",
+      "default": "#8a1238"
+    },
+    {
+      "type": "color",
+      "id": "transparent_action_button_text",
+      "label": "Button text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "transparent_action_icon_color",
+      "label": "Icon color",
+      "default": "#ffffff"
     },
     {
       "type": "select",
