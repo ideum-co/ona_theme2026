@@ -514,6 +514,14 @@ export class Slideshow extends Component {
   #resizeObserver;
 
   /**
+   * The right-edge clip (see #getClipRight, px, always >= 0) the IntersectionObserver's
+   * rootMargin was last built from. Tracked so a resize only rebuilds the observer when the
+   * clip actually moved.
+   * @type {number}
+   */
+  #observedClipRight = 0;
+
+  /**
    * IntersectionObserver for efficient visibility tracking of slides
    * @type {IntersectionObserver | null}
    */
@@ -594,6 +602,14 @@ export class Slideshow extends Component {
 
       this.#resizeObserver = new ResizeObserver(async () => {
         if (viewTransition.current) await viewTransition.current;
+
+        // slideshow-container's clip (see #getClipRight) is width-derived - container-query
+        // breakpoints and the adaptive column count both change it - so a resize can move it
+        // without the scroller itself resizing. Only rebuild the observer when it actually
+        // moved: this fires on every resize tick and a rebuild drops+reobserves every slide.
+        if (this.#getClipRight() !== this.#observedClipRight) {
+          this.#setupIntersectionObserver();
+        }
 
         if (visibleSlidesAmount > 1) {
           this.#updateVisibleSlides();
@@ -863,6 +879,30 @@ export class Slideshow extends Component {
   }
 
   /**
+   * Reads the right-edge clip applied to this slideshow's own slideshow-container (used by
+   * e.g. resource-list-carousel.liquid to hide a peeking slide without resizing the scroller
+   * itself - resizing the scroller's own box was tried and breaks scrollLeft/scrollTo). Every
+   * other slideshow usage has a `clip-path` of `none` there, so this resolves to 0 and leaves
+   * rootMargin untouched.
+   * @returns {number} The clipped width in px, always >= 0.
+   */
+  #getClipRight() {
+    const { slideshowContainer } = this.refs;
+    if (!slideshowContainer) return 0;
+
+    const clipPath = getComputedStyle(slideshowContainer).clipPath;
+    // Computed clip-path serializes inset() with all 4 offsets in canonical `top right bottom
+    // left` order, so the 2nd value is always the right-edge clip regardless of how many values
+    // the source declaration used.
+    const match = clipPath.match(/^inset\(([^)]+)\)/);
+    if (!match) return 0;
+
+    const parts = match[1].trim().split(/\s+/);
+    const right = parseFloat(parts[1] ?? parts[0]);
+    return Number.isFinite(right) && right > 0 ? right : 0;
+  }
+
+  /**
    * Setup IntersectionObserver for efficient visibility tracking of slides
    */
   #setupIntersectionObserver() {
@@ -872,6 +912,9 @@ export class Slideshow extends Component {
     if (this.#intersectionObserver) {
       this.#intersectionObserver.disconnect();
     }
+
+    const clipRight = this.#getClipRight();
+    this.#observedClipRight = clipRight;
 
     this.#intersectionObserver = new IntersectionObserver(
       (entries) => {
@@ -901,8 +944,12 @@ export class Slideshow extends Component {
       {
         root: scroller,
         threshold: SLIDE_VISIBLITY_THRESHOLD,
-        // Add small margin to account for sub-pixel rendering
-        rootMargin: '1px',
+        // 1px margin on every side accounts for sub-pixel rendering. The right side additionally
+        // subtracts the wrapper's own clip (0 when there is none), so a slide the clip-path has
+        // already painted out stops registering as visible to the observer too - without this,
+        // a wide viewport could clip a slide from view while the observer (rooted on the
+        // scroller's own unclipped box) still counted it, throwing off arrow-advance math.
+        rootMargin: `1px ${1 - clipRight}px 1px 1px`,
       }
     );
 
