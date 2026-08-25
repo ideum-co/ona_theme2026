@@ -8,7 +8,8 @@
 
   Featured products come from the first collection child of each top level link - the convention
   the drawer already uses - and their image comes from a metafield, falling back to the product's
-  own image.
+  own image. Card image ratio reads the block's own Image ratio setting (featured_products_
+  aspect_ratio), the same one the drawer's own featured products already honor.
 
   @param {object} linklist - The menu to render.
   @param {object} block - The header menu block, for its settings.
@@ -26,6 +27,7 @@
   assign image_key = block_settings.megamenu_image_key | default: 'menu_image'
   assign badge_namespace = block_settings.megamenu_badge_namespace | default: 'custom'
   assign badge_key = block_settings.megamenu_badge_key | default: 'menu_badge'
+  assign card_aspect_ratio = block_settings.featured_products_aspect_ratio | default: '4 / 5'
 -%}
 
 {%- comment -%}
@@ -134,6 +136,7 @@
 {%- endcomment -%}
 <header-megamenu
   class="header-megamenu{% if block_settings.background_color != blank or block_settings.text_color != blank %} color-custom-{{ block.id }}{% endif %}"
+  style="--header-megamenu-card-aspect-ratio: {{ card_aspect_ratio }};"
   ref="megaMenu"
 >
   <div class="header-megamenu__panel">
@@ -464,10 +467,16 @@
       color: inherit;
     }
 
+    /* aspect-ratio reads the block's own Image ratio setting (--header-megamenu-card-aspect-
+       ratio, set above on <header-megamenu>) instead of a hardcoded 1:1 - the mobile drawer's
+       featured products already honor that setting via resource-card's image_aspect_ratio, and
+       forcing coffee bag photography (tall, not square) into a hardcoded square with cover
+       cropped the top and bottom off with no breathing room. Falls back to 4 / 5 (the setting's
+       own default) if the custom property is ever unset. */
     .header-megamenu__card-media {
       position: relative;
       display: block;
-      aspect-ratio: 1;
+      aspect-ratio: var(--header-megamenu-card-aspect-ratio, 4 / 5);
       overflow: hidden;
     }
 
