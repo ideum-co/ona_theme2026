@@ -102,8 +102,13 @@
 
      The peek also goes, so the count that is configured is the count that is visible.
 
-     If `round()` is unavailable the declaration is invalid and `--column-count` keeps the inline
-     value the section already sets, which is the configured number - a safe place to land. */
+     --arlc-column-count and --arlc-slide-width (below) depend on round(), gated behind
+     @supports so --section-slide-width stays genuinely UNSET rather than present-but-invalid
+     in browsers without it: `var(--section-slide-width, fallback)` only reaches for its
+     fallback when --section-slide-width has no value at all, not when it has one that merely
+     fails to parse once substituted - an invalid value there would instead invalidate `width:
+     var(--slide-width)` itself, at computed-value time, falling all the way back to width's
+     own initial value (auto) instead of the intended --fallback-slide-width clamp(). */
   .resource-list__carousel--adaptive {
     --peek-next-slide-size: 0px;
   }
@@ -150,8 +155,10 @@
       );
     }
 
-    .resource-list__carousel--adaptive .resource-list__slide {
-      --section-slide-width: var(--arlc-slide-width);
+    @supports (--test: round(down, 1px, 1px)) {
+      .resource-list__carousel--adaptive .resource-list__slide {
+        --section-slide-width: var(--arlc-slide-width);
+      }
     }
 
     /* The track's own box still stretches to width: 100% of its full-bleed parent, wider

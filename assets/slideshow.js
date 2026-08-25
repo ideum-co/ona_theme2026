@@ -603,7 +603,7 @@ export class Slideshow extends Component {
       this.#resizeObserver = new ResizeObserver(async () => {
         if (viewTransition.current) await viewTransition.current;
 
-        // The wrapping viewport's clip (see #getClipRight) is width-derived - container-query
+        // slideshow-container's clip (see #getClipRight) is width-derived - container-query
         // breakpoints and the adaptive column count both change it - so a resize can move it
         // without the scroller itself resizing. Only rebuild the observer when it actually
         // moved: this fires on every resize tick and a rebuild drops+reobserves every slide.
@@ -879,18 +879,18 @@ export class Slideshow extends Component {
   }
 
   /**
-   * Reads the right-edge clip a wrapping viewport applies via `clip-path: inset(...)` (used by
+   * Reads the right-edge clip applied to this slideshow's own slideshow-container (used by
    * e.g. resource-list-carousel.liquid to hide a peeking slide without resizing the scroller
-   * itself - resizing the scroller's own box was tried and breaks scrollLeft/scrollTo). Elements
-   * with no such wrapper (every other slideshow usage) have a `clip-path` of `none` here, so this
-   * resolves to 0 and leaves rootMargin untouched.
+   * itself - resizing the scroller's own box was tried and breaks scrollLeft/scrollTo). Every
+   * other slideshow usage has a `clip-path` of `none` there, so this resolves to 0 and leaves
+   * rootMargin untouched.
    * @returns {number} The clipped width in px, always >= 0.
    */
   #getClipRight() {
-    const { parentElement } = this;
-    if (!parentElement) return 0;
+    const { slideshowContainer } = this.refs;
+    if (!slideshowContainer) return 0;
 
-    const clipPath = getComputedStyle(parentElement).clipPath;
+    const clipPath = getComputedStyle(slideshowContainer).clipPath;
     // Computed clip-path serializes inset() with all 4 offsets in canonical `top right bottom
     // left` order, so the 2nd value is always the right-edge clip regardless of how many values
     // the source declaration used.
