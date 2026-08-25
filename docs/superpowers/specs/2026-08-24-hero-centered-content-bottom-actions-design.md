@@ -8,6 +8,7 @@ Keep the main homepage Hero heading and description centered horizontally and ve
 
 - Add an opt-in behavior to `sections/hero.liquid`; existing Hero sections and presets remain unchanged unless enabled.
 - Enable the behavior for the homepage section `hero_ona` in `templates/index.json`.
+- Reset the homepage button Group's existing `padding-block-start` from 100px to 0 so the configured bottom spacing measures the actual buttons rather than the Group's former layout workaround.
 - Keep the existing Heading, Text, Group, and Button blocks editable and in their current Shopify block hierarchy.
 - Do not change button labels, links, colors, sizes, ordering, or the Header.
 
