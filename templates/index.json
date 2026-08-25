@@ -98,7 +98,7 @@
             "link": "",
             "open_in_new_tab": false,
             "placeholder": "",
-            "padding-block-start": 100,
+            "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
             "padding-inline-end": 0
@@ -157,6 +157,8 @@
       "name": "t:names.hero",
       "settings": {
         "animate_content": true,
+        "pin_button_group_to_bottom": true,
+        "button_group_bottom_spacing": 60,
         "media_type_1": "video",
         "image_1": "shopify://shop_images/cherries.jpg",
         "media_type_2": "video",
