@@ -52,14 +52,12 @@
 %}
 
 <div
-  class="product-metafield-text text-block {{ text_block_classes }} text-{{ block_settings.alignment }} {{ block_settings.type_preset | default: 'paragraph' }} spacing-style"
+  class="product-metafield-text{% if value == blank %} product-metafield-text--empty{% endif %} text-block {{ text_block_classes }} text-{{ block_settings.alignment }} {{ block_settings.type_preset | default: 'paragraph' }} spacing-style"
   data-product-id="{{ product_resource.id }}"
+  {% if value == blank %}
+    aria-hidden="true"
+  {% endif %}
   style="
-    {% if value == blank %}
-      display: none;
-    {% else %}
-      display: block;
-    {% endif %}
     {% render 'typography-style', settings: block_settings %}
     {% render 'spacing-style', settings: block_settings %}
     --width: {{ block_settings.width }};
@@ -75,6 +73,10 @@
 </div>
 
 {% stylesheet %}
+  .product-metafield-text--empty {
+    display: none;
+  }
+
   .product-metafield-text__label {
     margin-inline-end: var(--gap-2xs);
     letter-spacing: var(--letter-spacing-sm);
