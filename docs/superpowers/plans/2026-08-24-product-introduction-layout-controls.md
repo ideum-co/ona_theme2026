@@ -14,7 +14,7 @@
 - Preserve all existing Product introduction values and rendering paths.
 - The background color and optional background image must remain full width.
 - New defaults are Media width `medium`, Media height `medium`, Section width `page-width`, Limit content width enabled, Max width `1280px`.
-- Extend media to screen edge is desktop-only and is available only for Page section width.
+- Do not expose Extend media to screen edge: the media is the center column and horizontal extension would overlap adjacent content.
 
 ---
 
@@ -26,7 +26,7 @@
 
 **Interfaces:**
 - Consumes: existing `section.settings`, existing Product introduction media/model rendering, and theme page-margin variables.
-- Produces: schema settings `media_width`, `media_height`, `section_width`, `limit_content_width`, `max_width`, and `extend_media`; markup class `.product-intro__inner`; CSS variables `--product-intro-max-width` and `--product-intro-media-height`.
+- Produces: schema settings `media_width`, `media_height`, `section_width`, `limit_content_width`, and `max_width`; markup class `.product-intro__inner`; CSS variables `--product-intro-max-width` and `--product-intro-media-height`.
 
 - [ ] **Step 1: Write the failing schema and source-contract test**
 
@@ -56,7 +56,6 @@ test('exposes Product introduction layout controls', () => {
     { min: 800, max: 1800, step: 20, default: 1280 },
   );
   assert.equal(setting('max_width').visible_if, '{{ section.settings.limit_content_width }}');
-  assert.equal(setting('extend_media').visible_if, "{{ section.settings.section_width == 'page-width' }}");
 });
 
 test('keeps the background outside the constrained inner grid', () => {
@@ -64,7 +63,6 @@ test('keeps the background outside the constrained inner grid', () => {
   assert.match(source, /--product-intro-max-width: {{ settings\\.max_width \\| default: 1280 }}px/);
   assert.match(source, /--product-intro-media-height:/);
   assert.match(source, /\\.product-intro__inner\\s*\\{/);
-  assert.match(source, /product-intro__inner--media-extend/);
 });
 ```
 
@@ -76,7 +74,7 @@ Expected: FAIL because the schema controls and inner wrapper do not exist.
 
 - [ ] **Step 3: Add schema settings without touching template JSON**
 
-Add a Layout header and the six settings to `sections/product-intro.liquid`. Use existing translation keys. Define media-height values `auto`, `small`, `medium`, `large`, and `full-screen`, with default `medium`.
+Add a Layout header and the five settings to `sections/product-intro.liquid`. Use existing translation keys. Define media-height values `auto`, `small`, `medium`, `large`, and `full-screen`, with default `medium`.
 
 - [ ] **Step 4: Move the existing grid into an inner wrapper**
 
@@ -84,7 +82,7 @@ Keep the existing outer element and background declarations. Add this wrapper ar
 
 ```liquid
 <div
-  class="product-intro__inner product-intro__inner--{{ settings.section_width | default: 'page-width' }} product-intro__inner--media-{{ settings.media_width | default: 'medium' }}{% if settings.limit_content_width %} product-intro__inner--limited{% endif %}{% if settings.extend_media and settings.section_width == 'page-width' %} product-intro__inner--media-extend{% endif %}"
+  class="product-intro__inner product-intro__inner--{{ settings.section_width | default: 'page-width' }} product-intro__inner--media-{{ settings.media_width | default: 'medium' }}{% if settings.limit_content_width %} product-intro__inner--limited{% endif %}"
 >
   <!-- Existing wordmark, media, and details nodes remain unchanged. -->
 </div>
@@ -117,7 +115,7 @@ Define a responsive height scale:
 }
 ```
 
-On desktop, map media width to column proportions: narrow `1fr 0.75fr 1fr`, medium `1fr 1.1fr 1fr`, and wide `1fr 1.5fr 1fr`. For `--media-extend`, extend only the media cell toward its adjacent viewport edge with a calculated negative inline margin. Keep wordmark and details constrained. Do not apply extension below 750px.
+On desktop, map media width to column proportions: narrow `1fr 0.75fr 1fr`, medium `1fr 1.1fr 1fr`, and wide `1fr 1.5fr 1fr`. Keep all three columns inside the selected page/max-width constraint.
 
 - [ ] **Step 6: Run the focused test and inspect protected JSON**
 
@@ -182,4 +180,3 @@ git commit -m "fix(product-intro): correct layout control integration"
 ```
 
 If no correction is needed, do not create an empty commit.
-
