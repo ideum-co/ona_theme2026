@@ -12,6 +12,15 @@
 
 {% case variant %}
   {% when 'mobile' %}
+    {%- comment -%}
+      `content_for 'block'` only resolves in the file the section/block itself renders - it
+      doesn't work from further down a render chain (header-drawer, then header-megamenu, are
+      both snippets a couple of `render` calls deep). Captured here, at the block's own top
+      level, and threaded through as a plain HTML string param instead.
+    {%- endcomment -%}
+    {% capture header_menu_social %}
+      {%- content_for 'block', type: 'social-links', id: 'header-menu-social' -%}
+    {% endcapture %}
     <div
       class="header__drawer"
       ref="headerDrawerContainer"
@@ -22,7 +31,8 @@
         linklist: block_settings.menu,
         data_header_drawer_type: 'mobile-drawer',
         block: block,
-        section: section
+        section: section,
+        social: header_menu_social
       %}
     </div>
 

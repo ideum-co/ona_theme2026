@@ -12,9 +12,11 @@
 
   @param {object} linklist - The menu to render.
   @param {object} block - The header menu block, for its settings.
+  @param {string} [social] - Pre-rendered social icons HTML, captured by the caller (see
+    header-drawer.liquid's own doc comment for why this isn't rendered here directly).
 
   @example
-  {% render 'header-megamenu', linklist: block_settings.menu, block: block %}
+  {% render 'header-megamenu', linklist: block_settings.menu, block: block, social: social %}
 {%- enddoc -%}
 
 {%- liquid
@@ -135,26 +137,47 @@
   ref="megaMenu"
 >
   <div class="header-megamenu__panel">
-    <ul
-      class="header-megamenu__primary list-unstyled"
-      ref="primary"
-    >
-      {%- for link in linklist.links -%}
-        <li class="header-megamenu__primary-item">
-          <a
-            class="header-megamenu__primary-link"
-            href="{{ link.url }}"
-            data-index="{{ forloop.index0 }}"
-            ref="primaryLinks[]"
-            {% if forloop.first %}
-              aria-current="true"
-            {% endif %}
-          >
-            {{- link.title | escape -}}
-          </a>
-        </li>
-      {%- endfor -%}
-    </ul>
+    {%- comment -%}
+      Wraps the primary link list and the social icons together as one column: `.header-
+      megamenu__panel` is a 2-column grid (primary column, panels column), and without this
+      wrapper the social block below would become a 3rd auto-placed grid item, landing in the
+      panels column on row 1 instead of stacking under the links.
+    {%- endcomment -%}
+    <div class="header-megamenu__primary-column">
+      <ul
+        class="header-megamenu__primary list-unstyled"
+        ref="primary"
+      >
+        {%- for link in linklist.links -%}
+          <li class="header-megamenu__primary-item">
+            <a
+              class="header-megamenu__primary-link"
+              href="{{ link.url }}"
+              data-index="{{ forloop.index0 }}"
+              ref="primaryLinks[]"
+              {% if forloop.first %}
+                aria-current="true"
+              {% endif %}
+            >
+              {{- link.title | escape -}}
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      {%- comment -%}
+        `social` is pre-rendered HTML, captured via `content_for 'block', type: 'social-links'`
+        at the top of _header-menu.liquid and threaded down through header-drawer.liquid: that
+        tag only resolves in the file the block itself renders, not from a snippet further down
+        the render chain, which is what this file is relative to the block. Configured with its
+        own settings in header-group.json rather than reusing this menu block's settings.
+        Renders nothing visible (an empty, zero-height wrapper) when every URL on that child
+        block is blank.
+      {%- endcomment -%}
+      <div class="header-megamenu__social">
+        {{- social -}}
+      </div>
+    </div>
 
     <div class="header-megamenu__panels">
       {%- for link in linklist.links -%}
@@ -351,12 +374,37 @@
       overscroll-behavior: contain;
     }
 
+    .header-megamenu__primary-column {
+      display: flex;
+      flex-direction: column;
+      align-content: start;
+      gap: var(--gap-2xl);
+    }
+
     .header-megamenu__primary {
       display: grid;
-      align-content: start;
       gap: var(--gap-sm);
       margin: 0;
       padding: 0;
+    }
+
+    /* No URLs set still renders social-links' own wrapper div - collapse it out of the column's
+       gap so an unconfigured menu looks identical to before this existed. Checked by the absence
+       of an icon element rather than :empty: the wrapper always has whitespace text nodes between
+       its Liquid tags even with zero configured URLs, and :empty rejects any child node, text
+       included, so it never matched. */
+    .header-megamenu__social:not(:has(.social-icons__icon-wrapper)) {
+      display: none;
+    }
+
+    /* social-links.liquid's icon_color setting only sets --color-utilities on its own wrapper -
+       footer-utilities.liquid is the only place that consumes it (`.utilities a { color: var(
+       --color-utilities, ...) }`), so it did nothing here without a matching consumer. Falls back
+       to inherit, not a fixed color, so an unconfigured icon_color keeps picking up whatever
+       foreground color already applies to this column (unchanged from before this setting
+       existed). */
+    .header-megamenu__social a {
+      color: var(--color-utilities, inherit);
     }
 
     .header-megamenu__primary-link {
