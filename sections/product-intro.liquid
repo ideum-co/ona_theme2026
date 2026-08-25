@@ -74,6 +74,8 @@
     --product-intro-button-color: {{ settings.button_text }};
     --product-intro-model-height: {{ settings.model_height }}px;
     --product-intro-model-width: {{ settings.model_width }}px;
+    --product-intro-max-width: {{ settings.max_width | default: 1280 }}px;
+    --product-intro-media-height: var(--product-intro-media-height-{{ settings.media_height | default: 'medium' }});
     {% if settings.background_image != blank %}
       --product-intro-background-image: url({{ settings.background_image | image_url: width: 2400 }});
     {% endif %}
@@ -81,6 +83,7 @@
   "
   {{ section.shopify_attributes }}
 >
+  <div class="product-intro__inner product-intro__inner--{{ settings.section_width | default: 'page-width' }} product-intro__inner--media-{{ settings.media_width | default: 'medium' }}{% if settings.limit_content_width %} product-intro__inner--limited{% endif %}">
   <div class="product-intro__wordmark">
     {%- if settings.eyebrow != blank -%}
       <p class="product-intro__eyebrow">{{ settings.eyebrow }}</p>
@@ -197,19 +200,30 @@
       </div>
     {%- endif -%}
   </div>
+  </div>
 </div>
 
 {% stylesheet %}
   .product-intro {
-    display: grid;
-    gap: var(--gap-2xl);
-    align-items: center;
-    padding-inline: var(--page-margin, 1rem);
+    --product-intro-media-height-auto: auto;
+    --product-intro-media-height-small: 40svh;
+    --product-intro-media-height-medium: 60svh;
+    --product-intro-media-height-large: 80svh;
+    --product-intro-media-height-full-screen: 100svh;
+
     background-color: var(--product-intro-background);
     background-image: var(--product-intro-background-image, none);
     background-size: cover;
     background-position: center;
     color: var(--product-intro-color);
+  }
+
+  .product-intro__inner {
+    display: grid;
+    gap: var(--gap-2xl);
+    align-items: center;
+    inline-size: 100%;
+    margin-inline: auto;
 
     /* `minmax(0, 1fr)` and not the implicit `auto`: an auto column is sized by its content, so the
        model's 520px set the column width, the section grew past the viewport and everything sat
@@ -217,14 +231,37 @@
        the screen and it centres. */
     grid-template-columns: minmax(0, 1fr);
 
-    @media screen and (min-width: 750px) {
+  }
+
+  .product-intro__inner--page-width {
+    padding-inline: var(--page-margin, 1rem);
+  }
+
+  .product-intro__inner--limited {
+    max-inline-size: var(--product-intro-max-width, 1280px);
+  }
+
+  @media screen and (min-width: 750px) {
+    .product-intro__inner--media-narrow {
+      grid-template-columns: 1fr minmax(0, 0.75fr) 1fr;
+    }
+
+    .product-intro__inner--media-medium {
       grid-template-columns: 1fr minmax(0, 1.1fr) 1fr;
+    }
+
+    .product-intro__inner--media-wide {
+      grid-template-columns: 1fr minmax(0, 1.5fr) 1fr;
     }
   }
 
   /* On mobile the pack shot leads, as it carries the product. */
   .product-intro__media {
+    display: grid;
+    place-items: center;
     order: -1;
+    block-size: var(--product-intro-media-height, 60svh);
+    min-block-size: 0;
 
     @media screen and (min-width: 750px) {
       order: 0;
@@ -240,6 +277,7 @@
     inline-size: var(--product-intro-model-width, 520px);
     max-inline-size: 100%;
     block-size: var(--product-intro-model-height, 520px);
+    max-block-size: 100%;
     margin-inline: auto;
   }
 
@@ -255,8 +293,10 @@
 
   .product-intro__image {
     inline-size: 100%;
-    block-size: auto;
+    block-size: 100%;
+    max-block-size: 100%;
     display: block;
+    object-fit: contain;
   }
 
   .product-intro__wordmark {
@@ -350,6 +390,91 @@
   "name": "t:names.product_intro",
   "tag": "section",
   "settings": [
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "media_width",
+      "label": "t:settings.media_width",
+      "options": [
+        {
+          "value": "narrow",
+          "label": "t:options.narrow"
+        },
+        {
+          "value": "medium",
+          "label": "t:options.medium"
+        },
+        {
+          "value": "wide",
+          "label": "t:options.wide"
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "media_height",
+      "label": "t:settings.media_height",
+      "options": [
+        {
+          "value": "auto",
+          "label": "t:options.auto"
+        },
+        {
+          "value": "small",
+          "label": "t:options.small"
+        },
+        {
+          "value": "medium",
+          "label": "t:options.medium"
+        },
+        {
+          "value": "large",
+          "label": "t:options.large"
+        },
+        {
+          "value": "full-screen",
+          "label": "t:options.full_screen"
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.section_width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "checkbox",
+      "id": "limit_content_width",
+      "label": "t:settings.limit_content_width",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "t:settings.max_width",
+      "min": 800,
+      "max": 1800,
+      "step": 20,
+      "unit": "px",
+      "default": 1280,
+      "visible_if": "{{ section.settings.limit_content_width }}"
+    },
     {
       "type": "select",
       "id": "heading_tag",
