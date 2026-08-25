@@ -94,11 +94,6 @@
     content_for 'block', type: '_header-menu', id: 'header-menu', variant: 'navigation_bar', transparent: transparent
   endcapture
 
-  capture actions
-    echo '<span class="header-quick-links"><a href="/collections/all" class="button">Shop</a><a href="/collections/coffee-subscriptions" class="button">Subscribe</a></span>'
-    render 'header-actions', customer_account_menu: section.settings.customer_account_menu, display_style: section.settings.actions_display_style, section: section
-  endcapture
-
   if shop.customer_accounts_enabled
     assign search_class = 'search-action--hidden-on-drawer'
   endif
@@ -145,6 +140,14 @@
       render 'search', class: 'search-action--hidden-on-menu', style: search_style, display_style: section.settings.actions_display_style
     endcapture
   endif
+
+  capture actions
+    echo '<span class="header-quick-links"><a href="/collections/all" class="button">Shop</a><a href="/collections/coffee-subscriptions" class="button">Subscribe</a></span>'
+    render 'header-actions', customer_account_menu: section.settings.customer_account_menu, display_style: section.settings.actions_display_style, section: section, search_markup: search
+  endcapture
+
+  # Search is embedded in the desktop actions. The drawer-specific capture above remains available on mobile.
+  assign search = ''
 
   assign show_language = section.settings.show_language
   if localization.available_languages.size <= 1
