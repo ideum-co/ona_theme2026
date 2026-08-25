@@ -20,6 +20,8 @@
   endif
 -%}
 
+{% render 'text-block-styles' %}
+
 <div
   class="club-invite spacing-style"
   style="
@@ -30,7 +32,6 @@
     --club-invite-button-background: {{ settings.button_background }};
     --club-invite-button-color: {{ settings.button_text }};
     --club-invite-body-width: {{ settings.body_width | default: '100%' }};
-    --club-invite-body-color: {{ settings.body_text_color | default: settings.text_color }};
     --club-invite-body-alignment: {{ settings.body_alignment | default: 'center' }};
     {%- if settings.body_max_width == 'none' %}
       --club-invite-body-max-width: 100%;
@@ -79,8 +80,11 @@
 
     {%- if settings.body != blank -%}
       <div
-        class="club-invite__body text-block rte {{ body_preset }}{% if body_preset == 'custom' %} custom-typography custom-font-size{% endif %}"
-        style="{%- render 'club-invite-typography-style', settings: settings, prefix: 'body', type: 'body' -%}"
+        class="club-invite__body text-block custom-color rte {{ body_preset }}{% if body_preset == 'custom' %} custom-typography custom-font-size{% endif %}"
+        style="
+          {%- render 'club-invite-typography-style', settings: settings, prefix: 'body', type: 'body' -%}
+          --color: {{ settings.body_text_color | default: settings.text_color }};
+        "
       >{{ settings.body }}</div>
     {%- endif -%}
 
@@ -176,7 +180,6 @@
     gap: var(--gap-sm);
     inline-size: var(--club-invite-body-width, 100%);
     max-inline-size: min(100%, var(--club-invite-body-max-width, var(--max-width--body-normal)));
-    color: var(--club-invite-body-color, currentcolor);
     text-align: var(--club-invite-body-alignment, center);
   }
 

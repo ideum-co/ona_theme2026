@@ -36,13 +36,14 @@ assert.equal(setting('body_font_size').default, '1.125rem');
 assert.equal(setting('body_text_color').type, 'color');
 
 assert.match(section, /assign body_preset = settings\.body_type_preset \| default: 'custom'/);
-assert.match(section, /class="club-invite__body text-block rte \{\{ body_preset \}\}/);
+assert.match(section, /class="club-invite__body text-block custom-color rte \{\{ body_preset \}\}/);
 assert.match(section, /render 'club-invite-typography-style', settings: settings, prefix: 'body', type: 'body'/);
+assert.match(section, /render 'text-block-styles'/);
 assert.match(section, /--club-invite-body-width:\s*\{\{ settings\.body_width \| default: '100%' \}\}/);
 assert.match(section, /--club-invite-body-max-width:[\s\S]*?--max-width--body-/);
-assert.match(section, /--club-invite-body-color:\s*\{\{ settings\.body_text_color \| default: settings\.text_color \}\}/);
+assert.match(section, /--color:\s*\{\{ settings\.body_text_color \| default: settings\.text_color \}\};/);
 assert.match(section, /--club-invite-body-alignment:\s*\{\{ settings\.body_alignment \| default: 'center' \}\}/);
-assert.match(section, /\.club-invite__body\s*\{[\s\S]*?inline-size:\s*var\(--club-invite-body-width[\s\S]*?max-inline-size:\s*min\(100%, var\(--club-invite-body-max-width[\s\S]*?color:\s*var\(--club-invite-body-color[\s\S]*?text-align:\s*var\(--club-invite-body-alignment/);
+assert.match(section, /\.club-invite__body\s*\{[\s\S]*?inline-size:\s*var\(--club-invite-body-width[\s\S]*?max-inline-size:\s*min\(100%, var\(--club-invite-body-max-width[\s\S]*?text-align:\s*var\(--club-invite-body-alignment/);
 assert.match(section, /\.club-invite__body :is\(p, ul, ol\)\s*\{[\s\S]*?color:\s*inherit;[\s\S]*?text-align:\s*inherit;/);
 
 console.log('club-invite description controls regression harness: PASS');
