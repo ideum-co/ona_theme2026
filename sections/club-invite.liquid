@@ -11,6 +11,7 @@
   # rather than falling through to it.
   assign heading_level_size = '--font-' | append: heading_tag | append: '--size'
   assign settings = section.settings
+  assign body_preset = settings.body_type_preset | default: 'custom'
   assign has_media = false
   if settings.background_media == 'video' and settings.background_video != blank
     assign has_media = true
@@ -28,6 +29,12 @@
     --club-invite-min-height: {{ settings.section_height }};
     --club-invite-button-background: {{ settings.button_background }};
     --club-invite-button-color: {{ settings.button_text }};
+    --club-invite-body-width: {{ settings.body_width | default: '100%' }};
+    {%- if settings.body_max_width == 'none' %}
+      --club-invite-body-max-width: 100%;
+    {%- else %}
+      --club-invite-body-max-width: var(--max-width--body-{{ settings.body_max_width | default: 'normal' }});
+    {%- endif %}
     {%- render 'spacing-style', settings: settings %}
   "
   {{ section.shopify_attributes }}
@@ -69,7 +76,10 @@
     </div>
 
     {%- if settings.body != blank -%}
-      <div class="club-invite__body rte">{{ settings.body }}</div>
+      <div
+        class="club-invite__body text-block rte {{ body_preset }}{% if body_preset == 'custom' %} custom-typography custom-font-size{% endif %}"
+        style="{%- render 'club-invite-typography-style', settings: settings, prefix: 'body', type: 'body' -%}"
+      >{{ settings.body }}</div>
     {%- endif -%}
 
     {%- if section.blocks.size > 0 -%}
@@ -162,7 +172,8 @@
   .club-invite__body {
     display: grid;
     gap: var(--gap-sm);
-    font-size: var(--font-size--xl);
+    inline-size: var(--club-invite-body-width, 100%);
+    max-inline-size: min(100%, var(--club-invite-body-max-width, var(--max-width--body-normal)));
   }
 
   .club-invite__body :is(p, ul, ol) {
@@ -501,6 +512,154 @@
       "type": "richtext",
       "id": "body",
       "label": "t:settings.description"
+    },
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "body_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "fit-content",
+          "label": "t:options.fit"
+        },
+        {
+          "value": "100%",
+          "label": "t:options.fill"
+        }
+      ],
+      "default": "100%"
+    },
+    {
+      "type": "select",
+      "id": "body_max_width",
+      "label": "t:settings.max_width",
+      "options": [
+        {
+          "value": "narrow",
+          "label": "t:options.narrow"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "none",
+          "label": "t:options.none"
+        }
+      ],
+      "default": "normal"
+    },
+    {
+      "type": "header",
+      "content": "t:content.typography"
+    },
+    {
+      "type": "select",
+      "id": "body_type_preset",
+      "label": "t:settings.preset",
+      "options": [
+        { "value": "rte", "label": "t:options.default" },
+        { "value": "paragraph", "label": "t:options.paragraph" },
+        { "value": "h1", "label": "t:options.h1" },
+        { "value": "h2", "label": "t:options.h2" },
+        { "value": "h3", "label": "t:options.h3" },
+        { "value": "h4", "label": "t:options.h4" },
+        { "value": "h5", "label": "t:options.h5" },
+        { "value": "h6", "label": "t:options.h6" },
+        { "value": "custom", "label": "t:options.custom" }
+      ],
+      "default": "custom",
+      "info": "t:info.edit_presets_in_theme_settings"
+    },
+    {
+      "type": "select",
+      "id": "body_font",
+      "label": "t:settings.font",
+      "options": [
+        { "value": "var(--font-body--family)", "label": "t:options.body" },
+        { "value": "var(--font-subheading--family)", "label": "t:options.subheading" },
+        { "value": "var(--font-heading--family)", "label": "t:options.heading" },
+        { "value": "var(--font-accent--family)", "label": "t:options.accent" }
+      ],
+      "default": "var(--font-body--family)",
+      "visible_if": "{{ section.settings.body_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "body_font_size",
+      "label": "t:settings.size",
+      "options": [
+        { "value": "", "label": "t:options.default" },
+        { "value": "0.625rem", "label": "10px" },
+        { "value": "0.75rem", "label": "12px" },
+        { "value": "0.875rem", "label": "14px" },
+        { "value": "1rem", "label": "16px" },
+        { "value": "1.125rem", "label": "18px" },
+        { "value": "1.25rem", "label": "20px" },
+        { "value": "1.5rem", "label": "24px" },
+        { "value": "2rem", "label": "32px" },
+        { "value": "2.5rem", "label": "40px" },
+        { "value": "3rem", "label": "48px" },
+        { "value": "3.5rem", "label": "56px" },
+        { "value": "4.5rem", "label": "72px" },
+        { "value": "5.5rem", "label": "88px" },
+        { "value": "7.5rem", "label": "120px" },
+        { "value": "9.5rem", "label": "152px" },
+        { "value": "11.5rem", "label": "184px" }
+      ],
+      "default": "1.125rem",
+      "visible_if": "{{ section.settings.body_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "body_line_height",
+      "label": "t:settings.line_height",
+      "options": [
+        { "value": "tight", "label": "t:options.tight" },
+        { "value": "normal", "label": "t:options.normal" },
+        { "value": "loose", "label": "t:options.loose" }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.body_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "body_letter_spacing",
+      "label": "t:settings.letter_spacing",
+      "options": [
+        { "value": "tight", "label": "t:options.tight" },
+        { "value": "normal", "label": "t:options.normal" },
+        { "value": "loose", "label": "t:options.loose" }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.body_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "body_case",
+      "label": "t:settings.case",
+      "options": [
+        { "value": "none", "label": "t:options.default" },
+        { "value": "uppercase", "label": "t:options.uppercase" }
+      ],
+      "default": "none",
+      "visible_if": "{{ section.settings.body_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "body_wrap",
+      "label": "t:settings.wrap",
+      "options": [
+        { "value": "pretty", "label": "t:options.pretty" },
+        { "value": "balance", "label": "t:options.balance" },
+        { "value": "nowrap", "label": "t:options.none" }
+      ],
+      "default": "pretty",
+      "visible_if": "{{ section.settings.body_type_preset == 'custom' }}"
     },
     {
       "type": "header",

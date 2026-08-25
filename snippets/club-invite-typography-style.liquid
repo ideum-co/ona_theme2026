@@ -1,0 +1,38 @@
+{%- doc -%}
+  Publishes custom typography variables for one Club invite text role.
+
+  @param {object} settings - The section settings object
+  @param {string} prefix - The role setting prefix, such as `body`
+  @param {string} [type] - The line-height family to use for Custom text
+{%- enddoc -%}
+
+{%- liquid
+  assign preset_key = prefix | append: '_type_preset'
+  assign font_key = prefix | append: '_font'
+  assign font_size_key = prefix | append: '_font_size'
+  assign line_height_key = prefix | append: '_line_height'
+  assign letter_spacing_key = prefix | append: '_letter_spacing'
+  assign case_key = prefix | append: '_case'
+  assign wrap_key = prefix | append: '_wrap'
+
+  assign preset = settings[preset_key] | default: 'custom'
+  assign font = settings[font_key]
+  assign font_size = settings[font_size_key]
+  assign line_height = settings[line_height_key]
+  assign letter_spacing = settings[letter_spacing_key]
+  assign text_case = settings[case_key]
+  assign wrap = settings[wrap_key]
+  assign type = type | default: 'body'
+-%}
+
+{%- if preset == 'custom' -%}
+  {%- if font_size != blank -%}
+    --font-size: {{ font_size }};
+  {%- endif -%}
+  --font-weight: {{ font | replace: 'family', 'weight' }};
+  --font-family: {{ font }};
+  --text-transform: {{ text_case }};
+  --text-wrap: {{ wrap | default: 'pretty' }};
+  --line-height: var(--line-height--{{ type }}-{{ line_height }});
+  --letter-spacing: var(--letter-spacing--{{ type }}-{{ letter_spacing }});
+{%- endif -%}
