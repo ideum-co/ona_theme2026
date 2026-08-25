@@ -17,7 +17,11 @@ assert.deepEqual(
 assert.match(hero, /hero--bottom-actions/);
 assert.match(hero, /--hero-bottom-actions-offset:\s*\{\{ section\.settings\.button_group_bottom_spacing \| default: 60 \}\}px/);
 assert.match(hero, /\.hero--bottom-actions \.hero__content-wrapper\s*\{[\s\S]*?position:\s*absolute;[\s\S]*?inset:\s*0;[\s\S]*?align-items:\s*center;[\s\S]*?justify-content:\s*center;/);
-assert.match(hero, /\.hero--bottom-actions \.hero__content-wrapper > \.group-block:has\(> \.group-block-content \.button\)/);
+assert.match(
+  hero,
+  /\.hero--bottom-actions \.hero__content-wrapper > \.group-block:has\(> \.group-block-content :is\(\.button,\s*\.button-secondary,\s*\.button-unstyled,\s*\.button-custom\)\)/,
+  'bottom actions must qualify all Button block style classes',
+);
 assert.match(hero, /inset-inline-start:\s*50%;[\s\S]*?inset-block-end:\s*var\(--hero-bottom-actions-offset[\s\S]*?transform:\s*translateX\(-50%\);/);
 
 const homepageHero = homepage.sections.hero_ona;

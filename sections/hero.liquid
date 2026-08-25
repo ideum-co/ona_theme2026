@@ -613,7 +613,7 @@
     justify-content: center;
   }
 
-  .hero--bottom-actions .hero__content-wrapper > .group-block:has(> .group-block-content .button) {
+  .hero--bottom-actions .hero__content-wrapper > .group-block:has(> .group-block-content :is(.button, .button-secondary, .button-unstyled, .button-custom)) {
     position: absolute;
     inset-inline-start: 50%;
     inset-block-end: var(--hero-bottom-actions-offset, 60px);
