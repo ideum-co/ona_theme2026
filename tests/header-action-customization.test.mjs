@@ -100,5 +100,10 @@ assert.match(header, /\.header-quick-links \.button\s*\{[\s\S]*?--button-backgro
 assert.match(header, /\.header-quick-links \.button\s*\{[\s\S]*?--button-color:\s*var\(--header-action-button-text\)/);
 assert.match(header, /#header-component[\s\S]*?\.header-actions__action[\s\S]*?color:\s*var\(--header-action-icon-color\)/);
 assert.match(header, /#header-component[\s\S]*?\.header__icon--menu[\s\S]*?color:\s*var\(--header-action-icon-color\)/);
+assert.match(
+  header,
+  /#header-component \.header-drawer-icon\s*\{[\s\S]*?height:\s*var\(--header-action-icon-size\)/,
+  'menu icon wrapper must grow with the configured icon instead of clipping it',
+);
 assert.match(header, /\.header-actions__action[\s\S]*?min-width:\s*var\(--minimum-touch-target\)[\s\S]*?min-height:\s*var\(--minimum-touch-target\)/);
 assert.match(header, /\.header__icon--menu[\s\S]*?min-width:\s*var\(--minimum-touch-target\)[\s\S]*?min-height:\s*var\(--minimum-touch-target\)/);
