@@ -6,6 +6,8 @@
   @param {string} [data_header_drawer_type] - The type of header drawer to render
   @param {object} [block] - The block that can be used to provide settings
   @param {object} [section] - The section that can be used to provide settings
+  @param {string} [social] - Pre-rendered social icons HTML (content_for only resolves at the
+    block's own top level, so the caller captures it there and passes the markup down)
 
   @example
   {% render 'header-drawer', linklist: section.settings.menu, class: 'header-drawer--mobile' %}
@@ -76,7 +78,7 @@
       Desktop panel. Shares this `<details>` with the drawer, so open, close, the icon swap and the
       scroll lock are already handled; CSS decides which of the two renders at each breakpoint.
     {%- endcomment -%}
-    {% render 'header-megamenu', linklist: linklist, block: block %}
+    {% render 'header-megamenu', linklist: linklist, block: block, social: social %}
 
     <div
       ref="menuDrawer"

@@ -85,7 +85,28 @@
             "drawer_accordion_expand_first": false,
             "drawer_dividers": false
           },
-          "blocks": {}
+          "blocks": {
+            "header-menu-social": {
+              "type": "social-links",
+              "static": true,
+              "settings": {
+                "icon_color": "",
+                "facebook_url": "https://www.facebook.com/onacoffee/",
+                "instagram_url": "https://www.instagram.com/onacoffee/",
+                "youtube_url": "https://www.youtube.com/channel/UCvwLJ4owqt_I2QqqC2OE0_A",
+                "tiktok_url": "",
+                "twitter_url": "",
+                "threads_url": "",
+                "linkedin_url": "",
+                "bluesky_url": "",
+                "snapchat_url": "",
+                "pinterest_url": "",
+                "tumblr_url": "",
+                "vimeo_url": "",
+                "custom_url": ""
+              }
+            }
+          }
         }
       },
       "settings": {
