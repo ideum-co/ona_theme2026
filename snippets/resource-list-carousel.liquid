@@ -17,11 +17,11 @@
   if settings.section_width == 'page-width'
     assign slideshow_gutters = 'start end'
     assign gutter_style = '--gutter-slide-width: var(--util-page-margin-offset);'
-    assign adaptive_gutter_style = '--arlc-gutter: max(var(--page-margin), calc((100cqw - min(var(--page-content-width), 100cqw - (var(--page-margin) * 2))) / 2));'
+    assign viewport_page_width_class = ' resource-list-carousel-viewport--page-width'
   else
     assign slideshow_gutters = null
     assign gutter_style = '--gutter-slide-width: 0px;'
-    assign adaptive_gutter_style = '--arlc-gutter: 0px;'
+    assign viewport_page_width_class = ''
   endif
 
   assign show_arrows = false
@@ -45,7 +45,7 @@
   ask for more columns than there are products, and the cards would shrink to leave empty track at
   the end instead of staying a comfortable size.
 {%- endcomment -%}
-<div class="resource-list-carousel-viewport" style="{{ gutter_style }} {{ adaptive_gutter_style }} --slide-width-max: {{ slide_width_max | default: '300px' }}; --adaptive-columns-max: {{ slide_count | default: 99 }};{% if settings.adaptive_min_card %} --adaptive-min-card: {{ settings.adaptive_min_card }}px;{% endif %}">
+<div class="resource-list-carousel-viewport{{ viewport_page_width_class }}" style="{{ gutter_style }} --slide-width-max: {{ slide_width_max | default: '300px' }}; --adaptive-columns-max: {{ slide_count | default: 99 }};{% if settings.adaptive_min_card %} --adaptive-min-card: {{ settings.adaptive_min_card }}px;{% endif %}">
   {% render 'slideshow',
     ref: slideshow_ref,
     class: 'resource-list__carousel',
@@ -122,18 +122,18 @@
        track needs --arlc-column-count directly to size itself to exactly N columns instead
        of stretching to fill its full-bleed parent.
 
-       Uses a local --arlc-gutter (set above, next to --gutter-slide-width) instead of
+       Uses --arlc-gutter (declared below, on slideshow-container) instead of
        --gutter-slide-width itself: custom properties are re-substituted at each point of
        use, not frozen where declared, and --gutter-slide-width ultimately resolves to
        --util-page-margin-offset (assets/base.css), whose formula divides a bare `%` - fine
        where it's consumed on the element that declares it (e.g. the arrows padding below),
        but wrong here, where the value is inherited down to the much narrower
        .resource-list__slide and its `%` would resolve against the SLIDE's own width instead
-       of the track's. cqw doesn't have that problem - it always resolves against the same
-       query container regardless of which descendant reads it - so --arlc-gutter mirrors
-       --util-page-margin-offset's own formula (same --page-margin/--page-content-width
-       tokens, so it stays correct across the narrow/normal/wide page-width setting) with
-       `%` swapped for `100cqw`. */
+       of the track's. --arlc-gutter mirrors --util-page-margin-offset's own formula (same
+       --page-margin/--page-content-width tokens, so it stays correct across the narrow/
+       normal/wide page-width setting) with `%` swapped for `100cqw`, which - as long as
+       every consumer reads it from a descendant of the SAME query container - resolves the
+       same regardless of which descendant reads it. */
     .resource-list__carousel--adaptive slideshow-slides {
       --arlc-track: calc(100cqw - (2 * var(--arlc-gutter, 0px)));
       --arlc-step: calc(var(--adaptive-min-card, 300px) + var(--resource-list-column-gap));
@@ -172,15 +172,14 @@
        own next/previous JS scrollTo() calls outright - scrollLeft stopped responding to
        any programmatic scroll).
 
-       Fix instead with clip-path on .resource-list-carousel-viewport (the div this snippet
-       renders around the slideshow, full-width and same box as .resource-list__carousel--
-       adaptive itself) rather than the scrollable track: purely a paint-time clip, doesn't
-       touch slideshow-slides' width/scrollWidth/scrollLeft/snap at all, so none of the above
-       breaks. Clips off the trailing --arlc-gutter (minus a hover-effect buffer, capped at
-       the actual column gap - see below) from the right edge - exactly the dead space past
-       the last visible column, on any viewport/column-count.
+       Fix instead with clip-path on slideshow-container (a child of .resource-list__carousel,
+       same full-bleed width as the track) rather than the scrollable track itself: purely a
+       paint-time clip, doesn't touch slideshow-slides' width/scrollWidth/scrollLeft/snap at
+       all, so none of the above breaks. Clips off the trailing --arlc-gutter (minus a
+       hover-effect buffer, capped at the actual column gap - see below) from the right edge -
+       exactly the dead space past the last visible column, on any viewport/column-count.
 
-       Two things this needs to get right or it re-introduces a smaller peek / a new crop:
+       Three things this needs to get right or it re-introduces a smaller peek / a new crop:
 
        - The right-edge buffer can't be a flat 15px: sections/product-list.liquid supports
          gaps down to 0px (default 8px), and a buffer wider than the actual gap eats into
@@ -192,13 +191,22 @@
          paint outside its own layout height. Expanding the clip vertically by that same 16px
          (rather than 0) restores the room those effects need, without affecting the
          horizontal clip this rule exists for.
+       - --arlc-gutter has to be declared on a descendant of .resource-list__carousel's own
+         container, not on this file's outer .resource-list-carousel-viewport wrapper (an
+         ANCESTOR of that container, since --adaptive is applied one level further OUT by the
+         section that renders this snippet). A query container excludes itself from its own
+         cqw resolution, so declaring it on slideshow-container - which has its own (unnamed)
+         container-type - still correctly skips past slideshow-container itself to the next
+         name match up the tree: .resource-list__carousel's, the same one --arlc-track above
+         reads. Declaring it on the ANCESTOR viewport instead (tried first) left it with no
+         query container of its own to resolve 100cqw against, silently falling back to the
+         small viewport - a different box than the container's, by a non-overlay scrollbar's
+         width, so this and --arlc-track disagreed on where "the same" gutter actually was. */
+    .resource-list-carousel-viewport--page-width slideshow-container {
+      --arlc-gutter: max(var(--page-margin), calc((100cqw - min(var(--page-content-width), 100cqw - (var(--page-margin) * 2))) / 2));
+    }
 
-       Targets .resource-list-carousel-viewport, not .resource-list__carousel--adaptive:
-       --adaptive is applied by the section that renders this snippet, one level further OUT
-       than anything this file controls, so it's an ANCESTOR of everything below, including
-       this div - custom properties only inherit downward, so --arlc-gutter (declared in this
-       div's own inline style) isn't visible on that outer ancestor to read back. */
-    .resource-list__carousel--adaptive .resource-list-carousel-viewport {
+    .resource-list__carousel--adaptive .resource-list-carousel-viewport slideshow-container {
       clip-path: inset(
         -16px max(0px, calc(var(--arlc-gutter, 0px) - min(15px, var(--resource-list-column-gap)))) -16px 0
       );
