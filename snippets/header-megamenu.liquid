@@ -388,11 +388,23 @@
       padding: 0;
     }
 
-    /* No URLs set still renders social-links' own wrapper div (just with zero icon children,
-       since it only skips the elements, never the wrapper) - collapse it out of the column's
-       gap so an unconfigured menu looks identical to before this existed. */
-    .header-megamenu__social:has(.social-icons__wrapper:empty) {
+    /* No URLs set still renders social-links' own wrapper div - collapse it out of the column's
+       gap so an unconfigured menu looks identical to before this existed. Checked by the absence
+       of an icon element rather than :empty: the wrapper always has whitespace text nodes between
+       its Liquid tags even with zero configured URLs, and :empty rejects any child node, text
+       included, so it never matched. */
+    .header-megamenu__social:not(:has(.social-icons__icon-wrapper)) {
       display: none;
+    }
+
+    /* social-links.liquid's icon_color setting only sets --color-utilities on its own wrapper -
+       footer-utilities.liquid is the only place that consumes it (`.utilities a { color: var(
+       --color-utilities, ...) }`), so it did nothing here without a matching consumer. Falls back
+       to inherit, not a fixed color, so an unconfigured icon_color keeps picking up whatever
+       foreground color already applies to this column (unchanged from before this setting
+       existed). */
+    .header-megamenu__social a {
+      color: var(--color-utilities, inherit);
     }
 
     .header-megamenu__primary-link {
