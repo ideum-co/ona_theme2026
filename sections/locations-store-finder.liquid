@@ -1,10 +1,705 @@
-<section class="locations-store-finder section section--page-width" data-section-id="{{ section.id }}">
-  <h2>Find a store</h2>
-</section>
+{%- liquid
+  assign all_locations = shop.metaobjects.store_location.values
+  assign all_tags = shop.metaobjects.store_tag.values
+  assign content_width = 'var(--max-width--body-normal)'
+
+  if section.settings.content_width == 'narrow'
+    assign content_width = 'var(--max-width--body-narrow)'
+  elsif section.settings.content_width == 'full'
+    assign content_width = '100%'
+  endif
+
+  if section.settings.background_color != blank
+    render 'contrast-override', background_color: section.settings.background_color, text_color: section.settings.text_color, section_id: section.id
+  endif
+-%}
+
+<script src="{{ 'locations-store-finder.js' | asset_url }}" type="module"></script>
+
+<div
+  class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+></div>
+
+{%- paginate all_locations by 250 -%}
+  <locations-store-finder
+    class="locations-store-finder section section--page-width spacing-style{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+    style="
+      --locations-finder-content-width: {{ content_width }};
+      --locations-finder-text-color: {{ section.settings.text_color | default: 'var(--color-foreground)' }};
+      --locations-finder-accent-color: {{ section.settings.accent_color | default: '#6b1835' }};
+      --locations-finder-card-color: {{ section.settings.card_background_color | default: '#ffffff' }};
+      {% render 'spacing-style', settings: section.settings %}
+    "
+    data-section-id="{{ section.id }}"
+    data-marker-icon="{{ 'map-active.svg' | asset_url }}"
+    data-active-view="list"
+    {{ section.shopify_attributes }}
+  >
+    <div class="locations-store-finder__inner">
+      <div class="locations-store-finder__heading-group">
+        <h2 class="locations-store-finder__heading">{{ section.settings.heading | default: 'Find a store' | escape }}</h2>
+        {%- if section.settings.intro != blank -%}
+          <div class="locations-store-finder__intro rte">{{ section.settings.intro }}</div>
+        {%- endif -%}
+      </div>
+
+      <div class="locations-store-finder__controls">
+        <div class="locations-store-finder__field locations-store-finder__field--search">
+          <label for="LocationsFinder-search-{{ section.id }}">
+            {{- section.settings.search_label | default: 'Search by store, suburb or address' | escape -}}
+          </label>
+          <input
+            id="LocationsFinder-search-{{ section.id }}"
+            type="search"
+            placeholder="{{ section.settings.search_placeholder | default: 'Start typing a location' | escape }}"
+            autocomplete="street-address"
+            data-location-search
+          >
+        </div>
+
+        {%- if section.settings.enable_state_filter -%}
+          <div class="locations-store-finder__field">
+            <label for="LocationsFinder-state-{{ section.id }}">
+              {{- section.settings.state_label | default: 'State or territory' | escape -}}
+            </label>
+            <select id="LocationsFinder-state-{{ section.id }}" data-state-filter>
+              <option value="">{{ section.settings.all_states_label | default: 'All states' | escape }}</option>
+            </select>
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.enable_tag_filter -%}
+          <div class="locations-store-finder__field">
+            <label for="LocationsFinder-tag-{{ section.id }}">
+              {{- section.settings.tag_label | default: 'Venue type' | escape -}}
+            </label>
+            <select id="LocationsFinder-tag-{{ section.id }}" data-tag-filter>
+              <option value="">{{ section.settings.all_tags_label | default: 'All venues' | escape }}</option>
+              {%- for tag in shop.metaobjects.store_tag.values -%}
+                {%- liquid
+                  assign tag_label = tag.label.value | default: tag.label
+                  assign tag_slug = tag.slug.value | default: tag.slug | default: tag_label | handleize
+                -%}
+                <option value="{{ tag_slug | escape }}">{{ tag_label | escape }}</option>
+              {%- endfor -%}
+            </select>
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.enable_radius_filter -%}
+          <div class="locations-store-finder__field">
+            <label for="LocationsFinder-radius-{{ section.id }}">
+              {{- section.settings.radius_label | default: 'Distance' | escape -}}
+            </label>
+            <select id="LocationsFinder-radius-{{ section.id }}" data-radius-filter>
+              <option value="10"{% if section.settings.default_radius == '10' %} selected{% endif %}>10 km</option>
+              <option value="25"{% if section.settings.default_radius == '25' %} selected{% endif %}>25 km</option>
+              <option value="50"{% if section.settings.default_radius == '50' %} selected{% endif %}>50 km</option>
+              <option value="100"{% if section.settings.default_radius == '100' %} selected{% endif %}>100 km</option>
+              <option value="250"{% if section.settings.default_radius == '250' %} selected{% endif %}>250 km</option>
+            </select>
+          </div>
+        {%- endif -%}
+
+        <button class="locations-store-finder__location-button button" type="button" data-use-location>
+          {{- section.settings.use_location_label | default: 'Use my location' | escape -}}
+        </button>
+
+        <button class="locations-store-finder__reset-button" type="button" data-reset-filters hidden>
+          {{- section.settings.reset_label | default: 'Clear filters' | escape -}}
+        </button>
+      </div>
+
+      <p class="locations-store-finder__status" data-location-status role="status" aria-live="polite"></p>
+
+      <div class="locations-store-finder__toolbar">
+        <p class="locations-store-finder__count" data-result-count role="status" aria-live="polite">
+          {{ all_locations.size }} {% if all_locations.size == 1 %}location{% else %}locations{% endif %}
+        </p>
+        <div class="locations-store-finder__view-toggle" role="group" aria-label="Choose results view">
+          <button
+            type="button"
+            data-view="list"
+            aria-controls="LocationsFinder-list-{{ section.id }}"
+            aria-pressed="{% if section.settings.default_view == 'map' %}false{% else %}true{% endif %}"
+          >
+            {{- section.settings.list_view_label | default: 'List' | escape -}}
+          </button>
+          <button
+            type="button"
+            data-view="map"
+            aria-controls="LocationsFinder-map-{{ section.id }}"
+            aria-pressed="{% if section.settings.default_view == 'map' %}true{% else %}false{% endif %}"
+          >
+            {{- section.settings.map_view_label | default: 'Map' | escape -}}
+          </button>
+        </div>
+      </div>
+
+      <div class="locations-store-finder__results">
+        <div id="LocationsFinder-list-{{ section.id }}" class="locations-store-finder__list-panel" data-list-panel>
+          <p class="locations-store-finder__empty" data-no-results hidden>
+            {{- section.settings.no_results_text | default: 'No locations match those filters.' | escape -}}
+          </p>
+          <ul class="locations-store-finder__list" role="list" data-location-list>
+            {%- for location in shop.metaobjects.store_location.values -%}
+              {%- liquid
+                assign location_title = location.title.value | default: location.title
+                assign location_address = location.storeaddress.value | default: location.storeaddress
+                assign location_suburb = location.suburb.value | default: location.suburb
+                assign location_state = location.state.value | default: location.state
+                assign location_website = location.storeaddressurl.value | default: location.storeaddressurl
+                assign location_image = location.image.value
+                capture directions_destination
+                  if location.latitude.value != blank and location.longitude.value != blank
+                    echo location.latitude.value | append: ',' | append: location.longitude.value
+                  else
+                    echo location_address | append: ' ' | append: location_suburb | append: ' ' | append: location_state
+                  endif
+                endcapture
+                assign directions_destination = directions_destination | strip | url_encode
+              -%}
+              <li data-location-card data-location-index="{{ forloop.index0 }}">
+                <article class="locations-store-finder__card" tabindex="-1">
+                  {%- if location_image != blank -%}
+                    <div class="locations-store-finder__card-image">
+                      {{ location_image | image_url: width: 720 | image_tag: loading: 'lazy', widths: '360, 540, 720', alt: location_image.alt | default: location_title }}
+                    </div>
+                  {%- endif -%}
+                  <div class="locations-store-finder__card-content">
+                    <h3>{{ location_title | escape }}</h3>
+                    {%- if location_address != blank or location_suburb != blank or location_state != blank -%}
+                      <address>
+                        {{ location_address | escape }}
+                        {%- if location_suburb != blank or location_state != blank -%}
+                          <br>{{ location_suburb | escape }}{% if location_suburb != blank and location_state != blank %}, {% endif %}{{ location_state | escape }}
+                        {%- endif -%}
+                      </address>
+                    {%- endif -%}
+                    {%- if location.time.value != blank -%}
+                      <div class="locations-store-finder__hours rte">{{ location.time | metafield_tag }}</div>
+                    {%- endif -%}
+                    {%- if location.overview.value != blank -%}
+                      <div class="locations-store-finder__overview rte">{{ location.overview | metafield_tag }}</div>
+                    {%- endif -%}
+                    {%- if location.tags.value.size > 0 -%}
+                      <ul class="locations-store-finder__tags" aria-label="Venue types">
+                        {%- for location_tag in location.tags.value -%}
+                          <li>{{ location_tag.label.value | default: location_tag.label | escape }}</li>
+                        {%- endfor -%}
+                      </ul>
+                    {%- endif -%}
+                    <div class="locations-store-finder__card-actions">
+                      {%- if directions_destination != blank -%}
+                        <a
+                          data-directions-link
+                          href="https://www.google.com/maps/dir/?api=1&amp;destination={{ directions_destination }}"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {{- section.settings.directions_label | default: 'Directions' | escape -}}
+                        </a>
+                      {%- endif -%}
+                      {%- if location_website != blank -%}
+                        <a data-website-link href="{{ location_website | escape }}" target="_blank" rel="noopener noreferrer">
+                          {{- section.settings.website_label | default: 'Visit website' | escape -}}
+                        </a>
+                      {%- endif -%}
+                      <span data-location-distance></span>
+                    </div>
+                  </div>
+                </article>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+
+        <div id="LocationsFinder-map-{{ section.id }}" class="locations-store-finder__map-panel" data-map-panel hidden>
+          <div
+            class="locations-store-finder__map"
+            data-location-map
+            role="region"
+            aria-label="Store locations map"
+          ></div>
+        </div>
+      </div>
+
+      {%- if paginate.pages > 1 -%}
+        <nav class="locations-store-finder__pagination" aria-label="Location result pages">
+          {{ paginate | default_pagination }}
+        </nav>
+      {%- endif -%}
+
+      <script type="application/json" data-locations-store-finder-data>
+        {
+          "locations": [
+            {%- for location in shop.metaobjects.store_location.values -%}
+              {%- liquid
+                assign location_title = location.title.value | default: location.title
+                assign location_address = location.storeaddress.value | default: location.storeaddress
+                assign location_suburb = location.suburb.value | default: location.suburb
+                assign location_state = location.state.value | default: location.state
+                assign location_latitude = location.latitude.value | default: location.latitude
+                assign location_longitude = location.longitude.value | default: location.longitude
+                assign location_hours = location.time | metafield_tag | strip_html | strip
+                assign location_overview = location.overview | metafield_tag | strip_html | strip
+                assign location_website = location.storeaddressurl.value | default: location.storeaddressurl
+                assign location_image = location.image.value
+                assign location_image_url = ''
+                assign location_image_alt = location_title
+                if location_image != blank
+                  assign location_image_url = location_image | image_url: width: 900
+                  assign location_image_alt = location_image.alt | default: location_title
+                endif
+              -%}
+              {
+                "title": {{ location_title | json }},
+                "address": {{ location_address | json }},
+                "suburb": {{ location_suburb | json }},
+                "state": {{ location_state | json }},
+                "latitude": {% if location_latitude != blank %}{{ location_latitude | json }}{% else %}null{% endif %},
+                "longitude": {% if location_longitude != blank %}{{ location_longitude | json }}{% else %}null{% endif %},
+                "hours": {{ location_hours | json }},
+                "overview": {{ location_overview | json }},
+                "website": {{ location_website | json }},
+                "imageUrl": {{ location_image_url | json }},
+                "imageAlt": {{ location_image_alt | json }},
+                "tags": [
+                  {%- for location_tag in location.tags.value -%}
+                    {%- assign location_tag_slug = location_tag.slug.value | default: location_tag.slug | default: location_tag.label.value | handleize -%}
+                    {{ location_tag_slug | json }}{% unless forloop.last %},{% endunless %}
+                  {%- endfor -%}
+                ]
+              }{% unless forloop.last %},{% endunless %}
+            {%- endfor -%}
+          ],
+          "tags": [
+            {%- for tag in all_tags -%}
+              {%- liquid
+                assign tag_label = tag.label.value | default: tag.label
+                assign tag_slug = tag.slug.value | default: tag.slug | default: tag_label | handleize
+              -%}
+              { "label": {{ tag_label | json }}, "slug": {{ tag_slug | json }} }{% unless forloop.last %},{% endunless %}
+            {%- endfor -%}
+          ],
+          "settings": {
+            "mapsApiKey": {{ section.settings.maps_api_key | strip | json }},
+            "defaultView": {{ section.settings.default_view | default: 'list' | json }},
+            "defaultRadius": {{ section.settings.default_radius | default: '50' | json }},
+            "noMapKeyStatus": {{ section.settings.no_map_key_status | default: 'Map view is unavailable, but every location remains listed.' | json }},
+            "mapErrorStatus": {{ section.settings.map_error_status | default: 'The map could not be loaded. You can still browse every location in the list.' | json }},
+            "noCoordinatesStatus": {{ section.settings.no_coordinates_status | default: 'No mapped locations match these filters. Unmapped locations remain in the list.' | json }},
+            "geolocationPendingStatus": {{ section.settings.geolocation_pending_status | default: 'Finding your location…' | json }},
+            "geolocationSuccessStatus": {{ section.settings.geolocation_success_status | default: 'Showing locations near you.' | json }},
+            "geolocationErrorStatus": {{ section.settings.geolocation_error_status | default: 'Your location is unavailable. Search and other filters still work.' | json }}
+          }
+        }
+      </script>
+    </div>
+  </locations-store-finder>
+{%- endpaginate -%}
+
+{% stylesheet %}
+  .locations-store-finder {
+    --color: var(--locations-finder-text-color);
+    color: var(--locations-finder-text-color);
+  }
+
+  .locations-store-finder__inner {
+    inline-size: min(100%, var(--locations-finder-content-width));
+    margin-inline: auto;
+  }
+
+  .locations-store-finder__heading-group {
+    max-inline-size: 62rem;
+    margin-block-end: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .locations-store-finder__heading {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 4.5rem);
+    line-height: 1;
+  }
+
+  .locations-store-finder__intro {
+    margin-block-start: 1rem;
+  }
+
+  .locations-store-finder__controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    gap: 0.75rem;
+    align-items: end;
+  }
+
+  .locations-store-finder__field {
+    display: grid;
+    gap: 0.4rem;
+    min-inline-size: 0;
+  }
+
+  .locations-store-finder__field--search {
+    grid-column: span 2;
+  }
+
+  .locations-store-finder__field label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .locations-store-finder__field input,
+  .locations-store-finder__field select {
+    min-block-size: 3rem;
+    inline-size: 100%;
+    padding-inline: 0.9rem;
+    border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+    border-radius: 0;
+    background: var(--locations-finder-card-color);
+    color: inherit;
+    font: inherit;
+  }
+
+  .locations-store-finder__field input:focus-visible,
+  .locations-store-finder__field select:focus-visible,
+  .locations-store-finder button:focus-visible,
+  .locations-store-finder a:focus-visible {
+    outline: 2px solid var(--locations-finder-accent-color);
+    outline-offset: 3px;
+  }
+
+  .locations-store-finder__location-button,
+  .locations-store-finder__reset-button {
+    min-block-size: 3rem;
+    padding-inline: 1.2rem;
+    border: 1px solid var(--locations-finder-accent-color);
+    cursor: pointer;
+  }
+
+  .locations-store-finder__location-button {
+    background: var(--locations-finder-accent-color);
+    color: #fff;
+  }
+
+  .locations-store-finder__reset-button {
+    grid-column: 1 / -1;
+    justify-self: start;
+    background: transparent;
+    color: inherit;
+  }
+
+  .locations-store-finder__status {
+    min-block-size: 1.5em;
+    margin-block: 0.75rem 0;
+  }
+
+  .locations-store-finder__toolbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+    margin-block: 1.5rem 1rem;
+    padding-block-end: 0.75rem;
+    border-block-end: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  }
+
+  .locations-store-finder__count {
+    margin: 0;
+  }
+
+  .locations-store-finder__view-toggle {
+    display: inline-flex;
+    border: 1px solid var(--locations-finder-accent-color);
+  }
+
+  .locations-store-finder__view-toggle button {
+    min-block-size: 2.75rem;
+    min-inline-size: 5rem;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .locations-store-finder__view-toggle button[aria-pressed='true'] {
+    background: var(--locations-finder-accent-color);
+    color: #fff;
+  }
+
+  .locations-store-finder__results {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .locations-store-finder[data-active-view='map'] .locations-store-finder__results {
+    grid-template-columns: minmax(18rem, 0.8fr) minmax(24rem, 1.2fr);
+  }
+
+  .locations-store-finder__list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .locations-store-finder[data-active-view='map'] .locations-store-finder__list {
+    grid-template-columns: 1fr;
+  }
+
+  .locations-store-finder__card {
+    block-size: 100%;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+    background: var(--locations-finder-card-color);
+  }
+
+  .locations-store-finder__card-image {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+
+  .locations-store-finder__card-image img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  .locations-store-finder__card-content {
+    display: grid;
+    gap: 0.8rem;
+    padding: clamp(1rem, 2.5vw, 1.5rem);
+  }
+
+  .locations-store-finder__card h3,
+  .locations-store-finder__card address,
+  .locations-store-finder__card .rte,
+  .locations-store-finder__card .rte > :first-child,
+  .locations-store-finder__card .rte > :last-child {
+    margin: 0;
+  }
+
+  .locations-store-finder__card address {
+    font-style: normal;
+  }
+
+  .locations-store-finder__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .locations-store-finder__tags li {
+    padding: 0.25rem 0.55rem;
+    border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+    border-radius: 999px;
+    font-size: 0.75rem;
+  }
+
+  .locations-store-finder__card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    align-items: center;
+  }
+
+  .locations-store-finder__card-actions a {
+    color: var(--locations-finder-accent-color);
+    font-weight: 700;
+    text-underline-offset: 0.2em;
+  }
+
+  .locations-store-finder__card-actions [data-location-distance] {
+    margin-inline-start: auto;
+    font-size: 0.85rem;
+  }
+
+  .locations-store-finder__empty {
+    padding: 2rem;
+    border: 1px solid currentColor;
+  }
+
+  .locations-store-finder__map-panel,
+  .locations-store-finder__map {
+    min-block-size: 34rem;
+  }
+
+  .locations-store-finder__map-panel {
+    position: sticky;
+    inset-block-start: 1rem;
+    align-self: start;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--locations-finder-card-color) 82%, currentColor);
+  }
+
+  .locations-store-finder__pagination {
+    margin-block-start: 2rem;
+    text-align: center;
+  }
+
+  .locations-store-finder__pagination .page,
+  .locations-store-finder__pagination .next,
+  .locations-store-finder__pagination .prev {
+    display: inline-flex;
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    margin: 0.2rem;
+  }
+
+  @media (max-width: 990px) {
+    .locations-store-finder__controls {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .locations-store-finder__field--search,
+    .locations-store-finder__reset-button {
+      grid-column: 1 / -1;
+    }
+
+    .locations-store-finder[data-active-view='map'] .locations-store-finder__results {
+      grid-template-columns: 1fr;
+    }
+
+    .locations-store-finder[data-active-view='map'] .locations-store-finder__list-panel {
+      display: none;
+    }
+
+    .locations-store-finder__map-panel,
+    .locations-store-finder__map {
+      min-block-size: min(70vh, 38rem);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .locations-store-finder__controls,
+    .locations-store-finder__list {
+      grid-template-columns: 1fr;
+    }
+
+    .locations-store-finder__field--search,
+    .locations-store-finder__reset-button {
+      grid-column: auto;
+    }
+
+    .locations-store-finder__location-button,
+    .locations-store-finder__reset-button {
+      inline-size: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .locations-store-finder__view-toggle button,
+    .locations-store-finder__card,
+    .locations-store-finder__location-button {
+      transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+
+    .locations-store-finder__card:hover {
+      transform: translateY(-2px);
+    }
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
   "name": "Locations store finder",
-  "settings": []
+  "settings": [
+    { "type": "header", "content": "Copy" },
+    { "type": "text", "id": "heading", "label": "t:settings.heading", "default": "Find a store" },
+    { "type": "richtext", "id": "intro", "label": "t:settings.description" },
+    { "type": "text", "id": "search_label", "label": "Search label", "default": "Search by store, suburb or address" },
+    { "type": "text", "id": "search_placeholder", "label": "Search placeholder", "default": "Start typing a location" },
+    { "type": "text", "id": "state_label", "label": "State filter label", "default": "State or territory" },
+    { "type": "text", "id": "all_states_label", "label": "All states label", "default": "All states" },
+    { "type": "text", "id": "tag_label", "label": "Venue filter label", "default": "Venue type" },
+    { "type": "text", "id": "all_tags_label", "label": "All venues label", "default": "All venues" },
+    { "type": "text", "id": "radius_label", "label": "Radius filter label", "default": "Distance" },
+    { "type": "text", "id": "use_location_label", "label": "Use location button label", "default": "Use my location" },
+    { "type": "text", "id": "reset_label", "label": "Reset button label", "default": "Clear filters" },
+    { "type": "text", "id": "list_view_label", "label": "List view label", "default": "List" },
+    { "type": "text", "id": "map_view_label", "label": "Map view label", "default": "Map" },
+    { "type": "text", "id": "directions_label", "label": "Directions link label", "default": "Directions" },
+    { "type": "text", "id": "website_label", "label": "Website link label", "default": "Visit website" },
+    { "type": "text", "id": "no_results_text", "label": "No results message", "default": "No locations match those filters." },
+    { "type": "header", "content": "Map and location status" },
+    { "type": "text", "id": "no_map_key_status", "label": "Missing map key message", "default": "Map view is unavailable, but every location remains listed." },
+    { "type": "text", "id": "map_error_status", "label": "Map error message", "default": "The map could not be loaded. You can still browse every location in the list." },
+    { "type": "text", "id": "no_coordinates_status", "label": "No coordinates message", "default": "No mapped locations match these filters. Unmapped locations remain in the list." },
+    { "type": "text", "id": "geolocation_pending_status", "label": "Location pending message", "default": "Finding your location…" },
+    { "type": "text", "id": "geolocation_success_status", "label": "Location success message", "default": "Showing locations near you." },
+    { "type": "text", "id": "geolocation_error_status", "label": "Location error message", "default": "Your location is unavailable. Search and other filters still work." },
+    { "type": "header", "content": "Map and filters" },
+    { "type": "text", "id": "maps_api_key", "label": "Google Maps API key", "info": "The location list works without a key." },
+    {
+      "type": "select",
+      "id": "default_view",
+      "label": "Default view",
+      "options": [
+        { "value": "list", "label": "List" },
+        { "value": "map", "label": "Map" }
+      ],
+      "default": "list"
+    },
+    {
+      "type": "select",
+      "id": "default_radius",
+      "label": "Default radius",
+      "options": [
+        { "value": "10", "label": "10 km" },
+        { "value": "25", "label": "25 km" },
+        { "value": "50", "label": "50 km" },
+        { "value": "100", "label": "100 km" },
+        { "value": "250", "label": "250 km" }
+      ],
+      "default": "50"
+    },
+    { "type": "checkbox", "id": "enable_state_filter", "label": "Enable state filter", "default": true },
+    { "type": "checkbox", "id": "enable_tag_filter", "label": "Enable venue filter", "default": true },
+    { "type": "checkbox", "id": "enable_radius_filter", "label": "Enable radius filter", "default": true },
+    { "type": "header", "content": "t:content.layout" },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "t:settings.width",
+      "options": [
+        { "value": "narrow", "label": "t:options.narrow" },
+        { "value": "normal", "label": "t:options.normal" },
+        { "value": "full", "label": "t:options.full" }
+      ],
+      "default": "full"
+    },
+    { "type": "header", "content": "t:content.colors" },
+    { "type": "color", "id": "background_color", "label": "t:settings.background_color", "default": "#f5f0e8" },
+    { "type": "color", "id": "text_color", "label": "t:settings.text_color", "default": "#252525" },
+    { "type": "color", "id": "accent_color", "label": "Accent color", "default": "#6b1835" },
+    { "type": "color", "id": "card_background_color", "label": "Card background color", "default": "#ffffff" },
+    { "type": "header", "content": "t:content.padding" },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    }
+  ]
 }
 {% endschema %}
