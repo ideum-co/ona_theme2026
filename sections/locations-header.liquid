@@ -1,10 +1,160 @@
-<section class="locations-header section section--page-width" data-section-id="{{ section.id }}">
-  <h1>{{ page.title | default: 'Locations' | escape }}</h1>
+{%- liquid
+  assign heading = section.settings.heading | default: page.title | default: 'Locations'
+  assign content_width = 'var(--max-width--body-normal)'
+
+  if section.settings.content_width == 'narrow'
+    assign content_width = 'var(--max-width--body-narrow)'
+  elsif section.settings.content_width == 'full'
+    assign content_width = '100%'
+  endif
+
+  if section.settings.background_color != blank
+    render 'contrast-override', background_color: section.settings.background_color, text_color: section.settings.text_color, section_id: section.id
+  endif
+-%}
+
+<div
+  class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+></div>
+<section
+  class="locations-header section section--page-width spacing-style{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+  style="
+    --locations-header-content-width: {{ content_width }};
+    --locations-header-alignment: {{ section.settings.alignment | default: 'left' }};
+    --locations-header-text-color: {{ section.settings.text_color | default: 'var(--color-foreground)' }};
+    {% render 'spacing-style', settings: section.settings %}
+  "
+  data-alignment="{{ section.settings.alignment | default: 'left' }}"
+  data-section-id="{{ section.id }}"
+  {{ section.shopify_attributes }}
+>
+  <div class="locations-header__content">
+    <h1 class="locations-header__heading">{{ heading | escape }}</h1>
+    {%- if section.settings.body != blank -%}
+      <div class="locations-header__body rte">{{ section.settings.body }}</div>
+    {%- endif -%}
+  </div>
 </section>
+
+{% stylesheet %}
+  .locations-header {
+    color: var(--locations-header-text-color);
+  }
+
+  .locations-header__content {
+    max-inline-size: min(100%, var(--locations-header-content-width));
+    text-align: var(--locations-header-alignment);
+  }
+
+  .locations-header[data-alignment='center'] .locations-header__content {
+    margin-inline: auto;
+  }
+
+  .locations-header[data-alignment='right'] .locations-header__content {
+    margin-inline-start: auto;
+  }
+
+  .locations-header__heading {
+    margin: 0;
+  }
+
+  .locations-header__body {
+    margin-block-start: var(--gap-sm);
+  }
+
+  .locations-header__body > :first-child {
+    margin-block-start: 0;
+  }
+
+  .locations-header__body > :last-child {
+    margin-block-end: 0;
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
   "name": "Locations header",
-  "settings": []
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:settings.heading"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "t:settings.description"
+    },
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "narrow",
+          "label": "t:options.narrow"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "full",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "normal"
+    },
+    {
+      "type": "text_alignment",
+      "id": "alignment",
+      "label": "t:settings.alignment",
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "placeholder": "t:settings.default"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "placeholder": "t:settings.default"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 40
+    }
+  ]
 }
 {% endschema %}
