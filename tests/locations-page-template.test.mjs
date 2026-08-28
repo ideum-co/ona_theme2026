@@ -64,12 +64,12 @@ test('renders an editable locations heading with a safe page-title fallback', ()
   assert.match(source, /<h1[^>]*>\s*{{-? heading \| escape -?}}\s*<\/h1>/, 'the resolved title must be the page h1');
   assert.match(
     source,
-    /{%-? if section\.settings\.body != blank -?%}[\s\S]*?class="locations-header__body[^\"]*rte[^\"]*"[\s\S]*?{{-? section\.settings\.body -?}}[\s\S]*?{%-? endif -?%}/,
+    /{%-? if section\.settings\.body != blank -?%}[\s\S]*?class="locations-header__body text-block {{ body_preset }}"[\s\S]*?{{-? section\.settings\.body -?}}[\s\S]*?{%-? endif -?%}/,
     'the optional rich text must render only when content exists',
   );
 });
 
-test('exposes locations header layout, color, and spacing controls through scoped styles', () => {
+test('exposes locations header layout, typography, color, and spacing controls through scoped styles', () => {
   const sectionPath = 'sections/locations-header.liquid';
   const source = read(sectionPath);
   const schema = readSectionSchema(sectionPath);
@@ -77,6 +77,10 @@ test('exposes locations header layout, color, and spacing controls through scope
 
   assert.equal(settings.heading?.type, 'text', 'the custom heading must be editable');
   assert.equal(settings.body?.type, 'richtext', 'the introduction must support rich text');
+  assert.equal(settings.heading_size?.type, 'range', 'the heading size must be editable');
+  assert.equal(settings.type_preset?.type, 'select', 'the heading typography preset must be editable');
+  assert.equal(settings.body_type_preset?.type, 'select', 'the body typography preset must be editable');
+  assert.equal(settings.body_type_preset?.label, 't:settings.preset', 'the body preset must use an existing theme-editor label');
   assert.equal(settings.content_width?.type, 'select', 'the header content width must be configurable');
   assert.equal(settings.alignment?.type, 'text_alignment', 'the header alignment must be configurable');
   assert.equal(settings.background_color?.type, 'color', 'the header background color must be configurable');
@@ -87,6 +91,12 @@ test('exposes locations header layout, color, and spacing controls through scope
   assert.match(source, /render 'contrast-override',[\s\S]*?text_color: section\.settings\.text_color/, 'custom colors must use the theme contrast helper');
   assert.match(source, /--locations-header-content-width:/, 'content width must be published as a section-scoped CSS variable');
   assert.match(source, /--locations-header-alignment:/, 'alignment must be published as a section-scoped CSS variable');
+  assert.match(source, /assign heading_preset = section\.settings\.type_preset \| default: 'rte'/, 'the heading must resolve its preset');
+  assert.match(source, /assign body_preset = section\.settings\.body_type_preset \| default: 'rte'/, 'the body must resolve its preset');
+  assert.match(source, /--locations-header-heading-size: {{ section\.settings\.heading_size }}px;/, 'the heading size must be published as a scoped CSS variable');
+  assert.match(source, /class="locations-header__heading {{ heading_preset }}/, 'the heading must apply the selected preset class');
+  assert.match(source, /class="locations-header__body text-block {{ body_preset }}/, 'the body must apply the selected preset class');
+  assert.match(source, /render 'text-block-styles'/, 'body presets must use the theme text-block styles');
   assert.match(
     source,
     /--locations-header-text-color: {{ section\.settings\.text_color \| default: 'var\(--color-foreground\)' }};/,

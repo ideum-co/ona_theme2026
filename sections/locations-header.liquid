@@ -1,5 +1,7 @@
 {%- liquid
   assign heading = section.settings.heading | default: page.title | default: 'Locations'
+  assign heading_preset = section.settings.type_preset | default: 'rte'
+  assign body_preset = section.settings.body_type_preset | default: 'rte'
   assign content_width = 'var(--max-width--body-normal)'
 
   if section.settings.content_width == 'narrow'
@@ -13,6 +15,8 @@
   endif
 -%}
 
+{% render 'text-block-styles' %}
+
 <div
   class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
 ></div>
@@ -22,6 +26,7 @@
     --locations-header-content-width: {{ content_width }};
     --locations-header-alignment: {{ section.settings.alignment | default: 'left' }};
     --locations-header-text-color: {{ section.settings.text_color | default: 'var(--color-foreground)' }};
+    --locations-header-heading-size: {{ section.settings.heading_size }}px;
     {% render 'spacing-style', settings: section.settings %}
   "
   data-alignment="{{ section.settings.alignment | default: 'left' }}"
@@ -29,9 +34,9 @@
   {{ section.shopify_attributes }}
 >
   <div class="locations-header__content">
-    <h1 class="locations-header__heading">{{ heading | escape }}</h1>
+    <h1 class="locations-header__heading {{ heading_preset }}">{{ heading | escape }}</h1>
     {%- if section.settings.body != blank -%}
-      <div class="locations-header__body rte">{{ section.settings.body }}</div>
+      <div class="locations-header__body text-block {{ body_preset }}">{{ section.settings.body }}</div>
     {%- endif -%}
   </div>
 </section>
@@ -56,6 +61,7 @@
 
   .locations-header__heading {
     margin: 0;
+    font-size: var(--locations-header-heading-size);
   }
 
   .locations-header__body {
@@ -84,6 +90,53 @@
       "type": "richtext",
       "id": "body",
       "label": "t:settings.description"
+    },
+    {
+      "type": "header",
+      "content": "t:content.typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "t:settings.size",
+      "min": 20,
+      "max": 96,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "select",
+      "id": "type_preset",
+      "label": "t:settings.heading_preset",
+      "options": [
+        { "value": "rte", "label": "t:options.default" },
+        { "value": "h1", "label": "t:options.h1" },
+        { "value": "h2", "label": "t:options.h2" },
+        { "value": "h3", "label": "t:options.h3" },
+        { "value": "h4", "label": "t:options.h4" },
+        { "value": "h5", "label": "t:options.h5" },
+        { "value": "h6", "label": "t:options.h6" }
+      ],
+      "default": "rte",
+      "info": "t:info.edit_presets_in_theme_settings"
+    },
+    {
+      "type": "select",
+      "id": "body_type_preset",
+      "label": "t:settings.preset",
+      "options": [
+        { "value": "rte", "label": "t:options.default" },
+        { "value": "paragraph", "label": "t:options.paragraph" },
+        { "value": "h1", "label": "t:options.h1" },
+        { "value": "h2", "label": "t:options.h2" },
+        { "value": "h3", "label": "t:options.h3" },
+        { "value": "h4", "label": "t:options.h4" },
+        { "value": "h5", "label": "t:options.h5" },
+        { "value": "h6", "label": "t:options.h6" }
+      ],
+      "default": "rte",
+      "info": "t:info.edit_presets_in_theme_settings"
     },
     {
       "type": "header",
