@@ -94,13 +94,22 @@ test('exposes locations header layout, typography, color, and spacing controls t
   assert.match(source, /assign heading_preset = section\.settings\.type_preset \| default: 'rte'/, 'the heading must resolve its preset');
   assert.match(source, /assign body_preset = section\.settings\.body_type_preset \| default: 'rte'/, 'the body must resolve its preset');
   assert.match(source, /--locations-header-heading-size: {{ section\.settings\.heading_size }}px;/, 'the heading size must be published as a scoped CSS variable');
-  assert.match(source, /class="locations-header__heading {{ heading_preset }}/, 'the heading must apply the selected preset class');
+  assert.match(
+    source,
+    /<h1 class="locations-header__heading {{ heading_preset }}" style="font-size: var\(--locations-header-heading-size\);">/,
+    'the heading-size setting must be consumed inline so it overrides every h1–h6 preset selector',
+  );
   assert.match(source, /class="locations-header__body text-block {{ body_preset }}/, 'the body must apply the selected preset class');
   assert.match(source, /render 'text-block-styles'/, 'body presets must use the theme text-block styles');
   assert.match(
     source,
     /--locations-header-text-color: {{ section\.settings\.text_color \| default: 'var\(--color-foreground\)' }};/,
     'a custom text color must work without requiring a custom background color',
+  );
+  assert.match(
+    source,
+    /\.locations-header\s*\{[\s\S]*?--color: var\(--locations-header-text-color\);[\s\S]*?color: var\(--locations-header-text-color\);/,
+    'the text-block color token must inherit into paragraph and heading body presets',
   );
   assert.match(source, /render 'spacing-style', settings: section\.settings/, 'spacing controls must use the theme spacing helper');
 });

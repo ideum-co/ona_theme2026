@@ -34,7 +34,7 @@
   {{ section.shopify_attributes }}
 >
   <div class="locations-header__content">
-    <h1 class="locations-header__heading {{ heading_preset }}">{{ heading | escape }}</h1>
+    <h1 class="locations-header__heading {{ heading_preset }}" style="font-size: var(--locations-header-heading-size);">{{ heading | escape }}</h1>
     {%- if section.settings.body != blank -%}
       <div class="locations-header__body text-block {{ body_preset }}">{{ section.settings.body }}</div>
     {%- endif -%}
@@ -43,6 +43,7 @@
 
 {% stylesheet %}
   .locations-header {
+    --color: var(--locations-header-text-color);
     color: var(--locations-header-text-color);
   }
 
@@ -61,7 +62,6 @@
 
   .locations-header__heading {
     margin: 0;
-    font-size: var(--locations-header-heading-size);
   }
 
   .locations-header__body {
