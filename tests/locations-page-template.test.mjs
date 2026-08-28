@@ -23,7 +23,7 @@ test('keeps locations in a dedicated alternate page template', () => {
     'locations sections must retain their migration order',
   );
   assert.deepEqual(
-    Object.values(template.sections).map((section) => section.type),
+    template.order.map((id) => template.sections[id].type),
     locationSectionTypes,
     'locations template must reference exactly its three migrated section types',
   );

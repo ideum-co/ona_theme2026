@@ -70,3 +70,44 @@ Also ran `git diff --check`; it reported no whitespace errors.
 ## Concerns
 
 None. The section shells intentionally do not implement store lookup or flagship content; those are deferred to the later migration tasks.
+
+## Fix round 1: Resolve section types through template order
+
+### Change
+
+- Replaced the insertion-order-dependent `Object.values(template.sections).map((section) => section.type)` assertion with `template.order.map((id) => template.sections[id].type)`.
+- The expected types remain the literal migration contract: `locations-header`, `locations-store-finder`, and `locations-flagships`.
+
+### Regression proof (RED)
+
+After adding the assertion, I temporarily changed `page.locations.json` so its object values remained in the old expected type sequence while the `header` and `flagships` IDs resolved to each other's types. The template `order` remained unchanged.
+
+Command:
+
+```sh
+node --test tests/locations-page-template.test.mjs
+```
+
+Result: 1 passing, 1 failing, as expected.
+
+```text
+AssertionError [ERR_ASSERTION]: locations template must reference exactly its three migrated section types
+actual: [ 'locations-flagships', 'locations-store-finder', 'locations-header' ]
+expected: [ 'locations-header', 'locations-store-finder', 'locations-flagships' ]
+```
+
+I restored the correct section-ID/type mapping immediately after the controlled mutation.
+
+### Verification (GREEN)
+
+Commands:
+
+```sh
+node --test tests/locations-page-template.test.mjs
+node --test tests/*.test.mjs
+```
+
+Results:
+
+- Focused locations contract: 2 passing, 0 failing.
+- Full Node suite: 16 passing, 0 failing.
