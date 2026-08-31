@@ -480,12 +480,21 @@
       display: block;
       aspect-ratio: var(--header-megamenu-card-aspect-ratio, 4 / 5);
       overflow: hidden;
+      background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5));
     }
 
+    /* object-fit: contain, not cover - every featured image measured here (menu_image metafield,
+       falling back to the product's own featured image) renders at ~403x659 (ratio ~0.61),
+       noticeably taller/narrower than any of the three frame ratio choices this setting offers
+       (1:1, 4:5, or auto). cover crops to fill the frame's width, cutting the bag's own top and
+       bottom off regardless of which ratio is picked; contain guarantees the whole bag is always
+       visible, whatever ratio the setting ends up at. The faint background fill above (matches
+       the muted-foreground token, not a hardcoded color) keeps the letterboxed edges from reading
+       as a rendering bug when the image doesn't fill its frame. */
     .header-megamenu__card-image {
       inline-size: 100%;
       block-size: 100%;
-      object-fit: cover;
+      object-fit: contain;
       display: block;
     }
 
