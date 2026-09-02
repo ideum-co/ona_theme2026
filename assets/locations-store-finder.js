@@ -16,6 +16,19 @@ export function locationsWithCoordinates(locations) {
   return locations.filter(hasCoordinates);
 }
 
+export function resolveMapUiState(currentState, locations, noCoordinatesStatus) {
+  const markerCount = locationsWithCoordinates(locations).length;
+  if (markerCount === 0) {
+    return { view: 'list', status: noCoordinatesStatus, markerCount };
+  }
+
+  return {
+    view: currentState.view,
+    status: currentState.status === noCoordinatesStatus ? '' : currentState.status,
+    markerCount,
+  };
+}
+
 export function distanceBetweenKm(origin, destination) {
   if (!hasCoordinates(origin) || !hasCoordinates(destination)) return Number.POSITIVE_INFINITY;
 
@@ -68,6 +81,78 @@ export function buildGoogleMapsUrl(apiKey) {
   return `https://maps.googleapis.com/maps/api/js?${parameters.toString()}`;
 }
 
+export function buildSectionRenderingUrl(nextPageUrl, sectionId, baseUrl = globalThis.location?.href) {
+  if (!nextPageUrl) return null;
+  const url = new URL(nextPageUrl, baseUrl);
+  url.searchParams.set('section_id', sectionId);
+  return url.toString();
+}
+
+function locationSignature(location) {
+  return JSON.stringify([
+    location.title ?? '',
+    location.address ?? '',
+    location.suburb ?? '',
+    location.state ?? '',
+    location.latitude ?? null,
+    location.longitude ?? null,
+    location.website ?? '',
+    [...(Array.isArray(location.tags) ? location.tags : [])].sort(),
+  ]);
+}
+
+function validateLocationPage(page) {
+  if (!page || !Array.isArray(page.locations) || !Array.isArray(page.cards)) {
+    throw new Error('The location page payload is invalid.');
+  }
+  if (page.locations.length !== page.cards.length) {
+    throw new Error('Location records and cards are not aligned.');
+  }
+}
+
+export async function loadAllLocationPages(initialPage, loadPage) {
+  validateLocationPage(initialPage);
+  const locations = [...initialPage.locations];
+  const cards = [...initialPage.cards];
+  const knownLocations = new Set(locations.map(locationSignature));
+  const visitedUrls = new Set();
+  let nextPageUrl = initialPage.nextPageUrl || '';
+
+  while (nextPageUrl) {
+    if (visitedUrls.has(nextPageUrl)) {
+      throw new Error(`Location pagination returned a repeated pagination URL: ${nextPageUrl}`);
+    }
+    visitedUrls.add(nextPageUrl);
+    const page = await loadPage(nextPageUrl);
+    validateLocationPage(page);
+
+    page.locations.forEach((location, index) => {
+      const signature = locationSignature(location);
+      if (knownLocations.has(signature)) return;
+      knownLocations.add(signature);
+      locations.push(location);
+      cards.push(page.cards[index]);
+    });
+    nextPageUrl = page.nextPageUrl || '';
+  }
+
+  return { locations, cards };
+}
+
+export function readFinderPage(finder) {
+  if (!finder) throw new Error('The location finder section is missing from the response.');
+  const payload = finder.querySelector('[data-locations-store-finder-data]');
+  if (!payload) throw new Error('The location finder payload is missing from the response.');
+  const config = JSON.parse(payload.textContent || '{}');
+  const page = {
+    locations: Array.isArray(config.locations) ? config.locations : [],
+    cards: [...finder.querySelectorAll('[data-location-card]')],
+    nextPageUrl: finder.dataset.nextPageUrl || '',
+  };
+  validateLocationPage(page);
+  return page;
+}
+
 export function loadGoogleMaps(apiKey, documentObject = globalThis.document) {
   if (!apiKey) {
     return null;
@@ -77,19 +162,34 @@ export function loadGoogleMaps(apiKey, documentObject = globalThis.document) {
   if (mapsPromise) return mapsPromise;
 
   mapsPromise = new Promise((resolve, reject) => {
-    const existingScript = documentObject.querySelector('script[data-locations-google-maps]');
+    let existingScript = documentObject.querySelector('script[data-locations-google-maps]');
+    if (existingScript && existingScript.dataset.locationsGoogleMapsState !== 'loading') {
+      existingScript.remove();
+      existingScript = null;
+    }
     const script = existingScript ?? documentObject.createElement('script');
+    const removeListeners = () => {
+      script.removeEventListener('load', handleLoad);
+      script.removeEventListener('error', handleError);
+    };
+    const rejectLoad = (error) => {
+      removeListeners();
+      script.dataset.locationsGoogleMapsState = 'failed';
+      script.remove();
+      mapsPromise = undefined;
+      reject(error);
+    };
     const handleLoad = () => {
       if (globalThis.google?.maps) {
+        removeListeners();
+        script.dataset.locationsGoogleMapsState = 'ready';
         resolve(globalThis.google.maps);
       } else {
-        mapsPromise = undefined;
-        reject(new Error('Google Maps loaded without the Maps API.'));
+        rejectLoad(new Error('Google Maps loaded without the Maps API.'));
       }
     };
     const handleError = () => {
-      mapsPromise = undefined;
-      reject(new Error('Google Maps failed to load.'));
+      rejectLoad(new Error('Google Maps failed to load.'));
     };
 
     script.addEventListener('load', handleLoad, { once: true });
@@ -98,6 +198,7 @@ export function loadGoogleMaps(apiKey, documentObject = globalThis.document) {
       script.src = buildGoogleMapsUrl(apiKey);
       script.async = true;
       script.dataset.locationsGoogleMaps = '';
+      script.dataset.locationsGoogleMapsState = 'loading';
       documentObject.head.append(script);
     }
   });
@@ -129,8 +230,10 @@ class LocationsStoreFinder extends HTMLElementBase {
     this.resetButton = this.querySelector('[data-reset-filters]');
     this.resultCount = this.querySelector('[data-result-count]');
     this.emptyState = this.querySelector('[data-no-results]');
+    this.locationList = this.querySelector('[data-location-list]');
     this.mapPanel = this.querySelector('[data-map-panel]');
     this.mapElement = this.querySelector('[data-location-map]');
+    this.pagination = this.querySelector('[data-fallback-pagination]');
     this.viewButtons = [...this.querySelectorAll('[data-view]')];
     this.origin = null;
     this.map = null;
@@ -155,22 +258,31 @@ class LocationsStoreFinder extends HTMLElementBase {
     } else {
       this.showListView();
     }
+
+    this.loadRemainingLocationPages().catch(() => {
+      this.setStatus(
+        this.settings.paginationErrorStatus ||
+          'Additional locations could not be loaded. Use the result page links to continue browsing.',
+      );
+    });
   }
 
   populateStateFilter() {
     if (!this.stateFilter) return;
     const firstOption = this.stateFilter.options[0];
+    const selectedState = this.stateFilter.value;
     const states = [...new Set(this.locations.map(({ state }) => String(state ?? '').trim()).filter(Boolean))].sort(
       (first, second) => first.localeCompare(second),
     );
 
     this.stateFilter.replaceChildren(firstOption);
     for (const state of states) {
-      const option = document.createElement('option');
+      const option = this.ownerDocument.createElement('option');
       option.value = state;
       option.textContent = state;
       this.stateFilter.append(option);
     }
+    if (states.includes(selectedState)) this.stateFilter.value = selectedState;
   }
 
   bindEvents() {
@@ -214,7 +326,55 @@ class LocationsStoreFinder extends HTMLElementBase {
     }
     if (this.emptyState) this.emptyState.hidden = this.visibleLocations.length !== 0;
     if (this.resetButton) this.resetButton.hidden = !this.hasActiveFilters();
+    const mapUiState = resolveMapUiState(
+      { view: this.activeView ?? 'list', status: this.statusText() },
+      this.visibleLocations,
+      this.settings.noCoordinatesStatus,
+    );
+    if (mapUiState.markerCount > 0 && mapUiState.status !== this.statusText()) {
+      this.setStatus(mapUiState.status);
+    }
     if (this.map) this.syncMapMarkers();
+  }
+
+  async loadRemainingLocationPages() {
+    const nextPageUrl = this.dataset.nextPageUrl;
+    if (!nextPageUrl || !this.locationList) return;
+
+    const initialCardCount = this.cards.length;
+    const aggregated = await loadAllLocationPages(
+      { locations: this.locations, cards: this.cards, nextPageUrl },
+      (url) => this.fetchLocationPage(url),
+    );
+    const additionalCards = aggregated.cards.slice(initialCardCount);
+    const fragment = this.ownerDocument.createDocumentFragment();
+    additionalCards.forEach((card, index) => {
+      card.dataset.locationIndex = String(initialCardCount + index);
+      fragment.append(card);
+    });
+
+    this.locationList.append(fragment);
+    this.locations = aggregated.locations;
+    this.cards = aggregated.cards;
+    this.populateStateFilter();
+    this.applyFilters();
+    if (this.pagination) this.pagination.hidden = true;
+
+    if (this.requestedView === 'map' && this.activeView !== 'map') {
+      await this.setView('map');
+    }
+  }
+
+  async fetchLocationPage(nextPageUrl) {
+    const url = buildSectionRenderingUrl(nextPageUrl, this.dataset.sectionId, globalThis.location.href);
+    const response = await fetch(url, {
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    });
+    if (!response.ok) throw new Error(`Location page request failed with status ${response.status}.`);
+
+    const html = new DOMParser().parseFromString(await response.text(), 'text/html');
+    return readFinderPage(html.querySelector('locations-store-finder'));
   }
 
   hasActiveFilters() {
@@ -258,6 +418,7 @@ class LocationsStoreFinder extends HTMLElementBase {
   }
 
   async setView(view) {
+    this.requestedView = view;
     if (view !== 'map') {
       this.showListView();
       return;
@@ -266,6 +427,17 @@ class LocationsStoreFinder extends HTMLElementBase {
     const apiKey = String(this.settings.mapsApiKey ?? '').trim();
     if (!apiKey) {
       this.setStatus(this.settings.noMapKeyStatus);
+      this.showListView();
+      return;
+    }
+
+    const mapUiState = resolveMapUiState(
+      { view: 'map', status: this.statusText() },
+      this.visibleLocations,
+      this.settings.noCoordinatesStatus,
+    );
+    if (mapUiState.markerCount === 0) {
+      this.setStatus(mapUiState.status);
       this.showListView();
       return;
     }
@@ -318,9 +490,15 @@ class LocationsStoreFinder extends HTMLElementBase {
     for (const marker of this.markers) marker.setMap(null);
     this.markers = [];
     const mappedLocations = locationsWithCoordinates(this.visibleLocations);
+    const mapUiState = resolveMapUiState(
+      { view: this.activeView ?? 'list', status: this.statusText() },
+      this.visibleLocations,
+      this.settings.noCoordinatesStatus,
+    );
+    if (mapUiState.status !== this.statusText()) this.setStatus(mapUiState.status);
 
-    if (mappedLocations.length === 0) {
-      this.setStatus(this.settings.noCoordinatesStatus);
+    if (mapUiState.markerCount === 0) {
+      this.showListView();
       return;
     }
 
@@ -361,6 +539,10 @@ class LocationsStoreFinder extends HTMLElementBase {
   setStatus(message) {
     const status = this.querySelector?.('[data-location-status]');
     if (status) status.textContent = message ?? '';
+  }
+
+  statusText() {
+    return this.querySelector?.('[data-location-status]')?.textContent ?? '';
   }
 }
 

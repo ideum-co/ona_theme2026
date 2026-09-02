@@ -31,6 +31,7 @@
       {% render 'spacing-style', settings: section.settings %}
     "
     data-section-id="{{ section.id }}"
+    data-next-page-url="{{ paginate.next.url | escape }}"
     data-marker-icon="{{ 'map-active.svg' | asset_url }}"
     data-active-view="list"
     {{ section.shopify_attributes }}
@@ -225,7 +226,7 @@
       </div>
 
       {%- if paginate.pages > 1 -%}
-        <nav class="locations-store-finder__pagination" aria-label="Location result pages">
+        <nav class="locations-store-finder__pagination" aria-label="Location result pages" data-fallback-pagination>
           {{ paginate | default_pagination }}
         </nav>
       {%- endif -%}
@@ -286,6 +287,7 @@
             "mapsApiKey": {{ section.settings.maps_api_key | strip | json }},
             "defaultView": {{ section.settings.default_view | default: 'list' | json }},
             "defaultRadius": {{ section.settings.default_radius | default: '50' | json }},
+            "paginationErrorStatus": {{ section.settings.pagination_error_status | default: 'Additional locations could not be loaded. Use the result page links to continue browsing.' | json }},
             "noMapKeyStatus": {{ section.settings.no_map_key_status | default: 'Map view is unavailable, but every location remains listed.' | json }},
             "mapErrorStatus": {{ section.settings.map_error_status | default: 'The map could not be loaded. You can still browse every location in the list.' | json }},
             "noCoordinatesStatus": {{ section.settings.no_coordinates_status | default: 'No mapped locations match these filters. Unmapped locations remain in the list.' | json }},
@@ -628,6 +630,7 @@
     { "type": "text", "id": "website_label", "label": "Website link label", "default": "Visit website" },
     { "type": "text", "id": "no_results_text", "label": "No results message", "default": "No locations match those filters." },
     { "type": "header", "content": "Map and location status" },
+    { "type": "text", "id": "pagination_error_status", "label": "Additional results error", "default": "Additional locations could not be loaded. Use the result page links to continue browsing." },
     { "type": "text", "id": "no_map_key_status", "label": "Missing map key message", "default": "Map view is unavailable, but every location remains listed." },
     { "type": "text", "id": "map_error_status", "label": "Map error message", "default": "The map could not be loaded. You can still browse every location in the list." },
     { "type": "text", "id": "no_coordinates_status", "label": "No coordinates message", "default": "No mapped locations match these filters. Unmapped locations remain in the list." },
