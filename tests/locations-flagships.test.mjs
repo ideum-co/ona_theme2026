@@ -6,8 +6,10 @@ import test from 'node:test';
 const themeRoot = resolve(import.meta.dirname, '..');
 const sectionPath = resolve(themeRoot, 'sections/locations-flagships.liquid');
 const javascriptPath = resolve(themeRoot, 'assets/locations-flagships.js');
+const safeUrlSnippetPath = resolve(themeRoot, 'snippets/safe-external-url.liquid');
 const section = readFileSync(sectionPath, 'utf8');
 const javascript = existsSync(javascriptPath) ? readFileSync(javascriptPath, 'utf8') : '';
+const safeUrlSnippet = existsSync(safeUrlSnippetPath) ? readFileSync(safeUrlSnippetPath, 'utf8') : '';
 
 const schemaMatch = section.match(/{% schema %}\s*([\s\S]*?)\s*{% endschema %}/);
 assert.ok(schemaMatch, 'the flagship section must expose a schema');
@@ -15,7 +17,9 @@ const schema = JSON.parse(schemaMatch[1]);
 const settings = new Map(schema.settings.filter((setting) => setting.id).map((setting) => [setting.id, setting]));
 
 test('renders only store_location records related to the flagship store_tag', () => {
-  assert.match(section, /for location in shop\.metaobjects\.store_location\.values/);
+  assert.match(section, /assign all_locations = shop\.metaobjects\.store_location\.values/);
+  assert.match(section, /paginate all_locations by 250/);
+  assert.match(section, /for location in all_locations/);
   assert.match(section, /for tag in location\.tags\.value/);
   assert.match(section, /tag\.slug\.value\s*==\s*'flagship'/);
   assert.match(
@@ -23,6 +27,39 @@ test('renders only store_location records related to the flagship store_tag', ()
     /if is_flagship[\s\S]*?<article[^>]*class="locations-flagships__card"[\s\S]*?endif/,
     'a location card must only render after the flagship relation is confirmed',
   );
+});
+
+test('retains accessible pagination and exposes every location page to flagship enhancement', () => {
+  assert.match(section, /<locations-flagships-loader/);
+  assert.match(section, /data-current-page="\{\{ paginate\.current_page \}\}"/);
+  assert.match(section, /data-next-page-url="\{\{ paginate\.next\.url \| escape \}\}"/);
+  assert.match(section, /data-flagship-list/);
+  assert.match(
+    section,
+    /if paginate\.pages > 1[\s\S]*?<nav[^>]*data-flagships-fallback-pagination[\s\S]*?paginate \| default_pagination/,
+  );
+});
+
+test('aggregates a flagship found after the first two hundred and fifty locations', async () => {
+  const { loadAllFlagshipPages } = await import(`${javascriptPath}?flagship-251=${Date.now()}`);
+  assert.equal(typeof loadAllFlagshipPages, 'function');
+  const firstPageCards = Array.from({ length: 250 }, (_, index) => ({
+    dataset: { locationId: `gid://shopify/Metaobject/${index + 1}` },
+  }));
+  const finalFlagship = { dataset: { locationId: 'gid://shopify/Metaobject/251' } };
+  const requestedPages = [];
+
+  const result = await loadAllFlagshipPages(
+    { cards: firstPageCards, nextPageUrl: '/pages/locations?page=2' },
+    async (url) => {
+      requestedPages.push(url);
+      return { cards: [finalFlagship], nextPageUrl: '' };
+    },
+  );
+
+  assert.deepEqual(requestedPages, ['/pages/locations?page=2']);
+  assert.equal(result.cards.length, 251);
+  assert.equal(result.cards.at(-1), finalFlagship);
 });
 
 test('uses the shared metaobject contract without legacy dependencies', () => {
@@ -38,11 +75,20 @@ test('renders the complete flagship content with safe external links', () => {
   assert.match(section, /assign address = location\.storeaddress\.value/);
   assert.match(section, /assign hours = location\.time\.value/);
   assert.match(section, /assign overview = location\.overview\.value/);
-  assert.match(section, /assign website = location\.storeaddressurl\.value/);
+  assert.match(section, /render 'safe-external-url', url: location\.storeaddressurl/);
   assert.match(section, /<a[^>]*href="{{ website \| escape }}"[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
   assert.match(section, /{{ address \| escape \| newline_to_br }}/);
   assert.match(section, /{{ location\.time \| metafield_tag }}/);
   assert.match(section, /{{ location\.overview \| metafield_tag }}/);
+});
+
+test('rejects javascript and data URL schemes before a flagship website link is rendered', async () => {
+  const { approvedExternalUrl } = await import(`${javascriptPath}?safe-urls=${Date.now()}`);
+  assert.equal(approvedExternalUrl('https://example.com/flagship'), 'https://example.com/flagship');
+  assert.equal(approvedExternalUrl('javascript:alert(1)'), null);
+  assert.equal(approvedExternalUrl('data:text/html,unsafe'), null);
+  assert.match(section, /render 'safe-external-url', url: location\.storeaddressurl/);
+  assert.match(safeUrlSnippet, /candidate_prefix_7 == 'http:\/\/'[\s\S]*candidate_prefix_8 == 'https:\/\/'/);
 });
 
 test('renders gallery references and falls back to the existing location image', () => {

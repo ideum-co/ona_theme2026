@@ -30,6 +30,7 @@ The template contains three editable sections:
 2. **Store finder**
    - Reads `shop.metaobjects.store_location.values`.
    - Reads `shop.metaobjects.store_tag.values` for venue filters.
+   - Uses 250-entry Liquid pages plus atomic Section Rendering aggregation; related tag data on every aggregated location supplements Shopify's first 50 direct `store_tag` values.
    - Supports text/address search, state and tag filters, distance filtering, geolocation, list/map views, result count, directions, external website links, and responsive layouts.
    - Loads a dedicated JavaScript asset once and uses a section-scoped configuration object.
    - Google Maps API key is supplied through a section setting. No API key from the exported theme is committed.
@@ -38,6 +39,7 @@ The template contains three editable sections:
 
 3. **Flagship locations**
    - Reads the same `store_location` entries and selects those carrying a `store_tag` whose slug is `flagship`.
+   - Traverses the complete paginated location collection so flagship entries beyond Shopify's first 50 values and after the first 250 locations are retained.
    - Uses the existing fields referenced by the finder: title, address, hours, website, overview, and image.
    - Uses optional `gallery` images when that field is available; otherwise falls back to `image`.
    - Supports an editable section heading, introduction, color treatment, content width, image presentation, and spacing.
@@ -49,7 +51,7 @@ The Shopify admin remains the source of location records. The theme cannot creat
 
 Existing requirements:
 
-- `store_location`: `title`, `storeaddress`, `suburb`, `state`, `latitude`, `longitude`, `time`, `overview`, `storeaddressurl`, `image`, and `tags`.
+- `store_location`: `title`, `storeaddress`, `suburb`, `state`, `latitude`, `longitude`, `time`, `overview`, `storeaddressurl`, `image`, and `tags`. `storeaddressurl` is a Shopify `url` field, and storefront links are limited to absolute HTTP/HTTPS URLs.
 - `store_tag`: `label` and `slug`.
 
 Migration requirements:
@@ -125,4 +127,3 @@ Automated regression tests verify:
 - `templates/index.json` and `config/settings_data.json` are unchanged.
 
 Run the complete repository test suite, Theme Check on changed Liquid files, JavaScript syntax/lint checks available in the repository, and `git diff --check` before delivery.
-

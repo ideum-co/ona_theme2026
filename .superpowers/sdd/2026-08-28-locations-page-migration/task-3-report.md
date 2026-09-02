@@ -384,3 +384,151 @@ exit 0
 
 - Live Shopify Section Rendering and Google Maps requests could not be smoke-tested without a connected storefront and valid editor-supplied Maps key.
 - The unrelated repository-wide Theme Check findings remain outside this task.
+
+## Final review fix wave
+
+### Root causes
+
+1. The Maps loader treated a `loading=async` script's `load` event as API readiness. It had no callback contract, authentication-failure hook, or readiness deadline, and finder instances could create duplicate maps while concurrent initialization awaited the shared loader.
+2. Map mode was applied before initialization resolved, so no-JS/default markup and slow-load interactions could expose an empty map. A late resolve or reject could also override a newer List selection.
+3. Finder loops referenced the ordinary metaobject collection rather than the active 250-entry paginate collection. Flagships had no paginate/Section Rendering path. The venue filter depended only on the first direct `store_tag.values` results.
+4. `storeaddressurl` was rendered directly without an explicit type contract or scheme allowlist.
+
+### TDD RED evidence
+
+#### Maps lifecycle and view state
+
+```text
+node --test tests/locations-store-finder.test.mjs
+tests 25
+pass 18
+fail 7
+```
+
+The failures proved that server markup did not always select List, pending initialization activated Map immediately, concurrent initialization ignored the injected loader and cache contract, script URLs lacked readiness callbacks, and auth/timeout failure paths did not exist.
+
+A separate late-rejection regression was observed failing before its fix:
+
+```text
+node --test --test-name-pattern="ignores a stale Maps rejection" tests/locations-store-finder.test.mjs
+tests 1
+pass 0
+fail 1
+actual status: Map failed.
+expected status: empty
+```
+
+#### Metaobject pagination and tag completeness
+
+```text
+node --test tests/locations-store-finder.test.mjs
+tests 27
+pass 25
+fail 2
+failure: finder cards/payload did not loop over the paginated all_locations collection
+failure: locationTagOptions was unavailable for tag 51
+
+node --test tests/locations-flagships.test.mjs
+tests 12
+pass 9
+fail 3
+failure: no paginated all_locations loop
+failure: no accessible flagship pagination/loader contract
+failure: loadAllFlagshipPages was unavailable
+```
+
+#### External URL schemes
+
+```text
+node --test tests/locations-store-finder.test.mjs
+tests 28
+pass 27
+fail 1
+TypeError: approvedExternalUrl is not a function
+
+node --test tests/locations-flagships.test.mjs
+tests 13
+pass 12
+fail 1
+TypeError: approvedExternalUrl is not a function
+```
+
+The URL fixtures use literal HTTPS, uppercase HTTP, `javascript:`, and `data:` values. Both unsafe schemes must resolve to `null`, and both Liquid sections must route `storeaddressurl` through the shared server-rendering gate.
+
+### GREEN implementation
+
+- Google Maps now loads with a unique documented callback, a 15-second readiness timeout, `gm_authFailure`, script-error handling, and complete timer/script/callback/auth/partial-Google cleanup on rejection. Loader state resets so a later attempt starts cleanly.
+- Each finder caches one connection-versioned initialization promise. Concurrent callers share one Map construction; rejection and disconnect clear the cache; stale disconnected completions cannot construct a map.
+- Server markup always renders List selected. `setView('map')` keeps List visible until initialization succeeds, confirms Map is still requested, then activates it. Superseded resolve/reject results do not override the current view or status.
+- Finder card and JSON loops use the active `all_locations` paginate collection. Existing atomic Section Rendering traversal still loads page 251 and beyond.
+- Normalized records now carry related `{ label, slug }` tag options. The enhanced control merges these across every aggregated location with the initial direct tag values, so a related tag after entry 50 is selectable.
+- Flagships now use 250-location server pages with labelled no-JS pagination. A dependency-free loader traverses every Section Rendering page, deduplicates only stable location IDs, appends only inertly parsed flagship cards after complete success, and preserves the current server page/pagination with a polite status on failure.
+- `safe-external-url.liquid` emits only absolute `http://` and `https://` values. Finder and flagship links use this gate, while JavaScript repeats the allowlist before enhanced content remains active.
+- Migration, plan, and shared-spec documentation now require `storeaddressurl` to be a Shopify `url` field and describe pagination/readiness behavior.
+- Extra EOF blank lines were removed from the locations plan, shared specification, and Dotdigital plan.
+
+### Files changed
+
+- `assets/locations-store-finder.js`
+- `assets/locations-flagships.js`
+- `sections/locations-store-finder.liquid`
+- `sections/locations-flagships.liquid`
+- `snippets/safe-external-url.liquid`
+- `tests/locations-store-finder.test.mjs`
+- `tests/locations-flagships.test.mjs`
+- `docs/locations-metaobject-migration.md`
+- `docs/superpowers/plans/2026-08-28-locations-page-migration.md`
+- `docs/superpowers/specs/2026-08-28-locations-page-and-subscriber-modal-design.md`
+- `docs/superpowers/plans/2026-08-28-dotdigital-subscriber-modal.md`
+- `.superpowers/sdd/2026-08-28-locations-page-migration/task-3-report.md`
+
+### Self-review
+
+- Callback cleanup restores a pre-existing `gm_authFailure` handler and the pre-attempt Google global rather than leaving loader-owned state behind.
+- Script `load` alone cannot resolve the Maps promise; only the named readiness callback can do so.
+- Map activation occurs after both global loader readiness and per-finder Map construction, and only while the same finder remains connected and Map remains the requested view.
+- Finder and flagship aggregation remain atomic: fetched scripts are never appended, and server-rendered content/pagination stays usable through any request, parsing, or cursor failure.
+- Identity-less locations are never collapsed; stable-ID repeats are removed with their paired cards.
+- The finder obtains tag 51 from normalized location relationships and repopulates the actual select after cross-page aggregation.
+- Liquid is the primary external-link gate, preserving safety without JavaScript. Client-side checks provide defense in depth.
+- No hardcoded Maps key, jQuery, Accentuate, legacy flagship blog source, protected JSON edit, or source metaobject mutation was introduced.
+
+### Final verification
+
+```text
+node --test tests/locations-store-finder.test.mjs
+31 passing, 0 failing
+
+node --test tests/locations-flagships.test.mjs
+13 passing, 0 failing
+
+node --test tests/locations-*.test.mjs
+48 passing, 0 failing
+
+node --test tests/*.test.mjs
+62 passing, 0 failing
+
+node --check assets/locations-store-finder.js
+exit 0
+
+node --check assets/locations-flagships.js
+exit 0
+
+xmllint --noout assets/map-active.svg
+exit 0
+
+git diff origin/main --check
+exit 0
+
+git diff --exit-code HEAD -- templates/index.json templates/page.json templates/page.locations.json config/settings_data.json
+exit 0
+```
+
+Filtered Theme Check reports zero offenses for the two changed locations sections and `snippets/safe-external-url.liquid`. The repository command remains nonzero only for the existing unrelated 236 errors and 5 warnings.
+
+The forbidden-source scan over the two locations assets, two sections, and safe URL snippet returns no hardcoded Google key, jQuery, Accentuate, or `blogs.flagship-stores` reference.
+
+### Remaining concerns
+
+- A connected Shopify storefront with more than 250 published locations, a tag outside the first 50 direct tag values, and a restricted Maps browser key was unavailable for a live network smoke test.
+- Repository-wide Theme Check remains nonzero for unrelated existing files; all changed locations Liquid is clean in the filtered result.

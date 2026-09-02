@@ -2,6 +2,121 @@ const HTMLElementBase = globalThis.HTMLElement ?? class {};
 const SCROLL_SYNC_DELAY_MS = 50;
 const PROGRAMMATIC_SCROLL_SETTLE_MS = 150;
 
+export function approvedExternalUrl(value) {
+  const candidate = String(value ?? '').trim();
+  if (!candidate) return null;
+  try {
+    const protocol = new URL(candidate).protocol.toLocaleLowerCase();
+    return protocol === 'http:' || protocol === 'https:' ? candidate : null;
+  } catch {
+    return null;
+  }
+}
+
+function flagshipIdentity(card) {
+  const identity = String(card?.dataset?.locationId ?? '').trim();
+  return identity || null;
+}
+
+function validateFlagshipPage(page) {
+  if (!page || !Array.isArray(page.cards)) throw new Error('The flagship page payload is invalid.');
+}
+
+export function buildFlagshipsSectionUrl(pageUrl, sectionId, baseUrl = globalThis.location?.href) {
+  const url = new URL(pageUrl, baseUrl);
+  url.searchParams.set('section_id', sectionId);
+  return url.toString();
+}
+
+export function buildFirstFlagshipsPageUrl(currentUrl, baseUrl = globalThis.location?.href) {
+  const url = new URL(currentUrl, baseUrl);
+  url.searchParams.delete('page');
+  url.searchParams.delete('section_id');
+  url.hash = '';
+  return url.toString();
+}
+
+export async function loadAllFlagshipPages(initialPage, loadPage) {
+  validateFlagshipPage(initialPage);
+  const cards = [...initialPage.cards];
+  const knownIds = new Set(cards.map(flagshipIdentity).filter(Boolean));
+  const visitedUrls = new Set();
+  let nextPageUrl = initialPage.nextPageUrl || '';
+
+  while (nextPageUrl) {
+    if (visitedUrls.has(nextPageUrl)) throw new Error(`Flagship pagination repeated URL: ${nextPageUrl}`);
+    visitedUrls.add(nextPageUrl);
+    const page = await loadPage(nextPageUrl);
+    validateFlagshipPage(page);
+    page.cards.forEach((card) => {
+      const identity = flagshipIdentity(card);
+      if (identity && knownIds.has(identity)) return;
+      if (identity) knownIds.add(identity);
+      cards.push(card);
+    });
+    nextPageUrl = page.nextPageUrl || '';
+  }
+
+  return { cards };
+}
+
+export function readFlagshipPage(loader) {
+  if (!loader) throw new Error('The flagship loader is missing from the response.');
+  return {
+    cards: [...loader.querySelectorAll('[data-flagship-card]')],
+    nextPageUrl: loader.dataset.nextPageUrl || '',
+  };
+}
+
+export class LocationsFlagshipsLoader extends HTMLElementBase {
+  connectedCallback() {
+    if (this.loaderInitialized) return;
+    this.loaderInitialized = true;
+    this.list = this.querySelector('[data-flagship-list]');
+    this.pagination = this.querySelector('[data-flagships-fallback-pagination]');
+    this.status = this.querySelector('[data-flagships-status]');
+    this.cards = [...this.querySelectorAll('[data-flagship-card]')];
+    for (const link of this.querySelectorAll('.locations-flagships__website')) {
+      if (!approvedExternalUrl(link.getAttribute('href'))) link.remove();
+    }
+    this.loadRemainingPages().catch(() => {
+      if (this.status) {
+        this.status.textContent = 'Additional flagship locations could not be loaded. Use the page links to continue.';
+      }
+    });
+  }
+
+  async loadRemainingPages() {
+    const currentPage = Number.parseInt(this.dataset.currentPage, 10) || 1;
+    const nextPageUrl = this.dataset.nextPageUrl;
+    if (!this.list || (!nextPageUrl && currentPage === 1)) return;
+
+    const initialPage =
+      currentPage > 1
+        ? await this.fetchPage(
+            buildFirstFlagshipsPageUrl(this.ownerDocument?.location?.href ?? globalThis.location?.href),
+          )
+        : { cards: this.cards, nextPageUrl };
+    const aggregated = await loadAllFlagshipPages(initialPage, (url) => this.fetchPage(url));
+    const fragment = this.ownerDocument.createDocumentFragment();
+    aggregated.cards.forEach((card) => fragment.append(card));
+    this.list.replaceChildren(fragment);
+    this.cards = aggregated.cards;
+    if (this.pagination) this.pagination.hidden = true;
+  }
+
+  async fetchPage(pageUrl) {
+    const url = buildFlagshipsSectionUrl(pageUrl, this.dataset.sectionId, globalThis.location.href);
+    const response = await fetch(url, {
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    });
+    if (!response.ok) throw new Error(`Flagship page request failed with status ${response.status}.`);
+    const html = new DOMParser().parseFromString(await response.text(), 'text/html');
+    return readFlagshipPage(html.querySelector('locations-flagships-loader'));
+  }
+}
+
 export function galleryIndexForKey(key, currentIndex, slideCount) {
   const count = Number(slideCount);
   if (!Number.isInteger(count) || count <= 1) return null;
@@ -162,4 +277,8 @@ export class LocationsFlagshipGallery extends HTMLElementBase {
 
 if (globalThis.customElements && !customElements.get('locations-flagship-gallery')) {
   customElements.define('locations-flagship-gallery', LocationsFlagshipGallery);
+}
+
+if (globalThis.customElements && !customElements.get('locations-flagships-loader')) {
+  customElements.define('locations-flagships-loader', LocationsFlagshipsLoader);
 }

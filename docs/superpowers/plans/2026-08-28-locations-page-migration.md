@@ -42,6 +42,7 @@
 - Create: `tests/locations-store-finder.test.mjs`
 
 1. Add failing tests proving data comes from `shop.metaobjects.store_location.values` and `shop.metaobjects.store_tag.values`, no API key is hardcoded, and accessible labels/status controls exist.
+   Treat `storeaddressurl` as a Shopify `url` field and render it only when its scheme is HTTP or HTTPS.
 2. Render a section-scoped JSON payload containing only normalized location/tag fields and editor settings.
 3. Add schema controls for copy, Google Maps key, default view/radius, enabled filters, content width, colors, and spacing.
 4. Implement a custom element supporting text search, state/tag/radius filters, result count, geolocation, list/map toggle, directions, and external links.
@@ -73,4 +74,3 @@
 2. Run all repository tests, JavaScript syntax checks, Theme Check on changed Liquid, and `git diff --check`.
 3. Confirm `git diff origin/main -- templates/index.json templates/page.json config/settings_data.json` is empty.
 4. Review the page in Shopify Theme Editor at desktop and mobile widths before opening the PR.
-

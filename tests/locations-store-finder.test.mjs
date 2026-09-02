@@ -7,8 +7,12 @@ const themeRoot = resolve(import.meta.dirname, '..');
 const sectionPath = resolve(themeRoot, 'sections/locations-store-finder.liquid');
 const javascriptPath = resolve(themeRoot, 'assets/locations-store-finder.js');
 const markerPath = resolve(themeRoot, 'assets/map-active.svg');
+const safeUrlSnippetPath = resolve(themeRoot, 'snippets/safe-external-url.liquid');
+const migrationDocPath = resolve(themeRoot, 'docs/locations-metaobject-migration.md');
 const section = readFileSync(sectionPath, 'utf8');
 const javascript = existsSync(javascriptPath) ? readFileSync(javascriptPath, 'utf8') : '';
+const safeUrlSnippet = existsSync(safeUrlSnippetPath) ? readFileSync(safeUrlSnippetPath, 'utf8') : '';
+const migrationDoc = readFileSync(migrationDocPath, 'utf8');
 
 const schemaMatch = section.match(/{% schema %}\s*([\s\S]*?)\s*{% endschema %}/);
 assert.ok(schemaMatch, 'the store finder must expose a section schema');
@@ -16,7 +20,8 @@ const schema = JSON.parse(schemaMatch[1]);
 const settings = new Map(schema.settings.filter((setting) => setting.id).map((setting) => [setting.id, setting]));
 
 test('serializes a scoped, normalized payload from location and tag metaobjects', () => {
-  assert.match(section, /for location in shop\.metaobjects\.store_location\.values/);
+  assert.match(section, /assign all_locations = shop\.metaobjects\.store_location\.values/);
+  assert.match(section, /for location in all_locations/);
   assert.match(section, /for tag in shop\.metaobjects\.store_tag\.values/);
   assert.match(
     section,
@@ -38,6 +43,7 @@ test('serializes a scoped, normalized payload from location and tag metaobjects'
     'imageUrl',
     'imageAlt',
     'tags',
+    'tagOptions',
   ]) {
     assert.match(section, new RegExp(`"${field}"\\s*:`), `the normalized payload must include ${field}`);
   }
@@ -64,6 +70,17 @@ test('keeps credentials editor-supplied and removes legacy dependencies', () => 
   assert.doesNotMatch(migratedSource, /\.push\([^\n]*location\.tags|location\.tags\s*=/, 'location records must not be mutated');
 });
 
+test('rejects javascript and data website schemes while retaining absolute HTTP URLs', async () => {
+  const { approvedExternalUrl } = await import(`${javascriptPath}?safe-urls=${Date.now()}`);
+  assert.equal(approvedExternalUrl('https://example.com/store'), 'https://example.com/store');
+  assert.equal(approvedExternalUrl('HTTP://example.com/store'), 'HTTP://example.com/store');
+  assert.equal(approvedExternalUrl('javascript:alert(1)'), null);
+  assert.equal(approvedExternalUrl('data:text/html,unsafe'), null);
+  assert.match(section, /render 'safe-external-url', url: location\.storeaddressurl/);
+  assert.match(safeUrlSnippet, /candidate_prefix_7 == 'http:\/\/'[\s\S]*candidate_prefix_8 == 'https:\/\/'/);
+  assert.match(migrationDoc, /`storeaddressurl`[^\n]*Shopify [`*]*url[`*]* field/i);
+});
+
 test('renders explicitly labelled filters, live status, and selected view controls', () => {
   for (const control of ['search', 'state', 'tag', 'radius']) {
     assert.match(
@@ -75,8 +92,8 @@ test('renders explicitly labelled filters, live status, and selected view contro
 
   assert.match(section, /data-location-status[^>]*role="status"[^>]*aria-live="polite"/);
   assert.match(section, /data-result-count[^>]*role="status"[^>]*aria-live="polite"/);
-  assert.match(section, /<button[^>]*data-view="list"[^>]*aria-pressed=/);
-  assert.match(section, /<button[^>]*data-view="map"[^>]*aria-pressed=/);
+  assert.match(section, /<button[^>]*data-view="list"[^>]*aria-pressed="true"/);
+  assert.match(section, /<button[^>]*data-view="map"[^>]*aria-pressed="false"/);
   assert.match(section, /<button[^>]*data-use-location/);
   assert.match(section, /<a[^>]*data-directions-link[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
   assert.match(section, /<a[^>]*data-website-link[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
@@ -174,6 +191,56 @@ test('filters the list without treating missing coordinates as missing stores', 
     filterLocations(locations, { query: '', state: '', tag: '', origin: null, radiusKm: 0 }),
     locations,
     'missing coordinates must not remove a store from the unfiltered list',
+  );
+});
+
+test('builds venue options from every location so a related tag beyond the first fifty remains selectable', async () => {
+  const { locationTagOptions } = await import(`${javascriptPath}?all-location-tags=${Date.now()}`);
+  assert.equal(typeof locationTagOptions, 'function');
+  const configuredTags = Array.from({ length: 50 }, (_, index) => ({
+    label: `Venue ${index + 1}`,
+    slug: `venue-${index + 1}`,
+  }));
+  const locations = [
+    {
+      title: 'Location carrying tag 51',
+      tagOptions: [{ label: 'Venue 51', slug: 'venue-51' }],
+    },
+  ];
+
+  const options = locationTagOptions(locations, configuredTags);
+
+  assert.equal(options.length, 51);
+  assert.deepEqual(options.find(({ slug }) => slug === 'venue-51'), { label: 'Venue 51', slug: 'venue-51' });
+});
+
+test('places a related venue tag beyond fifty into the actual filter control', async () => {
+  const { LocationsStoreFinder } = await import(`${javascriptPath}?tag-control-51=${Date.now()}`);
+  const finder = new LocationsStoreFinder();
+  const allVenues = { value: '', textContent: 'All venues' };
+  const tagFilter = {
+    options: [allVenues],
+    value: '',
+    replaceChildren(option) {
+      this.options = [option];
+    },
+    append(option) {
+      this.options.push(option);
+    },
+  };
+  finder.tagFilter = tagFilter;
+  finder.config = {
+    tags: Array.from({ length: 50 }, (_, index) => ({ label: `Venue ${index + 1}`, slug: `venue-${index + 1}` })),
+  };
+  finder.locations = [{ tagOptions: [{ label: 'Venue 51', slug: 'venue-51' }] }];
+  finder.ownerDocument = { createElement: () => ({ value: '', textContent: '' }) };
+
+  finder.populateTagFilter();
+
+  assert.equal(tagFilter.options.length, 52);
+  assert.deepEqual(
+    tagFilter.options.find(({ value }) => value === 'venue-51'),
+    { value: 'venue-51', textContent: 'Venue 51' },
   );
 });
 
@@ -321,7 +388,7 @@ test('returns the actual custom element to its accessible list while Maps is sti
 
     const mapTransition = finder.setView('map');
     await Promise.resolve();
-    assert.equal(finder.dataset.activeView, 'map', 'map view begins while the API is pending');
+    assert.equal(finder.dataset.activeView, 'list', 'map view must wait until the API is ready');
 
     finder.searchInput.value = 'unmapped';
     finder.applyFilters();
@@ -343,11 +410,179 @@ test('returns the actual custom element to its accessible list while Maps is sti
   }
 });
 
-test('recreates the Google Maps script after a failed first attempt', async () => {
-  const { loadGoogleMaps } = await import(`${javascriptPath}?maps-retry=${Date.now()}`);
+test('keeps list view active during a slow Maps load and ignores completion after a view change', async () => {
+  const { LocationsStoreFinder } = await import(`${javascriptPath}?slow-map-view=${Date.now()}`);
+  const finder = new LocationsStoreFinder();
+  const listButton = {
+    dataset: { view: 'list' },
+    setAttribute(name, value) {
+      this[name] = value;
+    },
+  };
+  const mapButton = {
+    dataset: { view: 'map' },
+    setAttribute(name, value) {
+      this[name] = value;
+    },
+  };
+  finder.dataset = { activeView: 'list' };
+  finder.activeView = 'list';
+  finder.requestedView = 'list';
+  finder.settings = { mapsApiKey: 'editor-key', noCoordinatesStatus: 'No mapped locations.' };
+  finder.visibleLocations = [{ title: 'Mapped', latitude: -35.28, longitude: 149.13 }];
+  finder.mapPanel = { hidden: true };
+  finder.viewButtons = [listButton, mapButton];
+  finder.statusText = () => '';
+  finder.setStatus = () => {};
+
+  let finishMapLoad;
+  finder.initializeMap = () => new Promise((resolve) => {
+    finishMapLoad = resolve;
+  });
+
+  const pendingMapView = finder.setView('map');
+  await Promise.resolve();
+  assert.equal(finder.dataset.activeView, 'list', 'map view must wait for successful initialization');
+  assert.equal(finder.mapPanel.hidden, true);
+  assert.equal(listButton['aria-pressed'], 'true', 'the list toggle must stay selected while readiness is pending');
+
+  await finder.setView('list');
+  finishMapLoad();
+  await pendingMapView;
+
+  assert.equal(finder.dataset.activeView, 'list', 'stale Maps completion must not override the newer list request');
+  assert.equal(finder.mapPanel.hidden, true);
+  assert.equal(listButton['aria-pressed'], 'true');
+  assert.equal(mapButton['aria-pressed'], 'false');
+});
+
+test('activates map view after readiness when map remains requested', async () => {
+  const { LocationsStoreFinder } = await import(`${javascriptPath}?ready-map-view=${Date.now()}`);
+  const finder = new LocationsStoreFinder();
+  finder.dataset = { activeView: 'list' };
+  finder.activeView = 'list';
+  finder.requestedView = 'list';
+  finder.settings = { mapsApiKey: 'editor-key', noCoordinatesStatus: 'No mapped locations.' };
+  finder.visibleLocations = [{ title: 'Mapped', latitude: -35.28, longitude: 149.13 }];
+  finder.mapPanel = { hidden: true };
+  finder.viewButtons = [];
+  finder.finderConnected = true;
+  finder.statusText = () => '';
+  finder.setStatus = () => {};
+  finder.syncMapMarkers = () => {};
+  let finishMapLoad;
+  finder.initializeMap = () => new Promise((resolve) => {
+    finishMapLoad = resolve;
+  });
+
+  const pendingMapView = finder.setView('map');
+  await Promise.resolve();
+  assert.equal(finder.dataset.activeView, 'list');
+  finishMapLoad();
+  await pendingMapView;
+
+  assert.equal(finder.dataset.activeView, 'map');
+  assert.equal(finder.mapPanel.hidden, false);
+});
+
+test('ignores a stale Maps rejection after the visitor returns to list view', async () => {
+  const { LocationsStoreFinder } = await import(`${javascriptPath}?stale-map-error=${Date.now()}`);
+  const finder = new LocationsStoreFinder();
+  finder.dataset = { activeView: 'list' };
+  finder.activeView = 'list';
+  finder.requestedView = 'list';
+  finder.settings = {
+    mapsApiKey: 'editor-key',
+    mapErrorStatus: 'Map failed.',
+    noCoordinatesStatus: 'No mapped locations.',
+  };
+  finder.visibleLocations = [{ title: 'Mapped', latitude: -35.28, longitude: 149.13 }];
+  finder.mapPanel = { hidden: true };
+  finder.viewButtons = [];
+  finder.finderConnected = true;
+  let status = '';
+  finder.statusText = () => status;
+  finder.setStatus = (message) => {
+    status = message;
+  };
+  let failMapLoad;
+  finder.initializeMap = () => new Promise((resolve, reject) => {
+    failMapLoad = reject;
+  });
+
+  const pendingMapView = finder.setView('map');
+  await Promise.resolve();
+  await finder.setView('list');
+  failMapLoad(new Error('late failure'));
+  await pendingMapView;
+
+  assert.equal(status, '', 'a superseded map request must not announce a stale error');
+  assert.equal(finder.dataset.activeView, 'list');
+});
+
+test('caches concurrent per-finder map initialization and clears stale disconnected work', async () => {
+  const { LocationsStoreFinder } = await import(`${javascriptPath}?map-init-cache=${Date.now()}`);
+  const finder = new LocationsStoreFinder();
+  finder.map = null;
+  finder.mapElement = {};
+  finder.visibleLocations = [{ title: 'Mapped', latitude: -35.28, longitude: 149.13 }];
+  finder.syncMapMarkers = () => {};
+  finder.finderConnected = true;
+  finder.connectionVersion = 0;
+  let resolveMaps;
+  let loaderCalls = 0;
+  let mapInstances = 0;
+  const loader = () => {
+    loaderCalls += 1;
+    return new Promise((resolve) => {
+      resolveMaps = resolve;
+    });
+  };
+  const maps = {
+    Map: class {
+      constructor() {
+        mapInstances += 1;
+      }
+    },
+  };
+
+  const first = finder.initializeMap('editor-key', loader);
+  const second = finder.initializeMap('editor-key', loader);
+  const concurrentResults = Promise.allSettled([first, second]);
+  await Promise.resolve();
+  assert.equal(loaderCalls, 1, 'concurrent requests must share one initialization operation');
+  resolveMaps(maps);
+  assert.deepEqual((await concurrentResults).map(({ status }) => status), ['fulfilled', 'fulfilled']);
+  assert.equal(mapInstances, 1, 'one finder must never create duplicate Map instances');
+
+  const staleFinder = new LocationsStoreFinder();
+  staleFinder.map = null;
+  staleFinder.mapElement = {};
+  staleFinder.visibleLocations = finder.visibleLocations;
+  staleFinder.syncMapMarkers = () => {};
+  staleFinder.finderConnected = true;
+  staleFinder.connectionVersion = 0;
+  let resolveStaleMaps;
+  const staleInitialization = staleFinder.initializeMap(
+    'editor-key',
+    () => new Promise((resolve) => {
+      resolveStaleMaps = resolve;
+    }),
+  );
+  const staleResult = Promise.allSettled([staleInitialization]);
+  await Promise.resolve();
+  staleFinder.disconnectedCallback();
+  resolveStaleMaps(maps);
+
+  assert.equal((await staleResult)[0].status, 'rejected');
+  assert.equal(staleFinder.map, null, 'a disconnected finder must ignore a stale loader completion');
+  assert.equal(staleFinder.mapInitializationPromise, null, 'disconnect must clear cached initialization state');
+});
+
+function createMapsScriptDocument() {
   const createdScripts = [];
   const activeScripts = [];
-  const fakeDocument = {
+  const documentObject = {
     querySelector() {
       return activeScripts[0] ?? null;
     },
@@ -362,10 +597,7 @@ test('recreates the Google Maps script after a failed first attempt', async () =
           listeners.set(type, entries);
         },
         removeEventListener(type, listener) {
-          listeners.set(
-            type,
-            (listeners.get(type) ?? []).filter((entry) => entry.listener !== listener),
-          );
+          listeners.set(type, (listeners.get(type) ?? []).filter((entry) => entry.listener !== listener));
         },
         dispatch(type) {
           const entries = [...(listeners.get(type) ?? [])];
@@ -389,22 +621,43 @@ test('recreates the Google Maps script after a failed first attempt', async () =
       },
     },
   };
+  return { documentObject, createdScripts, activeScripts };
+}
+
+function mapsCallbackName(script) {
+  return new URL(script.src).searchParams.get('callback');
+}
+
+test('waits for the documented Maps callback rather than the async script load event', async () => {
+  const { loadGoogleMaps } = await import(`${javascriptPath}?maps-retry=${Date.now()}`);
+  const { documentObject, createdScripts, activeScripts } = createMapsScriptDocument();
   const originalGoogle = globalThis.google;
 
   try {
     delete globalThis.google;
-    const firstAttempt = loadGoogleMaps('editor-key', fakeDocument);
+    const firstAttempt = loadGoogleMaps('editor-key', documentObject);
     createdScripts[0].dispatch('error');
     await assert.rejects(firstAttempt, /failed to load/);
     assert.equal(createdScripts[0].removed, true, 'the terminally failed script must be removed');
 
-    const secondAttempt = loadGoogleMaps('editor-key', fakeDocument);
+    const secondAttempt = loadGoogleMaps('editor-key', documentObject);
     assert.equal(createdScripts.length, 2, 'retry must create a new script element');
     assert.equal(activeScripts.length, 1, 'only the retry script may remain active');
+    const callbackName = mapsCallbackName(createdScripts[1]);
+    assert.ok(callbackName, 'the Maps request must use a unique readiness callback');
+
+    let settled = false;
+    secondAttempt.then(() => {
+      settled = true;
+    });
+    createdScripts[1].dispatch('load');
+    await Promise.resolve();
+    assert.equal(settled, false, 'loading=async script load is not API readiness');
 
     globalThis.google = { maps: { source: 'second attempt' } };
-    createdScripts[1].dispatch('load');
+    globalThis[callbackName]();
     assert.equal(await secondAttempt, globalThis.google.maps);
+    assert.equal(globalThis[callbackName], undefined, 'readiness globals must be removed after success');
   } finally {
     if (originalGoogle === undefined) {
       delete globalThis.google;
@@ -412,6 +665,67 @@ test('recreates the Google Maps script after a failed first attempt', async () =
       globalThis.google = originalGoogle;
     }
   }
+});
+
+test('rejects Maps authentication failure and resets scripts and loader globals', async () => {
+  const { loadGoogleMaps } = await import(`${javascriptPath}?maps-auth=${Date.now()}`);
+  const { documentObject, createdScripts, activeScripts } = createMapsScriptDocument();
+  const originalGoogle = globalThis.google;
+  const originalAuthFailure = globalThis.gm_authFailure;
+
+  try {
+    delete globalThis.google;
+    delete globalThis.gm_authFailure;
+    const loading = loadGoogleMaps('bad-key', documentObject);
+    const callbackName = mapsCallbackName(createdScripts[0]);
+    assert.equal(typeof globalThis.gm_authFailure, 'function');
+    globalThis.google = { maps: { partial: true } };
+    globalThis.gm_authFailure();
+
+    await assert.rejects(loading, /authentication/i);
+    assert.equal(createdScripts[0].removed, true);
+    assert.equal(activeScripts.length, 0);
+    assert.equal(globalThis[callbackName], undefined);
+    assert.equal(globalThis.gm_authFailure, undefined);
+    assert.equal(globalThis.google, undefined, 'partial loader globals must be rolled back');
+  } finally {
+    if (originalGoogle === undefined) delete globalThis.google;
+    else globalThis.google = originalGoogle;
+    if (originalAuthFailure === undefined) delete globalThis.gm_authFailure;
+    else globalThis.gm_authFailure = originalAuthFailure;
+  }
+});
+
+test('times out an unready Maps request and permits a clean retry', async () => {
+  const { loadGoogleMaps } = await import(`${javascriptPath}?maps-timeout=${Date.now()}`);
+  const { documentObject, createdScripts, activeScripts } = createMapsScriptDocument();
+  let timeoutCallback;
+  let clearedTimer = null;
+  const loading = loadGoogleMaps('slow-key', documentObject, {
+    timeoutMs: 25,
+    setTimeoutFn(callback) {
+      timeoutCallback = callback;
+      return 77;
+    },
+    clearTimeoutFn(timer) {
+      clearedTimer = timer;
+    },
+  });
+  assert.equal(typeof timeoutCallback, 'function', 'the loader must schedule a readiness deadline');
+  timeoutCallback();
+
+  await assert.rejects(loading, /timed out/i);
+  assert.equal(createdScripts[0].removed, true);
+  assert.equal(activeScripts.length, 0);
+  assert.equal(clearedTimer, 77);
+
+  const retry = loadGoogleMaps('slow-key', documentObject, {
+    setTimeoutFn: () => 88,
+    clearTimeoutFn: () => {},
+  });
+  assert.equal(createdScripts.length, 2, 'a timeout must not poison the next attempt');
+  createdScripts[1].dispatch('error');
+  await assert.rejects(retry, /failed to load/);
 });
 
 test('builds a section-rendering URL without losing the pagination cursor', async () => {
@@ -604,6 +918,26 @@ test('aggregates every paginated location before applying finder-wide filters', 
     'a match on a later Liquid page must be visible to text search',
   );
   assert.deepEqual(initialPage.locations, [sydney], 'aggregation must not mutate the initial location page');
+});
+
+test('aggregates a two-hundred-and-fifty-first location instead of stopping at the Liquid page size', async () => {
+  const { loadAllLocationPages } = await import(`${javascriptPath}?location-251=${Date.now()}`);
+  const firstPageLocations = Array.from({ length: 250 }, (_, index) => ({
+    id: `gid://shopify/Metaobject/${index + 1}`,
+    title: `Location ${index + 1}`,
+  }));
+  const firstPageCards = firstPageLocations.map(({ id }) => ({ dataset: { locationId: id } }));
+  const finalLocation = { id: 'gid://shopify/Metaobject/251', title: 'Location 251' };
+  const finalCard = { dataset: { locationId: finalLocation.id } };
+
+  const result = await loadAllLocationPages(
+    { locations: firstPageLocations, cards: firstPageCards, nextPageUrl: '/pages/locations?page=2' },
+    async () => ({ locations: [finalLocation], cards: [finalCard], nextPageUrl: '' }),
+  );
+
+  assert.equal(result.locations.length, 251);
+  assert.equal(result.locations[250], finalLocation);
+  assert.equal(result.cards[250], finalCard);
 });
 
 test('keeps visibly identical stores when their stable identities differ or are unavailable', async () => {

@@ -1,4 +1,5 @@
 {%- liquid
+  assign all_locations = shop.metaobjects.store_location.values
   assign content_width = 'var(--max-width--body-normal)'
   if section.settings.content_width == 'narrow'
     assign content_width = 'var(--max-width--body-narrow)'
@@ -44,8 +45,14 @@
       {%- endif -%}
     </div>
 
-    <div class="locations-flagships__list">
-      {%- for location in shop.metaobjects.store_location.values -%}
+    {%- paginate all_locations by 250 -%}
+      <locations-flagships-loader
+        data-section-id="{{ section.id }}"
+        data-current-page="{{ paginate.current_page }}"
+        data-next-page-url="{{ paginate.next.url | escape }}"
+      >
+        <div class="locations-flagships__list" data-flagship-list>
+      {%- for location in all_locations -%}
         {%- liquid
           assign is_flagship = false
           for tag in location.tags.value
@@ -65,7 +72,10 @@
             assign state = location.state.value | default: location.state
             assign hours = location.time.value
             assign overview = location.overview.value
-            assign website = location.storeaddressurl.value | default: location.storeaddressurl
+            capture website
+              render 'safe-external-url', url: location.storeaddressurl
+            endcapture
+            assign website = website | strip
             assign gallery = location.gallery.value
             assign fallback_image = location.image.value
             assign media_count = 0
@@ -89,7 +99,11 @@
             endif
           -%}
 
-          <article class="locations-flagships__card">
+          <article
+            class="locations-flagships__card"
+            data-flagship-card
+            data-location-id="{{ location.system.id | escape }}"
+          >
             {%- if media_count > 0 -%}
               <locations-flagship-gallery
                 class="locations-flagships__gallery"
@@ -191,8 +205,16 @@
             </div>
           </article>
         {%- endif -%}
-      {%- endfor -%}
-    </div>
+          {%- endfor -%}
+        </div>
+        <p data-flagships-status role="status" aria-live="polite"></p>
+        {%- if paginate.pages > 1 -%}
+          <nav aria-label="Flagship location pages" data-flagships-fallback-pagination>
+            {{ paginate | default_pagination }}
+          </nav>
+        {%- endif -%}
+      </locations-flagships-loader>
+    {%- endpaginate -%}
   </div>
 </section>
 
@@ -200,6 +222,10 @@
   .locations-flagships {
     --color: var(--locations-flagships-text-color);
     color: var(--locations-flagships-text-color);
+  }
+
+  locations-flagships-loader {
+    display: block;
   }
 
   .locations-flagships__inner {

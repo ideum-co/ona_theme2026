@@ -24,9 +24,16 @@ The template expects these existing definitions and field keys:
 | `store_location` | `title`, `storeaddress`, `suburb`, `state`, `latitude`, `longitude`, `time`, `overview`, `storeaddressurl`, `image`, `tags` |
 | `store_tag` | `label`, `slug` |
 
+`storeaddressurl` must be configured as a Shopify `url` field. Enter an
+absolute `http://` or `https://` address; the theme deliberately omits links
+with any other scheme.
+
 `tags` must be a reference from a `store_location` record to one or more
 `store_tag` records. The finder reads every `store_location` record and uses
-the related tag labels and slugs for its venue filter.
+the related tag labels and slugs for its venue filter. The storefront loads
+the paginated location collection progressively, so flagship records after
+the first 50 entries, venue tags outside the first 50 `store_tag` values, and
+location collections larger than 250 remain available.
 
 Populate the fields appropriate for each location. A location without
 coordinates remains in the list, but cannot receive a map marker or a
@@ -86,7 +93,8 @@ list, text/state/venue filters, directions and website links, flagship cards,
 and gallery controls where multiple gallery images exist. If a Google Maps
 key is configured, also check the map view and markers.
 
-When the Maps key is missing, the Maps script fails to load, or matching
-locations have no coordinates, the theme keeps the accessible list available
-and displays a non-blocking map status. If geolocation is unavailable, search
-and the other filters continue to work.
+When the Maps key is missing, authentication fails, readiness times out, the
+Maps script fails to load, or matching locations have no coordinates, the
+theme keeps the accessible list available and displays a non-blocking map
+status. If geolocation is unavailable, search and the other filters continue
+to work.

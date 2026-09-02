@@ -39,4 +39,3 @@
 3. Preview outside design mode and confirm the approved campaign appears after the configured delay, dismisses correctly, and does not appear in Theme Editor.
 4. Confirm the existing Dotdigital chat app embed still behaves independently.
 5. Open a PR to `main` only after the locations plan and modal plan both pass their regression checks.
-

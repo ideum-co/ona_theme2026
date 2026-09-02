@@ -1,0 +1,10 @@
+{%- liquid
+  assign candidate = url.value | default: url | strip
+  assign candidate_lower = candidate | downcase
+  assign candidate_prefix_7 = candidate_lower | slice: 0, 7
+  assign candidate_prefix_8 = candidate_lower | slice: 0, 8
+
+  if candidate_prefix_7 == 'http://' or candidate_prefix_8 == 'https://'
+    echo candidate
+  endif
+-%}

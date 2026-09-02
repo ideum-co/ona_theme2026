@@ -1,6 +1,8 @@
 const HTMLElementBase = globalThis.HTMLElement ?? class {};
 const EARTH_RADIUS_KM = 6371;
+const MAPS_LOAD_TIMEOUT_MS = 15000;
 let mapsPromise;
+let mapsCallbackSequence = 0;
 
 function coordinate(value, minimum, maximum) {
   if (value === null || value === undefined || value === '') return null;
@@ -74,10 +76,37 @@ export function filterLocations(locations, criteria = {}) {
   });
 }
 
-export function buildGoogleMapsUrl(apiKey) {
+export function approvedExternalUrl(value) {
+  const candidate = String(value ?? '').trim();
+  if (!candidate) return null;
+  try {
+    const protocol = new URL(candidate).protocol.toLocaleLowerCase();
+    return protocol === 'http:' || protocol === 'https:' ? candidate : null;
+  } catch {
+    return null;
+  }
+}
+
+export function locationTagOptions(locations, configuredTags = []) {
+  const optionsBySlug = new Map();
+  const addOption = (option) => {
+    const slug = String(option?.slug ?? '').trim();
+    const label = String(option?.label ?? '').trim();
+    if (slug && label && !optionsBySlug.has(slug)) optionsBySlug.set(slug, { label, slug });
+  };
+
+  configuredTags.forEach(addOption);
+  locations.forEach((location) => {
+    if (Array.isArray(location?.tagOptions)) location.tagOptions.forEach(addOption);
+  });
+  return [...optionsBySlug.values()].sort((first, second) => first.label.localeCompare(second.label));
+}
+
+export function buildGoogleMapsUrl(apiKey, callbackName) {
   const key = String(apiKey ?? '').trim();
   if (!key) return null;
   const parameters = new URLSearchParams({ key, v: 'weekly', loading: 'async' });
+  if (callbackName) parameters.set('callback', callbackName);
   return `https://maps.googleapis.com/maps/api/js?${parameters.toString()}`;
 }
 
@@ -160,54 +189,85 @@ export function readFinderPage(finder) {
   return page;
 }
 
-export function loadGoogleMaps(apiKey, documentObject = globalThis.document) {
+export function loadGoogleMaps(apiKey, documentObject = globalThis.document, options = {}) {
   if (!apiKey) {
     return null;
   }
-  if (globalThis.google?.maps) return Promise.resolve(globalThis.google.maps);
+  const globalObject = options.globalObject ?? globalThis;
+  if (globalObject.google?.maps) return Promise.resolve(globalObject.google.maps);
   if (!documentObject) return Promise.reject(new Error('A document is required to load Google Maps.'));
   if (mapsPromise) return mapsPromise;
 
   mapsPromise = new Promise((resolve, reject) => {
-    let existingScript = documentObject.querySelector('script[data-locations-google-maps]');
-    if (existingScript && existingScript.dataset.locationsGoogleMapsState !== 'loading') {
-      existingScript.remove();
-      existingScript = null;
-    }
-    const script = existingScript ?? documentObject.createElement('script');
-    const removeListeners = () => {
-      script.removeEventListener('load', handleLoad);
-      script.removeEventListener('error', handleError);
+    const existingScript = documentObject.querySelector('script[data-locations-google-maps]');
+    existingScript?.remove();
+    const script = documentObject.createElement('script');
+    const callbackName = `__onaLocationsGoogleMapsReady_${Date.now()}_${++mapsCallbackSequence}`;
+    const previousGoogle = globalObject.google;
+    const previousAuthFailure = globalObject.gm_authFailure;
+    const setTimeoutFn = options.setTimeoutFn ?? globalThis.setTimeout;
+    const clearTimeoutFn = options.clearTimeoutFn ?? globalThis.clearTimeout;
+    let timer;
+    let settled = false;
+
+    const restoreGlobal = (name, installedValue, previousValue) => {
+      if (globalObject[name] !== installedValue) return;
+      if (previousValue === undefined) delete globalObject[name];
+      else globalObject[name] = previousValue;
     };
-    const rejectLoad = (error) => {
-      removeListeners();
+    const cleanup = (failed) => {
+      clearTimeoutFn(timer);
+      script.removeEventListener('error', handleError);
+      restoreGlobal(callbackName, handleReady, undefined);
+      restoreGlobal('gm_authFailure', handleAuthFailure, previousAuthFailure);
+      if (!failed) {
+        script.dataset.locationsGoogleMapsState = 'ready';
+        return;
+      }
       script.dataset.locationsGoogleMapsState = 'failed';
       script.remove();
+      if (globalObject.google !== previousGoogle) {
+        if (previousGoogle === undefined) delete globalObject.google;
+        else globalObject.google = previousGoogle;
+      }
+    };
+    const rejectLoad = (error) => {
+      if (settled) return;
+      settled = true;
+      cleanup(true);
       mapsPromise = undefined;
       reject(error);
-    };
-    const handleLoad = () => {
-      if (globalThis.google?.maps) {
-        removeListeners();
-        script.dataset.locationsGoogleMapsState = 'ready';
-        resolve(globalThis.google.maps);
-      } else {
-        rejectLoad(new Error('Google Maps loaded without the Maps API.'));
-      }
     };
     const handleError = () => {
       rejectLoad(new Error('Google Maps failed to load.'));
     };
+    const handleAuthFailure = () => {
+      rejectLoad(new Error('Google Maps authentication failed.'));
+    };
+    const handleReady = () => {
+      if (settled) return;
+      const maps = globalObject.google?.maps;
+      if (!maps) {
+        rejectLoad(new Error('Google Maps callback completed without the Maps API.'));
+        return;
+      }
+      settled = true;
+      cleanup(false);
+      resolve(maps);
+    };
 
-    script.addEventListener('load', handleLoad, { once: true });
     script.addEventListener('error', handleError, { once: true });
-    if (!existingScript) {
-      script.src = buildGoogleMapsUrl(apiKey);
-      script.async = true;
-      script.dataset.locationsGoogleMaps = '';
-      script.dataset.locationsGoogleMapsState = 'loading';
-      documentObject.head.append(script);
-    }
+    globalObject[callbackName] = handleReady;
+    globalObject.gm_authFailure = handleAuthFailure;
+    timer = setTimeoutFn(
+      () => rejectLoad(new Error('Google Maps readiness timed out.')),
+      options.timeoutMs ?? MAPS_LOAD_TIMEOUT_MS,
+    );
+    script.src = buildGoogleMapsUrl(apiKey, callbackName);
+    script.async = true;
+    script.dataset.locationsGoogleMaps = '';
+    script.dataset.locationsGoogleMapsState = 'loading';
+    documentObject.head.append(script);
   });
 
   return mapsPromise;
@@ -215,6 +275,8 @@ export function loadGoogleMaps(apiKey, documentObject = globalThis.document) {
 
 export class LocationsStoreFinder extends HTMLElementBase {
   connectedCallback() {
+    this.finderConnected = true;
+    this.connectionVersion ??= 0;
     if (this.initialized) return;
     this.initialized = true;
 
@@ -229,6 +291,9 @@ export class LocationsStoreFinder extends HTMLElementBase {
     this.locations = Array.isArray(this.config.locations) ? this.config.locations : [];
     this.settings = this.config.settings ?? {};
     this.cards = [...this.querySelectorAll('[data-location-card]')];
+    for (const link of this.querySelectorAll('[data-website-link]')) {
+      if (!approvedExternalUrl(link.getAttribute('href'))) link.remove();
+    }
     this.searchInput = this.querySelector('[data-location-search]');
     this.stateFilter = this.querySelector('[data-state-filter]');
     this.tagFilter = this.querySelector('[data-tag-filter]');
@@ -253,6 +318,7 @@ export class LocationsStoreFinder extends HTMLElementBase {
     }
 
     this.populateStateFilter();
+    this.populateTagFilter();
     this.bindEvents();
     this.applyFilters();
 
@@ -274,6 +340,15 @@ export class LocationsStoreFinder extends HTMLElementBase {
     });
   }
 
+  disconnectedCallback() {
+    this.finderConnected = false;
+    this.connectionVersion = (this.connectionVersion ?? 0) + 1;
+    this.mapInitializationPromise = null;
+    for (const marker of this.markers ?? []) marker.setMap(null);
+    this.markers = [];
+    this.map = null;
+  }
+
   populateStateFilter() {
     if (!this.stateFilter) return;
     const firstOption = this.stateFilter.options[0];
@@ -290,6 +365,22 @@ export class LocationsStoreFinder extends HTMLElementBase {
       this.stateFilter.append(option);
     }
     if (states.includes(selectedState)) this.stateFilter.value = selectedState;
+  }
+
+  populateTagFilter() {
+    if (!this.tagFilter) return;
+    const firstOption = this.tagFilter.options[0];
+    const selectedTag = this.tagFilter.value;
+    const options = locationTagOptions(this.locations, this.config.tags);
+
+    this.tagFilter.replaceChildren(firstOption);
+    for (const { label, slug } of options) {
+      const option = this.ownerDocument.createElement('option');
+      option.value = slug;
+      option.textContent = label;
+      this.tagFilter.append(option);
+    }
+    if (options.some(({ slug }) => slug === selectedTag)) this.tagFilter.value = selectedTag;
   }
 
   bindEvents() {
@@ -341,6 +432,8 @@ export class LocationsStoreFinder extends HTMLElementBase {
     if (mapUiState.view !== (this.activeView ?? 'list')) {
       this.applyViewState(mapUiState.view);
       this.setStatus(mapUiState.status);
+    } else if (mapUiState.markerCount === 0 && this.requestedView === 'map') {
+      this.setStatus(mapUiState.status);
     } else if (mapUiState.markerCount > 0 && mapUiState.status !== this.statusText()) {
       this.setStatus(mapUiState.status);
     }
@@ -372,6 +465,7 @@ export class LocationsStoreFinder extends HTMLElementBase {
     this.locations = aggregated.locations;
     this.cards = aggregated.cards;
     this.populateStateFilter();
+    this.populateTagFilter();
     this.applyFilters();
     if (this.pagination) this.pagination.hidden = true;
 
@@ -457,10 +551,23 @@ export class LocationsStoreFinder extends HTMLElementBase {
       return;
     }
 
-    this.applyViewState('map');
+    this.showListView();
     try {
       await this.initializeMap(apiKey);
+      if (this.requestedView !== 'map' || this.finderConnected === false) return;
+      const readyState = resolveMapUiState(
+        { view: 'map', status: this.statusText() },
+        this.visibleLocations,
+        this.settings.noCoordinatesStatus,
+      );
+      if (readyState.markerCount === 0) {
+        this.setStatus(readyState.status);
+        return;
+      }
+      this.applyViewState('map');
+      this.syncMapMarkers();
     } catch (error) {
+      if (this.finderConnected === false || this.requestedView !== 'map') return;
       this.setStatus(this.settings.mapErrorStatus);
       this.showListView();
     }
@@ -479,26 +586,39 @@ export class LocationsStoreFinder extends HTMLElementBase {
     }
   }
 
-  async initializeMap(apiKey) {
+  async initializeMap(apiKey, mapsLoader = loadGoogleMaps) {
     if (this.map) {
-      this.syncMapMarkers();
-      return;
+      return this.map;
     }
+    if (this.mapInitializationPromise) return this.mapInitializationPromise;
 
-    const maps = await loadGoogleMaps(apiKey);
-    if (!maps || !this.mapElement) throw new Error('Google Maps is unavailable.');
-    const firstMappedLocation = locationsWithCoordinates(this.visibleLocations)[0];
-    const center = firstMappedLocation
-      ? { lat: Number(firstMappedLocation.latitude), lng: Number(firstMappedLocation.longitude) }
-      : { lat: -25.2744, lng: 133.7751 };
-    this.map = new maps.Map(this.mapElement, {
-      center,
-      zoom: firstMappedLocation ? 12 : 4,
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: true,
-    });
-    this.syncMapMarkers();
+    const connectionVersion = this.connectionVersion ?? 0;
+    const initialization = (async () => {
+      const maps = await mapsLoader(apiKey);
+      if (this.finderConnected === false || connectionVersion !== (this.connectionVersion ?? 0)) {
+        throw new Error('The location finder disconnected before Maps became ready.');
+      }
+      if (!maps || !this.mapElement) throw new Error('Google Maps is unavailable.');
+      const firstMappedLocation = locationsWithCoordinates(this.visibleLocations)[0];
+      const center = firstMappedLocation
+        ? { lat: Number(firstMappedLocation.latitude), lng: Number(firstMappedLocation.longitude) }
+        : { lat: -25.2744, lng: 133.7751 };
+      this.map = new maps.Map(this.mapElement, {
+        center,
+        zoom: firstMappedLocation ? 12 : 4,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: true,
+      });
+      return this.map;
+    })();
+    this.mapInitializationPromise = initialization;
+    try {
+      return await initialization;
+    } catch (error) {
+      if (this.mapInitializationPromise === initialization) this.mapInitializationPromise = null;
+      throw error;
+    }
   }
 
   syncMapMarkers() {

@@ -123,7 +123,7 @@
             type="button"
             data-view="list"
             aria-controls="LocationsFinder-list-{{ section.id }}"
-            aria-pressed="{% if section.settings.default_view == 'map' %}false{% else %}true{% endif %}"
+            aria-pressed="true"
           >
             {{- section.settings.list_view_label | default: 'List' | escape -}}
           </button>
@@ -131,7 +131,7 @@
             type="button"
             data-view="map"
             aria-controls="LocationsFinder-map-{{ section.id }}"
-            aria-pressed="{% if section.settings.default_view == 'map' %}true{% else %}false{% endif %}"
+            aria-pressed="false"
           >
             {{- section.settings.map_view_label | default: 'Map' | escape -}}
           </button>
@@ -144,13 +144,16 @@
             {{- section.settings.no_results_text | default: 'No locations match those filters.' | escape -}}
           </p>
           <ul class="locations-store-finder__list" role="list" data-location-list>
-            {%- for location in shop.metaobjects.store_location.values -%}
+            {%- for location in all_locations -%}
               {%- liquid
                 assign location_title = location.title.value | default: location.title
                 assign location_address = location.storeaddress.value | default: location.storeaddress
                 assign location_suburb = location.suburb.value | default: location.suburb
                 assign location_state = location.state.value | default: location.state
-                assign location_website = location.storeaddressurl.value | default: location.storeaddressurl
+                capture location_website
+                  render 'safe-external-url', url: location.storeaddressurl
+                endcapture
+                assign location_website = location_website | strip
                 assign location_image = location.image.value
                 capture directions_destination
                   if location.latitude.value != blank and location.longitude.value != blank
@@ -239,7 +242,7 @@
       <script type="application/json" data-locations-store-finder-data>
         {
           "locations": [
-            {%- for location in shop.metaobjects.store_location.values -%}
+            {%- for location in all_locations -%}
               {%- liquid
                 assign location_title = location.title.value | default: location.title
                 assign location_address = location.storeaddress.value | default: location.storeaddress
@@ -249,7 +252,10 @@
                 assign location_longitude = location.longitude.value | default: location.longitude
                 assign location_hours = location.time | metafield_tag | strip_html | strip
                 assign location_overview = location.overview | metafield_tag | strip_html | strip
-                assign location_website = location.storeaddressurl.value | default: location.storeaddressurl
+                capture location_website
+                  render 'safe-external-url', url: location.storeaddressurl
+                endcapture
+                assign location_website = location_website | strip
                 assign location_image = location.image.value
                 assign location_image_url = ''
                 assign location_image_alt = location_title
@@ -275,6 +281,15 @@
                   {%- for location_tag in location.tags.value -%}
                     {%- assign location_tag_slug = location_tag.slug.value | default: location_tag.slug | default: location_tag.label.value | handleize -%}
                     {{ location_tag_slug | json }}{% unless forloop.last %},{% endunless %}
+                  {%- endfor -%}
+                ],
+                "tagOptions": [
+                  {%- for location_tag in location.tags.value -%}
+                    {%- liquid
+                      assign location_tag_label = location_tag.label.value | default: location_tag.label
+                      assign location_tag_slug = location_tag.slug.value | default: location_tag.slug | default: location_tag_label | handleize
+                    -%}
+                    { "label": {{ location_tag_label | json }}, "slug": {{ location_tag_slug | json }} }{% unless forloop.last %},{% endunless %}
                   {%- endfor -%}
                 ]
               }{% unless forloop.last %},{% endunless %}
