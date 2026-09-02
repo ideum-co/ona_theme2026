@@ -1,4 +1,5 @@
 const HTMLElementBase = globalThis.HTMLElement ?? class {};
+const SCROLL_SYNC_DELAY_MS = 50;
 
 export function galleryIndexForKey(key, currentIndex, slideCount) {
   const count = Number(slideCount);
@@ -18,9 +19,12 @@ export function galleryScrollBehavior(prefersReducedMotion) {
 
 export class LocationsFlagshipGallery extends HTMLElementBase {
   connectedCallback() {
+    if (this.galleryInitialized) return;
+
     this.slides = [...(this.querySelectorAll?.('[data-gallery-slide]') ?? [])];
     if (this.slides.length <= 1) return;
 
+    this.galleryInitialized = true;
     this.currentIndex = 0;
     this.viewport = this.querySelector('[data-gallery-viewport]');
     this.previousButton = this.querySelector('[data-gallery-previous]');
@@ -28,10 +32,34 @@ export class LocationsFlagshipGallery extends HTMLElementBase {
     this.status = this.querySelector('[data-gallery-status]');
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    this.previousButton?.addEventListener('click', () => this.show(this.currentIndex - 1));
-    this.nextButton?.addEventListener('click', () => this.show(this.currentIndex + 1));
-    this.viewport?.addEventListener('keydown', (event) => this.onKeydown(event));
+    this.onPreviousClick = () => this.show(this.currentIndex - 1);
+    this.onNextClick = () => this.show(this.currentIndex + 1);
+    this.onViewportKeydown = (event) => this.onKeydown(event);
+    this.onViewportScroll = () => {
+      clearTimeout(this.scrollSyncTimer);
+      this.scrollSyncTimer = setTimeout(() => {
+        this.scrollSyncTimer = null;
+        this.syncFromViewport();
+      }, SCROLL_SYNC_DELAY_MS);
+    };
+
+    this.previousButton?.addEventListener('click', this.onPreviousClick);
+    this.nextButton?.addEventListener('click', this.onNextClick);
+    this.viewport?.addEventListener('keydown', this.onViewportKeydown);
+    this.viewport?.addEventListener('scroll', this.onViewportScroll, { passive: true });
     this.updateStatus();
+  }
+
+  disconnectedCallback() {
+    if (!this.galleryInitialized) return;
+
+    this.previousButton?.removeEventListener('click', this.onPreviousClick);
+    this.nextButton?.removeEventListener('click', this.onNextClick);
+    this.viewport?.removeEventListener('keydown', this.onViewportKeydown);
+    this.viewport?.removeEventListener('scroll', this.onViewportScroll);
+    clearTimeout(this.scrollSyncTimer);
+    this.scrollSyncTimer = null;
+    this.galleryInitialized = false;
   }
 
   onKeydown(event) {
@@ -50,6 +78,26 @@ export class LocationsFlagshipGallery extends HTMLElementBase {
       left: slide.offsetLeft,
       behavior: galleryScrollBehavior(this.reducedMotion),
     });
+    this.updateStatus();
+  }
+
+  syncFromViewport() {
+    if (!this.viewport || this.slides.length <= 1) return;
+
+    const scrollLeft = this.viewport.scrollLeft;
+    let closestIndex = 0;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    this.slides.forEach((slide, index) => {
+      const distance = Math.abs(slide.offsetLeft - scrollLeft);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = index;
+      }
+    });
+
+    if (closestIndex === this.currentIndex) return;
+    this.currentIndex = closestIndex;
     this.updateStatus();
   }
 

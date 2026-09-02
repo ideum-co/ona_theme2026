@@ -93,6 +93,85 @@ test('supports keyboard gallery navigation and reduced motion', async () => {
   assert.match(javascript, /window\.matchMedia\('\(prefers-reduced-motion: reduce\)'\)/);
 });
 
+test('synchronizes direct scrolling before button navigation and cleans up its lifecycle', async () => {
+  const originalWindow = globalThis.window;
+  globalThis.window = { matchMedia: () => ({ matches: true }) };
+
+  const eventTarget = (properties = {}) => {
+    const listeners = new Map();
+    return {
+      ...properties,
+      listeners,
+      addEventListener(type, listener) {
+        listeners.set(type, listener);
+      },
+      removeEventListener(type, listener) {
+        if (listeners.get(type) === listener) listeners.delete(type);
+      },
+      dispatch(type, event = {}) {
+        listeners.get(type)?.(event);
+      },
+    };
+  };
+
+  try {
+    const { LocationsFlagshipGallery } = await import(`${javascriptPath}?component=${Date.now()}`);
+    const slides = [{ offsetLeft: 0 }, { offsetLeft: 100 }, { offsetLeft: 200 }];
+    const scrollCalls = [];
+    const viewport = eventTarget({
+      scrollLeft: 0,
+      scrollTo(options) {
+        this.scrollLeft = options.left;
+        scrollCalls.push(options);
+      },
+    });
+    const previousButton = eventTarget();
+    const nextButton = eventTarget();
+    const status = { textContent: '' };
+    const gallery = new LocationsFlagshipGallery();
+
+    gallery.querySelectorAll = (selector) => (selector === '[data-gallery-slide]' ? slides : []);
+    gallery.querySelector = (selector) => ({
+      '[data-gallery-viewport]': viewport,
+      '[data-gallery-previous]': previousButton,
+      '[data-gallery-next]': nextButton,
+      '[data-gallery-status]': status,
+    })[selector] ?? null;
+
+    gallery.connectedCallback();
+    assert.equal(typeof viewport.listeners.get('scroll'), 'function', 'the live viewport must be observed');
+
+    viewport.scrollLeft = 190;
+    viewport.dispatch('scroll');
+    await new Promise((resolve) => setTimeout(resolve, 80));
+
+    assert.equal(gallery.currentIndex, 2, 'the closest slide must become current after direct scrolling');
+    assert.equal(status.textContent, 'Image 3 of 3', 'the live status must follow direct scrolling');
+
+    previousButton.dispatch('click');
+    assert.deepEqual(scrollCalls.at(-1), { left: 100, behavior: 'auto' });
+    assert.equal(status.textContent, 'Image 2 of 3');
+
+    nextButton.dispatch('click');
+    assert.deepEqual(scrollCalls.at(-1), { left: 200, behavior: 'auto' });
+    assert.equal(status.textContent, 'Image 3 of 3');
+
+    viewport.scrollLeft = 0;
+    viewport.dispatch('scroll');
+    gallery.disconnectedCallback();
+    assert.equal(viewport.listeners.size, 0, 'viewport listeners must be removed on disconnect');
+    assert.equal(previousButton.listeners.size, 0, 'previous-button listeners must be removed on disconnect');
+    assert.equal(nextButton.listeners.size, 0, 'next-button listeners must be removed on disconnect');
+
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    assert.equal(gallery.currentIndex, 2, 'disconnect must cancel a pending scroll synchronization');
+    assert.equal(status.textContent, 'Image 3 of 3');
+  } finally {
+    if (originalWindow === undefined) delete globalThis.window;
+    else globalThis.window = originalWindow;
+  }
+});
+
 test('exposes flagship copy, layout, media, color, alignment, and spacing controls', () => {
   const expectedTypes = {
     heading: 'text',

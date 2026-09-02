@@ -116,9 +116,10 @@ The fresh JSON output contains no record for `sections/locations-flagships.liqui
 - `tests/locations-flagships.test.mjs`
 - `.superpowers/sdd/2026-08-28-locations-page-migration/task-4-report.md`
 
-## Commit
+## Commits
 
 - `6bf6db1 feat: migrate flagship locations`
+- `8363878 docs: report flagship migration`
 
 ## Self-review
 
@@ -134,3 +135,66 @@ The fresh JSON output contains no record for `sections/locations-flagships.liqui
 
 - A live Shopify Theme Editor/storefront smoke test was not available locally, so the final gallery rendering should still be previewed with real `store_location.gallery` file references and the store's actual metaobject field definitions.
 - Repository-wide Theme Check remains nonzero because of unrelated pre-existing offenses; the flagship section itself has zero reported offenses.
+
+## Review fix round 1/5: direct-scroll synchronization
+
+### Findings addressed
+
+1. **Native scroll state:** the gallery now observes viewport `scroll` events with a short debounce, derives the slide whose offset is closest to `scrollLeft`, and synchronizes `currentIndex` plus the polite image-position status. Previous/Next and keyboard navigation therefore continue from the slide reached by swipe or trackpad scrolling.
+2. **Lifecycle cleanup:** button, keyboard, and scroll callbacks are stored as instance handlers. `disconnectedCallback` removes all registered handlers, clears a pending scroll timer, and permits a clean later reconnect without duplicate listeners.
+3. **Behavioral coverage:** a lightweight custom-element/DOM harness now runs the real `LocationsFlagshipGallery`. It directly scrolls to slide three, verifies the live status, verifies Previous targets slide two and Next returns to slide three, then verifies teardown removes handlers and cancels pending synchronization.
+
+### RED evidence
+
+Command:
+
+```sh
+node --test tests/locations-flagships.test.mjs
+```
+
+Result before the scroll observer existed:
+
+```text
+tests 10
+pass 9
+fail 1
+AssertionError: the live viewport must be observed
+actual: undefined
+expected: function
+```
+
+### GREEN and verification
+
+```text
+node --test tests/locations-flagships.test.mjs
+10 passing, 0 failing
+
+node --test tests/*.test.mjs
+49 passing, 0 failing
+
+node --check assets/locations-flagships.js
+exit 0
+
+git diff --check
+exit 0, no output
+
+git diff --exit-code -- templates/index.json templates/page.json config/settings_data.json templates/page.locations.json
+exit 0, no output
+```
+
+Filtered Theme Check:
+
+```sh
+shopify theme check --path . --output json --no-color
+```
+
+The fresh JSON output contains zero matches for `sections/locations-flagships.liquid` or `assets/locations-flagships.js`. The repository-wide command still exits 1 only because of unrelated pre-existing findings.
+
+### Fix-round self-review
+
+- The synchronization uses the same full-width slide offsets as the section's scroll-snap layout, so the nearest offset corresponds to the visible slide.
+- Programmatic smooth scrolling may emit many `scroll` events; the debounce settles on the final nearest slide while `show` still updates controls immediately.
+- Teardown cancels pending state writes and removes handlers with the same function identities used during registration.
+- The initialization guard prevents duplicate listeners if `connectedCallback` runs more than once without a disconnect; disconnect resets the guard for valid reconnection.
+
+Fix commit subject: `fix: synchronize flagship gallery scrolling`.
