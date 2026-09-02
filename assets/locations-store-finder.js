@@ -88,17 +88,17 @@ export function buildSectionRenderingUrl(nextPageUrl, sectionId, baseUrl = globa
   return url.toString();
 }
 
-function locationSignature(location) {
-  return JSON.stringify([
-    location.title ?? '',
-    location.address ?? '',
-    location.suburb ?? '',
-    location.state ?? '',
-    location.latitude ?? null,
-    location.longitude ?? null,
-    location.website ?? '',
-    [...(Array.isArray(location.tags) ? location.tags : [])].sort(),
-  ]);
+export function buildFirstLocationPageUrl(currentPageUrl, baseUrl = globalThis.location?.href) {
+  const url = new URL(currentPageUrl, baseUrl);
+  url.searchParams.delete('page');
+  url.searchParams.delete('section_id');
+  url.hash = '';
+  return url.toString();
+}
+
+function locationIdentity(location) {
+  const identity = String(location?.id ?? '').trim();
+  return identity || null;
 }
 
 function validateLocationPage(page) {
@@ -114,7 +114,7 @@ export async function loadAllLocationPages(initialPage, loadPage) {
   validateLocationPage(initialPage);
   const locations = [...initialPage.locations];
   const cards = [...initialPage.cards];
-  const knownLocations = new Set(locations.map(locationSignature));
+  const knownLocationIds = new Set(locations.map(locationIdentity).filter(Boolean));
   const visitedUrls = new Set();
   let nextPageUrl = initialPage.nextPageUrl || '';
 
@@ -127,9 +127,9 @@ export async function loadAllLocationPages(initialPage, loadPage) {
     validateLocationPage(page);
 
     page.locations.forEach((location, index) => {
-      const signature = locationSignature(location);
-      if (knownLocations.has(signature)) return;
-      knownLocations.add(signature);
+      const identity = locationIdentity(location);
+      if (identity && knownLocationIds.has(identity)) return;
+      if (identity) knownLocationIds.add(identity);
       locations.push(location);
       cards.push(page.cards[index]);
     });
@@ -150,6 +150,13 @@ export function readFinderPage(finder) {
     nextPageUrl: finder.dataset.nextPageUrl || '',
   };
   validateLocationPage(page);
+  page.locations.forEach((location, index) => {
+    const recordIdentity = locationIdentity(location) ?? '';
+    const cardIdentity = String(page.cards[index]?.dataset?.locationId ?? '').trim();
+    if (recordIdentity !== cardIdentity) {
+      throw new Error('A location record and card have different stable identity values.');
+    }
+  });
   return page;
 }
 
@@ -206,7 +213,7 @@ export function loadGoogleMaps(apiKey, documentObject = globalThis.document) {
   return mapsPromise;
 }
 
-class LocationsStoreFinder extends HTMLElementBase {
+export class LocationsStoreFinder extends HTMLElementBase {
   connectedCallback() {
     if (this.initialized) return;
     this.initialized = true;
@@ -331,7 +338,10 @@ class LocationsStoreFinder extends HTMLElementBase {
       this.visibleLocations,
       this.settings.noCoordinatesStatus,
     );
-    if (mapUiState.markerCount > 0 && mapUiState.status !== this.statusText()) {
+    if (mapUiState.view !== (this.activeView ?? 'list')) {
+      this.applyViewState(mapUiState.view);
+      this.setStatus(mapUiState.status);
+    } else if (mapUiState.markerCount > 0 && mapUiState.status !== this.statusText()) {
       this.setStatus(mapUiState.status);
     }
     if (this.map) this.syncMapMarkers();
@@ -339,21 +349,26 @@ class LocationsStoreFinder extends HTMLElementBase {
 
   async loadRemainingLocationPages() {
     const nextPageUrl = this.dataset.nextPageUrl;
-    if (!nextPageUrl || !this.locationList) return;
+    const currentPage = Number.parseInt(this.dataset.currentPage, 10) || 1;
+    if ((!nextPageUrl && currentPage === 1) || !this.locationList) return;
 
-    const initialCardCount = this.cards.length;
+    const initialPage =
+      currentPage > 1
+        ? await this.fetchLocationPage(
+            buildFirstLocationPageUrl(this.ownerDocument?.location?.href ?? globalThis.location?.href),
+          )
+        : { locations: this.locations, cards: this.cards, nextPageUrl };
     const aggregated = await loadAllLocationPages(
-      { locations: this.locations, cards: this.cards, nextPageUrl },
+      initialPage,
       (url) => this.fetchLocationPage(url),
     );
-    const additionalCards = aggregated.cards.slice(initialCardCount);
     const fragment = this.ownerDocument.createDocumentFragment();
-    additionalCards.forEach((card, index) => {
-      card.dataset.locationIndex = String(initialCardCount + index);
+    aggregated.cards.forEach((card, index) => {
+      card.dataset.locationIndex = String(index);
       fragment.append(card);
     });
 
-    this.locationList.append(fragment);
+    this.locationList.replaceChildren(fragment);
     this.locations = aggregated.locations;
     this.cards = aggregated.cards;
     this.populateStateFilter();

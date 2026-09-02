@@ -25,6 +25,7 @@ test('serializes a scoped, normalized payload from location and tag metaobjects'
   );
 
   for (const field of [
+    'id',
     'title',
     'address',
     'suburb',
@@ -45,6 +46,11 @@ test('serializes a scoped, normalized payload from location and tag metaobjects'
     section,
     /shop\.metaobjects\.(?:store_location|store_tag)\.values\s*\|\s*json|\{\{\s*(?:location|tag)\s*\|\s*json/,
     'raw metaobjects must never be serialized to the storefront',
+  );
+  assert.match(
+    section,
+    /data-location-id="\{\{ location\.system\.id \| escape \}\}"/,
+    'each card must carry the same stable identity as its normalized record',
   );
 });
 
@@ -213,6 +219,11 @@ test('keeps location records beyond the Liquid page-size limit reachable', () =>
   );
   assert.match(
     section,
+    /data-current-page="\{\{ paginate\.current_page \}\}"/,
+    'enhancement must distinguish a direct entry on a later result page',
+  );
+  assert.match(
+    section,
     /if paginate\.pages > 1[\s\S]*?<nav[^>]*aria-label="Location result pages"[\s\S]*?paginate \| default_pagination[\s\S]*?<\/nav>/,
     'stores after the first 250 records must remain reachable through labelled pagination',
   );
@@ -253,6 +264,83 @@ test('clears only a stale no-coordinate status when mapped results return', asyn
     ),
     { view: 'list', status: 'Showing locations near you.', markerCount: 1 },
   );
+});
+
+test('returns the actual custom element to its accessible list while Maps is still loading', async () => {
+  const originalHTMLElement = globalThis.HTMLElement;
+  globalThis.HTMLElement = class {
+    constructor() {
+      this.dataset = {};
+    }
+  };
+
+  try {
+    const { LocationsStoreFinder } = await import(`${javascriptPath}?map-race=${Date.now()}`);
+    assert.equal(typeof LocationsStoreFinder, 'function', 'the finder custom element must be testable');
+
+    const finder = new LocationsStoreFinder();
+    const status = { textContent: '' };
+    const listButton = {
+      dataset: { view: 'list' },
+      attributes: new Map(),
+      setAttribute(name, value) {
+        this.attributes.set(name, value);
+      },
+    };
+    const mapButton = {
+      dataset: { view: 'map' },
+      attributes: new Map(),
+      setAttribute(name, value) {
+        this.attributes.set(name, value);
+      },
+    };
+    const mapped = { id: 'mapped', title: 'Mapped', latitude: -35.28, longitude: 149.13, tags: [] };
+    const unmapped = { id: 'unmapped', title: 'Unmapped', latitude: null, longitude: null, tags: [] };
+    finder.settings = { mapsApiKey: 'editor-key', noCoordinatesStatus: 'No mapped locations match.' };
+    finder.locations = [mapped, unmapped];
+    finder.visibleLocations = [...finder.locations];
+    finder.cards = [mapped, unmapped].map(() => ({ hidden: false, querySelector: () => null }));
+    finder.searchInput = { value: '' };
+    finder.stateFilter = null;
+    finder.tagFilter = null;
+    finder.radiusFilter = null;
+    finder.origin = null;
+    finder.resultCount = { textContent: '' };
+    finder.emptyState = { hidden: true };
+    finder.resetButton = { hidden: true };
+    finder.mapPanel = { hidden: true };
+    finder.map = null;
+    finder.markers = [];
+    finder.viewButtons = [listButton, mapButton];
+    finder.querySelector = (selector) => (selector === '[data-location-status]' ? status : null);
+
+    let finishMapLoad;
+    finder.initializeMap = () => new Promise((resolve) => {
+      finishMapLoad = resolve;
+    });
+
+    const mapTransition = finder.setView('map');
+    await Promise.resolve();
+    assert.equal(finder.dataset.activeView, 'map', 'map view begins while the API is pending');
+
+    finder.searchInput.value = 'unmapped';
+    finder.applyFilters();
+
+    assert.equal(finder.dataset.activeView, 'list', 'the narrow-layout list visibility state must be restored');
+    assert.equal(finder.mapPanel.hidden, true, 'the unusable map panel must be hidden');
+    assert.equal(listButton.attributes.get('aria-pressed'), 'true');
+    assert.equal(mapButton.attributes.get('aria-pressed'), 'false');
+    assert.equal(status.textContent, 'No mapped locations match.', 'the fallback must be announced politely');
+
+    finishMapLoad();
+    await mapTransition;
+  } finally {
+    if (originalHTMLElement === undefined) {
+      delete globalThis.HTMLElement;
+    } else {
+      globalThis.HTMLElement = originalHTMLElement;
+    }
+  }
 });
 
 test('recreates the Google Maps script after a failed first attempt', async () => {
@@ -340,13 +428,138 @@ test('builds a section-rendering URL without losing the pagination cursor', asyn
   );
 });
 
+test('derives the deterministic first location page without dropping unrelated query parameters', async () => {
+  const { buildFirstLocationPageUrl } = await import(`${javascriptPath}?first-page-url=${Date.now()}`);
+  assert.equal(typeof buildFirstLocationPageUrl, 'function', 'the finder must derive its first result page');
+
+  assert.equal(
+    buildFirstLocationPageUrl(
+      'https://onacoffee.test/pages/locations?view=locations&page=3&sort=title&section_id=stale',
+    ),
+    'https://onacoffee.test/pages/locations?view=locations&sort=title',
+  );
+});
+
+test('direct entry on page two atomically replaces it with every page starting at page one', async () => {
+  const { LocationsStoreFinder } = await import(`${javascriptPath}?direct-page-two=${Date.now()}`);
+  const pageOneLocation = { id: 'gid://shopify/Metaobject/1', title: 'Page one' };
+  const pageTwoLocation = { id: 'gid://shopify/Metaobject/2', title: 'Page two' };
+  const pageThreeLocation = { id: 'gid://shopify/Metaobject/3', title: 'Page three' };
+  const card = (id) => ({ dataset: { locationId: id, locationIndex: '' } });
+  const pageOneCard = card(pageOneLocation.id);
+  const pageTwoCard = card(pageTwoLocation.id);
+  const pageThreeCard = card(pageThreeLocation.id);
+  const serverPageTwoCard = card(pageTwoLocation.id);
+  const finder = new LocationsStoreFinder();
+  const currentUrl = 'https://onacoffee.test/pages/locations?view=locations&page=2';
+  const requestedPages = [];
+  const pages = new Map([
+    [
+      'https://onacoffee.test/pages/locations?view=locations',
+      { locations: [pageOneLocation], cards: [pageOneCard], nextPageUrl: '/pages/locations?view=locations&page=2' },
+    ],
+    [
+      '/pages/locations?view=locations&page=2',
+      { locations: [pageTwoLocation], cards: [serverPageTwoCard], nextPageUrl: '/pages/locations?view=locations&page=3' },
+    ],
+    [
+      '/pages/locations?view=locations&page=3',
+      { locations: [pageThreeLocation], cards: [pageThreeCard], nextPageUrl: '' },
+    ],
+  ]);
+  const locationList = {
+    children: [pageTwoCard],
+    append(fragment) {
+      this.children.push(...fragment.children);
+    },
+    replaceChildren(fragment) {
+      this.children = [...fragment.children];
+    },
+  };
+  finder.dataset = {
+    currentPage: '2',
+    nextPageUrl: '/pages/locations?view=locations&page=3',
+    sectionId: 'template--123__store_finder',
+  };
+  finder.locations = [pageTwoLocation];
+  finder.cards = [pageTwoCard];
+  finder.locationList = locationList;
+  finder.pagination = { hidden: false };
+  finder.requestedView = 'list';
+  finder.activeView = 'list';
+  finder.ownerDocument = {
+    location: { href: currentUrl },
+    createDocumentFragment() {
+      return {
+        children: [],
+        append(node) {
+          this.children.push(node);
+        },
+      };
+    },
+  };
+  finder.fetchLocationPage = async (url) => {
+    requestedPages.push(url);
+    return pages.get(url);
+  };
+  finder.populateStateFilter = () => {};
+  finder.applyFilters = () => {};
+
+  await finder.loadRemainingLocationPages();
+
+  assert.deepEqual(requestedPages, [
+    'https://onacoffee.test/pages/locations?view=locations',
+    '/pages/locations?view=locations&page=2',
+    '/pages/locations?view=locations&page=3',
+  ]);
+  assert.deepEqual(finder.locations, [pageOneLocation, pageTwoLocation, pageThreeLocation]);
+  assert.deepEqual(locationList.children, [pageOneCard, serverPageTwoCard, pageThreeCard]);
+  assert.deepEqual(
+    locationList.children.map(({ dataset }) => dataset.locationIndex),
+    ['0', '1', '2'],
+    'every card must remain index-aligned after the atomic replacement',
+  );
+  assert.equal(finder.pagination.hidden, true, 'fallback pagination hides only after complete aggregation');
+});
+
+test('direct-entry aggregation failure preserves the current page and fallback pagination', async () => {
+  const { LocationsStoreFinder } = await import(`${javascriptPath}?direct-page-failure=${Date.now()}`);
+  const currentLocation = { id: 'gid://shopify/Metaobject/2', title: 'Current page store' };
+  const currentCard = { dataset: { locationId: currentLocation.id, locationIndex: '0' } };
+  const locationList = {
+    children: [currentCard],
+    replaceChildren() {
+      throw new Error('the list must not be replaced after a request failure');
+    },
+  };
+  const finder = new LocationsStoreFinder();
+  finder.dataset = { currentPage: '2', nextPageUrl: '', sectionId: 'template--123__store_finder' };
+  finder.locations = [currentLocation];
+  finder.cards = [currentCard];
+  finder.locationList = locationList;
+  finder.pagination = { hidden: false };
+  finder.ownerDocument = {
+    location: { href: 'https://onacoffee.test/pages/locations?page=2' },
+  };
+  finder.fetchLocationPage = async () => {
+    throw new Error('simulated page-one request failure');
+  };
+
+  await assert.rejects(() => finder.loadRemainingLocationPages(), /simulated page-one request failure/);
+
+  assert.deepEqual(finder.locations, [currentLocation]);
+  assert.deepEqual(finder.cards, [currentCard]);
+  assert.deepEqual(locationList.children, [currentCard]);
+  assert.equal(finder.pagination.hidden, false);
+});
+
 test('aggregates every paginated location before applying finder-wide filters', async () => {
   const { filterLocations, loadAllLocationPages } = await import(`${javascriptPath}?all-pages=${Date.now()}`);
   assert.equal(typeof loadAllLocationPages, 'function', 'the finder must aggregate its server-rendered pages');
 
-  const sydney = Object.freeze({ title: 'Sydney', state: 'NSW', tags: ['cafe'] });
-  const melbourne = Object.freeze({ title: 'Melbourne', state: 'VIC', tags: ['cafe'] });
-  const perth = Object.freeze({ title: 'Partner Perth', suburb: 'Perth', state: 'WA', tags: ['retailer'] });
+  const sydney = Object.freeze({ id: 'gid://shopify/Metaobject/1', title: 'Sydney', state: 'NSW', tags: ['cafe'] });
+  const melbourne = Object.freeze({ id: 'gid://shopify/Metaobject/2', title: 'Melbourne', state: 'VIC', tags: ['cafe'] });
+  const perth = Object.freeze({ id: 'gid://shopify/Metaobject/3', title: 'Partner Perth', suburb: 'Perth', state: 'WA', tags: ['retailer'] });
   const initialPage = Object.freeze({
     locations: Object.freeze([sydney]),
     cards: Object.freeze(['sydney-card']),
@@ -391,6 +604,43 @@ test('aggregates every paginated location before applying finder-wide filters', 
     'a match on a later Liquid page must be visible to text search',
   );
   assert.deepEqual(initialPage.locations, [sydney], 'aggregation must not mutate the initial location page');
+});
+
+test('keeps visibly identical stores when their stable identities differ or are unavailable', async () => {
+  const { loadAllLocationPages } = await import(`${javascriptPath}?stable-location-id=${Date.now()}`);
+  const first = { id: 'gid://shopify/Metaobject/1', title: 'ONA Cafe', state: 'NSW', tags: ['cafe'] };
+  const second = { id: 'gid://shopify/Metaobject/2', title: 'ONA Cafe', state: 'NSW', tags: ['cafe'] };
+  const anonymousOne = { title: 'Partner Cafe', state: 'VIC', tags: ['cafe'] };
+  const anonymousTwo = { title: 'Partner Cafe', state: 'VIC', tags: ['cafe'] };
+
+  const result = await loadAllLocationPages(
+    {
+      locations: [first, anonymousOne],
+      cards: ['first-card', 'anonymous-one-card'],
+      nextPageUrl: '/pages/locations?page=2',
+    },
+    async () => ({
+      locations: [{ ...first }, second, anonymousTwo],
+      cards: ['repeated-first-card', 'second-card', 'anonymous-two-card'],
+      nextPageUrl: '',
+    }),
+  );
+
+  assert.deepEqual(result.locations, [first, anonymousOne, second, anonymousTwo]);
+  assert.deepEqual(result.cards, ['first-card', 'anonymous-one-card', 'second-card', 'anonymous-two-card']);
+});
+
+test('rejects a normalized record paired with a card from another stable identity', async () => {
+  const { readFinderPage } = await import(`${javascriptPath}?location-pairing=${Date.now()}`);
+  const payload = { textContent: JSON.stringify({ locations: [{ id: 'gid://shopify/Metaobject/1' }] }) };
+  const wrongCard = { dataset: { locationId: 'gid://shopify/Metaobject/2' } };
+  const finder = {
+    dataset: { nextPageUrl: '' },
+    querySelector: (selector) => (selector === '[data-locations-store-finder-data]' ? payload : null),
+    querySelectorAll: () => [wrongCard],
+  };
+
+  assert.throws(() => readFinderPage(finder), /identity/, 'record/card pairing must be verified before append');
 });
 
 test('rejects a repeated pagination cursor instead of appending a page twice', async () => {

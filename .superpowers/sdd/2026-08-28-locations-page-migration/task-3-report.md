@@ -268,3 +268,119 @@ Fresh JSON filtering found no record for `sections/locations-store-finder.liquid
 - The earlier page-local filtering concern is resolved for normal finder entry: later paginated pages are aggregated before final filter/count state and accessible pagination remains the failure fallback.
 - A live Shopify Theme Editor test with a valid restricted Google Maps key was not available locally, so the real Section Rendering and Maps network success paths still require preview smoke testing.
 - Repository-wide Theme Check remains nonzero only because of unrelated existing offenses; the finder remains clean in the filtered scan.
+
+## Review fix round 2/5
+
+### Findings and root causes
+
+1. `applyFilters()` calculated a list fallback while Google Maps was pending, but it only called `syncMapMarkers()` when `this.map` already existed. The resolved view and no-coordinate announcement were therefore discarded during the async gap.
+2. Pagination aggregation treated the currently rendered Liquid page as page one. A direct request to `?page=2` began at that page's `paginate.next.url`, so page one disappeared after enhancement hid the fallback pagination.
+3. `locationSignature()` derived identity from visible fields. Different metaobjects with identical display content—and separate identity-less records—therefore collapsed into one result.
+
+### RED evidence
+
+#### Pending-Maps custom-element transition
+
+The new behavioral test constructs the exported `LocationsStoreFinder`, begins a pending map transition, changes the active filter to an unmapped result, and asserts the host view state, map panel, both `aria-pressed` values, and polite status text.
+
+Initial focused run after adding the test:
+
+```text
+node --test tests/locations-store-finder.test.mjs
+tests 16
+pass 15
+fail 1
+failure: the finder custom element must be testable
+```
+
+After exposing the production element, a mutation check removed only the new state-application branch and exercised the behavioral test directly:
+
+```text
+node --test --test-name-pattern="returns the actual custom element" tests/locations-store-finder.test.mjs
+tests 1
+pass 0
+fail 1
+AssertionError: the narrow-layout list visibility state must be restored
+actual: map
+expected: list
+```
+
+Restoring the branch produced 1 passing / 0 failing for the same targeted command.
+
+#### Deterministic page-one aggregation
+
+```text
+node --test tests/locations-store-finder.test.mjs
+tests 18
+pass 15
+fail 3
+failure: enhancement must distinguish a direct entry on a later result page
+failure: the finder must derive its first result page
+failure: direct entry requested only page 3 rather than page 1, page 2, and page 3
+```
+
+The fixture starts on server-rendered page two and verifies the exact traversal order, all three paired records/cards, reindexed cards, and fallback-pagination state. A failure fixture also verifies that a failed page-one request leaves the original page-two records, cards, list, and pagination untouched.
+
+#### Stable metaobject identity
+
+```text
+node --test tests/locations-store-finder.test.mjs
+tests 20
+pass 17
+fail 3
+failure: the card did not expose its normalized stable identity
+failure: distinct-ID and identity-less visible duplicates were collapsed
+failure: mismatched record/card identity was accepted
+```
+
+The aggregation fixture now repeats one stable ID, supplies a distinct ID with identical visible fields, and supplies two identical identity-less records. Literal assertions require only the repeated stable ID to be removed while card order remains aligned.
+
+### GREEN implementation
+
+- `applyFilters()` immediately applies a resolved view change and status, regardless of whether Maps has finished loading. The custom-element test verifies the CSS-driving `data-active-view`, hidden map panel, selected toggle state, and live status together.
+- Liquid exposes `paginate.current_page`. Later-page entry derives a deterministic first-page URL by removing only `page` and Section Rendering's `section_id`, preserving other query parameters.
+- Later-page enhancement fetches page one first, follows every returned next-page URL, builds the complete replacement fragment, and mutates the visible list only after successful traversal. The server-rendered page and pagination remain intact on rejection.
+- Normalized location records and cards both carry `location.system.id`. Fetched pages validate record/card identity before aggregation.
+- Deduplication uses only a nonblank stable ID. Records without an ID are retained rather than inferred equal from visible content.
+
+### Round 2 files
+
+- `assets/locations-store-finder.js`
+- `sections/locations-store-finder.liquid`
+- `tests/locations-store-finder.test.mjs`
+- `.superpowers/sdd/2026-08-28-locations-page-migration/task-3-report.md`
+
+### Round 2 self-review
+
+- Direct entry on the final Liquid page also triggers page-one aggregation because `currentPage > 1` does not depend on a next link.
+- The first-page URL preserves storefront query state other than pagination and stale `section_id`; Section Rendering adds the active finder section ID at request time.
+- Aggregation remains non-mutating until every request, payload/card count, stable identity pairing, and pagination cursor validates.
+- Reindexing is applied to every final card after aggregation, keeping filter records, focus targets, and DOM cards aligned.
+- Stable identity values are not used as visible content, URLs, selectors, or mutable record fields.
+- No protected composition/config files, hardcoded Google key, jQuery, legacy data source, or global location-data mutation were introduced.
+
+### Round 2 verification
+
+```text
+node --test tests/locations-store-finder.test.mjs
+21 passing, 0 failing
+
+node --test tests/*.test.mjs
+39 passing, 0 failing
+
+node --check assets/locations-store-finder.js
+exit 0
+
+git diff --check
+exit 0
+
+git diff --exit-code -- templates/index.json templates/page.json templates/page.locations.json config/settings_data.json
+exit 0
+```
+
+`shopify theme check --path . --output json --no-color` continues to exit 1 for unrelated repository findings (236 errors and 5 warnings). Filtering the JSON result for `sections/locations-store-finder.liquid` returns no entry: zero finder offenses.
+
+### Round 2 concerns
+
+- Live Shopify Section Rendering and Google Maps requests could not be smoke-tested without a connected storefront and valid editor-supplied Maps key.
+- The unrelated repository-wide Theme Check findings remain outside this task.

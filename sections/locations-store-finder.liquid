@@ -31,6 +31,7 @@
       {% render 'spacing-style', settings: section.settings %}
     "
     data-section-id="{{ section.id }}"
+    data-current-page="{{ paginate.current_page }}"
     data-next-page-url="{{ paginate.next.url | escape }}"
     data-marker-icon="{{ 'map-active.svg' | asset_url }}"
     data-active-view="list"
@@ -160,7 +161,11 @@
                 endcapture
                 assign directions_destination = directions_destination | strip | url_encode
               -%}
-              <li data-location-card data-location-index="{{ forloop.index0 }}">
+              <li
+                data-location-card
+                data-location-id="{{ location.system.id | escape }}"
+                data-location-index="{{ forloop.index0 }}"
+              >
                 <article class="locations-store-finder__card" tabindex="-1">
                   {%- if location_image != blank -%}
                     <div class="locations-store-finder__card-image">
@@ -254,6 +259,7 @@
                 endif
               -%}
               {
+                "id": {{ location.system.id | json }},
                 "title": {{ location_title | json }},
                 "address": {{ location_address | json }},
                 "suburb": {{ location_suburb | json }},
