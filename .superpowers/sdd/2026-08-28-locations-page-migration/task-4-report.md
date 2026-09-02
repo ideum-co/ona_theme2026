@@ -120,6 +120,7 @@ The fresh JSON output contains no record for `sections/locations-flagships.liqui
 
 - `6bf6db1 feat: migrate flagship locations`
 - `8363878 docs: report flagship migration`
+- `0c3f7f6 fix: synchronize flagship gallery scrolling`
 
 ## Self-review
 
@@ -198,3 +199,69 @@ The fresh JSON output contains zero matches for `sections/locations-flagships.li
 - The initialization guard prevents duplicate listeners if `connectedCallback` runs more than once without a disconnect; disconnect resets the guard for valid reconnection.
 
 Fix commit subject: `fix: synchronize flagship gallery scrolling`.
+
+## Review fix round 2/5: immediate control reconciliation
+
+### Finding addressed
+
+The round-1 scroll observer deliberately debounced synchronization for 50 ms. If a visitor swiped or scrolled to another image and activated Previous or Next before that delay elapsed, the control still derived its target from the stale pre-scroll `currentIndex`.
+
+Button and keyboard navigation now call `flushPendingScrollSync` before deriving a target. When a scroll debounce is pending, the method cancels its timer, immediately reconciles `currentIndex` and live status from the viewport's nearest slide, and only then navigates. It does not reconcile when no direct-scroll update is pending, preserving immediate consecutive programmatic control behavior.
+
+### RED evidence
+
+The real-component test was changed before production code so it direct-scrolls to slide three and activates Previous in the same tick, then direct-scrolls to slide one and activates Next in the same tick. The existing awaited debounce and disconnect cancellation paths remain in the test.
+
+Command:
+
+```sh
+node --test tests/locations-flagships.test.mjs
+```
+
+Result before the synchronous control-boundary flush:
+
+```text
+tests 10
+pass 9
+fail 1
+expected: { left: 100, behavior: 'auto' }
+actual:   { left: 200, behavior: 'auto' }
+```
+
+The failure proves immediate Previous wrapped from stale index zero to slide three instead of starting from the directly visible third slide and targeting slide two.
+
+### GREEN and verification
+
+```text
+node --test tests/locations-flagships.test.mjs
+10 passing, 0 failing
+
+node --test tests/*.test.mjs
+49 passing, 0 failing
+
+node --check assets/locations-flagships.js
+exit 0
+
+git diff --check
+exit 0, no output
+
+git diff --exit-code -- templates/index.json templates/page.json config/settings_data.json templates/page.locations.json
+exit 0, no output
+```
+
+Filtered Theme Check:
+
+```sh
+shopify theme check --path . --output json --no-color
+```
+
+The fresh JSON output contains zero matches for `sections/locations-flagships.liquid` or `assets/locations-flagships.js`. The repository-wide command remains nonzero only for unrelated pre-existing findings.
+
+### Fix-round self-review
+
+- Both native buttons and Arrow/Home/End keyboard paths pass through the same pending-scroll reconciliation boundary.
+- The pending timer is cleared before synchronous reconciliation, preventing a second delayed status write after the control has moved to its target.
+- Delayed direct scrolling without a control click still updates `currentIndex` and status after the debounce.
+- Disconnect still removes all listeners and cancels a pending debounce, as retained in the behavioral test.
+
+Fix commit subject: `fix: reconcile flagship gallery controls`.

@@ -143,17 +143,20 @@ test('synchronizes direct scrolling before button navigation and cleans up its l
 
     viewport.scrollLeft = 190;
     viewport.dispatch('scroll');
-    await new Promise((resolve) => setTimeout(resolve, 80));
-
-    assert.equal(gallery.currentIndex, 2, 'the closest slide must become current after direct scrolling');
-    assert.equal(status.textContent, 'Image 3 of 3', 'the live status must follow direct scrolling');
-
     previousButton.dispatch('click');
     assert.deepEqual(scrollCalls.at(-1), { left: 100, behavior: 'auto' });
-    assert.equal(status.textContent, 'Image 2 of 3');
+    assert.equal(status.textContent, 'Image 2 of 3', 'Previous must start from the directly scrolled slide');
 
+    viewport.scrollLeft = 10;
+    viewport.dispatch('scroll');
     nextButton.dispatch('click');
-    assert.deepEqual(scrollCalls.at(-1), { left: 200, behavior: 'auto' });
+    assert.deepEqual(scrollCalls.at(-1), { left: 100, behavior: 'auto' });
+    assert.equal(status.textContent, 'Image 2 of 3', 'Next must start from the directly scrolled slide');
+
+    viewport.scrollLeft = 190;
+    viewport.dispatch('scroll');
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    assert.equal(gallery.currentIndex, 2, 'the debounce must still synchronize direct scrolling without a control click');
     assert.equal(status.textContent, 'Image 3 of 3');
 
     viewport.scrollLeft = 0;

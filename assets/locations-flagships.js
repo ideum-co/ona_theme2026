@@ -32,8 +32,8 @@ export class LocationsFlagshipGallery extends HTMLElementBase {
     this.status = this.querySelector('[data-gallery-status]');
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    this.onPreviousClick = () => this.show(this.currentIndex - 1);
-    this.onNextClick = () => this.show(this.currentIndex + 1);
+    this.onPreviousClick = () => this.navigateBy(-1);
+    this.onNextClick = () => this.navigateBy(1);
     this.onViewportKeydown = (event) => this.onKeydown(event);
     this.onViewportScroll = () => {
       clearTimeout(this.scrollSyncTimer);
@@ -63,10 +63,23 @@ export class LocationsFlagshipGallery extends HTMLElementBase {
   }
 
   onKeydown(event) {
+    this.flushPendingScrollSync();
     const nextIndex = galleryIndexForKey(event.key, this.currentIndex, this.slides.length);
     if (nextIndex === null) return;
     event.preventDefault();
     this.show(nextIndex);
+  }
+
+  navigateBy(direction) {
+    this.flushPendingScrollSync();
+    this.show(this.currentIndex + direction);
+  }
+
+  flushPendingScrollSync() {
+    if (this.scrollSyncTimer === null || this.scrollSyncTimer === undefined) return;
+    clearTimeout(this.scrollSyncTimer);
+    this.scrollSyncTimer = null;
+    this.syncFromViewport();
   }
 
   show(index) {
