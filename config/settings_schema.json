@@ -1812,6 +1812,43 @@
     ]
   },
   {
+    "name": "Dotdigital subscriber modal",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "dotdigital_subscriber_modal_enabled",
+        "label": "Enable Dotdigital subscriber modal",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "dotdigital_subscriber_campaign",
+        "label": "Dotdigital campaign path",
+        "default": "7M6W-AH9/welcomenewsletter"
+      },
+      {
+        "type": "range",
+        "id": "dotdigital_subscriber_delay",
+        "label": "Subscriber modal delay",
+        "min": 0,
+        "max": 60,
+        "step": 1,
+        "unit": "sec",
+        "default": 2
+      },
+      {
+        "type": "range",
+        "id": "dotdigital_subscriber_cookie_days",
+        "label": "Subscriber modal cookie expiry",
+        "min": 1,
+        "max": 365,
+        "step": 1,
+        "unit": "days",
+        "default": 365
+      }
+    ]
+  },
+  {
     "name": "t:names.prices",
     "settings": [
       {
