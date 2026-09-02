@@ -121,6 +121,7 @@ The fresh JSON output contains no record for `sections/locations-flagships.liqui
 - `6bf6db1 feat: migrate flagship locations`
 - `8363878 docs: report flagship migration`
 - `0c3f7f6 fix: synchronize flagship gallery scrolling`
+- `49a5ad6 fix: reconcile flagship gallery controls`
 
 ## Self-review
 
@@ -265,3 +266,73 @@ The fresh JSON output contains zero matches for `sections/locations-flagships.li
 - Disconnect still removes all listeners and cancels a pending debounce, as retained in the behavioral test.
 
 Fix commit subject: `fix: reconcile flagship gallery controls`.
+
+## Review fix round 3/5: programmatic scroll ownership
+
+### Finding addressed
+
+Programmatic smooth scrolling also emits viewport `scroll` events. Round 2 treated those events like native direct scrolling, so they armed the same debounce. A rapid second control or keyboard command flushed against an intermediate pixel position and overwrote the logical target selected by the first command.
+
+The gallery now marks programmatic ownership before calling `scrollTo`. Scroll events emitted during that ownership refresh a programmatic settle timer but never arm direct-scroll synchronization. Rapid button and keyboard commands therefore continue from the logical target. `wheel`, `touchstart`, and `pointerdown` explicitly cancel programmatic ownership so user-driven scrolling can schedule and synchronously flush normal reconciliation. `scrollend` closes either lifecycle immediately where supported, while timers provide the fallback.
+
+All new interaction and `scrollend` listeners plus the programmatic settle timer are removed or cancelled in `disconnectedCallback`.
+
+### RED evidence
+
+The real-component test's `scrollTo` boundary was changed first to emit a realistic intermediate scroll event at one quarter of the distance toward a smooth-scroll target. It also added rapid consecutive buttons, wheel takeover, same-tick keyboard navigation, delayed native synchronization, and teardown assertions.
+
+Command:
+
+```sh
+node --test tests/locations-flagships.test.mjs
+```
+
+Result before programmatic/direct ownership was distinguished:
+
+```text
+tests 10
+pass 9
+fail 1
+expected: { left: 200, behavior: 'smooth' }
+actual:   { left: 0, behavior: 'smooth' }
+```
+
+The failure proves the first smooth-scroll event rebased the rapid second command onto an intermediate physical position instead of preserving the first command's logical target.
+
+### GREEN and verification
+
+```text
+node --test tests/locations-flagships.test.mjs
+10 passing, 0 failing
+
+node --test tests/*.test.mjs
+49 passing, 0 failing
+
+node --check assets/locations-flagships.js
+exit 0
+
+git diff --check
+exit 0, no output
+
+git diff --exit-code -- templates/index.json templates/page.json config/settings_data.json templates/page.locations.json
+exit 0, no output
+```
+
+Filtered Theme Check:
+
+```sh
+shopify theme check --path . --output json --no-color
+```
+
+The fresh JSON output contains zero matches for `sections/locations-flagships.liquid` or `assets/locations-flagships.js`. The repository-wide command remains nonzero only for unrelated pre-existing findings.
+
+### Fix-round self-review
+
+- Programmatic ownership is set before `scrollTo`, so even synchronous scroll events cannot arm the direct-scroll debounce.
+- Each programmatic scroll event extends the settle timer; long smooth animations do not lose ownership between frames.
+- Wheel, touch, or pointer intent cancels the active programmatic timer before subsequent native scroll events arrive.
+- The immediate direct-scroll reconciliation from round 2 remains intact once direct interaction owns the viewport.
+- Buttons and Arrow/Home/End keyboard commands retain their logical target through rapid consecutive calls.
+- Disconnect removes every added listener and clears both direct and programmatic timers.
+
+Fix commit subject: `fix: distinguish flagship gallery scroll sources`.

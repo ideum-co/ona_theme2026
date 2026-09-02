@@ -95,7 +95,7 @@ test('supports keyboard gallery navigation and reduced motion', async () => {
 
 test('synchronizes direct scrolling before button navigation and cleans up its lifecycle', async () => {
   const originalWindow = globalThis.window;
-  globalThis.window = { matchMedia: () => ({ matches: true }) };
+  globalThis.window = { matchMedia: () => ({ matches: false }) };
 
   const eventTarget = (properties = {}) => {
     const listeners = new Map();
@@ -121,8 +121,9 @@ test('synchronizes direct scrolling before button navigation and cleans up its l
     const viewport = eventTarget({
       scrollLeft: 0,
       scrollTo(options) {
-        this.scrollLeft = options.left;
         scrollCalls.push(options);
+        this.scrollLeft += (options.left - this.scrollLeft) / 4;
+        this.dispatch('scroll');
       },
     });
     const previousButton = eventTarget();
@@ -144,21 +145,37 @@ test('synchronizes direct scrolling before button navigation and cleans up its l
     viewport.scrollLeft = 190;
     viewport.dispatch('scroll');
     previousButton.dispatch('click');
-    assert.deepEqual(scrollCalls.at(-1), { left: 100, behavior: 'auto' });
+    assert.deepEqual(scrollCalls.at(-1), { left: 100, behavior: 'smooth' });
     assert.equal(status.textContent, 'Image 2 of 3', 'Previous must start from the directly scrolled slide');
 
+    nextButton.dispatch('click');
+    assert.deepEqual(scrollCalls.at(-1), { left: 200, behavior: 'smooth' });
+    assert.equal(status.textContent, 'Image 3 of 3', 'rapid controls must preserve the logical programmatic target');
+
+    viewport.dispatch('wheel');
     viewport.scrollLeft = 10;
     viewport.dispatch('scroll');
     nextButton.dispatch('click');
-    assert.deepEqual(scrollCalls.at(-1), { left: 100, behavior: 'auto' });
-    assert.equal(status.textContent, 'Image 2 of 3', 'Next must start from the directly scrolled slide');
+    assert.deepEqual(scrollCalls.at(-1), { left: 100, behavior: 'smooth' });
+    assert.equal(status.textContent, 'Image 2 of 3', 'a wheel interaction must take ownership from programmatic scrolling');
 
+    let preventedKeys = 0;
+    viewport.dispatch('keydown', { key: 'ArrowRight', preventDefault: () => preventedKeys += 1 });
+    assert.deepEqual(scrollCalls.at(-1), { left: 200, behavior: 'smooth' });
+    assert.equal(status.textContent, 'Image 3 of 3', 'same-tick keyboard navigation must preserve the logical target');
+    viewport.dispatch('keydown', { key: 'ArrowLeft', preventDefault: () => preventedKeys += 1 });
+    assert.deepEqual(scrollCalls.at(-1), { left: 100, behavior: 'smooth' });
+    assert.equal(status.textContent, 'Image 2 of 3');
+    assert.equal(preventedKeys, 2);
+
+    viewport.dispatch('touchstart');
     viewport.scrollLeft = 190;
     viewport.dispatch('scroll');
     await new Promise((resolve) => setTimeout(resolve, 80));
     assert.equal(gallery.currentIndex, 2, 'the debounce must still synchronize direct scrolling without a control click');
     assert.equal(status.textContent, 'Image 3 of 3');
 
+    viewport.dispatch('pointerdown');
     viewport.scrollLeft = 0;
     viewport.dispatch('scroll');
     gallery.disconnectedCallback();
