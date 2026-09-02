@@ -115,3 +115,39 @@ task did not alter those files.
   test against the target store before opening a PR.
 - `docs/superpowers/.DS_Store` is unrelated and remains untracked and
   uncommitted.
+
+## Review fix round 1/5: Header heading fallback
+
+### Finding addressed
+
+The Theme Editor guidance did not state the Locations header's safe heading
+fallback. The migration guide now explains that a blank custom header heading
+uses `page.title`, and that a blank page title then uses the literal
+`Locations` fallback. Merchants can therefore intentionally leave the custom
+heading blank.
+
+### Verification
+
+```sh
+rg -n -C 3 "assign heading|page\\.title|Locations" sections/locations-header.liquid
+```
+
+```text
+assign heading = section.settings.heading | default: page.title | default: 'Locations'
+```
+
+```sh
+git diff --check
+git diff --exit-code origin/main -- templates/index.json templates/page.json config/settings_data.json
+```
+
+```text
+Both commands exited 0 with no output.
+```
+
+### Self-review
+
+- Verified the documentation follows the Liquid `default` order exactly and
+  describes a blank custom heading as intentional rather than an error.
+- Confirmed the fix changes only the admin guide and this verification report;
+  protected files remain unchanged.

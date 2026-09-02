@@ -69,6 +69,10 @@ Editor.
 - **Locations flagships** controls heading/introduction and website-link
   copy, width/alignment, media aspect ratio and fit, colors, and padding.
 
+Leaving **Locations header > Heading** blank is intentional and safe: the
+section renders the page's `page.title` instead. If the page title is also
+blank, it renders `Locations`.
+
 Enter the Google Maps browser API key in **Locations store finder > Google
 Maps API key**. Keep the key in this Theme Editor setting rather than source
 control. A valid key allows the map view to load; only locations with
