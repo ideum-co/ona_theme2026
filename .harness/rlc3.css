@@ -1,67 +1,4 @@
-{%- doc -%}
-  Renders a carousel of predictive search results cards
 
-  @param {string} ref - The ref of the slideshow
-  @param {object} slides - An array of HTML for the slides to display in the carousel
-  @param {number} slide_count - The number of slides to display in the carousel
-  @param {object} settings - The block or sections settings from the parent block/section.
-  @param {string} [slide_width_max] - The maximum width of the slides in the carousel.
-
-  @example
-  {% render 'resource-list-carousel', slides: slides, slide_count: slide_count, settings: block.settings %}
-{%- enddoc -%}
-
-{% liquid
-  assign slideshow_ref = ref | default: 'resourceListCarousel'
-
-  if settings.section_width == 'page-width'
-    assign slideshow_gutters = 'start end'
-    assign gutter_style = '--gutter-slide-width: var(--util-page-margin-offset);'
-    assign viewport_page_width_class = ' resource-list-carousel-viewport--page-width'
-  else
-    assign slideshow_gutters = null
-    assign gutter_style = '--gutter-slide-width: 0px;'
-    assign viewport_page_width_class = ''
-  endif
-
-  assign show_arrows = false
-  if settings.icons_style != 'none'
-    assign show_arrows = true
-  endif
-%}
-
-{% capture slides %}
-  {% for item in slides limit: slides.size %}
-    {% render 'slideshow-slide'
-      index : forloop.index0,
-      children : item,
-      class : 'resource-list__slide'
-    %}
-  {% endfor %}
-{% endcapture %}
-
-{%- comment -%}
-  The number of slides caps the adaptive column count: on a very wide screen the ladder below can
-  ask for more columns than there are products, and the cards would shrink to leave empty track at
-  the end instead of staying a comfortable size.
-{%- endcomment -%}
-<div class="resource-list-carousel-viewport{{ viewport_page_width_class }}" style="{{ gutter_style }} --slide-width-max: {{ slide_width_max | default: '300px' }}; --adaptive-columns-max: {{ slide_count | default: 99 }};{% if settings.adaptive_max_width %} --adaptive-max-width: {{ settings.adaptive_max_width }}px;{% endif %}{% if settings.adaptive_min_card %} --adaptive-min-card: {{ settings.adaptive_min_card }}px;{% endif %}">
-  {% render 'slideshow',
-    ref: slideshow_ref,
-    class: 'resource-list__carousel',
-    slides: slides,
-    show_arrows: show_arrows,
-    icon_style: settings.icons_style,
-    icon_shape: settings.icons_shape,
-    auto_hide_controls: false,
-    infinite: false,
-    initial_slide: 0,
-    slide_count: slide_count,
-    slideshow_gutters: slideshow_gutters
-  %}
-</div>
-
-{% stylesheet %}
   .resource-list__carousel {
     --slide-width: 60vw;
     width: 100%;
@@ -278,4 +215,3 @@
       content-visibility: visible;
     }
   }
-{% endstylesheet %}
