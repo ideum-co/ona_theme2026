@@ -224,6 +224,7 @@
     "work_quickly_to_ship": "<p>ہم جلد از جلد آپ کا آرڈر شپ کرنے کے لیے تیزی سے کام کریں گے۔ آپ کا آرڈر شپ ہونے کے بعد، آپ کو مزید معلومات کے ساتھ ایک ای میل موصول ہوگی۔ آپ کے مقام کے لحاظ سے ترسیل کے اوقات مختلف ہو سکتے ہیں۔</p>"
   },
   "info": {
+    "media_width_ratio": "Share of the row the media takes on desktop; the content takes the rest. 0 keeps the preset above.",
     "adaptive_max_width": "The cards are distributed inside this width. Past it the extra space becomes margin, not wider cards.",
     "content_padding_custom": "Replaces the built-in inner padding of the content column, which is fixed to the page margin. Off keeps today's behaviour.",
     "zero_uses_theme": "Set to 0 to use the theme's size.",
@@ -748,6 +749,7 @@
     "below_media": "میڈیا کے نیچے"
   },
   "settings": {
+    "media_width_ratio": "Media width",
     "adaptive_max_width": "Maximum row width",
     "content_padding_custom": "Custom content padding",
     "value": "Value",

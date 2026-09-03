@@ -28,6 +28,10 @@
   if section.settings.content_padding_custom
     assign media_class_modifier = media_class_modifier | append: ' media-with-content--content-padding'
   endif
+
+  if section.settings.media_width_ratio > 0 and section.settings.extend_media == false
+    assign media_class_modifier = media_class_modifier | append: ' media-with-content--custom-split'
+  endif
 %}
 
 {% liquid
@@ -46,6 +50,19 @@
     {%- render 'spacing-style', settings: section.settings %}
     {% render 'border-override', settings: section.settings %}
     --media-height: {{ section.settings.media_height }};
+    {%- if section.settings.media_width_ratio > 0 %}
+      {%- assign content_ratio = 100 | minus: section.settings.media_width_ratio -%}
+      {%- comment -%}
+        Its own variable rather than overriding the grid columns directly: the columns are also the
+        mobile layout, a three-track grid with margins, and an inline style cannot be confined to a
+        media query. This one is only read inside the desktop rule below.
+      {%- endcomment -%}
+      {%- if section.settings.media_position == 'right' %}
+        --media-with-content-split: {{ content_ratio }}fr {{ section.settings.media_width_ratio }}fr;
+      {%- else %}
+        --media-with-content-split: {{ section.settings.media_width_ratio }}fr {{ content_ratio }}fr;
+      {%- endif %}
+    {%- endif %}
     --media-with-content-mobile-padding-inline: {{ section.settings.mobile_padding_inline }}px;
     {%- if section.settings.content_padding_custom %}
       --media-with-content-content-padding-inline: {{ section.settings.content_padding_inline }}px;
@@ -185,6 +202,15 @@
   .media-with-content--distribute .media-with-content__content,
   .media-with-content--distribute .media-with-content__content > .group-block-content {
     block-size: 100%;
+  }
+
+  /* Three classes so it outranks the width presets, which are two - `.section--full-width` plus
+     `.media-with-content--medium` and friends. Desktop only: below 750px the grid is a three-track
+     template with margins and a two-value split would break its areas. */
+  @media screen and (min-width: 750px) {
+    .section.media-with-content.media-with-content--custom-split {
+      grid-template-columns: var(--media-with-content-split);
+    }
   }
 
   /* The section's padding is on the grid, so it insets the media as well as the content and the
@@ -426,6 +452,18 @@
         }
       ],
       "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "media_width_ratio",
+      "label": "t:settings.media_width_ratio",
+      "info": "t:info.media_width_ratio",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 0,
+      "visible_if": "{{ section.settings.extend_media == false }}"
     },
     {
       "type": "select",
