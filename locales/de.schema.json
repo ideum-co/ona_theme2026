@@ -189,6 +189,7 @@
     "disclosures": "Pflichtangaben"
   },
   "settings": {
+    "media_width_ratio": "Media width",
     "adaptive_max_width": "Maximum row width",
     "content_padding_custom": "Custom content padding",
     "value": "Value",
@@ -1168,6 +1169,7 @@
     "disclosures": "Pflichtangaben"
   },
   "info": {
+    "media_width_ratio": "Share of the row the media takes on desktop; the content takes the rest. 0 keeps the preset above.",
     "adaptive_max_width": "The cards are distributed inside this width. Past it the extra space becomes margin, not wider cards.",
     "content_padding_custom": "Replaces the built-in inner padding of the content column, which is fixed to the page margin. Off keeps today's behaviour.",
     "zero_uses_theme": "Set to 0 to use the theme's size.",

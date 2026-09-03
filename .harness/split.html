@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/.harness/mw7.css">
+<style>html{--page-margin:16px} body{margin:0;font:12px system-ui}
+ .section{display:grid}
+ .media-block{background:#8a8}.media-with-content__content{background:#88a}
+ .media-block,.media-with-content__content{min-block-size:44px}</style></head><body>
+<p style="margin:6px 0 2px">preset50</p><div class="section media-with-content media-with-content--medium section--full-width" style="inline-size:900px;--media-with-content-grid-columns:1fr 1fr"><div class="media-block" id="m-preset50">media</div><div class="media-with-content__content" id="c-preset50">contenido</div></div><p style="margin:6px 0 2px">split40</p><div class="section media-with-content media-with-content--medium section--full-width media-with-content--custom-split" style="inline-size:900px;--media-with-content-grid-columns:1fr 1fr;--media-with-content-split:40fr 60fr"><div class="media-block" id="m-split40">media</div><div class="media-with-content__content" id="c-split40">contenido</div></div><p style="margin:6px 0 2px">split60</p><div class="section media-with-content media-with-content--medium section--full-width media-with-content--custom-split" style="inline-size:900px;--media-with-content-grid-columns:1fr 1fr;--media-with-content-split:60fr 40fr"><div class="media-block" id="m-split60">media</div><div class="media-with-content__content" id="c-split60">contenido</div></div><p style="margin:6px 0 2px">derecha35</p><div class="section media-with-content media-with-content--medium section--full-width media-with-content--media-right media-with-content--custom-split" style="inline-size:900px;--media-with-content-grid-columns:1fr 1fr;--media-with-content-split:65fr 35fr"><div class="media-block" id="m-derecha35">media</div><div class="media-with-content__content" id="c-derecha35">contenido</div></div>
+<script>window.probe=()=>{const out={};
+ for (const k of ['preset50','split40','split60','derecha35']) {
+   const m=document.querySelector('#m-'+k).getBoundingClientRect();
+   const c=document.querySelector('#c-'+k).getBoundingClientRect();
+   const tot=m.width+c.width;
+   out[k]={media:Math.round(m.width/tot*100)+'%', contenido:Math.round(c.width/tot*100)+'%'};
+ } return out;};</script></body></html>
