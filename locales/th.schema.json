@@ -189,6 +189,8 @@
     "disclosures": "การเปิดเผยข้อมูล"
   },
   "settings": {
+    "horizontal_gap_mobile": "Mobile horizontal gap",
+    "horizontal_padding_mobile": "Mobile horizontal padding",
     "media_width_ratio": "Media width",
     "adaptive_max_width": "Maximum row width",
     "content_padding_custom": "Custom content padding",
@@ -656,6 +658,7 @@
     "title_preset": "พรีเซ็ตชื่อ"
   },
   "options": {
+    "same_as_desktop": "Same as desktop",
     "together": "Together",
     "three_d_model": "3D model",
     "below": "ใต้ช่องกรอก",
@@ -1172,6 +1175,7 @@
     "media_width_ratio": "Share of the row the media takes on desktop; the content takes the rest. 0 keeps the preset above.",
     "adaptive_max_width": "The cards are distributed inside this width. Past it the extra space becomes margin, not wider cards.",
     "content_padding_custom": "Replaces the built-in inner padding of the content column, which is fixed to the page margin. Off keeps today's behaviour.",
+    "zero_uses_page_margin": "Set to 0 to use the theme's page margin.",
     "zero_uses_theme": "Set to 0 to use the theme's size.",
     "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level.",
     "media_ignores_padding": "The section's top and bottom padding applies to the grid, so it insets the media too. This lets the media run to the edges.",
