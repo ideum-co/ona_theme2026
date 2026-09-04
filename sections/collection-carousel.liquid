@@ -388,6 +388,10 @@
   ],
   "settings": [
     {
+      "type": "header",
+      "content": "t:content.heading"
+    },
+    {
       "type": "select",
       "id": "heading_tag",
       "label": "t:settings.heading_tag",
@@ -723,6 +727,10 @@
       "visible_if": "{{ section.settings.type_preset == 'custom' }}"
     },
     {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
       "type": "select",
       "id": "section_width",
       "label": "t:settings.section_width",
@@ -838,6 +846,10 @@
       "default": 0
     },
     {
+      "type": "header",
+      "content": "t:content.text"
+    },
+    {
       "type": "range",
       "id": "label_size",
       "label": "t:settings.size",
@@ -935,6 +947,16 @@
     },
     {
       "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
       "id": "padding_inline",
       "label": "t:settings.horizontal_padding",
       "info": "t:info.zero_uses_page_margin",
@@ -954,16 +976,6 @@
       "step": 4,
       "unit": "px",
       "default": 0
-    },
-    {
-      "type": "range",
-      "id": "padding-block-end",
-      "label": "t:settings.bottom",
-      "min": 0,
-      "max": 160,
-      "step": 4,
-      "unit": "px",
-      "default": 80
     }
   ],
   "presets": [
