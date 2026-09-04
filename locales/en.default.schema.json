@@ -232,6 +232,7 @@
     "work_quickly_to_ship": "<p>We will work quickly to ship your order as soon as possible. Once your order has shipped, you will receive an email with further information. Delivery times vary depending on your location.</p>"
   },
   "info": {
+    "collection_carousel_media_gap": "Space between a collection image and its label.",
     "media_width_ratio": "Share of the row the media takes on desktop; the content takes the rest. 0 keeps the preset above.",
     "adaptive_max_width": "The cards are distributed inside this width. Past it the extra space becomes margin, not wider cards.",
     "content_padding_custom": "Replaces the built-in inner padding of the content column, which is fixed to the page margin. Off keeps today's behaviour.",
@@ -848,6 +849,7 @@
     "allow_rotation": "Allow drag to rotate",
     "auto_rotate": "Auto-rotate",
     "model_url": "Model file URL",
+    "vertical_gap_mobile": "Mobile vertical gap",
     "video_overhang": "Video overhang",
     "namespace": "Namespace",
     "svg_code": "SVG code",

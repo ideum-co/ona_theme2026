@@ -16,6 +16,10 @@
   # (h1 to h6, paragraph) carries its own rule in base.css. Without it the group of settings
   # publishes variables nothing consumes.
   assign heading_preset = settings.type_preset | default: 'rte'
+  # Named like the theme's own width setting so it reads the same in the editor, but resolved
+  # with padding rather than the `.section` grid: this section paints its own full-bleed
+  # background and lays its track out from the padded box, and that grid would take over both.
+  assign section_width = settings.section_width | default: 'page-width'
   # `columns_mobile` is a select, so it arrives as a string and would never compare against a
   # number.
   assign columns_mobile = settings.columns_mobile | times: 1
@@ -89,7 +93,7 @@
 {%- endcapture -%}
 
 <div
-  class="collection-carousel spacing-style{% if settings.uppercase_labels %} collection-carousel--uppercase{% endif %}{% if arrows_mobile_only %} collection-carousel--arrows-mobile-only{% endif %}"
+  class="collection-carousel collection-carousel--{{ section_width }} spacing-style{% if settings.uppercase_labels %} collection-carousel--uppercase{% endif %}{% if arrows_mobile_only %} collection-carousel--arrows-mobile-only{% endif %}"
   style="
     --section-heading-level-size: var({{ heading_level_size }});
     --collection-carousel-background: {{ settings.background_color }};
@@ -111,6 +115,8 @@
     --collection-carousel-columns-mobile: {{ settings.columns_mobile }};
     --collection-carousel-ratio: {{ settings.image_ratio }};
     --collection-carousel-gap: {{ settings.column_gap }}px;
+    --collection-carousel-media-gap: {{ settings.media_gap }}px;
+    --collection-carousel-max-width: {{ settings.max_width }}px;
     --collection-carousel-heading-align: {{ settings.heading_alignment }};
     --collection-carousel-text-align: {{ settings.text_alignment }};
     {%- comment -%}
@@ -125,6 +131,9 @@
     {%- endif %}
     {%- if settings.column_gap_mobile > 0 %}
       --collection-carousel-gap-mobile: {{ settings.column_gap_mobile }}px;
+    {%- endif %}
+    {%- if settings.media_gap_mobile > 0 %}
+      --collection-carousel-media-gap-mobile: {{ settings.media_gap_mobile }}px;
     {%- endif %}
     {%- if settings.heading_alignment_mobile != blank %}
       --collection-carousel-heading-align-mobile: {{ settings.heading_alignment_mobile }};
@@ -167,7 +176,6 @@
     /* Half on each side of a slide adds up to one gap between two of them. */
     --collection-carousel-gutter: calc(var(--collection-carousel-gap, 32px) / 2);
 
-    padding-inline: var(--collection-carousel-padding-inline, var(--page-margin, 1rem));
     background: var(--collection-carousel-background);
     color: var(--collection-carousel-color);
 
@@ -175,10 +183,42 @@
       --collection-carousel-gutter: calc(
         var(--collection-carousel-gap-mobile, var(--collection-carousel-gap, 32px)) / 2
       );
+    }
+  }
 
+  /* Two classes on purpose. `.spacing-style` in base.css sets `padding-inline` from variables of
+     its own, which default to 0, and with a single class each the winner would come down to which
+     stylesheet the browser happens to read last - so the control worked in isolation and did
+     nothing on the page. */
+  .collection-carousel.spacing-style {
+    padding-inline: var(--collection-carousel-padding-inline, var(--page-margin, 1rem));
+
+    @media screen and (max-width: 749px) {
       padding-inline: var(
         --collection-carousel-padding-inline-mobile,
         var(--collection-carousel-padding-inline, var(--page-margin, 1rem))
+      );
+    }
+  }
+
+  /* Contained: the padding grows to whatever keeps the content at the cap, and stays at the
+     chosen value on any screen narrower than that - so one declaration covers both. The
+     background is on the element itself and still spans the full width, which is the point of
+     capping with padding instead of a max-width on the box.
+     Same specificity as the rule above and later in the file on purpose. */
+  .collection-carousel--page-width.spacing-style {
+    padding-inline: max(
+      var(--collection-carousel-padding-inline, var(--page-margin, 1rem)),
+      calc((100% - var(--collection-carousel-max-width, 1360px)) / 2)
+    );
+
+    @media screen and (max-width: 749px) {
+      padding-inline: max(
+        var(
+          --collection-carousel-padding-inline-mobile,
+          var(--collection-carousel-padding-inline, var(--page-margin, 1rem))
+        ),
+        calc((100% - var(--collection-carousel-max-width, 1360px)) / 2)
       );
     }
   }
@@ -257,9 +297,16 @@
 
   .collection-carousel__item {
     display: grid;
-    gap: var(--gap-xl, 1.25rem);
+    gap: var(--collection-carousel-media-gap, var(--gap-xl, 1.25rem));
     color: inherit;
     text-decoration: none;
+
+    @media screen and (max-width: 749px) {
+      gap: var(
+        --collection-carousel-media-gap-mobile,
+        var(--collection-carousel-media-gap, var(--gap-xl, 1.25rem))
+      );
+    }
   }
 
   .collection-carousel__media {
@@ -340,6 +387,10 @@
     }
   ],
   "settings": [
+    {
+      "type": "header",
+      "content": "t:content.heading"
+    },
     {
       "type": "select",
       "id": "heading_tag",
@@ -676,6 +727,37 @@
       "visible_if": "{{ section.settings.type_preset == 'custom' }}"
     },
     {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.section_width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "t:settings.max_width",
+      "min": 800,
+      "max": 1800,
+      "step": 20,
+      "unit": "px",
+      "default": 1360,
+      "visible_if": "{{ section.settings.section_width == 'page-width' }}"
+    },
+    {
       "type": "range",
       "id": "columns",
       "label": "t:settings.columns",
@@ -740,6 +822,32 @@
       "step": 2,
       "unit": "px",
       "default": 0
+    },
+    {
+      "type": "range",
+      "id": "media_gap",
+      "label": "t:settings.vertical_gap",
+      "info": "t:info.collection_carousel_media_gap",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "media_gap_mobile",
+      "label": "t:settings.vertical_gap_mobile",
+      "info": "t:info.zero_uses_desktop",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "t:content.text"
     },
     {
       "type": "range",
@@ -839,6 +947,16 @@
     },
     {
       "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
       "id": "padding_inline",
       "label": "t:settings.horizontal_padding",
       "info": "t:info.zero_uses_page_margin",
@@ -858,16 +976,6 @@
       "step": 4,
       "unit": "px",
       "default": 0
-    },
-    {
-      "type": "range",
-      "id": "padding-block-end",
-      "label": "t:settings.bottom",
-      "min": 0,
-      "max": 160,
-      "step": 4,
-      "unit": "px",
-      "default": 80
     }
   ],
   "presets": [
