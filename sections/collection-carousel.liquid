@@ -110,6 +110,28 @@
     --collection-carousel-columns: {{ settings.columns }};
     --collection-carousel-columns-mobile: {{ settings.columns_mobile }};
     --collection-carousel-ratio: {{ settings.image_ratio }};
+    --collection-carousel-gap: {{ settings.column_gap }}px;
+    --collection-carousel-heading-align: {{ settings.heading_alignment }};
+    --collection-carousel-text-align: {{ settings.text_alignment }};
+    {%- comment -%}
+      The mobile counterparts are emitted only when chosen, so the phone rule can fall back
+      through them to the desktop value instead of shadowing it with an unset one.
+    {%- endcomment -%}
+    {%- if settings.padding_inline > 0 %}
+      --collection-carousel-padding-inline: {{ settings.padding_inline }}px;
+    {%- endif %}
+    {%- if settings.padding_inline_mobile > 0 %}
+      --collection-carousel-padding-inline-mobile: {{ settings.padding_inline_mobile }}px;
+    {%- endif %}
+    {%- if settings.column_gap_mobile > 0 %}
+      --collection-carousel-gap-mobile: {{ settings.column_gap_mobile }}px;
+    {%- endif %}
+    {%- if settings.heading_alignment_mobile != blank %}
+      --collection-carousel-heading-align-mobile: {{ settings.heading_alignment_mobile }};
+    {%- endif %}
+    {%- if settings.text_alignment_mobile != blank %}
+      --collection-carousel-text-align-mobile: {{ settings.text_alignment_mobile }};
+    {%- endif %}
     {%- render 'spacing-style', settings: settings %}
   "
   {{ section.shopify_attributes }}
@@ -142,15 +164,36 @@
   .collection-carousel {
     --slide-width: calc(100% / var(--collection-carousel-columns, 5));
 
-    padding-inline: var(--page-margin, 1rem);
+    /* Half on each side of a slide adds up to one gap between two of them. */
+    --collection-carousel-gutter: calc(var(--collection-carousel-gap, 32px) / 2);
+
+    padding-inline: var(--collection-carousel-padding-inline, var(--page-margin, 1rem));
     background: var(--collection-carousel-background);
     color: var(--collection-carousel-color);
+
+    @media screen and (max-width: 749px) {
+      --collection-carousel-gutter: calc(
+        var(--collection-carousel-gap-mobile, var(--collection-carousel-gap, 32px)) / 2
+      );
+
+      padding-inline: var(
+        --collection-carousel-padding-inline-mobile,
+        var(--collection-carousel-padding-inline, var(--page-margin, 1rem))
+      );
+    }
   }
 
   .collection-carousel__heading {
     margin: 0 0 var(--gap-6xl, 4rem);
     color: var(--collection-carousel-heading-color);
-    text-align: center;
+    text-align: var(--collection-carousel-heading-align, center);
+
+    @media screen and (max-width: 749px) {
+      text-align: var(
+        --collection-carousel-heading-align-mobile,
+        var(--collection-carousel-heading-align, center)
+      );
+    }
   }
 
   /* Only the Default preset is dressed here. A named preset or Custom owns every typography
@@ -194,10 +237,22 @@
     animation: none !important;
   }
 
+  /* The track is pulled out by half a gap on each side so the first and last card sit flush with
+     the section's own padding: the half-gap that separates cards would otherwise show up as an
+     extra inset at the two ends, and the padding control would never quite mean what it says.
+     The arithmetic still lands exactly - each slide is (width + gap) / columns, so the cards and
+     the gaps between them add back up to the padded width. */
+  .collection-carousel__carousel slideshow-slides {
+    /* The theme pins the track at `width: 100%`, so pulling it out with a negative margin alone
+       just slides it left. The width has to grow by the same two half-gaps it is pulled out by. */
+    inline-size: calc(100% + var(--collection-carousel-gutter) * 2);
+    margin-inline: calc(var(--collection-carousel-gutter) * -1);
+  }
+
   /* No width here on purpose: the theme sizes a slide with `slideshow-slide { width: var(--slide-width) }`,
      and a class setting one of its own would outrank it and leave a single slide per view. */
   .collection-carousel__slide {
-    padding-inline: var(--gap-lg, 1rem);
+    padding-inline: var(--collection-carousel-gutter);
   }
 
   .collection-carousel__item {
@@ -225,7 +280,11 @@
   .collection-carousel__label {
     font-size: var(--collection-carousel-label-size);
     letter-spacing: 0.06em;
-    text-align: center;
+    text-align: var(--collection-carousel-text-align, center);
+
+    @media screen and (max-width: 749px) {
+      text-align: var(--collection-carousel-text-align-mobile, var(--collection-carousel-text-align, center));
+    }
   }
 
   .collection-carousel--uppercase .collection-carousel__label {
@@ -341,6 +400,50 @@
       "step": 2,
       "unit": "px",
       "default": 0
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "t:settings.alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "center",
+          "label": "t:options.center"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment_mobile",
+      "label": "t:settings.alignment_mobile",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.same_as_desktop"
+        },
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "center",
+          "label": "t:options.center"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": ""
     },
     {
       "type": "header",
@@ -619,6 +722,27 @@
     },
     {
       "type": "range",
+      "id": "column_gap",
+      "label": "t:settings.horizontal_gap",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "column_gap_mobile",
+      "label": "t:settings.horizontal_gap_mobile",
+      "info": "t:info.zero_uses_desktop",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
       "id": "label_size",
       "label": "t:settings.size",
       "min": 10,
@@ -632,6 +756,50 @@
       "id": "uppercase_labels",
       "label": "t:settings.uppercase",
       "default": true
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "t:settings.alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "center",
+          "label": "t:options.center"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment_mobile",
+      "label": "t:settings.alignment_mobile",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.same_as_desktop"
+        },
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "center",
+          "label": "t:options.center"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": ""
     },
     {
       "type": "header",
@@ -668,6 +836,28 @@
       "step": 4,
       "unit": "px",
       "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_inline",
+      "label": "t:settings.horizontal_padding",
+      "info": "t:info.zero_uses_page_margin",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_inline_mobile",
+      "label": "t:settings.horizontal_padding_mobile",
+      "info": "t:info.zero_uses_desktop",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 0
     },
     {
       "type": "range",
