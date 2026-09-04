@@ -11,9 +11,25 @@
   # rather than falling through to it.
   assign heading_level_size = '--font-' | append: heading_tag | append: '--size'
   assign settings = section.settings
+  # The preset travels as a class, which is how the theme's typography contract is entered:
+  # `custom-typography` reads the variables `typography-style` writes, and a named preset
+  # (h1 to h6, paragraph) carries its own rule in base.css. Without it the group of settings
+  # publishes variables nothing consumes.
+  assign heading_preset = settings.type_preset | default: 'rte'
+  # `columns_mobile` is a select, so it arrives as a string and would never compare against a
+  # number.
+  assign columns_mobile = settings.columns_mobile | times: 1
+  # Arrows are needed as soon as either view overflows. Gating them on the desktop count alone
+  # left a phone showing two of five collections with no way but a swipe to reach the rest.
   assign show_arrows = false
-  if section.blocks.size > settings.columns
+  if section.blocks.size > settings.columns or section.blocks.size > columns_mobile
     assign show_arrows = true
+  endif
+  # `auto_hide_controls` only governs the `controls` slot, which this section does not render,
+  # so a view that does not overflow has to hide its own arrows.
+  assign arrows_mobile_only = false
+  if show_arrows and section.blocks.size <= settings.columns
+    assign arrows_mobile_only = true
   endif
 -%}
 
@@ -73,13 +89,23 @@
 {%- endcapture -%}
 
 <div
-  class="collection-carousel spacing-style{% if settings.uppercase_labels %} collection-carousel--uppercase{% endif %}"
+  class="collection-carousel spacing-style{% if settings.uppercase_labels %} collection-carousel--uppercase{% endif %}{% if arrows_mobile_only %} collection-carousel--arrows-mobile-only{% endif %}"
   style="
     --section-heading-level-size: var({{ heading_level_size }});
     --collection-carousel-background: {{ settings.background_color }};
     --collection-carousel-color: {{ settings.text_color }};
     --collection-carousel-heading-color: {{ settings.heading_color | default: settings.text_color }};
-    --collection-carousel-heading-size: {{ settings.heading_size }}px;
+    {%- comment -%}
+      Emitted only when set. Left at 0 the declaration that reads it is invalid, so the size
+      falls through to the typography preset and then to the chosen heading level - which is
+      what makes the level control anything more than the tag name.
+    {%- endcomment -%}
+    {%- if settings.heading_size > 0 %}
+      --collection-carousel-heading-size: {{ settings.heading_size }}px;
+    {%- endif %}
+    {%- if settings.heading_size_mobile > 0 %}
+      --collection-carousel-heading-size-mobile: {{ settings.heading_size_mobile }}px;
+    {%- endif %}
     --collection-carousel-label-size: {{ settings.label_size }}px;
     --collection-carousel-columns: {{ settings.columns }};
     --collection-carousel-columns-mobile: {{ settings.columns_mobile }};
@@ -90,7 +116,7 @@
 >
   {%- if settings.heading != blank -%}
     <{{ heading_tag }}
-      class="collection-carousel__heading"
+      class="collection-carousel__heading {{ heading_preset }}{% if heading_preset == 'custom' %} custom-typography custom-font-size{% elsif heading_preset == 'rte' %} collection-carousel__heading--default{% endif %}"
       style="{%- render 'typography-style', settings: section.settings, type: 'heading' -%}"
     >{{ settings.heading }}</{{ heading_tag }}>
   {%- endif -%}
@@ -124,11 +150,26 @@
   .collection-carousel__heading {
     margin: 0 0 var(--gap-6xl, 4rem);
     color: var(--collection-carousel-heading-color);
+    text-align: center;
+  }
+
+  /* Only the Default preset is dressed here. A named preset or Custom owns every typography
+     property through its own class, and a rule of ours would silently outrank it. */
+  .collection-carousel__heading--default {
     font-family: var(--font-heading--family);
-    font-size: var(--collection-carousel-heading-size, var(--font-size, var(--section-heading-level-size)));
+
+    /* No fallback after the level: with the size left at 0 nothing is emitted, the declaration
+       is invalid and the heading keeps the size its level gives it. */
+    font-size: var(
+      --collection-carousel-heading-size-mobile,
+      var(--collection-carousel-heading-size, var(--font-size, var(--section-heading-level-size)))
+    );
     font-weight: var(--font-heading--weight);
     line-height: 1.1;
-    text-align: center;
+
+    @media screen and (min-width: 750px) {
+      font-size: var(--collection-carousel-heading-size, var(--font-size, var(--section-heading-level-size)));
+    }
   }
 
   /* The theme's slideshow paints its own page-coloured background, which shows up as a band across
@@ -189,6 +230,13 @@
 
   .collection-carousel--uppercase .collection-carousel__label {
     text-transform: uppercase;
+  }
+
+  /* Both views share one set of arrows, so the view that does not overflow hides them. */
+  @media screen and (min-width: 750px) {
+    .collection-carousel--arrows-mobile-only slideshow-arrows {
+      display: none;
+    }
   }
 
   /* One or two at a time on a phone, where five would be unreadable. Same calculation as the
@@ -276,11 +324,23 @@
       "type": "range",
       "id": "heading_size",
       "label": "t:settings.size",
-      "min": 20,
+      "info": "t:info.zero_uses_heading_level",
+      "min": 0,
       "max": 96,
       "step": 2,
       "unit": "px",
-      "default": 48
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "t:settings.size_mobile",
+      "info": "t:info.zero_uses_desktop",
+      "min": 0,
+      "max": 96,
+      "step": 2,
+      "unit": "px",
+      "default": 0
     },
     {
       "type": "header",
