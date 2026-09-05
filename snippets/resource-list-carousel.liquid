@@ -28,7 +28,38 @@
   if settings.icons_style != 'none'
     assign show_arrows = true
   endif
+
+  # Dots below the row, so a carousel that only shows part of its products says so even before
+  # anyone moves it. `auto_hide_controls` is what takes them away again when everything fits, and
+  # it governs exactly this slot - the arrows are a separate element and keep their own gating.
+  # Explicitly boolean: the slideshow snippet turns the loop ON for anything that is not literally
+  # `false`, so an unsaved setting - every carousel that predates this - would arrive as nil and
+  # come back looping.
+  assign carousel_loop = false
+  if settings.carousel_loop
+    assign carousel_loop = true
+  endif
+
+  assign pagination_style = settings.pagination_style | default: 'none'
+  assign show_pagination = false
+  if pagination_style != 'none'
+    assign show_pagination = true
+  endif
 %}
+
+{%- capture carousel_controls -%}
+  {%- if show_pagination -%}
+    {%- render 'slideshow-controls',
+      style: pagination_style,
+      item_count: slide_count,
+      show_arrows: false,
+      icon_style: settings.icons_style,
+      shape: settings.icons_shape,
+      pagination_position: 'center',
+      class: 'resource-list__pagination'
+    -%}
+  {%- endif -%}
+{%- endcapture -%}
 
 {% capture slides %}
   {% for item in slides limit: slides.size %}
@@ -53,8 +84,9 @@
     show_arrows: show_arrows,
     icon_style: settings.icons_style,
     icon_shape: settings.icons_shape,
-    auto_hide_controls: false,
-    infinite: false,
+    controls: carousel_controls,
+    auto_hide_controls: show_pagination,
+    infinite: carousel_loop,
     initial_slide: 0,
     slide_count: slide_count,
     slideshow_gutters: slideshow_gutters
@@ -265,6 +297,12 @@
 
   .resource-list__carousel slideshow-arrows {
     padding-inline: var(--util-page-margin-offset);
+  }
+
+  /* The dots line up under the row rather than under the full-bleed track. */
+  .resource-list__carousel .resource-list__pagination {
+    padding-inline: var(--util-page-margin-offset);
+    margin-block-start: var(--gap-lg, 1rem);
   }
 
   .resource-list__carousel .resource-list__slide {
