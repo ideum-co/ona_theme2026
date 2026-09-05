@@ -241,23 +241,36 @@
     max-inline-size: var(--product-intro-max-width, 1280px);
   }
 
+  /* `minmax(0, 1fr)` on the side columns too, not a bare `1fr`. A bare `1fr` is `minmax(auto, 1fr)`,
+     so a column cannot go below its content's min-content width: the wordmark - display type, one
+     long word - pushed the left column past its share, the other two shrank to fit and the media
+     column no longer sat in the middle of the section. Measured at 1440px with a 120px wordmark:
+     columns of 548 / 420 / 382 and the model 133px right of centre; bounded, 435 / 479 / 435 and
+     the model dead centre. */
   @media screen and (min-width: 750px) {
     .product-intro__inner--media-narrow {
-      grid-template-columns: 1fr minmax(0, 0.75fr) 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.75fr) minmax(0, 1fr);
     }
 
     .product-intro__inner--media-medium {
-      grid-template-columns: 1fr minmax(0, 1.1fr) 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr);
     }
 
     .product-intro__inner--media-wide {
-      grid-template-columns: 1fr minmax(0, 1.5fr) 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr);
     }
   }
 
   /* On mobile the pack shot leads, as it carries the product. */
   .product-intro__media {
     display: grid;
+
+    /* The same reason as the section grid above, one level down. This grid had no template, so its
+       single implicit column was sized by its content - the model's 520px - and the model's
+       `max-inline-size: 100%` resolved against that instead of the cell, clamping nothing. The
+       model then overflowed the column, and with the free space negative its auto margins resolved
+       to 0, so all of the overflow went to one side. */
+    grid-template-columns: minmax(0, 1fr);
     place-items: center;
     order: -1;
     block-size: var(--product-intro-media-height, 60svh);
