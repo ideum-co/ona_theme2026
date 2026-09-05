@@ -63,3 +63,60 @@
     }
   {% endstyle %}
 {% endif %}
+
+{%- liquid
+  # The block's own classes are `<style class>` plus `<style class>--<id>`, so the scoped one is
+  # what a rule of ours has to target. Everything below is emitted only when it is set: the theme's
+  # own values keep coming through untouched otherwise.
+  assign scoped_class = block_settings.style_class | default: 'button'
+
+  assign has_desktop = false
+  if block_settings.text_size > 0 or block_settings.padding_block > 0 or block_settings.padding_inline > 0
+    assign has_desktop = true
+  endif
+  if block_settings.text_color != blank
+    assign has_desktop = true
+  endif
+
+  assign has_mobile = false
+  if block_settings.text_size_mobile > 0 or block_settings.padding_block_mobile > 0 or block_settings.padding_inline_mobile > 0
+    assign has_mobile = true
+  endif
+-%}
+
+{% if has_desktop or has_mobile %}
+  {% style %}
+    .{{ scoped_class }}--{{ block_id }} {
+      {% if block_settings.text_color != blank %}
+        /* The hover rules carry a pseudo-class and outrank this one, so a hover colour that the
+           style brings with it still happens. */
+        --button-color: rgb({{ block_settings.text_color.rgba }});
+      {% endif %}
+      {% if block_settings.text_size > 0 %}
+        font-size: {{ block_settings.text_size }}px;
+      {% endif %}
+      {% if block_settings.padding_block > 0 %}
+        --button-padding-block: {{ block_settings.padding_block }}px;
+      {% endif %}
+      {% if block_settings.padding_inline > 0 %}
+        --button-padding-inline: {{ block_settings.padding_inline }}px;
+      {% endif %}
+    }
+
+    {% if has_mobile %}
+      @media screen and (max-width: 749px) {
+        .{{ scoped_class }}--{{ block_id }} {
+          {% if block_settings.text_size_mobile > 0 %}
+            font-size: {{ block_settings.text_size_mobile }}px;
+          {% endif %}
+          {% if block_settings.padding_block_mobile > 0 %}
+            --button-padding-block: {{ block_settings.padding_block_mobile }}px;
+          {% endif %}
+          {% if block_settings.padding_inline_mobile > 0 %}
+            --button-padding-inline: {{ block_settings.padding_inline_mobile }}px;
+          {% endif %}
+        }
+      }
+    {% endif %}
+  {% endstyle %}
+{% endif %}

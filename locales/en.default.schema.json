@@ -295,7 +295,8 @@
     "video_autoplay": "Videos will be muted by default",
     "video_external": "Use a YouTube or Vimeo URL",
     "pills_usage": "Used for applied filters, discount codes, and search suggestions",
-    "media_type_info": "Features are populated from your menu links"
+    "media_type_info": "Features are populated from your menu links",
+    "zero_uses_theme_default": "Set to 0 to use the theme's default."
   },
   "names": {
     "collection_carousel": "Collection carousel",
@@ -810,6 +811,7 @@
     "media_width_ratio": "Media width",
     "adaptive_max_width": "Maximum row width",
     "content_padding_custom": "Custom content padding",
+    "text_size_mobile": "Mobile text size",
     "value": "Value",
     "product_title": "Product title",
     "media_ignores_padding": "Media fills the section",
@@ -850,6 +852,7 @@
     "auto_rotate": "Auto-rotate",
     "model_url": "Model file URL",
     "vertical_gap_mobile": "Mobile vertical gap",
+    "vertical_padding_mobile": "Mobile vertical padding",
     "video_overhang": "Video overhang",
     "namespace": "Namespace",
     "svg_code": "SVG code",

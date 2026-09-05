@@ -194,6 +194,7 @@
     "media_width_ratio": "Media width",
     "adaptive_max_width": "Maximum row width",
     "content_padding_custom": "Custom content padding",
+    "text_size_mobile": "Mobile text size",
     "value": "Value",
     "product_title": "Product title",
     "media_ignores_padding": "Media fills the section",
@@ -234,6 +235,7 @@
     "auto_rotate": "Auto-rotate",
     "model_url": "Model file URL",
     "vertical_gap_mobile": "Mobile vertical gap",
+    "vertical_padding_mobile": "Mobile vertical padding",
     "video_overhang": "Wysunięcie wideo",
     "namespace": "Przestrzeń nazw",
     "svg_code": "Kod SVG",
@@ -1236,7 +1238,8 @@
     "page_text_color_default_info": "Domyślne dla sekcji szablonu",
     "actions_display_style": "Na urządzeniach mobilnych zawsze używane są ikony",
     "edit_input_field_in_theme_settings": "Edytuj pole wprowadzania w [ustawieniach szablonu](/editor?context=theme&category=input%20fields)",
-    "edit_variants_in_theme_settings": "Edytuj styl wariantów w [ustawieniach szablonu](/editor?context=theme&category=variant%20pickers)"
+    "edit_variants_in_theme_settings": "Edytuj styl wariantów w [ustawieniach szablonu](/editor?context=theme&category=variant%20pickers)",
+    "zero_uses_theme_default": "Set to 0 to use the theme's default."
   },
   "categories": {
     "product_list": "Polecana kolekcja",

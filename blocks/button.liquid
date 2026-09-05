@@ -84,8 +84,81 @@
       "visible_if": "{{ block.settings.style_class == 'button-unstyled' }}"
     },
     {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "placeholder": "t:settings.default",
+      "visible_if": "{{ block.settings.style_class != 'button-custom' and block.settings.style_class != 'button-unstyled' }}"
+    },
+    {
       "type": "header",
       "content": "t:content.size"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "t:settings.text_size",
+      "info": "t:info.zero_uses_theme_default",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "text_size_mobile",
+      "label": "t:settings.text_size_mobile",
+      "info": "t:info.zero_uses_desktop",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_block",
+      "label": "t:settings.vertical_padding",
+      "info": "t:info.zero_uses_theme_default",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_block_mobile",
+      "label": "t:settings.vertical_padding_mobile",
+      "info": "t:info.zero_uses_desktop",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_inline",
+      "label": "t:settings.horizontal_padding",
+      "info": "t:info.zero_uses_theme_default",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_inline_mobile",
+      "label": "t:settings.horizontal_padding_mobile",
+      "info": "t:info.zero_uses_desktop",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 0
     },
     {
       "type": "select",

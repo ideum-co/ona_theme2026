@@ -287,7 +287,8 @@
     "video_autoplay": "سيتم كتم صوت مقاطع الفيديو بشكل افتراضي",
     "video_external": "استخدم عنوان URL لـ YouTube أو Vimeo",
     "pills_usage": "يُستخدم لعوامل التصفية المطبقة، وأكواد الخصم، واقتراحات البحث",
-    "media_type_info": "تمت تعبئة الميزات من روابط القائمة الخاصة بك"
+    "media_type_info": "تمت تعبئة الميزات من روابط القائمة الخاصة بك",
+    "zero_uses_theme_default": "Set to 0 to use the theme's default."
   },
   "names": {
     "collection_carousel": "Collection carousel",
@@ -757,6 +758,7 @@
     "media_width_ratio": "Media width",
     "adaptive_max_width": "Maximum row width",
     "content_padding_custom": "Custom content padding",
+    "text_size_mobile": "Mobile text size",
     "value": "Value",
     "product_title": "Product title",
     "media_ignores_padding": "Media fills the section",
@@ -797,6 +799,7 @@
     "auto_rotate": "Auto-rotate",
     "model_url": "Model file URL",
     "vertical_gap_mobile": "Mobile vertical gap",
+    "vertical_padding_mobile": "Mobile vertical padding",
     "video_overhang": "امتداد الفيديو",
     "namespace": "مساحة الاسم",
     "svg_code": "كود SVG",

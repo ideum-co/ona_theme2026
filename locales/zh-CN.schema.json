@@ -194,6 +194,7 @@
     "media_width_ratio": "Media width",
     "adaptive_max_width": "Maximum row width",
     "content_padding_custom": "Custom content padding",
+    "text_size_mobile": "Mobile text size",
     "value": "Value",
     "product_title": "Product title",
     "media_ignores_padding": "Media fills the section",
@@ -234,6 +235,7 @@
     "auto_rotate": "Auto-rotate",
     "model_url": "Model file URL",
     "vertical_gap_mobile": "Mobile vertical gap",
+    "vertical_padding_mobile": "Mobile vertical padding",
     "video_overhang": "视频溢出高度",
     "namespace": "命名空间",
     "svg_code": "SVG 代码",
@@ -1236,7 +1238,8 @@
     "page_text_color_default_info": "模板分区的默认设置",
     "actions_display_style": "在移动设备上始终使用图标",
     "edit_input_field_in_theme_settings": "在[模板设置](/editor?context=theme&category=input%20fields)中编辑输入字段",
-    "edit_variants_in_theme_settings": "在[模板设置](/editor?context=theme&category=variant%20pickers)中编辑多属性样式"
+    "edit_variants_in_theme_settings": "在[模板设置](/editor?context=theme&category=variant%20pickers)中编辑多属性样式",
+    "zero_uses_theme_default": "Set to 0 to use the theme's default."
   },
   "categories": {
     "basic": "基本",
