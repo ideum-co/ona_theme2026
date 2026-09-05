@@ -232,6 +232,17 @@
       );
     }
 
+    /* The leading gutter comes from `--gutter-slide-width`, which the snippet points at
+       `--util-page-margin-offset`: that offset centres a row of `--page-content-width`, but in
+       adaptive mode the columns are capped at `--adaptive-max-width` instead. With the two
+       measures different - 1400 and 1360 in this theme - the row sat (1400 - 1360) / 2 = 20px
+       left of centre on any screen wide enough for both to be above their floor, and what showed
+       on the right was the extra space plus the start of the next card. Reading the same gutter
+       the columns and the trailing clip already use puts the row back in the middle. */
+    .resource-list__carousel--adaptive .resource-list-carousel-viewport--page-width slideshow-slides {
+      --gutter-slide-width: var(--arlc-gutter);
+    }
+
     .resource-list__carousel--adaptive .resource-list-carousel-viewport slideshow-container {
       clip-path: inset(
         -16px max(0px, calc(var(--arlc-gutter, 0px) - min(15px, var(--resource-list-column-gap)))) -16px 0
