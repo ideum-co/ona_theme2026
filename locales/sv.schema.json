@@ -194,6 +194,7 @@
     "media_width_ratio": "Media width",
     "adaptive_max_width": "Maximum row width",
     "content_padding_custom": "Custom content padding",
+    "text_size_mobile": "Mobile text size",
     "value": "Value",
     "product_title": "Product title",
     "media_ignores_padding": "Media fills the section",
@@ -234,6 +235,7 @@
     "auto_rotate": "Auto-rotate",
     "model_url": "Model file URL",
     "vertical_gap_mobile": "Mobile vertical gap",
+    "vertical_padding_mobile": "Mobile vertical padding",
     "video_overhang": "Videoöverhäng",
     "namespace": "Namnrymd",
     "svg_code": "SVG-kod",
@@ -1236,7 +1238,8 @@
     "page_text_color_default_info": "Standard för temasektioner",
     "actions_display_style": "Ikoner används alltid på mobilen",
     "edit_input_field_in_theme_settings": "Redigera inmatningsfält i [temainställningar](/editor?context=theme&category=input%20fields)",
-    "edit_variants_in_theme_settings": "Redigera variantstil i [temainställningar](/editor?context=theme&category=variant%20pickers)"
+    "edit_variants_in_theme_settings": "Redigera variantstil i [temainställningar](/editor?context=theme&category=variant%20pickers)",
+    "zero_uses_theme_default": "Set to 0 to use the theme's default."
   },
   "categories": {
     "basic": "Grundläggande",

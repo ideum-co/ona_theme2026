@@ -287,7 +287,8 @@
     "video_autoplay": "ویڈیو ڈیفالٹ کے طور پر میوٹ ہوں گی",
     "video_external": "کوئی YouTube یا Vimeo کا URL استعمال کریں",
     "pills_usage": "لاگو کردہ فلٹر، ڈسکاؤنٹ کوڈ، اور تلاش کی تجاویز کے لیے استعمال ہوتا ہے",
-    "media_type_info": "خصوصیات آپ کے مینو کے لنک سے پُر کی گئی ہیں"
+    "media_type_info": "خصوصیات آپ کے مینو کے لنک سے پُر کی گئی ہیں",
+    "zero_uses_theme_default": "Set to 0 to use the theme's default."
   },
   "names": {
     "collection_carousel": "Collection carousel",
@@ -757,6 +758,7 @@
     "media_width_ratio": "Media width",
     "adaptive_max_width": "Maximum row width",
     "content_padding_custom": "Custom content padding",
+    "text_size_mobile": "Mobile text size",
     "value": "Value",
     "product_title": "Product title",
     "media_ignores_padding": "Media fills the section",
@@ -797,6 +799,7 @@
     "auto_rotate": "Auto-rotate",
     "model_url": "Model file URL",
     "vertical_gap_mobile": "Mobile vertical gap",
+    "vertical_padding_mobile": "Mobile vertical padding",
     "video_overhang": "ویڈیو کا اوور ہینگ",
     "namespace": "نیم اسپیس",
     "svg_code": "SVG کوڈ",

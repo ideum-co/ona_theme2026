@@ -194,6 +194,7 @@
     "media_width_ratio": "Media width",
     "adaptive_max_width": "Maximum row width",
     "content_padding_custom": "Custom content padding",
+    "text_size_mobile": "Mobile text size",
     "value": "Value",
     "product_title": "Product title",
     "media_ignores_padding": "Media fills the section",
@@ -234,6 +235,7 @@
     "auto_rotate": "Auto-rotate",
     "model_url": "Model file URL",
     "vertical_gap_mobile": "Mobile vertical gap",
+    "vertical_padding_mobile": "Mobile vertical padding",
     "video_overhang": "동영상 겹침",
     "namespace": "네임스페이스",
     "svg_code": "SVG 코드",
@@ -1236,7 +1238,8 @@
     "page_text_color_default_info": "테마 섹션 기본값",
     "actions_display_style": "모바일에서는 항상 아이콘이 사용됩니다.",
     "edit_input_field_in_theme_settings": "[테마 설정](/editor?context=theme&category=input%20fields)에서 입력 필드 편집",
-    "edit_variants_in_theme_settings": "[테마 설정](/editor?context=theme&category=variant%20pickers)에서 이형 상품 스타일을 편집하십시오."
+    "edit_variants_in_theme_settings": "[테마 설정](/editor?context=theme&category=variant%20pickers)에서 이형 상품 스타일을 편집하십시오.",
+    "zero_uses_theme_default": "Set to 0 to use the theme's default."
   },
   "categories": {
     "basic": "기본",
