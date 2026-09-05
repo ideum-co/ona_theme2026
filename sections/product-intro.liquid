@@ -72,6 +72,34 @@
     {% endif %}
     --product-intro-button-background: {{ settings.button_background }};
     --product-intro-button-color: {{ settings.button_text }};
+    {%- comment -%}
+      Lo que sigue solo se emite cuando esta puesto: sin valor, la declaracion que lo lee cae en su
+      reserva y el boton se queda con lo que le da el tema.
+    {%- endcomment -%}
+    {%- if settings.button_hover_background != blank %}
+      --product-intro-button-hover-background: {{ settings.button_hover_background }};
+    {%- endif %}
+    {%- if settings.button_hover_text != blank %}
+      --product-intro-button-hover-color: {{ settings.button_hover_text }};
+    {%- endif %}
+    {%- if settings.button_text_size > 0 %}
+      --product-intro-button-size: {{ settings.button_text_size }}px;
+    {%- endif %}
+    {%- if settings.button_text_size_mobile > 0 %}
+      --product-intro-button-size-mobile: {{ settings.button_text_size_mobile }}px;
+    {%- endif %}
+    {%- if settings.button_padding_block > 0 %}
+      --product-intro-button-padding-block: {{ settings.button_padding_block }}px;
+    {%- endif %}
+    {%- if settings.button_padding_block_mobile > 0 %}
+      --product-intro-button-padding-block-mobile: {{ settings.button_padding_block_mobile }}px;
+    {%- endif %}
+    {%- if settings.button_padding_inline > 0 %}
+      --product-intro-button-padding-inline: {{ settings.button_padding_inline }}px;
+    {%- endif %}
+    {%- if settings.button_padding_inline_mobile > 0 %}
+      --product-intro-button-padding-inline-mobile: {{ settings.button_padding_inline_mobile }}px;
+    {%- endif %}
     --product-intro-model-height: {{ settings.model_height }}px;
     --product-intro-model-width: {{ settings.model_width }}px;
     --product-intro-max-width: {{ settings.max_width | default: 1280 }}px;
@@ -392,9 +420,35 @@
     --button-background-color: var(--product-intro-button-background);
     --button-color: var(--product-intro-button-color);
 
+    /* The theme's own values are the fallback, so a button nobody has touched keeps them. Written
+       as the properties and not as `--button-padding-*`: a variable cannot fall back to itself. */
+    font-size: var(--product-intro-button-size, var(--font-paragraph--size));
+    padding-block: var(--product-intro-button-padding-block, var(--button-padding-block));
+    padding-inline: var(--product-intro-button-padding-inline, var(--button-padding-inline));
+
     flex: 1 1 auto;
     min-inline-size: 0;
     justify-content: center;
+
+    @media screen and (max-width: 749px) {
+      font-size: var(--product-intro-button-size-mobile, var(--product-intro-button-size, var(--font-paragraph--size)));
+      padding-block: var(
+        --product-intro-button-padding-block-mobile,
+        var(--product-intro-button-padding-block, var(--button-padding-block))
+      );
+      padding-inline: var(
+        --product-intro-button-padding-inline-mobile,
+        var(--product-intro-button-padding-inline, var(--button-padding-inline))
+      );
+    }
+  }
+
+  /* The rule above pins the colours, which also pinned them on hover - the theme's hover rule
+     carries one class and this one carries two. These give the hover back, and without a colour
+     of their own they resolve to the resting ones, which is what the section did until now. */
+  .product-intro__button.button:hover {
+    --button-background-color: var(--product-intro-button-hover-background, var(--product-intro-button-background));
+    --button-color: var(--product-intro-button-hover-color, var(--product-intro-button-color));
   }
 {% endstylesheet %}
 
@@ -1028,6 +1082,84 @@
       "id": "button_text",
       "label": "t:settings.text",
       "default": "#751132"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_background",
+      "label": "t:settings.hover_background",
+      "placeholder": "t:settings.default"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_text",
+      "label": "t:settings.hover_text",
+      "placeholder": "t:settings.default"
+    },
+    {
+      "type": "range",
+      "id": "button_text_size",
+      "label": "t:settings.text_size",
+      "info": "t:info.zero_uses_theme_default",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "button_text_size_mobile",
+      "label": "t:settings.text_size_mobile",
+      "info": "t:info.zero_uses_desktop",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "button_padding_block",
+      "label": "t:settings.vertical_padding",
+      "info": "t:info.zero_uses_theme_default",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "button_padding_block_mobile",
+      "label": "t:settings.vertical_padding_mobile",
+      "info": "t:info.zero_uses_desktop",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "button_padding_inline",
+      "label": "t:settings.horizontal_padding",
+      "info": "t:info.zero_uses_theme_default",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "button_padding_inline_mobile",
+      "label": "t:settings.horizontal_padding_mobile",
+      "info": "t:info.zero_uses_desktop",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 0
     },
     {
       "type": "header",
