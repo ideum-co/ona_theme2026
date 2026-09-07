@@ -3056,10 +3056,35 @@
                   },
                   "blocks": {}
                 },
+                "subheading_kQ4pRt": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>From Canberra to Dubai.</p>",
+                    "width": "fit-content",
+                    "max_width": "narrow",
+                    "alignment": "left",
+                    "type_preset": "h4",
+                    "font": "var(--font-heading--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "{{ settings.color_palette.background }}",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
                 "text": {
                   "type": "text",
                   "settings": {
-                    "text": "<p>From Canberra to Dubai, ONA coffee is served in growing number of cafes around the world, proudly bringing exceptional coffee to our community.</p>",
+                    "text": "<p>Visit one of our flagship cafés or explore our growing network of trusted venues proudly serving ONA Coffee across Australia and around the world.</p>",
                     "width": "fit-content",
                     "max_width": "narrow",
                     "alignment": "left",
@@ -3085,6 +3110,7 @@
               "block_order": [
                 "heading",
                 "spacer_qcAYVd",
+                "subheading_kQ4pRt",
                 "text"
               ]
             },
