@@ -661,6 +661,7 @@
     "title_preset": "Gotowe ustawienie tytułu"
   },
   "options": {
+    "lines": "Lines",
     "same_as_desktop": "Same as desktop",
     "together": "Together",
     "three_d_model": "3D model",
