@@ -3059,7 +3059,7 @@
                 "subheading_kQ4pRt": {
                   "type": "text",
                   "settings": {
-                    "text": "<p>From Canberra to Dubai.</p>",
+                    "text": "<h4>From Canberra to Dubai.</h4>",
                     "width": "fit-content",
                     "max_width": "narrow",
                     "alignment": "left",
