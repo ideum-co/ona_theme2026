@@ -45,18 +45,27 @@
   if pagination_style != 'none'
     assign show_pagination = true
   endif
+
+  # `lines` is the theme's own dots with a different shape, so it renders through the same control -
+  # same markup, same scroll-driven active state, same click targets - and only the class changes.
+  assign pagination_control_style = pagination_style
+  assign pagination_class = 'resource-list__pagination'
+  if pagination_style == 'lines'
+    assign pagination_control_style = 'dots'
+    assign pagination_class = 'resource-list__pagination resource-list__pagination--lines'
+  endif
 %}
 
 {%- capture carousel_controls -%}
   {%- if show_pagination -%}
     {%- render 'slideshow-controls',
-      style: pagination_style,
+      style: pagination_control_style,
       item_count: slide_count,
       show_arrows: false,
       icon_style: settings.icons_style,
       shape: settings.icons_shape,
       pagination_position: 'center',
-      class: 'resource-list__pagination'
+      class: pagination_class
     -%}
   {%- endif -%}
 {%- endcapture -%}
@@ -303,6 +312,41 @@
   .resource-list__carousel .resource-list__pagination {
     padding-inline: var(--util-page-margin-offset);
     margin-block-start: var(--gap-lg, 1rem);
+  }
+
+  /* Lines: the same control drawn as a bar per slide, one filled and the rest in a tint of the
+     same colour, as in the design. */
+  .resource-list__carousel .resource-list__pagination--lines {
+    /* The theme blends its dots with `difference` so they stay legible over a photo. These sit on
+       the section's own background, where that blend turns the brand colour into its inverse. */
+    mix-blend-mode: normal;
+  }
+
+  .resource-list__pagination--lines .slideshow-controls__dots {
+    gap: var(--pagination-line-gap, 0.75rem);
+    padding-inline: 0;
+  }
+
+  .resource-list__pagination--lines .slideshow-controls__dots button {
+    /* Thickness. The theme's dot reads it for width, height and radius alike, which is what makes
+       the default a circle. */
+    --size: var(--pagination-line-thickness, 0.25rem);
+
+    /* The bar is the visible part; the button keeps a full touch target around it. */
+    inline-size: var(--pagination-line-width, 3rem);
+    block-size: var(--minimum-touch-target, 44px);
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .resource-list__pagination--lines .slideshow-controls__dots button::after {
+    inline-size: 100%;
+    block-size: var(--size);
+    border-radius: calc(var(--size) / 2);
+
+    /* The theme rings its dots to keep them visible on a photo; a bar on a flat background does
+       not need it, and the ring reads as a border at this thickness. */
+    box-shadow: none;
   }
 
   .resource-list__carousel .resource-list__slide {
