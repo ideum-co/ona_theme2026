@@ -16,7 +16,7 @@
           "type": "text",
           "name": "t:names.heading",
           "settings": {
-            "text": "<p>Coffee. <em>elevated.</em></p>",
+            "text": "<p>Coffee, <em>elevated.</em></p>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "center",
@@ -42,7 +42,7 @@
           "type": "text",
           "name": "t:names.text",
           "settings": {
-            "text": "<p>Exceptional coffees, thoughtfully sourced and expertly roasted in Canberra. Founded by World Barista Champion Sasa Sestic.</p>",
+            "text": "<p>Exceptional coffees, thoughtfully sourced and expertly roasted in Canberra. Founded by World Barista Champion Saša Šestić.</p>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "left",
@@ -127,7 +127,7 @@
               "type": "button",
               "name": "t:names.button",
               "settings": {
-                "label": "Shop coffee",
+                "label": "Shop coffees",
                 "link": "shopify://collections/all",
                 "open_in_new_tab": false,
                 "style_class": "button",
