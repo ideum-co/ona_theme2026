@@ -12,6 +12,8 @@
   assign heading_level_size = '--font-' | append: heading_tag | append: '--size'
   assign product = section.settings.product
   assign settings = section.settings
+  assign media_width = settings.media_width | default: 50
+  assign image_sizes = '(min-width: 750px) ' | append: media_width | append: 'vw, 100vw'
   assign heading_preset = settings.type_preset | default: 'rte'
   assign eyebrow_preset = settings.eyebrow_type_preset | default: 'rte'
   assign title_preset = settings.title_type_preset | default: 'rte'
@@ -61,6 +63,9 @@
       --product-highlight-background: {{ settings.background_color }};
       --product-highlight-color: {{ settings.text_color }};
       --color: {{ settings.text_color }};
+      --product-highlight-media-width: {{ settings.media_width | default: 50 }}%;
+      --product-highlight-content-width: calc(100% - var(--product-highlight-media-width));
+      --product-highlight-image-fit: {{ settings.image_fit | default: 'cover' }};
       {%- comment -%}
         `--variant-option-label-color` is declared on `:root` as the page foreground, so the
         control's own `currentcolor` fallback never gets a turn and the label and the value came out
@@ -229,7 +234,7 @@
           | image_url: width: 1600
           | image_tag:
             widths: '400, 600, 800, 1200, 1600',
-            sizes: '(min-width: 750px) 50vw, 100vw',
+            sizes: image_sizes,
             loading: 'lazy',
             class: 'product-highlight__image'
         }}
@@ -250,14 +255,27 @@
     color: var(--product-highlight-color, var(--color-background));
 
     @media screen and (min-width: 750px) {
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, var(--product-highlight-content-width)) minmax(0, var(--product-highlight-media-width));
       align-items: stretch;
+    }
+  }
+
+  .product-highlight--media-left {
+    @media screen and (min-width: 750px) {
+      grid-template-columns: minmax(0, var(--product-highlight-media-width)) minmax(0, var(--product-highlight-content-width));
     }
   }
 
   .product-highlight--media-left .product-highlight__media {
     @media screen and (min-width: 750px) {
       grid-column: 1;
+      grid-row: 1;
+    }
+  }
+
+  .product-highlight--media-left .product-highlight__content {
+    @media screen and (min-width: 750px) {
+      grid-column: 2;
       grid-row: 1;
     }
   }
@@ -427,7 +445,7 @@
   .product-highlight__image {
     inline-size: 100%;
     block-size: 100%;
-    object-fit: cover;
+    object-fit: var(--product-highlight-image-fit, cover);
     display: block;
   }
 {% endstylesheet %}
@@ -2056,6 +2074,36 @@
         }
       ],
       "default": "right"
+    },
+    {
+      "type": "range",
+      "id": "media_width",
+      "label": "Media width",
+      "min": 40,
+      "max": 70,
+      "step": 5,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Crop to fill"
+        },
+        {
+          "value": "contain",
+          "label": "Fit entire image"
+        },
+        {
+          "value": "fill",
+          "label": "Stretch to fill"
+        }
+      ],
+      "default": "cover"
     },
     {
       "type": "header",
