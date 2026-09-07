@@ -71,7 +71,20 @@
     {% else %}
       --line-height: var(--line-height--{{ type }}-{{ settings.line_height }});
     {% endif %}
-    --letter-spacing: var(--letter-spacing--{{ type }}-{{ settings.letter_spacing }});
+    {%- comment -%}
+      letter_spacing is normally one of the token words (tight/normal/loose) the theme
+      editor's dropdown offers, resolved against the --letter-spacing--{type}-{token}
+      variables below. Some legacy settings hold a literal CSS length instead (set by
+      a direct file edit, not through the dropdown -- e.g. "0.18em" on the footer
+      wordmark) -- var(--letter-spacing--body-0.18em) doesn't exist, so the whole
+      declaration silently fails and the configured tracking never renders. Pass a
+      literal value straight through instead of treating it as a token suffix.
+    {%- endcomment -%}
+    {%- if settings.letter_spacing == 'tight' or settings.letter_spacing == 'normal' or settings.letter_spacing == 'loose' -%}
+      --letter-spacing: var(--letter-spacing--{{ type }}-{{ settings.letter_spacing }});
+    {%- elsif settings.letter_spacing != blank -%}
+      --letter-spacing: {{ settings.letter_spacing }};
+    {%- endif -%}
   {%- endif -%}
 {%- endcapture -%}
 {{- variables | strip | strip_newlines -}}

@@ -167,6 +167,7 @@
               "settings": {
                 "variant_style": "custom_dropdown",
                 "show_swatches": false,
+                "alignment": "center",
                 "padding-block-start": 0,
                 "padding-block-end": 8
               }

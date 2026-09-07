@@ -42,6 +42,11 @@
     justify-content: inherit;
     row-gap: var(--gap-xs);
     column-gap: var(--gap-lg);
+    /* .utilities is a column flexbox with align-items: center below 750px (see
+       footer-utilities.liquid), which sizes flex children to their own max-content
+       width instead of stretching them -- without a cap here, flex-wrap never
+       actually triggers and a long policy list runs off the viewport. */
+    max-width: 100%;
   }
 
   .policy-list-flat a {
