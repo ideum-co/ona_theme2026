@@ -16,24 +16,48 @@
     render 'slideshow-styles'
   endif
 
-  if section.settings.enable_transparent_header_home and template.name == 'index'
+  # Cada plantilla cae en un grupo, y el grupo elige los ajustes. Los ids ya seguían este patrón
+  # para inicio, producto y colección, así que lo guardado se queda donde estaba.
+  assign template_group = 'other'
+  case template.name
+    when 'index'
+      assign template_group = 'home'
+    when 'product'
+      assign template_group = 'product'
+    when 'collection'
+      assign template_group = 'collection'
+    when 'page'
+      assign template_group = 'page'
+    when 'blog'
+      assign template_group = 'blog'
+    when 'article'
+      assign template_group = 'blog'
+  endcase
+
+  assign transparent_key = 'enable_transparent_header_' | append: template_group
+  assign transparent_color_key = 'text_color_transparent_' | append: template_group
+  assign sticky_key = 'sticky_header_' | append: template_group
+
+  if section.settings[transparent_key]
     assign transparent = 'always'
-    assign transparent_text_color_setting = section.settings.text_color_transparent_home
-  elsif section.settings.enable_transparent_header_product and template.name == 'product'
-    assign transparent = 'always'
-    assign transparent_text_color_setting = section.settings.text_color_transparent_product
-  elsif section.settings.enable_transparent_header_collection and template.name == 'collection'
-    assign transparent = 'always'
-    assign transparent_text_color_setting = section.settings.text_color_transparent_collection
+    assign transparent_text_color_setting = section.settings[transparent_color_key]
   endif
 
-  if section.settings.enable_sticky_header == 'always'
+  # El ajuste general es el que manda mientras la plantilla no diga otra cosa.
+  assign sticky_setting = section.settings[sticky_key]
+  if sticky_setting == blank or sticky_setting == 'inherit'
+    assign sticky_setting = section.settings.enable_sticky_header
+  endif
+
+  if sticky_setting == 'always'
     assign sticky = 'always'
-  elsif section.settings.enable_sticky_header == 'scroll-up'
+  elsif sticky_setting == 'scroll-up'
     assign sticky = 'scroll-up'
   endif
 
-  if transparent and sticky
+  # Al quedarse pegado el encabezado deja de ser transparente, que es lo que hacía hasta ahora;
+  # con el ajuste puesto se queda transparente también pegado.
+  if transparent and sticky and section.settings.transparent_when_sticky != true
     assign transparent = 'not-sticky'
   endif
 
@@ -508,9 +532,12 @@
     }
   }
 
-  .header[transparent]:not([data-sticky-state='active']):not(:has(.menu-list__link:hover)):not(
-      :has(header-menu[aria-expanded='true'])
-    ) {
+  /* `:where()` no suma especificidad, así que el resto de reglas siguen pesando igual. Deja pasar
+     el estado pegado cuando la transparencia es `always`, que es lo que el ajuste nuevo pide; con
+     `not-sticky` - el comportamiento de siempre - la guarda actúa igual que antes. */
+  .header[transparent]:where([transparent='always'], :not([data-sticky-state='active'])):not(
+      :has(.menu-list__link:hover)
+    ):not(:has(header-menu[aria-expanded='true'])) {
     --header-action-button-background: var(--header-transparent-action-button-background);
     --header-action-button-text: var(--header-transparent-action-button-text);
     --header-action-icon-color: var(--header-transparent-action-icon-color);
@@ -569,7 +596,9 @@
     }
 
     /** For transparent header, apply transparent text color to rows when menu is not hovered */
-    &:not([data-sticky-state='active']):not(:has(.menu-list__link:hover)):not(:has(header-menu[aria-expanded='true']))
+    &:where([transparent='always'], :not([data-sticky-state='active'])):not(:has(.menu-list__link:hover)):not(
+        :has(header-menu[aria-expanded='true'])
+      )
       .header__row {
       --color-foreground: var(--color-transparent-text);
       --color-foreground-rgb: var(--color-transparent-text-rgb);
@@ -581,9 +610,9 @@
 
     /* Swap the cart bubble in transparent state only when using the default
        style. Custom bubble colors apply unchanged across header states. */
-    &[data-bubble-style='default']:not([data-sticky-state='active']):not(:has(.menu-list__link:hover)):not(
-        :has(header-menu[aria-expanded='true'])
-      )
+    &[data-bubble-style='default']:where([transparent='always'], :not([data-sticky-state='active'])):not(
+        :has(.menu-list__link:hover)
+      ):not(:has(header-menu[aria-expanded='true']))
       .header__row {
       --cart-bubble-background: var(--color-transparent-text, var(--cart-bubble-background-fallback));
       --cart-bubble-text: var(--color-transparent-text-contrast, var(--cart-bubble-text-fallback));
@@ -1580,6 +1609,13 @@
       "default": "always"
     },
     {
+      "type": "checkbox",
+      "id": "transparent_when_sticky",
+      "label": "t:settings.transparent_when_sticky",
+      "info": "t:info.transparent_when_sticky",
+      "default": false
+    },
+    {
       "type": "range",
       "id": "divider_width",
       "label": "t:settings.divider_thickness",
@@ -1875,6 +1911,30 @@
       "visible_if": "{{ section.settings.enable_transparent_header_home }}"
     },
     {
+      "type": "select",
+      "id": "sticky_header_home",
+      "label": "t:settings.sticky_header",
+      "options": [
+        {
+          "value": "inherit",
+          "label": "t:options.default"
+        },
+        {
+          "value": "always",
+          "label": "t:options.always"
+        },
+        {
+          "value": "scroll-up",
+          "label": "t:options.on_scroll_up"
+        },
+        {
+          "value": "never",
+          "label": "t:options.never"
+        }
+      ],
+      "default": "inherit"
+    },
+    {
       "type": "header",
       "content": "t:content.product_page"
     },
@@ -1899,6 +1959,30 @@
       "visible_if": "{{ section.settings.enable_transparent_header_product }}"
     },
     {
+      "type": "select",
+      "id": "sticky_header_product",
+      "label": "t:settings.sticky_header",
+      "options": [
+        {
+          "value": "inherit",
+          "label": "t:options.default"
+        },
+        {
+          "value": "always",
+          "label": "t:options.always"
+        },
+        {
+          "value": "scroll-up",
+          "label": "t:options.on_scroll_up"
+        },
+        {
+          "value": "never",
+          "label": "t:options.never"
+        }
+      ],
+      "default": "inherit"
+    },
+    {
       "type": "header",
       "content": "t:content.collection_page"
     },
@@ -1921,6 +2005,174 @@
       "label": "t:settings.text_color_transparent",
       "placeholder": "t:settings.default",
       "visible_if": "{{ section.settings.enable_transparent_header_collection }}"
+    },
+    {
+      "type": "select",
+      "id": "sticky_header_collection",
+      "label": "t:settings.sticky_header",
+      "options": [
+        {
+          "value": "inherit",
+          "label": "t:options.default"
+        },
+        {
+          "value": "always",
+          "label": "t:options.always"
+        },
+        {
+          "value": "scroll-up",
+          "label": "t:options.on_scroll_up"
+        },
+        {
+          "value": "never",
+          "label": "t:options.never"
+        }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "header",
+      "content": "t:content.pages"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_transparent_header_page",
+      "label": "t:settings.transparent_background",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "page_inverse_logo",
+      "label": "t:settings.inverse_logo",
+      "default": false,
+      "visible_if": "{{ section.settings.enable_transparent_header_page }}"
+    },
+    {
+      "type": "color",
+      "id": "text_color_transparent_page",
+      "label": "t:settings.text_color_transparent",
+      "placeholder": "t:settings.default",
+      "visible_if": "{{ section.settings.enable_transparent_header_page }}"
+    },
+    {
+      "type": "select",
+      "id": "sticky_header_page",
+      "label": "t:settings.sticky_header",
+      "options": [
+        {
+          "value": "inherit",
+          "label": "t:options.default"
+        },
+        {
+          "value": "always",
+          "label": "t:options.always"
+        },
+        {
+          "value": "scroll-up",
+          "label": "t:options.on_scroll_up"
+        },
+        {
+          "value": "never",
+          "label": "t:options.never"
+        }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "header",
+      "content": "t:content.blog_pages"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_transparent_header_blog",
+      "label": "t:settings.transparent_background",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "blog_inverse_logo",
+      "label": "t:settings.inverse_logo",
+      "default": false,
+      "visible_if": "{{ section.settings.enable_transparent_header_blog }}"
+    },
+    {
+      "type": "color",
+      "id": "text_color_transparent_blog",
+      "label": "t:settings.text_color_transparent",
+      "placeholder": "t:settings.default",
+      "visible_if": "{{ section.settings.enable_transparent_header_blog }}"
+    },
+    {
+      "type": "select",
+      "id": "sticky_header_blog",
+      "label": "t:settings.sticky_header",
+      "options": [
+        {
+          "value": "inherit",
+          "label": "t:options.default"
+        },
+        {
+          "value": "always",
+          "label": "t:options.always"
+        },
+        {
+          "value": "scroll-up",
+          "label": "t:options.on_scroll_up"
+        },
+        {
+          "value": "never",
+          "label": "t:options.never"
+        }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "header",
+      "content": "t:content.other_templates"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_transparent_header_other",
+      "label": "t:settings.transparent_background",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "other_inverse_logo",
+      "label": "t:settings.inverse_logo",
+      "default": false,
+      "visible_if": "{{ section.settings.enable_transparent_header_other }}"
+    },
+    {
+      "type": "color",
+      "id": "text_color_transparent_other",
+      "label": "t:settings.text_color_transparent",
+      "placeholder": "t:settings.default",
+      "visible_if": "{{ section.settings.enable_transparent_header_other }}"
+    },
+    {
+      "type": "select",
+      "id": "sticky_header_other",
+      "label": "t:settings.sticky_header",
+      "options": [
+        {
+          "value": "inherit",
+          "label": "t:options.default"
+        },
+        {
+          "value": "always",
+          "label": "t:options.always"
+        },
+        {
+          "value": "scroll-up",
+          "label": "t:options.on_scroll_up"
+        },
+        {
+          "value": "never",
+          "label": "t:options.never"
+        }
+      ],
+      "default": "inherit"
     }
   ],
   "presets": []

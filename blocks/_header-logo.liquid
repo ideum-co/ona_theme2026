@@ -2,11 +2,28 @@
   assign block_settings = block.settings
   assign use_inverse_logo = false
 
-  if section.settings.enable_transparent_header_home and template.name == 'index' and section.settings.home_inverse_logo == true
-    assign use_inverse_logo = true
-  elsif section.settings.enable_transparent_header_product and template.name == 'product' and section.settings.product_inverse_logo == true
-    assign use_inverse_logo = true
-  elsif section.settings.enable_transparent_header_collection and template.name == 'collection' and section.settings.collection_inverse_logo == true
+  # El mismo agrupado por plantilla que usa la sección del encabezado, para que el logo inverso
+  # siga a la transparencia también en páginas, blog y el resto de plantillas.
+  assign template_group = 'other'
+  case template.name
+    when 'index'
+      assign template_group = 'home'
+    when 'product'
+      assign template_group = 'product'
+    when 'collection'
+      assign template_group = 'collection'
+    when 'page'
+      assign template_group = 'page'
+    when 'blog'
+      assign template_group = 'blog'
+    when 'article'
+      assign template_group = 'blog'
+  endcase
+
+  assign transparent_key = 'enable_transparent_header_' | append: template_group
+  assign inverse_logo_key = template_group | append: '_inverse_logo'
+
+  if section.settings[transparent_key] and section.settings[inverse_logo_key] == true
     assign use_inverse_logo = true
   endif
 
