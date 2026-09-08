@@ -1,0 +1,508 @@
+{%- liquid
+  assign all_locations = shop.metaobjects.store_location.values
+  assign content_width = 'var(--max-width--body-normal)'
+  if section.settings.content_width == 'narrow'
+    assign content_width = 'var(--max-width--body-narrow)'
+  elsif section.settings.content_width == 'full'
+    assign content_width = '100%'
+  endif
+
+  if section.settings.background_color != blank
+    render 'contrast-override', background_color: section.settings.background_color, text_color: section.settings.text_color, section_id: section.id
+  endif
+-%}
+
+<script src="{{ 'locations-flagships.js' | asset_url }}" type="module"></script>
+
+<div
+  class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+></div>
+
+<section
+  class="locations-flagships section section--page-width spacing-style{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+  style="
+    --locations-flagships-content-width: {{ content_width }};
+    --locations-flagships-alignment: {{ section.settings.alignment | default: 'left' }};
+    --locations-flagships-text-color: {{ section.settings.text_color | default: 'var(--color-foreground)' }};
+    --locations-flagships-accent-color: {{ section.settings.accent_color | default: '#6b1835' }};
+    --locations-flagships-media-ratio: {{ section.settings.media_aspect_ratio | default: '4 / 3' }};
+    --locations-flagships-media-fit: {{ section.settings.media_fit | default: 'cover' }};
+    {% render 'spacing-style', settings: section.settings %}
+  "
+  data-alignment="{{ section.settings.alignment | default: 'left' }}"
+  data-media-ratio="{{ section.settings.media_aspect_ratio | default: '4 / 3' }}"
+  data-section-id="{{ section.id }}"
+  aria-labelledby="LocationsFlagships-heading-{{ section.id }}"
+  {{ section.shopify_attributes }}
+>
+  <div class="locations-flagships__inner">
+    <div class="locations-flagships__heading-group">
+      <h2 id="LocationsFlagships-heading-{{ section.id }}" class="locations-flagships__heading">
+        {{- section.settings.heading | default: 'Flagship cafes' | escape -}}
+      </h2>
+      {%- if section.settings.intro != blank -%}
+        <div class="locations-flagships__intro rte">{{ section.settings.intro }}</div>
+      {%- endif -%}
+    </div>
+
+    {%- paginate all_locations by 250 -%}
+      <locations-flagships-loader
+        data-section-id="{{ section.id }}"
+        data-current-page="{{ paginate.current_page }}"
+        data-next-page-url="{{ paginate.next.url | escape }}"
+      >
+        <div class="locations-flagships__list" data-flagship-list>
+      {%- for location in all_locations -%}
+        {%- liquid
+          assign is_flagship = false
+          for tag in location.tags.value
+            assign tag_slug = tag.slug.value | default: tag.slug
+            if tag.slug.value == 'flagship' or tag_slug == 'flagship'
+              assign is_flagship = true
+              break
+            endif
+          endfor
+        -%}
+
+        {%- if is_flagship -%}
+          {%- liquid
+            assign title = location.title.value | default: location.title
+            assign address = location.storeaddress.value | default: location.storeaddress
+            assign suburb = location.suburb.value | default: location.suburb
+            assign state = location.state.value | default: location.state
+            assign hours = location.time.value
+            assign overview = location.overview.value
+            capture website
+              render 'safe-external-url', url: location.storeaddressurl
+            endcapture
+            assign website = website | strip
+            assign gallery = location.gallery.value
+            assign fallback_image = location.image.value
+            assign media_count = 0
+            assign use_fallback_image = false
+
+            if gallery != blank
+              for media in gallery
+                assign image = media.preview_image
+                if media.media_type == 'image'
+                  assign image = media
+                endif
+                if image != blank
+                  assign media_count = media_count | plus: 1
+                endif
+              endfor
+            endif
+
+            if media_count == 0 and fallback_image != blank
+              assign media_count = 1
+              assign use_fallback_image = true
+            endif
+          -%}
+
+          <article
+            class="locations-flagships__card"
+            data-flagship-card
+            data-location-id="{{ location.system.id | escape }}"
+          >
+            {%- if media_count > 0 -%}
+              <locations-flagship-gallery
+                class="locations-flagships__gallery"
+                data-slide-count="{{ media_count }}"
+                aria-label="{{ title | escape }} image gallery"
+              >
+                <div
+                  class="locations-flagships__viewport"
+                  data-gallery-viewport
+                  {%- if media_count > 1 %}
+                    tabindex="0"
+                    role="region"
+                    aria-roledescription="carousel"
+                    aria-label="{{ title | escape }} images. Use left and right arrow keys to browse."
+                  {%- endif %}
+                >
+                  <ul class="locations-flagships__slides" role="list">
+                    {%- if gallery != blank and use_fallback_image == false -%}
+                      {%- assign slide_index = 0 -%}
+                      {%- for media in gallery -%}
+                        {%- liquid
+                          assign image = media.preview_image
+                          if media.media_type == 'image'
+                            assign image = media
+                          endif
+                        -%}
+                        {%- if image != blank -%}
+                          {%- liquid
+                            assign slide_index = slide_index | plus: 1
+                            assign media_alt = media.alt | default: title
+                            if media.alt == blank and media_count > 1
+                              capture media_alt
+                                echo title | append: ' — image ' | append: slide_index | append: ' of ' | append: media_count
+                              endcapture
+                            endif
+                          -%}
+                          <li
+                            class="locations-flagships__slide"
+                            data-gallery-slide
+                            data-gallery-index="{{ slide_index | minus: 1 }}"
+                          >
+                            {{- image | image_url: width: 1800 | image_tag: loading: 'lazy', widths: '480, 720, 960, 1200, 1800', sizes: '(min-width: 990px) 50vw, 100vw', alt: media_alt -}}
+                          </li>
+                        {%- endif -%}
+                      {%- endfor -%}
+                    {%- elsif location.image.value != blank -%}
+                      {%- liquid
+                        assign media = location.image.value
+                        assign media_alt = media.alt | default: title
+                      -%}
+                      <li class="locations-flagships__slide" data-gallery-slide data-gallery-index="0">
+                        {{- media | image_url: width: 1800 | image_tag: loading: 'lazy', widths: '480, 720, 960, 1200, 1800', sizes: '(min-width: 990px) 50vw, 100vw', alt: media_alt -}}
+                      </li>
+                    {%- endif -%}
+                  </ul>
+                </div>
+
+                {%- if media_count > 1 -%}
+                  <div class="locations-flagships__gallery-controls" role="group" aria-label="Gallery controls">
+                    <button type="button" data-gallery-previous aria-label="Previous image">&larr;</button>
+                    <span data-gallery-status aria-live="polite" aria-atomic="true">Image 1 of {{ media_count }}</span>
+                    <button type="button" data-gallery-next aria-label="Next image">&rarr;</button>
+                  </div>
+                {%- endif -%}
+              </locations-flagship-gallery>
+            {%- endif -%}
+
+            <div class="locations-flagships__content">
+              <h3 class="locations-flagships__title">{{ title | escape }}</h3>
+
+              {%- if address != blank or suburb != blank or state != blank -%}
+                <address class="locations-flagships__address">
+                  {%- if address != blank -%}{{ address | escape | newline_to_br }}{%- endif -%}
+                  {%- if suburb != blank or state != blank -%}
+                    {%- if address != blank -%}<br>{%- endif -%}
+                    {{- suburb | escape -}}
+                    {%- if suburb != blank and state != blank -%}, {% endif -%}
+                    {{- state | escape -}}
+                  {%- endif -%}
+                </address>
+              {%- endif -%}
+
+              {%- if hours != blank -%}
+                <div class="locations-flagships__details">
+                  <h4>Hours</h4>
+                  <div class="locations-flagships__hours rte">{{ location.time | metafield_tag }}</div>
+                </div>
+              {%- endif -%}
+
+              {%- if overview != blank -%}
+                <div class="locations-flagships__overview rte">{{ location.overview | metafield_tag }}</div>
+              {%- endif -%}
+
+              {%- if website != blank -%}
+                <a class="locations-flagships__website" href="{{ website | escape }}" target="_blank" rel="noopener noreferrer">
+                  {{- section.settings.website_label | default: 'Visit website' | escape -}}
+                </a>
+              {%- endif -%}
+            </div>
+          </article>
+        {%- endif -%}
+          {%- endfor -%}
+        </div>
+        <p data-flagships-status role="status" aria-live="polite"></p>
+        {%- if paginate.pages > 1 -%}
+          <nav aria-label="Flagship location pages" data-flagships-fallback-pagination>
+            {{ paginate | default_pagination }}
+          </nav>
+        {%- endif -%}
+      </locations-flagships-loader>
+    {%- endpaginate -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .locations-flagships {
+    --color: var(--locations-flagships-text-color);
+    color: var(--locations-flagships-text-color);
+  }
+
+  locations-flagships-loader {
+    display: block;
+  }
+
+  .locations-flagships__inner {
+    inline-size: min(100%, var(--locations-flagships-content-width));
+    margin-inline: auto;
+  }
+
+  .locations-flagships__heading-group {
+    max-inline-size: 50rem;
+    margin-block-end: clamp(2rem, 5vw, 5rem);
+    text-align: var(--locations-flagships-alignment);
+  }
+
+  .locations-flagships[data-alignment='center'] .locations-flagships__heading-group {
+    margin-inline: auto;
+  }
+
+  .locations-flagships[data-alignment='right'] .locations-flagships__heading-group {
+    margin-inline-start: auto;
+  }
+
+  .locations-flagships__heading {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 4.5rem);
+    line-height: 1;
+  }
+
+  .locations-flagships__intro {
+    margin-block-start: 1rem;
+  }
+
+  .locations-flagships__intro > :first-child,
+  .locations-flagships__content > :first-child,
+  .locations-flagships__details > :first-child {
+    margin-block-start: 0;
+  }
+
+  .locations-flagships__intro > :last-child,
+  .locations-flagships__content > :last-child,
+  .locations-flagships__details > :last-child {
+    margin-block-end: 0;
+  }
+
+  .locations-flagships__list {
+    display: grid;
+    gap: clamp(3rem, 8vw, 8rem);
+  }
+
+  .locations-flagships__card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(16rem, 0.8fr);
+    gap: clamp(1.5rem, 5vw, 5rem);
+    align-items: center;
+  }
+
+  .locations-flagships__card:nth-child(even) .locations-flagships__gallery {
+    order: 2;
+  }
+
+  locations-flagship-gallery,
+  .locations-flagships__gallery {
+    position: relative;
+    display: block;
+    min-inline-size: 0;
+  }
+
+  .locations-flagships__viewport {
+    overflow-x: auto;
+    border-radius: 0;
+    scrollbar-width: none;
+    scroll-snap-type: x mandatory;
+  }
+
+  .locations-flagships__viewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  .locations-flagships__viewport:focus-visible,
+  .locations-flagships__gallery-controls button:focus-visible,
+  .locations-flagships__website:focus-visible {
+    outline: 2px solid var(--locations-flagships-accent-color);
+    outline-offset: 3px;
+  }
+
+  .locations-flagships__slides {
+    display: flex;
+    inline-size: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .locations-flagships__slide {
+    flex: 0 0 100%;
+    inline-size: 100%;
+    aspect-ratio: var(--locations-flagships-media-ratio);
+    scroll-snap-align: start;
+  }
+
+  .locations-flagships[data-media-ratio='adapt'] .locations-flagships__slide {
+    aspect-ratio: auto;
+  }
+
+  .locations-flagships__slide img {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: var(--locations-flagships-media-fit);
+  }
+
+  .locations-flagships[data-media-ratio='adapt'] .locations-flagships__slide img {
+    block-size: auto;
+  }
+
+  .locations-flagships__gallery-controls {
+    position: absolute;
+    inset-block-end: 1rem;
+    inset-inline: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    pointer-events: none;
+  }
+
+  .locations-flagships__gallery-controls button,
+  .locations-flagships__gallery-controls span {
+    min-block-size: 2.75rem;
+    border: 0;
+    background: var(--color-background, #fff);
+    color: var(--color-foreground, #252525);
+    box-shadow: 0 0.2rem 1rem rgb(0 0 0 / 15%);
+    pointer-events: auto;
+  }
+
+  .locations-flagships__gallery-controls button {
+    min-inline-size: 2.75rem;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    font-size: 1.25rem;
+  }
+
+  .locations-flagships__gallery-controls span {
+    display: grid;
+    place-items: center;
+    padding-inline: 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .locations-flagships__content {
+    text-align: var(--locations-flagships-alignment);
+  }
+
+  .locations-flagships__title {
+    margin-block-end: 1.25rem;
+    font-size: clamp(1.75rem, 4vw, 3.5rem);
+    line-height: 1;
+  }
+
+  .locations-flagships__address {
+    margin-block-end: 1.5rem;
+    font-style: normal;
+  }
+
+  .locations-flagships__details,
+  .locations-flagships__overview {
+    margin-block-start: 1.5rem;
+  }
+
+  .locations-flagships__details h4 {
+    margin-block-end: 0.5rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .locations-flagships__website {
+    display: inline-flex;
+    margin-block-start: 2rem;
+    padding-block-end: 0.2rem;
+    border-block-end: 2px solid var(--locations-flagships-accent-color);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .locations-flagships__viewport {
+      scroll-behavior: smooth;
+    }
+  }
+
+  @media (max-width: 749px) {
+    .locations-flagships__card {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .locations-flagships__card:nth-child(even) .locations-flagships__gallery {
+      order: initial;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Locations flagships",
+  "settings": [
+    { "type": "header", "content": "Copy" },
+    { "type": "text", "id": "heading", "label": "t:settings.heading", "default": "Flagship cafes" },
+    { "type": "richtext", "id": "intro", "label": "t:settings.description" },
+    { "type": "text", "id": "website_label", "label": "Website link label", "default": "Visit website" },
+    { "type": "header", "content": "t:content.layout" },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "t:settings.width",
+      "options": [
+        { "value": "narrow", "label": "t:options.narrow" },
+        { "value": "normal", "label": "t:options.normal" },
+        { "value": "full", "label": "t:options.full" }
+      ],
+      "default": "full"
+    },
+    {
+      "type": "text_alignment",
+      "id": "alignment",
+      "label": "t:settings.alignment",
+      "default": "left"
+    },
+    { "type": "header", "content": "Media" },
+    {
+      "type": "select",
+      "id": "media_aspect_ratio",
+      "label": "Media aspect ratio",
+      "options": [
+        { "value": "adapt", "label": "Adapt to image" },
+        { "value": "1 / 1", "label": "Square" },
+        { "value": "4 / 3", "label": "Landscape" },
+        { "value": "16 / 9", "label": "Wide" }
+      ],
+      "default": "4 / 3"
+    },
+    {
+      "type": "select",
+      "id": "media_fit",
+      "label": "Media fit",
+      "options": [
+        { "value": "cover", "label": "Crop to fill" },
+        { "value": "contain", "label": "Fit inside" }
+      ],
+      "default": "cover"
+    },
+    { "type": "header", "content": "t:content.colors" },
+    { "type": "color", "id": "background_color", "label": "t:settings.background_color", "default": "#f5f0e8" },
+    { "type": "color", "id": "text_color", "label": "t:settings.text_color", "default": "#252525" },
+    { "type": "color", "id": "accent_color", "label": "Accent color", "default": "#6b1835" },
+    { "type": "header", "content": "t:content.padding" },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    }
+  ]
+}
+{% endschema %}

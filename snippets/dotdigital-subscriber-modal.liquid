@@ -1,0 +1,6 @@
+{%- assign dotdigital_campaign = settings.dotdigital_subscriber_campaign | strip -%}
+{%- if settings.dotdigital_subscriber_modal_enabled and dotdigital_campaign != blank and request.design_mode == false -%}
+  {%- assign dotdigital_campaign = dotdigital_campaign | url_encode -%}
+  {%- capture dotdigital_popover_url -%}//news.onacoffee.com.au/resources/sharing/popoverv3.js?sharing=lp-popover&domain=news.onacoffee.com.au&id={{ dotdigital_campaign }}&default-cookies-expiry-length-in-days={{ settings.dotdigital_subscriber_cookie_days | url_encode }}&hide-after-submission=true&delay={{ settings.dotdigital_subscriber_delay | url_encode }}{%- endcapture -%}
+  <script src="{{ dotdigital_popover_url | escape }}" async></script>
+{%- endif -%}
