@@ -485,6 +485,80 @@ test('activates map view after readiness when map remains requested', async () =
   assert.equal(finder.mapPanel.hidden, false);
 });
 
+test('returns active finders to accessible List view when Maps authentication fails after readiness', async () => {
+  const previousAuthFailure = globalThis.gm_authFailure;
+  let previousHandlerCalls = 0;
+  const chainedHandler = () => {
+    previousHandlerCalls += 1;
+  };
+  globalThis.gm_authFailure = chainedHandler;
+
+  const { LocationsStoreFinder } = await import(`${javascriptPath}?post-ready-auth=${Date.now()}`);
+  const finder = new LocationsStoreFinder();
+  const listButton = {
+    dataset: { view: 'list' },
+    setAttribute(name, value) {
+      this[name] = value;
+    },
+  };
+  const mapButton = {
+    dataset: { view: 'map' },
+    setAttribute(name, value) {
+      this[name] = value;
+    },
+  };
+  let status = '';
+  let detachedMarkers = 0;
+  finder.dataset = { activeView: 'list' };
+  finder.activeView = 'list';
+  finder.requestedView = 'list';
+  finder.settings = {
+    mapsApiKey: 'editor-key',
+    mapErrorStatus: 'Map is unavailable. Browse the location list instead.',
+    noCoordinatesStatus: 'No mapped locations.',
+  };
+  finder.visibleLocations = [{ title: 'Mapped', latitude: -35.28, longitude: 149.13 }];
+  finder.mapPanel = { hidden: true };
+  finder.viewButtons = [listButton, mapButton];
+  finder.finderConnected = true;
+  finder.connectionVersion = 0;
+  finder.mapInitializationPromise = null;
+  finder.markers = [{ setMap(value) { if (value === null) detachedMarkers += 1; } }];
+  finder.statusText = () => status;
+  finder.setStatus = (message) => { status = message; };
+  finder.syncMapMarkers = () => {};
+  finder.initializeMap = async () => {
+    finder.map = { ready: true };
+    return finder.map;
+  };
+
+  try {
+    await finder.setView('map');
+    assert.equal(finder.dataset.activeView, 'map', 'the map must first activate after readiness');
+    assert.notEqual(globalThis.gm_authFailure, chainedHandler, 'the finder must retain an auth-failure dispatcher');
+
+    globalThis.gm_authFailure();
+
+    assert.equal(previousHandlerCalls, 1, 'a pre-existing global auth handler must remain chained');
+    assert.equal(finder.dataset.activeView, 'list');
+    assert.equal(finder.mapPanel.hidden, true);
+    assert.equal(listButton['aria-pressed'], 'true');
+    assert.equal(mapButton['aria-pressed'], 'false');
+    assert.equal(status, 'Map is unavailable. Browse the location list instead.');
+    assert.equal(detachedMarkers, 1);
+    assert.deepEqual(finder.markers, []);
+    assert.equal(finder.map, null);
+    assert.equal(finder.mapInitializationPromise, null);
+
+    finder.disconnectedCallback();
+    assert.equal(globalThis.gm_authFailure, chainedHandler, 'disconnect must restore the prior global handler');
+  } finally {
+    if (globalThis.gm_authFailure !== chainedHandler) finder.disconnectedCallback();
+    if (previousAuthFailure === undefined) delete globalThis.gm_authFailure;
+    else globalThis.gm_authFailure = previousAuthFailure;
+  }
+});
+
 test('ignores a stale Maps rejection after the visitor returns to list view', async () => {
   const { LocationsStoreFinder } = await import(`${javascriptPath}?stale-map-error=${Date.now()}`);
   const finder = new LocationsStoreFinder();

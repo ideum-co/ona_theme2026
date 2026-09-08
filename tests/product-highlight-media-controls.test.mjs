@@ -68,15 +68,24 @@ assert.match(
   'responsive images must use the selected desktop media width and remain full-width on mobile',
 );
 
-const protectedJsonChanges = execFileSync(
-  'git',
-  ['diff', '--name-only', 'HEAD', '--', 'templates', 'config/settings_data.json'],
-  { cwd: new URL('..', import.meta.url), encoding: 'utf8' },
-).trim();
-assert.equal(
-  protectedJsonChanges,
-  '',
-  `Product highlight media controls must not change template JSON or settings data (diffed against HEAD):\n${protectedJsonChanges}`,
-);
+const protectedBaseRef = process.env.ONA_PROTECTED_BASE_REF;
+if (protectedBaseRef) {
+  assert.match(protectedBaseRef, /^[A-Za-z0-9][A-Za-z0-9._/@-]*$/, 'the protected-file base must be a safe git ref');
+  const cwd = new URL('..', import.meta.url);
+  execFileSync('git', ['rev-parse', '--verify', '--end-of-options', `${protectedBaseRef}^{commit}`], {
+    cwd,
+    stdio: 'ignore',
+  });
+  const protectedJsonChanges = execFileSync(
+    'git',
+    ['diff', '--name-only', `${protectedBaseRef}...HEAD`, '--', 'templates', 'config/settings_data.json'],
+    { cwd, encoding: 'utf8' },
+  ).trim();
+  assert.equal(
+    protectedJsonChanges,
+    '',
+    `Product highlight media controls must not change template JSON or settings data from ${protectedBaseRef}:\n${protectedJsonChanges}`,
+  );
+}
 
 console.log('product-highlight media controls: PASS');

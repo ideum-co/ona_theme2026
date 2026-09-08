@@ -3,6 +3,35 @@ const EARTH_RADIUS_KM = 6371;
 const MAPS_LOAD_TIMEOUT_MS = 15000;
 let mapsPromise;
 let mapsCallbackSequence = 0;
+const mapsAuthSubscribers = new Set();
+let mapsAuthDispatcher;
+let previousMapsAuthFailure;
+
+function subscribeToMapsAuthFailure(finder) {
+  if (!mapsAuthDispatcher) {
+    previousMapsAuthFailure = globalThis.gm_authFailure;
+    mapsAuthDispatcher = function (...args) {
+      try {
+        previousMapsAuthFailure?.apply(this, args);
+      } finally {
+        for (const subscriber of [...mapsAuthSubscribers]) subscriber.handleMapsAuthenticationFailure();
+      }
+    };
+    globalThis.gm_authFailure = mapsAuthDispatcher;
+  }
+  mapsAuthSubscribers.add(finder);
+}
+
+function unsubscribeFromMapsAuthFailure(finder) {
+  mapsAuthSubscribers.delete(finder);
+  if (mapsAuthSubscribers.size > 0 || !mapsAuthDispatcher) return;
+  if (globalThis.gm_authFailure === mapsAuthDispatcher) {
+    if (previousMapsAuthFailure === undefined) delete globalThis.gm_authFailure;
+    else globalThis.gm_authFailure = previousMapsAuthFailure;
+  }
+  mapsAuthDispatcher = undefined;
+  previousMapsAuthFailure = undefined;
+}
 
 function coordinate(value, minimum, maximum) {
   if (value === null || value === undefined || value === '') return null;
@@ -243,6 +272,7 @@ export function loadGoogleMaps(apiKey, documentObject = globalThis.document, opt
     };
     const handleAuthFailure = () => {
       rejectLoad(new Error('Google Maps authentication failed.'));
+      previousAuthFailure?.();
     };
     const handleReady = () => {
       if (settled) return;
@@ -347,6 +377,7 @@ export class LocationsStoreFinder extends HTMLElementBase {
     for (const marker of this.markers ?? []) marker.setMap(null);
     this.markers = [];
     this.map = null;
+    unsubscribeFromMapsAuthFailure(this);
   }
 
   populateStateFilter() {
@@ -564,6 +595,7 @@ export class LocationsStoreFinder extends HTMLElementBase {
         this.setStatus(readyState.status);
         return;
       }
+      subscribeToMapsAuthFailure(this);
       this.applyViewState('map');
       this.syncMapMarkers();
     } catch (error) {
@@ -575,6 +607,18 @@ export class LocationsStoreFinder extends HTMLElementBase {
 
   showListView() {
     this.applyViewState('list');
+  }
+
+  handleMapsAuthenticationFailure() {
+    if (!this.map && !this.mapInitializationPromise && this.requestedView !== 'map') return;
+    this.connectionVersion = (this.connectionVersion ?? 0) + 1;
+    this.requestedView = 'list';
+    this.mapInitializationPromise = null;
+    for (const marker of this.markers ?? []) marker.setMap(null);
+    this.markers = [];
+    this.map = null;
+    this.setStatus(this.settings.mapErrorStatus);
+    this.showListView();
   }
 
   applyViewState(view) {

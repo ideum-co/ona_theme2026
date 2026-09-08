@@ -532,3 +532,60 @@ The forbidden-source scan over the two locations assets, two sections, and safe 
 
 - A connected Shopify storefront with more than 250 published locations, a tag outside the first 50 direct tag values, and a restricted Maps browser key was unavailable for a live network smoke test.
 - Repository-wide Theme Check remains nonzero for unrelated existing files; all changed locations Liquid is clean in the filtered result.
+
+## Final branch review fixes — 2026-09-07
+
+### RED evidence
+
+`node --test tests/collection-carousel-layout-controls.test.mjs tests/locations-store-finder.test.mjs` produced 33 passes, 2 failures, and 1 intentional skip before production changes:
+
+- the mobile carousel rule did not consume `--collection-carousel-padding-mobile` or `--collection-carousel-card-gap-mobile`; it only reassigned inline desktop custom properties, which cannot override the element's inline declarations;
+- after map activation, `gm_authFailure` was still the prior global handler, so the finder did not return to List or clean up its failed map.
+
+### GREEN implementation
+
+- The mobile breakpoint now applies its mobile padding directly to `.collection-carousel` and its mobile half-gap directly to `.collection-carousel__slide`. Desktop declarations, slide-width geometry, label alignment, and the 40/16 and 32/32 schema defaults are unchanged.
+- Active map finders subscribe to one persistent module dispatcher after successful map initialization. A post-readiness authentication failure chains the pre-existing global handler, invalidates pending map work, detaches markers, clears map state, announces `mapErrorStatus`, and restores the accessible List/ARIA state.
+- Finder disconnect removes its subscription. When the final subscriber disconnects, the dispatcher restores the exact prior `gm_authFailure` value without overwriting a handler installed by another owner.
+- Collection and product protected-file assertions now run only when `ONA_PROTECTED_BASE_REF` is explicitly supplied. They validate the ref syntax and commit before comparing that base range, so local runs do not misleadingly compare only the working tree or depend on an unavailable remote.
+
+### Verification evidence
+
+```text
+node --test tests/collection-carousel-layout-controls.test.mjs tests/product-highlight-media-controls.test.mjs tests/locations-store-finder.test.mjs
+37 tests: 36 passing, 0 failing, 1 skipped (optional base-range assertion)
+
+ONA_PROTECTED_BASE_REF=8173838 node --test tests/collection-carousel-layout-controls.test.mjs tests/product-highlight-media-controls.test.mjs
+5 passing, 0 failing, 0 skipped
+
+node --test tests/*.test.mjs
+75 tests: 74 passing, 0 failing, 1 skipped (optional base-range assertion)
+
+node --check assets/locations-store-finder.js
+exit 0
+
+node --check assets/locations-flagships.js
+exit 0
+
+shopify theme check --path . --output json --no-color | jq '<changed-file filter>'
+[] (zero offenses in changed files)
+
+git diff --name-only origin/main...HEAD -- templates/index.json templates/page.json templates/page.locations.json config/settings_data.json
+templates/page.locations.json (the already-committed locations template addition; no final-wave protected-file edit)
+
+git diff --name-only HEAD -- templates/index.json templates/page.json templates/page.locations.json config/settings_data.json
+empty
+
+git diff --check
+exit 0
+```
+
+The unfiltered Theme Check remains nonzero for pre-existing translation parity, duplicate static block ID, and remote-asset findings outside this wave.
+
+### Self-review and concerns
+
+- Auth subscribers are copied before dispatch, so disconnecting during a callback cannot corrupt iteration.
+- Subscription happens only once map initialization succeeds and Map is still requested; the loader's existing rejection path continues to protect requests that fail before readiness.
+- Explicit List selection during a slow load remains authoritative and does not install the persistent dispatcher.
+- No protected JSON file was changed in this wave.
+- A live browser-key auth/referrer failure could not be induced against a deployed storefront; the custom-element behavioral test covers the documented global callback after successful map activation.
