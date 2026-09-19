@@ -1,0 +1,119 @@
+{%- comment -%}
+  Promo tags block for the Horizon product page.
+
+  Draggable in the theme editor because `_product-details` accepts `@theme`
+  blocks, so the badge can be repositioned without a code change.
+
+  Badges come from `ona-product-tags-pdp`, which is shared with the legacy
+  product-template-2 / product-template-3 sections.
+{%- endcomment -%}
+{%- liquid
+  assign product_resource = closest.product
+-%}
+{%- comment -%}
+  margin-top is zeroed inline because `.product_single_custom_tag_black` carries
+  a 25px top margin from the legacy product page. Here the surrounding group
+  already supplies its own gap, so the class margin would double the spacing.
+  Inline beats the class regardless of stylesheet order.
+{%- endcomment -%}
+{%- capture ona_tags_style -%}margin-top: 0;{% render 'spacing-style', settings: block.settings %}{%- endcapture -%}
+{%- capture ona_tags_markup -%}
+  {%- render 'ona-product-tags-pdp',
+    product: product_resource,
+    class: 'ona-pdp-tags spacing-style',
+    style: ona_tags_style,
+    attrs: block.shopify_attributes
+  -%}
+{%- endcapture -%}
+{%- assign ona_tags_trimmed = ona_tags_markup | strip -%}
+{%- if ona_tags_trimmed != blank -%}
+  {{ ona_tags_markup }}
+{%- elsif request.design_mode -%}
+  {%- comment -%}
+    With no active badge this block renders nothing, which would leave the
+    merchant an invisible, unselectable block in the editor. Show a placeholder
+    in design mode only — never on the storefront.
+  {%- endcomment -%}
+  <div class="product_single_custom_tag_black ona-pdp-tags ona-pdp-tags--placeholder" style="margin-top: 0;" {{ block.shopify_attributes }}>
+    <span class="custom_product_tags"><h5>Promo tag — none active</h5></span>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  /*
+   * Self-contained so this block also works in ona_theme2026, which has none of
+   * the legacy `.custom_product_tags` rules from main.css. Everything is scoped
+   * under .ona-pdp-tags so product cards keep using the main.css rules untouched.
+   * Badges stack vertically here, matching how they sit on a product card.
+   */
+  .ona-pdp-tags .custom_product_tags {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 5px;
+  }
+
+  .ona-pdp-tags .custom_product_tags:last-child {
+    margin-bottom: 0;
+  }
+
+  .ona-pdp-tags .custom_product_tags img {
+    width: auto;
+    max-width: 17px;
+    padding: 0 5px 0 0;
+    filter: brightness(0);
+  }
+
+  .ona-pdp-tags .custom_product_tags h5 {
+    margin: 0;
+    font-size: 14px;
+    text-transform: uppercase;
+  }
+
+  .ona-pdp-tags--placeholder h5 {
+    opacity: 0.45;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Promo tags",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Shows the scheduled promo badges set on the product (New In, Low Stock, Sold Out and any custom label). Nothing renders while no badge is active."
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Promo tags",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

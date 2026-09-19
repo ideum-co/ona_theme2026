@@ -1,0 +1,131 @@
+{%- comment -%}
+  Renders multi-tag / scheduled promotional labels on a product card, driven by
+  custom_product.* metafields (tag_name, tag_type, tag_status, tag_color,
+  tag_icon, tag_from_date/time, to_date/time, lowstock_inventory).
+
+  Usage: {% render 'ona-product-tags', product: product %}
+
+  Outputs zero or more <span class="custom_product_tags">…</span> siblings —
+  no wrapping element, so the caller controls the container.
+{%- endcomment -%}
+{%- comment -%}
+  ACF writes these as legacy `json_string`, where `metafield[i]` indexes fine.
+  A field that was ever converted to a native list type returns nil from that
+  same indexing and only yields an array via `.value` — so read it both ways.
+  Getting this wrong fails silently: blank dates are treated as "no expiry", so
+  expired badges never disappear, and status / colour / icon are just ignored.
+{%- endcomment -%}
+{% assign custom_tag_status = product.metafields.custom_product.tag_status %}
+{% if custom_tag_status[0] == nil %}{% assign custom_tag_status = product.metafields.custom_product.tag_status.value %}{% endif %}
+{% assign custom_tag_name = product.metafields.custom_product.tag_name %}
+{% if custom_tag_name[0] == nil %}{% assign custom_tag_name = product.metafields.custom_product.tag_name.value %}{% endif %}
+{% assign custom_tag_color = product.metafields.custom_product.tag_color %}
+{% if custom_tag_color[0] == nil %}{% assign custom_tag_color = product.metafields.custom_product.tag_color.value %}{% endif %}
+{% assign custom_tag_icon = product.metafields.custom_product.tag_icon %}
+{% if custom_tag_icon[0] == nil %}{% assign custom_tag_icon = product.metafields.custom_product.tag_icon.value %}{% endif %}
+{% assign custom_tag_low_stock_qty = product.metafields.custom_product.lowstock_inventory %}
+{% if custom_tag_low_stock_qty[0] == nil %}{% assign custom_tag_low_stock_qty = product.metafields.custom_product.lowstock_inventory.value %}{% endif %}
+{% assign custom_tag_from_date = product.metafields.custom_product.from_date %}
+{% if custom_tag_from_date[0] == nil %}{% assign custom_tag_from_date = product.metafields.custom_product.from_date.value %}{% endif %}
+{% assign custom_tag_from_time = product.metafields.custom_product.from_time %}
+{% if custom_tag_from_time[0] == nil %}{% assign custom_tag_from_time = product.metafields.custom_product.from_time.value %}{% endif %}
+{% assign custom_tag_to_date = product.metafields.custom_product.to_date %}
+{% if custom_tag_to_date[0] == nil %}{% assign custom_tag_to_date = product.metafields.custom_product.to_date.value %}{% endif %}
+{% assign custom_tag_to_time = product.metafields.custom_product.to_time %}
+{% if custom_tag_to_time[0] == nil %}{% assign custom_tag_to_time = product.metafields.custom_product.to_time.value %}{% endif %}
+{% assign currentDatetime = "now" | date: "%Y-%m-%d %H:%M:%S" %}
+{% assign custom_tag_type = product.metafields.custom_product.tag_type %}
+{% if custom_tag_type[0] == nil %}{% assign custom_tag_type = product.metafields.custom_product.tag_type.value %}{% endif %}
+{% if custom_tag_status != blank %}
+  {% assign total_instances = custom_tag_status.size %}
+{% else %}
+  {% assign total_instances = 0 %}
+{% endif %}
+
+{% assign low_stock_found = false %}
+{% assign product_sold_out = false %}
+{% comment %} Tracks whether a labelled sold-out badge actually rendered, so a blank label falls through to the generic fallback below instead of leaving the product with no sold-out indicator at all. {% endcomment %}
+{% assign sold_out_badge_rendered = false %}
+
+{% assign lowstock_index = '' %}
+{% assign lowstock_status = '' %}
+{% assign is_lowstock_and_active = false %}
+{% assign soldstock_index = '' %}
+{% assign soldstock_status = '' %}
+{% assign is_soldstock_and_active = false %}
+
+{% for tagtype in custom_tag_type %}
+  {% if tagtype == 'Low Stock' %}{% assign lowstock_index = forloop.index0 %}{% endif %}
+  {% if tagtype == 'Sold Out' %}{% assign soldstock_index = forloop.index0 %}{% endif %}
+{% endfor %}
+{% if lowstock_index != '' or soldstock_index != '' %}
+  {% for tagstatus in custom_tag_status %}
+    {% if forloop.index0 == lowstock_index %}{% assign lowstock_status = tagstatus %}{% endif %}
+    {% if lowstock_status == 'Active' %}{% assign is_lowstock_and_active = true %}{% endif %}
+    {% if forloop.index0 == soldstock_index %}{% assign soldstock_status = tagstatus %}{% endif %}
+    {% if soldstock_status == 'Active' %}{% assign is_soldstock_and_active = true %}{% endif %}
+  {% endfor %}
+  {% for taglowstock in custom_tag_low_stock_qty %}
+    {% if forloop.index0 == lowstock_index %}{% assign lowstock_inventqty = taglowstock | plus: 0 %}{% endif %}
+  {% endfor %}
+{% endif %}
+
+{% if custom_tag_type contains 'Low Stock' and product.first_available_variant.inventory_quantity <= lowstock_inventqty and is_lowstock_and_active == true %}
+  {% assign low_stock_found = true %}
+{% endif %}
+{% if custom_tag_type contains 'Sold Out' and product.available == false and is_soldstock_and_active == true %}
+  {% assign product_sold_out = true %}
+{% endif %}
+
+{% for i in (0..total_instances) %}
+  {%- comment -%}
+    tag_status is the controlling array: an index only describes a real badge if it has a
+    status. Requiring one skips both the loop's final out-of-range index and any index past
+    the end of a shorter parallel array, which otherwise renders a label with no schedule
+    attached (blank dates read as "always on") — e.g. a product with 2 tag_name entries but
+    1 of everything else would show its second label permanently.
+  {%- endcomment -%}
+  {% if custom_tag_status[i] != blank and custom_tag_status[i] != 'Disable' %}
+    {% if custom_tag_low_stock_qty[i] != '' %}
+      {% assign lowstock_inventory_limit = custom_tag_low_stock_qty[i] | plus: 0 %}
+    {% endif %}
+    {% comment %} Blank from_date = "no start bound" (always started). Blank to_date = "no expiry". Piping "" through the `date:` filter can silently produce a value that fails the >= comparison, so we short-circuit those cases explicitly. {% endcomment %}
+    {% if custom_tag_from_date[i] == blank %}
+      {% assign from_ok = true %}
+    {% else %}
+      {% assign customtagfromDatetime = custom_tag_from_date[i] | append: " " | append: custom_tag_from_time[i] | date: "%Y-%m-%d %H:%M:%S" %}
+      {% assign from_ok = false %}
+      {% if customtagfromDatetime <= currentDatetime %}{% assign from_ok = true %}{% endif %}
+    {% endif %}
+    {% if custom_tag_to_date[i] == blank %}
+      {% assign to_ok = true %}
+    {% else %}
+      {% assign customtagtoDatetime = custom_tag_to_date[i] | append: " " | append: custom_tag_to_time[i] | date: "%Y-%m-%d %H:%M:%S" %}
+      {% assign to_ok = false %}
+      {% if customtagtoDatetime >= currentDatetime %}{% assign to_ok = true %}{% endif %}
+    {% endif %}
+    {%- comment -%}
+      The Low Stock / Sold Out branches below carry from_ok/to_ok too. They used to
+      omit them, so an inventory badge with a schedule kept rendering outside its
+      window -- the status and inventory gates hid it in practice, but the schedule
+      was simply not being honoured. Flagged by Codex review on PR #32.
+    {%- endcomment -%}
+    {% unless product_sold_out %}
+      {% if from_ok and to_ok and custom_tag_name[i] != blank and custom_tag_type[i] != 'blank' and product.available == true and custom_tag_type[i] != 'Sold Out' and custom_tag_type[i] != 'Low Stock' and custom_tag_type[i] != 'Sale' %}
+        <span class="custom_product_tags">{% if custom_tag_icon[i] %}<img src="{{ custom_tag_icon[i] }}" alt="">{% endif %}<h5{% if custom_tag_color[i] %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
+      {% endif %}
+    {% endunless %}
+
+    {% if from_ok and to_ok and custom_tag_name[i] != blank and custom_tag_type[i] != 'blank' and custom_tag_type[i] == 'Low Stock' and lowstock_inventory_limit != '' and product.available == true and product.first_available_variant.inventory_quantity <= lowstock_inventory_limit and low_stock_found == true %}
+      <span class="custom_product_tags">{% if custom_tag_icon[i] %}<img src="{{ custom_tag_icon[i] }}" alt="">{% endif %}<h5{% if custom_tag_color[i] %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
+    {% elsif from_ok and to_ok and custom_tag_name[i] != blank and custom_tag_type[i] != 'blank' and custom_tag_type[i] == 'Sold Out' and product.available == false and product_sold_out == true %}
+      <span class="custom_product_tags">{% if custom_tag_icon[i] %}<img src="{{ custom_tag_icon[i] }}" alt="">{% endif %}<h5{% if custom_tag_color[i] %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
+      {% assign sold_out_badge_rendered = true %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+{% if total_instances == 0 or product_sold_out == false or sold_out_badge_rendered == false %}
+  {% if product.metafields.custom.sold_out.value == true or product.available == false %}
+    <span class="custom_product_tags"><img src="https://cdn.shopify.com/s/files/1/0464/4824/6934/files/sold-out.png?v=1720094140" alt="sold out"><h5 style="color:#999999;">Sold Out - Online</h5></span>
+  {% endif %}
+{% endif %}

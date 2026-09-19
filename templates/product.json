@@ -173,11 +173,20 @@
                     "padding-inline-end": 0
                   },
                   "blocks": {}
+                },
+                "ona_promo_tags": {
+                  "type": "ona-product-tags",
+                  "settings": {
+                    "padding-block-start": 0,
+                    "padding-block-end": 0
+                  },
+                  "blocks": {}
                 }
               },
               "block_order": [
                 "text_xpVMaM",
-                "price_tVjtKg"
+                "price_tVjtKg",
+                "ona_promo_tags"
               ]
             },
             "divider_VJhene": {
