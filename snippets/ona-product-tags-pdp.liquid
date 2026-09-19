@@ -1,0 +1,24 @@
+{%- comment -%}
+  Product-page wrapper around `ona-product-tags`.
+
+  Shows the same scheduled promo badges the product cards show, in the PDP's
+  left-aligned treatment. Every product page — Horizon block, product-template-2
+  and product-template-3 — renders badges through here, so the schedule, colour
+  and expiry rules only ever live in `ona-product-tags`.
+
+  Renders NOTHING when no badge is active. That matters: the older inline copies
+  always emitted their wrapper, so a product with no live promo still got an
+  empty div and a gap under the price.
+
+  Usage: {% render 'ona-product-tags-pdp', product: product %}
+
+  @param {object} product  - the product to read custom_product.* metafields from
+  @param {string} class    - optional extra classes on the wrapper
+  @param {string} style    - optional inline style on the wrapper
+  @param {string} attrs    - optional raw attributes (e.g. block.shopify_attributes)
+{%- endcomment -%}
+{%- capture ona_pdp_tags -%}{%- render 'ona-product-tags', product: product -%}{%- endcapture -%}
+{%- assign ona_pdp_tags_trimmed = ona_pdp_tags | strip -%}
+{%- if ona_pdp_tags_trimmed != blank -%}
+  <div class="product_single_custom_tag_black{% if class != blank %} {{ class }}{% endif %}"{% if style != blank %} style="{{ style }}"{% endif %} {{ attrs }}>{{ ona_pdp_tags }}</div>
+{%- endif -%}
