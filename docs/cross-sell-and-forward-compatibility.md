@@ -26,9 +26,12 @@ is populated.
 
 Curation was driven by 180 days of basket data (15,886 orders): the Mug was the #1 merch
 companion for every coffee tested, and subscription products showed the highest attach
-rate on the site at 8.05% versus a 1.41% baseline. See
-`onacoffee_theme/docs/` and `~/ona-backups/complementary-products-before-2026-09-22.json`
-for the ranking and the rollback state.
+rate on the site at 8.05% versus a 1.41% baseline.
+
+The full ranking and the exact rollback state are recorded in
+`docs/complementary-products-2026-09-22.md` in this repo -- deliberately committed here
+rather than referenced from a developer's machine or a sibling checkout, so the next
+maintainer can recover the prior state without access to either.
 
 ## Horizon already renders it. Use that.
 
@@ -75,9 +78,24 @@ Measured 2026-09-21 by diffing upstream Horizon `45c7db5` (v3.5.1) against `f9ae
 | | live | this theme |
 |---|---|---|
 | Horizon version | 3.5.1 | 4.1.4 |
-| of the 321 files Shopify changed, how many we had modified | **197** | near zero |
+| stock files modified | 197 of the 321 Shopify changed | **79 of 482** |
 | ONA-prefixed or legacy sections | **98 of 145 (68%)** | few |
-| can Shopify auto-update it | **no** | yes, while it stays near-stock |
+| can Shopify auto-update it | **no** | **also no** |
+
+**Correction, 2026-09-22.** An earlier draft of this note claimed this theme had modified
+"near zero" stock files and could therefore be auto-updated. That was wrong, and a review
+caught it. Measured against its own base (Horizon 4.1.4, upstream `f63ddf8`), this theme
+has **79 of 482 stock files modified**, including `layout/theme.liquid`,
+`sections/header.liquid`, `sections/footer.liquid`, `blocks/_product-card.liquid`,
+`assets/variant-picker.js` -- and `sections/product-recommendations.liquid` itself.
+
+So Shopify will not auto-update this theme either; it will produce an `Updated copy of ...`
+clone exactly as it does for live. Upgrading means a **manual upstream merge**: diff the
+new Horizon tag against the base this theme forked from, and replay our 79 modifications.
+
+The difference from live is one of degree, and it is still the whole argument: 79 files is
+a reviewable merge, 197 across a colour-system rewrite is not. That margin is the asset
+worth protecting.
 
 Shopify only auto-updates unmodified theme-store themes. On 2026-09-21 it updated two old
 untouched themes to 4.2.0 and produced `Updated copy of ...` clones; it did not touch live,
@@ -88,8 +106,11 @@ Live cannot practically move to 4.2: Horizon 4.0 replaced the colour system
 files live has *not* modified cannot simply be dropped in. Of 124 such files, 15 reference
 the new palette API and 21 more render a snippet that does not exist in 3.5.1.
 
-**This theme is one minor version behind stock and should stay that way.** That is its
-main advantage over live, and it is easy to lose.
+**This theme is one minor version behind stock, with a merge surface still small enough to
+replay by hand.** That is its real advantage over live, and it is easy to lose one edit at
+a time -- `sections/product-recommendations.liquid` is already gone, which is precisely why
+the native complementary route below should be reached via the untouched
+`blocks/product-recommendations.liquid` and `blocks/_product-details.liquid` instead.
 
 ## Rules that keep it upgradable
 
