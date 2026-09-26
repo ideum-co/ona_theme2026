@@ -1,0 +1,58 @@
+{%- doc -%}
+  One panel of the product tabs section.
+
+  The label lives here rather than on the section so a tab is one thing in the editor: rename it,
+  reorder it, or fill it, all in the same place. The section reads these labels to draw the strip.
+
+  Content is whatever theme or app blocks the tab holds, which is what keeps this usable before and
+  after the move to metaobjects: today a `custom-liquid` or `product-metafield-text` block reads
+  `closest.product`, tomorrow the same slot takes a block that reads a metaobject entry, and the
+  tab chrome does not change either way.
+{%- enddoc -%}
+
+{%- capture children -%}
+  {% content_for 'blocks' %}
+{%- endcapture -%}
+
+<div
+  class="product-tabs__panel"
+  id="ProductTabPanel-{{ block.id }}"
+  role="tabpanel"
+  aria-labelledby="ProductTab-{{ block.id }}"
+  tabindex="0"
+  ref="panels[]"
+  {{ block.shopify_attributes }}
+>
+  {{ children }}
+</div>
+
+{% schema %}
+{
+  "name": "t:names.tab",
+  "tag": null,
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    },
+    {
+      "type": "_divider"
+    }
+  ],
+  "settings": [
+    {
+      "type": "text",
+      "id": "label",
+      "label": "t:settings.label",
+      "info": "t:info.product_tab_label"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.tab"
+    }
+  ]
+}
+{% endschema %}

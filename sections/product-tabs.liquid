@@ -1,0 +1,453 @@
+{%- liquid
+  assign settings = section.settings
+
+  # Only a tab with a label can be reached, so the strip is drawn from those; an unlabelled tab
+  # still renders its panel, which keeps its content on the page rather than silently dropping it.
+  assign labelled_count = 0
+  for block in section.blocks
+    if block.settings.label != blank
+      assign labelled_count = labelled_count | plus: 1
+    endif
+  endfor
+-%}
+
+<script
+  src="{{ 'product-tabs.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+
+<product-tabs-component
+  class="product-tabs spacing-style"
+  style="
+    --product-tabs-background: {{ settings.background_color }};
+    --product-tabs-color: {{ settings.text_color }};
+    --product-tabs-label-size: {{ settings.label_size }}px;
+    {%- if settings.label_size_mobile > 0 %}
+      --product-tabs-label-size-mobile: {{ settings.label_size_mobile }}px;
+    {%- endif %}
+    --product-tabs-label-font: var(--font-{{ settings.label_font }}--family);
+    --product-tabs-label-case: {{ settings.label_case }};
+    --product-tabs-distribution: {{ settings.distribution }};
+    --product-tabs-rule-thickness: {{ settings.rule_thickness }}px;
+    {%- if settings.rule_color != blank %}
+      --product-tabs-rule-color: {{ settings.rule_color }};
+    {%- endif %}
+    --product-tabs-indicator-thickness: {{ settings.indicator_thickness }}px;
+    {%- if settings.indicator_color != blank %}
+      --product-tabs-indicator-color: {{ settings.indicator_color }};
+    {%- endif %}
+    {%- if settings.active_label_color != blank %}
+      --product-tabs-active-color: {{ settings.active_label_color }};
+    {%- endif %}
+    --product-tabs-panel-gap: {{ settings.panel_gap }}px;
+    {%- if settings.panel_gap_mobile > 0 %}
+      --product-tabs-panel-gap-mobile: {{ settings.panel_gap_mobile }}px;
+    {%- endif %}
+    --product-tabs-max-width: {{ settings.max_width }}px;
+    {%- render 'spacing-style', settings: settings %}
+  "
+  {{ section.shopify_attributes }}
+>
+  <div class="product-tabs__inner product-tabs__inner--{{ settings.section_width }}">
+    {%- if labelled_count > 0 -%}
+      <div
+        class="product-tabs__strip"
+        role="tablist"
+        aria-label="{{ settings.tablist_label | default: section.settings.heading | default: 'Product information' | escape }}"
+        ref="strip"
+      >
+        {%- for block in section.blocks -%}
+          {%- if block.settings.label != blank -%}
+            <button
+              type="button"
+              class="product-tabs__tab"
+              id="ProductTab-{{ block.id }}"
+              role="tab"
+              aria-controls="ProductTabPanel-{{ block.id }}"
+              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+              tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
+              ref="tabs[]"
+              on:click="/select/{{ forloop.index0 }}"
+              on:keydown="/handleKeyDown"
+            >
+              {{- block.settings.label -}}
+            </button>
+          {%- endif -%}
+        {%- endfor -%}
+
+        <span class="product-tabs__indicator" ref="indicator" aria-hidden="true"></span>
+      </div>
+    {%- endif -%}
+
+    <div class="product-tabs__panels">
+      {% content_for 'blocks' %}
+    </div>
+  </div>
+</product-tabs-component>
+
+{% stylesheet %}
+  .product-tabs {
+    display: block;
+    background: var(--product-tabs-background);
+    color: var(--product-tabs-color, inherit);
+  }
+
+  .product-tabs__inner {
+    margin-inline: auto;
+    padding-inline: var(--page-margin, 1rem);
+  }
+
+  .product-tabs__inner--page-width {
+    max-inline-size: var(--product-tabs-max-width, 1360px);
+  }
+
+  /* The strip scrolls sideways rather than wrapping: three display-sized labels on a phone would
+     otherwise stack into three lines and stop reading as one row of tabs. */
+  .product-tabs__strip {
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    gap: var(--gap-2xl, 2rem);
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-block-end: var(--product-tabs-indicator-thickness, 6px);
+    border-block-end: var(--product-tabs-rule-thickness, 1px) solid
+      var(--product-tabs-rule-color, currentcolor);
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    @media screen and (min-width: 750px) {
+      justify-content: var(--product-tabs-distribution, space-between);
+      overflow-x: visible;
+    }
+  }
+
+  .product-tabs__tab {
+    flex: 0 0 auto;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: inherit;
+    font-family: var(--product-tabs-label-font, var(--font-heading--family));
+    font-size: var(--product-tabs-label-size-mobile, var(--product-tabs-label-size, 2.75rem));
+    font-weight: var(--font-heading--weight);
+    line-height: 1.1;
+    text-transform: var(--product-tabs-label-case, none);
+    white-space: nowrap;
+
+    @media screen and (min-width: 750px) {
+      font-size: var(--product-tabs-label-size, 2.75rem);
+    }
+
+    &[aria-selected='true'] {
+      color: var(--product-tabs-active-color, inherit);
+    }
+  }
+
+  /* Sits on the rule, under the current tab. Its offset and width are written by the component:
+     the label widths depend on a webfont and on the viewport, so neither is knowable here. */
+  .product-tabs__indicator {
+    position: absolute;
+    inset-block-end: calc(var(--product-tabs-rule-thickness, 1px) * -1);
+    inset-inline-start: 0;
+    display: none;
+    block-size: var(--product-tabs-indicator-thickness, 6px);
+    inline-size: var(--product-tabs-indicator-width, 0);
+    background: var(--product-tabs-indicator-color, currentcolor);
+    translate: var(--product-tabs-indicator-offset, 0);
+    transition: translate var(--animation-speed-slow, 0.2s) var(--animation-easing, ease-in-out),
+      inline-size var(--animation-speed-slow, 0.2s) var(--animation-easing, ease-in-out);
+  }
+
+  .product-tabs__panels {
+    padding-block-start: var(--product-tabs-panel-gap-mobile, var(--product-tabs-panel-gap, 3rem));
+
+    @media screen and (min-width: 750px) {
+      padding-block-start: var(--product-tabs-panel-gap, 3rem);
+    }
+  }
+
+  .product-tabs__panel:focus-visible {
+    outline: var(--focus-outline-width) solid currentcolor;
+    outline-offset: var(--focus-outline-offset);
+  }
+
+  /* Before the component connects - and on a page where it never does - every panel is on the
+     page, one after another, and the strip is inert decoration. */
+  .product-tabs:not([enhanced]) .product-tabs__panel + .product-tabs__panel {
+    margin-block-start: var(--product-tabs-panel-gap, 3rem);
+  }
+
+  .product-tabs[enhanced] .product-tabs__indicator {
+    display: block;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .product-tabs__indicator {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.product_tabs",
+  "tag": "section",
+  "blocks": [
+    {
+      "type": "_product-tab"
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:content.tabs"
+    },
+    {
+      "type": "select",
+      "id": "label_font",
+      "label": "t:settings.font",
+      "options": [
+        {
+          "value": "heading",
+          "label": "t:options.heading"
+        },
+        {
+          "value": "body",
+          "label": "t:options.body"
+        },
+        {
+          "value": "subheading",
+          "label": "t:options.subheading"
+        },
+        {
+          "value": "accent",
+          "label": "t:options.accent"
+        }
+      ],
+      "default": "heading"
+    },
+    {
+      "type": "range",
+      "id": "label_size",
+      "label": "t:settings.size",
+      "min": 16,
+      "max": 96,
+      "step": 2,
+      "unit": "px",
+      "default": 44
+    },
+    {
+      "type": "range",
+      "id": "label_size_mobile",
+      "label": "t:settings.size_mobile",
+      "info": "t:info.zero_uses_desktop",
+      "min": 0,
+      "max": 96,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "select",
+      "id": "label_case",
+      "label": "t:settings.case",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.default"
+        },
+        {
+          "value": "uppercase",
+          "label": "t:options.uppercase"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "select",
+      "id": "distribution",
+      "label": "t:settings.content_distribution",
+      "options": [
+        {
+          "value": "space-between",
+          "label": "t:options.space_between"
+        },
+        {
+          "value": "flex-start",
+          "label": "t:options.left"
+        },
+        {
+          "value": "center",
+          "label": "t:options.center"
+        }
+      ],
+      "default": "space-between"
+    },
+    {
+      "type": "range",
+      "id": "rule_thickness",
+      "label": "t:settings.divider_thickness",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "default": 1
+    },
+    {
+      "type": "color",
+      "id": "rule_color",
+      "label": "t:settings.divider_color",
+      "placeholder": "t:settings.default",
+      "visible_if": "{{ section.settings.rule_thickness > 0 }}"
+    },
+    {
+      "type": "range",
+      "id": "indicator_thickness",
+      "label": "t:settings.pagination_line_thickness",
+      "min": 0,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 6
+    },
+    {
+      "type": "color",
+      "id": "indicator_color",
+      "label": "t:settings.pagination_line_color",
+      "placeholder": "t:settings.default",
+      "visible_if": "{{ section.settings.indicator_thickness > 0 }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.section_width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "t:settings.max_width",
+      "min": 800,
+      "max": 1800,
+      "step": 20,
+      "unit": "px",
+      "default": 1360,
+      "visible_if": "{{ section.settings.section_width == 'page-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "panel_gap",
+      "label": "t:settings.vertical_gap",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "panel_gap_mobile",
+      "label": "t:settings.vertical_gap_mobile",
+      "info": "t:info.zero_uses_desktop",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "default": "#F5BFD4"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "default": "#F5F4E9"
+    },
+    {
+      "type": "color",
+      "id": "active_label_color",
+      "label": "t:settings.active_color",
+      "placeholder": "t:settings.default"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.product_tabs",
+      "blocks": [
+        {
+          "type": "_product-tab",
+          "settings": {
+            "label": "Profile"
+          }
+        },
+        {
+          "type": "_product-tab",
+          "settings": {
+            "label": "Brew Guide"
+          }
+        },
+        {
+          "type": "_product-tab",
+          "settings": {
+            "label": "Reviews"
+          }
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "templates": ["product"]
+  }
+}
+{% endschema %}
