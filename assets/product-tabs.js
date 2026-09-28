@@ -33,6 +33,11 @@ export class ProductTabs extends Component {
     if (!tabs?.length || !panels?.length || tabs.length !== panels.length) return;
 
     this.setAttribute('enhanced', '');
+
+    // Each panel carries its tab's label; the strip button that server-rendering gives us is a
+    // numbered placeholder. Copy the real label across, where it is authoritative.
+    this.#fillLabels();
+
     // Scrolled into view but not focused: a deep link into the third tab has to be visible in the
     // strip on a phone, while stealing focus on load would jump the page past the product.
     this.select(this.#initialIndex(), undefined, { focus: false });
@@ -86,6 +91,23 @@ export class ProductTabs extends Component {
     if (scroll) this.#scrollTabIntoView(index);
 
     this.#moveIndicator();
+  }
+
+  /**
+   * Writes each tab's label onto its button from the paired panel's `data-tab-label`. The panels
+   * are in block order and so are the buttons, so button i pairs with panel i. A blank label is
+   * left as the server-rendered placeholder ("Tab N") rather than emptying the button.
+   */
+  #fillLabels() {
+    const { tabs, panels } = this.refs;
+
+    if (!tabs || !panels) return;
+
+    tabs.forEach((tab, index) => {
+      const label = panels[index]?.dataset.tabLabel?.trim();
+
+      if (label) tab.textContent = label;
+    });
   }
 
   /** @param {KeyboardEvent} event */

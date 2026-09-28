@@ -24,6 +24,13 @@
   aria-labelledby="ProductTab-{{ block.id }}"
   tabindex="0"
   ref="panels[]"
+  {%- comment -%}
+    The label travels on the panel, read here where a block always sees its own settings. The
+    section builds the strip from `section.blocks`, and a section that renders theme blocks through
+    `content_for 'blocks'` does not read a child block's settings reliably from there - so the strip
+    text is filled from this attribute by the component instead.
+  {%- endcomment -%}
+  data-tab-label="{{ block.settings.label | escape }}"
   {{ block.shopify_attributes }}
 >
   {{ children }}
