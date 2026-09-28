@@ -425,25 +425,30 @@
     {
       "name": "t:names.product_tabs",
       "category": "t:categories.products",
-      "blocks": [
-        {
+      "blocks": {
+        "tab_1": {
           "type": "_product-tab",
           "settings": {
             "label": "Profile"
           }
         },
-        {
+        "tab_2": {
           "type": "_product-tab",
           "settings": {
             "label": "Brew Guide"
           }
         },
-        {
+        "tab_3": {
           "type": "_product-tab",
           "settings": {
             "label": "Reviews"
           }
         }
+      },
+      "block_order": [
+        "tab_1",
+        "tab_2",
+        "tab_3"
       ]
     }
   ],
