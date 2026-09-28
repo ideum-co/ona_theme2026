@@ -810,7 +810,8 @@
         "border_radius": 0,
         "padding-block-start": 0,
         "padding-block-end": 0
-      }
+      },
+      "disabled": true
     },
     "brew_guide": {
       "type": "section",
@@ -853,13 +854,103 @@
         "border_radius": 0,
         "padding-block-start": 80,
         "padding-block-end": 80
+      },
+      "disabled": true
+    },
+    "product_tabs": {
+      "type": "product-tabs",
+      "blocks": {
+        "tab_profile": {
+          "type": "_product-tab",
+          "blocks": {
+            "body": {
+              "type": "custom-liquid",
+              "settings": {
+                "custom_liquid": "{% liquid\n  assign content_origin = closest.product.metafields.accentuate.content_origin.value\n  assign content_sourcing = closest.product.metafields.accentuate.content_sourcing.value\n  assign content_coffee_profile = closest.product.metafields.accentuate.content_coffee_profile.value\n  assign producer = closest.product.metafields.accentuate.producer.value\n  assign region = closest.product.metafields.accentuate.region.value\n  assign process = closest.product.metafields.accentuate.process.value\n  assign varietal = closest.product.metafields.accentuate.varietal.value\n  assign altitude = closest.product.metafields.accentuate.altitude.value\n  assign is_single_origin = false\n  if content_origin != blank or content_sourcing != blank\n    assign is_single_origin = true\n  endif\n  assign has_specs = false\n  if producer != blank or region != blank or process != blank or varietal != blank or altitude != blank\n    assign has_specs = true\n  endif\n%}\n{% if is_single_origin %}\n  <div class=\"product-story\">\n    {% if content_origin != blank %}\n      <div class=\"product-story__block product-story__block--origin rte\">{{ content_origin }}</div>\n    {% endif %}\n    {% if content_sourcing != blank %}\n      <div class=\"product-story__block product-story__block--sourcing rte\">{{ content_sourcing }}</div>\n    {% endif %}\n    {% if has_specs %}\n      <dl class=\"product-story__specs\">\n        {% if producer != blank %}\n          <div class=\"product-story__specs-row\"><dt>Producer</dt><dd>{{ producer }}</dd></div>\n        {% endif %}\n        {% if region != blank %}\n          <div class=\"product-story__specs-row\"><dt>Region</dt><dd>{{ region }}</dd></div>\n        {% endif %}\n        {% if varietal != blank %}\n          <div class=\"product-story__specs-row\"><dt>Varietal</dt><dd>{{ varietal }}</dd></div>\n        {% endif %}\n        {% if process != blank %}\n          <div class=\"product-story__specs-row\"><dt>Process</dt><dd>{{ process }}</dd></div>\n        {% endif %}\n        {% if altitude != blank %}\n          <div class=\"product-story__specs-row\"><dt>Altitude</dt><dd>{{ altitude }}</dd></div>\n        {% endif %}\n      </dl>\n    {% endif %}\n  </div>\n{% elsif content_coffee_profile != blank %}\n  <div class=\"product-story\">\n    <div class=\"product-story__block product-story__block--profile rte\">{{ content_coffee_profile }}</div>\n  </div>\n{% endif %}\n<style>\n  .product-story { display: grid; gap: var(--gap-2xl); max-width: 46rem; margin: 0 auto; padding-block: 48px; }\n  .product-story__block { font-size: var(--font-size--md); line-height: 1.6; }\n  .product-story__block :is(p, h1, h2, h3, h4, h5, h6, span, div, strong, em, a) {\n    font-family: inherit !important;\n    color: inherit !important;\n    font-size: inherit !important;\n    background: none !important;\n    letter-spacing: normal !important;\n    text-transform: none !important;\n  }\n  .product-story__block h3,\n  .product-story__block h4 {\n    font-family: var(--font-heading--family) !important;\n    font-size: var(--font-size--2xl) !important;\n    margin: 0 0 var(--gap-sm);\n    color: var(--color-foreground);\n  }\n  .product-story__block p { margin: 0 0 1em; }\n  .product-story__block p:last-child { margin-bottom: 0; }\n  .product-story__specs { margin: 0; display: grid; border-top: 1px solid var(--border-color); }\n  .product-story__specs-row { display: grid; grid-template-columns: minmax(120px, 0.4fr) 1fr; gap: var(--gap-md); padding: var(--gap-sm) 0; border-bottom: 1px solid var(--border-color); }\n  .product-story__specs-row dt { margin: 0; font-size: var(--font-size--xs); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-foreground-secondary); }\n  .product-story__specs-row dd { margin: 0; font-size: var(--font-size--sm); line-height: 1.6; }\n</style>\n"
+              }
+            }
+          },
+          "block_order": [
+            "body"
+          ],
+          "settings": {
+            "label": "Profile"
+          }
+        },
+        "tab_brew": {
+          "type": "_product-tab",
+          "blocks": {
+            "body": {
+              "type": "custom-liquid",
+              "settings": {
+                "custom_liquid": "{% liquid\n  assign raw_handle = closest.product.metafields.accentuate.select_artlice.value\n  assign brew_intro = closest.product.metafields.accentuate.content_brew_guide.value\n  assign titles = closest.product.metafields.accentuate.title_item\n  assign values = closest.product.metafields.accentuate.content_item\n  assign has_recipe = false\n  if titles.size > 0 and values.size > 0\n    assign has_recipe = true\n  endif\n  assign has_content = false\n  if brew_intro != blank or has_recipe\n    assign has_content = true\n  endif\n%}\n{% if raw_handle != blank and has_content %}\n  {% paginate blogs.brewguides.articles by 250 %}\n    {% for a in blogs.brewguides.articles %}\n      {% if a.handle == raw_handle %}\n        <div class=\"brew-guide\">\n          <div class=\"brew-guide__intro\">\n            <p class=\"brew-guide__eyebrow\">Brew Guide</p>\n            {% if brew_intro != blank %}\n              <div class=\"brew-guide__copy rte\">{{ brew_intro }}</div>\n            {% endif %}\n            <a class=\"brew-guide__link\" href=\"{{ a.url }}\">Full brewing guide</a>\n          </div>\n          {% if has_recipe %}\n            <dl class=\"brew-guide__recipe\">\n              {% for title in titles %}\n                {% assign i = forloop.index0 %}\n                {% assign val = values[i] %}\n                {% if title != blank and val != blank %}\n                  <div class=\"brew-guide__recipe-row\">\n                    <dt class=\"brew-guide__recipe-label\">{{ title | strip }}</dt>\n                    <dd class=\"brew-guide__recipe-value\">{{ val }}</dd>\n                  </div>\n                {% endif %}\n              {% endfor %}\n            </dl>\n          {% endif %}\n        </div>\n        <style>\n          .brew-guide { display: grid; gap: var(--gap-2xl); width: 100%; }\n          @media screen and (min-width: 750px) {\n            .brew-guide { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }\n          }\n          .brew-guide__intro { display: grid; gap: var(--gap-md); }\n          .brew-guide__eyebrow { margin: 0; font-family: var(--font-heading--family); font-size: var(--font-size--3xl); color: var(--color-foreground); }\n          .brew-guide__copy { font-size: var(--font-size--md); line-height: 1.6; }\n          .brew-guide__link { justify-self: start; font-size: var(--font-size--sm); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; color: var(--color-foreground); }\n          .brew-guide__recipe { margin: 0; display: grid; border-top: 1px solid var(--border-color); }\n          .brew-guide__recipe-row { display: grid; grid-template-columns: minmax(120px, 0.4fr) 1fr; gap: var(--gap-md); padding: var(--gap-sm) 0; border-bottom: 1px solid var(--border-color); }\n          .brew-guide__recipe-label { margin: 0; font-size: var(--font-size--xs); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-foreground-secondary); }\n          .brew-guide__recipe-value { margin: 0; font-size: var(--font-size--sm); line-height: 1.6; }\n        </style>\n        {% break %}\n      {% endif %}\n    {% endfor %}\n  {% endpaginate %}\n{% endif %}\n"
+              }
+            }
+          },
+          "block_order": [
+            "body"
+          ],
+          "settings": {
+            "label": "Brew Guide"
+          }
+        },
+        "tab_reviews": {
+          "type": "_product-tab",
+          "blocks": {
+            "body": {
+              "type": "text",
+              "settings": {
+                "text": "<p>Reviews are on their way. In the meantime, tell us what you think at <a href=\"mailto:hello@onacoffee.com.au\">hello@onacoffee.com.au</a>.</p>",
+                "width": "100%",
+                "max_width": "normal",
+                "alignment": "left",
+                "type_preset": "rte",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            }
+          },
+          "block_order": [
+            "body"
+          ],
+          "settings": {
+            "label": "Reviews"
+          }
+        }
+      },
+      "block_order": [
+        "tab_profile",
+        "tab_brew",
+        "tab_reviews"
+      ],
+      "name": "t:names.product_tabs",
+      "settings": {
+        "label_font": "heading",
+        "label_size": 44,
+        "label_size_mobile": 24,
+        "label_case": "none",
+        "distribution": "space-between",
+        "rule_thickness": 1,
+        "rule_color": "",
+        "indicator_thickness": 6,
+        "indicator_color": "",
+        "section_width": "page-width",
+        "max_width": 1360,
+        "panel_gap": 48,
+        "panel_gap_mobile": 0,
+        "background_color": "#F5BFD4",
+        "text_color": "#F5F4E9",
+        "active_label_color": "",
+        "padding-block-start": 64,
+        "padding-block-end": 64
       }
     }
   },
   "order": [
     "main",
-    "story",
-    "brew_guide",
+    "product_tabs",
     "faqs",
     "product_recommendations_qggXJq"
   ]
