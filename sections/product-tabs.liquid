@@ -30,14 +30,12 @@
     endif
   endif
 
-  # Only a tab with a label can be reached, so the strip is drawn from those; an unlabelled tab
-  # still renders its panel, which keeps its content on the page rather than silently dropping it.
-  assign labelled_count = 0
-  for block in section.blocks
-    if block.settings.label != blank
-      assign labelled_count = labelled_count | plus: 1
-    endif
-  endfor
+  # Every tab gets a button, always. An earlier version drew a button only for a labelled tab, so
+  # a tab left unlabelled produced a panel with no way to reach it - and, worse, the button count
+  # then no longer matched the panel count, which is the exact condition the component treats as
+  # "cannot pair these" and bails on, leaving every panel stacked and visible. A blank label falls
+  # back to a numbered placeholder instead, so the strip and the panels always line up and the tabs
+  # always behave as tabs.
 -%}
 
 <script
@@ -79,30 +77,34 @@
   {{ section.shopify_attributes }}
 >
   <div class="product-tabs__inner product-tabs__inner--{{ settings.section_width }}">
-    {%- if labelled_count > 0 -%}
+    {%- if section.blocks.size > 0 -%}
       <div
         class="product-tabs__strip"
         role="tablist"
-        aria-label="{{ settings.tablist_label | default: section.settings.heading | default: 'Product information' | escape }}"
+        aria-label="{{ settings.tablist_label | default: 'Product information' | escape }}"
         ref="strip"
       >
         {%- for block in section.blocks -%}
-          {%- if block.settings.label != blank -%}
-            <button
-              type="button"
-              class="product-tabs__tab"
-              id="ProductTab-{{ block.id }}"
-              role="tab"
-              aria-controls="ProductTabPanel-{{ block.id }}"
-              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
-              tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
-              ref="tabs[]"
-              on:click="/select/{{ forloop.index0 }}"
-              on:keydown="/handleKeyDown"
-            >
-              {{- block.settings.label -}}
-            </button>
-          {%- endif -%}
+          {%- liquid
+            assign tab_label = block.settings.label | strip
+            if tab_label == blank
+              assign tab_label = 'Tab ' | append: forloop.index
+            endif
+          -%}
+          <button
+            type="button"
+            class="product-tabs__tab"
+            id="ProductTab-{{ block.id }}"
+            role="tab"
+            aria-controls="ProductTabPanel-{{ block.id }}"
+            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+            tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
+            ref="tabs[]"
+            on:click="/select/{{ forloop.index0 }}"
+            on:keydown="/handleKeyDown"
+          >
+            {{- tab_label -}}
+          </button>
         {%- endfor -%}
 
         <span class="product-tabs__indicator" ref="indicator" aria-hidden="true"></span>
@@ -491,7 +493,32 @@
   "presets": [
     {
       "name": "Product tabs",
-      "category": "t:categories.products"
+      "category": "t:categories.products",
+      "blocks": {
+        "tab_profile": {
+          "type": "product-tab",
+          "settings": {
+            "label": "Profile"
+          }
+        },
+        "tab_brew": {
+          "type": "product-tab",
+          "settings": {
+            "label": "Brew Guide"
+          }
+        },
+        "tab_reviews": {
+          "type": "product-tab",
+          "settings": {
+            "label": "Reviews"
+          }
+        }
+      },
+      "block_order": [
+        "tab_profile",
+        "tab_brew",
+        "tab_reviews"
+      ]
     }
   ],
   "enabled_on": {
