@@ -33,7 +33,7 @@
 {% if custom_tag_to_date[0] == nil %}{% assign custom_tag_to_date = product.metafields.custom_product.to_date.value %}{% endif %}
 {% assign custom_tag_to_time = product.metafields.custom_product.to_time %}
 {% if custom_tag_to_time[0] == nil %}{% assign custom_tag_to_time = product.metafields.custom_product.to_time.value %}{% endif %}
-{% assign currentDatetime = "now" | date: "%Y-%m-%d %H:%M:%S" %}
+{% assign current_datetime = "now" | date: "%Y-%m-%d %H:%M:%S" %}
 {% assign custom_tag_type = product.metafields.custom_product.tag_type %}
 {% if custom_tag_type[0] == nil %}{% assign custom_tag_type = product.metafields.custom_product.tag_type.value %}{% endif %}
 {% if custom_tag_status != blank %}
@@ -93,16 +93,16 @@
     {% if custom_tag_from_date[i] == blank %}
       {% assign from_ok = true %}
     {% else %}
-      {% assign customtagfromDatetime = custom_tag_from_date[i] | append: " " | append: custom_tag_from_time[i] | date: "%Y-%m-%d %H:%M:%S" %}
+      {% assign custom_tag_from_datetime = custom_tag_from_date[i] | append: " " | append: custom_tag_from_time[i] | date: "%Y-%m-%d %H:%M:%S" %}
       {% assign from_ok = false %}
-      {% if customtagfromDatetime <= currentDatetime %}{% assign from_ok = true %}{% endif %}
+      {% if custom_tag_from_datetime <= current_datetime %}{% assign from_ok = true %}{% endif %}
     {% endif %}
     {% if custom_tag_to_date[i] == blank %}
       {% assign to_ok = true %}
     {% else %}
-      {% assign customtagtoDatetime = custom_tag_to_date[i] | append: " " | append: custom_tag_to_time[i] | date: "%Y-%m-%d %H:%M:%S" %}
+      {% assign custom_tag_to_datetime = custom_tag_to_date[i] | append: " " | append: custom_tag_to_time[i] | date: "%Y-%m-%d %H:%M:%S" %}
       {% assign to_ok = false %}
-      {% if customtagtoDatetime >= currentDatetime %}{% assign to_ok = true %}{% endif %}
+      {% if custom_tag_to_datetime >= current_datetime %}{% assign to_ok = true %}{% endif %}
     {% endif %}
     {%- comment -%}
       The Low Stock / Sold Out branches below carry from_ok/to_ok too. They used to
@@ -112,20 +112,21 @@
     {%- endcomment -%}
     {% unless product_sold_out %}
       {% if from_ok and to_ok and custom_tag_name[i] != blank and custom_tag_type[i] != 'blank' and product.available == true and custom_tag_type[i] != 'Sold Out' and custom_tag_type[i] != 'Low Stock' and custom_tag_type[i] != 'Sale' %}
-        <span class="custom_product_tags">{% if custom_tag_icon[i] %}<img src="{{ custom_tag_icon[i] }}" alt="">{% endif %}<h5{% if custom_tag_color[i] %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
+        <span class="custom_product_tags">{% if custom_tag_icon[i] %}{% # theme-check-disable-next-line RemoteAsset %}<img src="{{ custom_tag_icon[i] }}" alt="" width="24" height="24">{% endif %}<h5{% if custom_tag_color[i] %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
       {% endif %}
     {% endunless %}
 
     {% if from_ok and to_ok and custom_tag_name[i] != blank and custom_tag_type[i] != 'blank' and custom_tag_type[i] == 'Low Stock' and lowstock_inventory_limit != '' and product.available == true and product.first_available_variant.inventory_quantity <= lowstock_inventory_limit and low_stock_found == true %}
-      <span class="custom_product_tags">{% if custom_tag_icon[i] %}<img src="{{ custom_tag_icon[i] }}" alt="">{% endif %}<h5{% if custom_tag_color[i] %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
+      <span class="custom_product_tags">{% if custom_tag_icon[i] %}{% # theme-check-disable-next-line RemoteAsset %}<img src="{{ custom_tag_icon[i] }}" alt="" width="24" height="24">{% endif %}<h5{% if custom_tag_color[i] %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
     {% elsif from_ok and to_ok and custom_tag_name[i] != blank and custom_tag_type[i] != 'blank' and custom_tag_type[i] == 'Sold Out' and product.available == false and product_sold_out == true %}
-      <span class="custom_product_tags">{% if custom_tag_icon[i] %}<img src="{{ custom_tag_icon[i] }}" alt="">{% endif %}<h5{% if custom_tag_color[i] %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
+      <span class="custom_product_tags">{% if custom_tag_icon[i] %}{% # theme-check-disable-next-line RemoteAsset %}<img src="{{ custom_tag_icon[i] }}" alt="" width="24" height="24">{% endif %}<h5{% if custom_tag_color[i] %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
       {% assign sold_out_badge_rendered = true %}
     {% endif %}
   {% endif %}
 {% endfor %}
 {% if total_instances == 0 or product_sold_out == false or sold_out_badge_rendered == false %}
   {% if product.metafields.custom.sold_out.value == true or product.available == false %}
-    <span class="custom_product_tags"><img src="https://cdn.shopify.com/s/files/1/0464/4824/6934/files/sold-out.png?v=1720094140" alt="sold out"><h5 style="color:#999999;">Sold Out - Online</h5></span>
+    {% # theme-check-disable-next-line RemoteAsset %}
+    <span class="custom_product_tags"><img src="https://cdn.shopify.com/s/files/1/0464/4824/6934/files/sold-out.png?v=1720094140" alt="sold out" width="24" height="24"><h5 style="color:#999999;">Sold Out - Online</h5></span>
   {% endif %}
 {% endif %}

@@ -77,7 +77,8 @@
     "price_filter_low": "Niska cena",
     "price_filter_high": "Wysoka cena",
     "view_disclosure_information_for_product": "Wyświetl dodatkowe informacje dla produktu {{ product_title }}",
-    "show_submenu": "Pokaż podmenu {{ title }}"
+    "show_submenu": "Pokaż podmenu {{ title }}",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Dodaj do koszyka",
@@ -122,7 +123,8 @@
     "open": "Otwórz",
     "back_to": "Powrót do {{ title }}",
     "zoom_media": "Powiększenie multimediów {{ index }}",
-    "back_to_main_menu": "Wróć do menu głównego"
+    "back_to_main_menu": "Wróć do menu głównego",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "recenzje",
@@ -355,7 +357,12 @@
       "quantity_maximum": "Maksimum {{ maximum }}",
       "in_cart": "w koszyku",
       "default_title": "Tytuł domyślny",
-      "sticky_add_to_cart": "Pasek szybkiego dodawania do koszyka"
+      "sticky_add_to_cart": "Pasek szybkiego dodawania do koszyka",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   }
 }

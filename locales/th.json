@@ -75,7 +75,8 @@
     "price_filter_low": "ราคาประหยัด",
     "price_filter_high": "ราคาแพง",
     "view_disclosure_information_for_product": "ดูข้อมูลชี้แจงสำหรับ{{ product_title }}",
-    "show_submenu": "แสดงเมนูย่อยของ{{ title }}"
+    "show_submenu": "แสดงเมนูย่อยของ{{ title }}",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "เพิ่มลงในตะกร้าสินค้า",
@@ -118,7 +119,8 @@
     "open": "เปิด",
     "back_to": "กลับไปที่ {{ title }}",
     "zoom_media": "ซูมสื่อ {{ index }}",
-    "back_to_main_menu": "กลับไปที่เมนูหลัก"
+    "back_to_main_menu": "กลับไปที่เมนูหลัก",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "รีวิว",
@@ -318,7 +320,12 @@
       "quantity_maximum": "จำนวนสูงสุดคือ {{ maximum }}",
       "in_cart": "ในตะกร้าสินค้า",
       "default_title": "ชื่อเริ่มต้น",
-      "sticky_add_to_cart": "แถบเพิ่มลงในตะกร้าสินค้าแบบด่วน"
+      "sticky_add_to_cart": "แถบเพิ่มลงในตะกร้าสินค้าแบบด่วน",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   },
   "fields": {

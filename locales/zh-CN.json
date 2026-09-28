@@ -75,7 +75,8 @@
     "price_filter_low": "低价",
     "price_filter_high": "高价",
     "view_disclosure_information_for_product": "查看 {{ product_title }} 的披露信息",
-    "show_submenu": "显示 {{ title }} 子菜单"
+    "show_submenu": "显示 {{ title }} 子菜单",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "添加到购物车",
@@ -118,7 +119,8 @@
     "open": "打开",
     "back_to": "返回 {{ title }}",
     "zoom_media": "缩放媒体文件 {{ index }}",
-    "back_to_main_menu": "返回主菜单"
+    "back_to_main_menu": "返回主菜单",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "评价",
@@ -318,7 +320,12 @@
       "quantity_maximum": "最多 {{ maximum }} 个",
       "in_cart": "在购物车中",
       "default_title": "默认标题",
-      "sticky_add_to_cart": "快速添加到购物车栏"
+      "sticky_add_to_cart": "快速添加到购物车栏",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   },
   "fields": {

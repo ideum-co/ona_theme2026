@@ -75,7 +75,8 @@
     "price_filter_low": "Ár szerint növekvő",
     "price_filter_high": "Ár szerint csökkenő",
     "view_disclosure_information_for_product": "Tájékoztató adatok megtekintése a következőhöz: {{ product_title }}",
-    "show_submenu": "{{ title }} almenü megjelenítése"
+    "show_submenu": "{{ title }} almenü megjelenítése",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Hozzáadás a kosárhoz",
@@ -118,7 +119,8 @@
     "open": "Megnyitás",
     "back_to": "Vissza ide: {{ title }}",
     "zoom_media": "Médiaelem nagyítása ({{ index }})",
-    "back_to_main_menu": "Vissza a főmenübe"
+    "back_to_main_menu": "Vissza a főmenübe",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "összegzés",
@@ -341,7 +343,12 @@
       "quantity_maximum": "Maximum: {{ maximum }}",
       "in_cart": "a kosárban",
       "default_title": "Alapértelmezett cím",
-      "sticky_add_to_cart": "Gyors hozzáadás a kosárhoz sáv"
+      "sticky_add_to_cart": "Gyors hozzáadás a kosárhoz sáv",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   }
 }

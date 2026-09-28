@@ -75,7 +75,8 @@
     "price_filter_low": "Χαμηλή τιμή",
     "price_filter_high": "Υψηλή τιμή",
     "view_disclosure_information_for_product": "Προβολή πληροφοριών γνωστοποίησης για {{ product_title }}",
-    "show_submenu": "Εμφάνιση υπομενού {{ title }}"
+    "show_submenu": "Εμφάνιση υπομενού {{ title }}",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Προσθήκη στο καλάθι",
@@ -118,7 +119,8 @@
     "open": "Σε εξέλιξη",
     "back_to": "Επιστροφή σε {{ title }}",
     "zoom_media": "Μεγέθυνση πολυμέσου {{ index }}",
-    "back_to_main_menu": "Επιστροφή στο κύριο μενού"
+    "back_to_main_menu": "Επιστροφή στο κύριο μενού",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "κριτικές",
@@ -318,7 +320,12 @@
       "quantity_maximum": "Μέγιστο όριο {{ maximum }}",
       "in_cart": "στο καλάθι",
       "default_title": "Προεπιλεγμένος τίτλος",
-      "sticky_add_to_cart": "Γρήγορη προσθήκη στο καλάθι"
+      "sticky_add_to_cart": "Γρήγορη προσθήκη στο καλάθι",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   },
   "fields": {

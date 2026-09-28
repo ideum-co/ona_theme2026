@@ -38,6 +38,7 @@
     endif
   %}
 
+  {% # theme-check-disable UnclosedHTMLElement %}
   {% if forloop.first or item_modulo == 1 %}
     <div
       class="bento-box bento-box--items-{{ box_item_count }}"
@@ -52,6 +53,7 @@
   {% if forloop.last or item_modulo == 0 %}
     </div>
   {% endif %}
+  {% # theme-check-enable UnclosedHTMLElement %}
 {% endfor %}
 
 {% stylesheet %}

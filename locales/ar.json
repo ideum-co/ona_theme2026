@@ -59,7 +59,8 @@
       "many": "تم تطبيق {{ count }} من عوامل التصفية",
       "two": "تم تطبيق {{ count }} من عوامل التصفية",
       "zero": "تم تطبيق {{ count }} من عوامل التصفية"
-    }
+    },
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add": "إضافة",
@@ -106,7 +107,8 @@
       "many": "عرض {{ count }} من العناصر",
       "two": "عرض {{ count }} من العناصر",
       "zero": "عرض {{ count }} من العناصر"
-    }
+    },
+    "select_option": "Select {{ option }}"
   },
   "blocks": {
     "contact_form": {
@@ -369,7 +371,12 @@
       "quantity_maximum": "الحد الأقصى هو {{ maximum }}",
       "in_cart": "في سلة التسوق",
       "default_title": "العنوان الافتراضي",
-      "sticky_add_to_cart": "شريط الإضافة السريعة إلى سلة التسوق"
+      "sticky_add_to_cart": "شريط الإضافة السريعة إلى سلة التسوق",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   }
 }

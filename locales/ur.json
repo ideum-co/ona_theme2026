@@ -55,7 +55,8 @@
     "filter_count": {
       "one": "{{ count }} فلٹر لاگو کیا گیا",
       "other": "{{ count }} فلٹر لاگو کیے گئے"
-    }
+    },
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add": "شامل کریں",
@@ -98,7 +99,8 @@
     "see_items": {
       "one": "{{ count }} آئٹم دیکھیں",
       "other": "{{ count }} آئٹم دیکھیں"
-    }
+    },
+    "select_option": "Select {{ option }}"
   },
   "blocks": {
     "contact_form": {
@@ -341,7 +343,12 @@
       "quantity_maximum": "زیادہ سے زیادہ {{ maximum }}",
       "in_cart": "کارٹ میں",
       "default_title": "ڈیفالٹ عنوان",
-      "sticky_add_to_cart": "کوئیک ایڈ ٹو کارٹ بار"
+      "sticky_add_to_cart": "کوئیک ایڈ ٹو کارٹ بار",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   }
 }

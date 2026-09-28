@@ -75,7 +75,8 @@
     "search_suggestions_available": "Cari rekomendasi yang tersedia untuk \"{{ query }}\"",
     "price_filter_low": "Harga rendah",
     "price_filter_high": "Harga tinggi",
-    "view_disclosure_information_for_product": "Lihat informasi pengungkapan untuk {{ product_title }}"
+    "view_disclosure_information_for_product": "Lihat informasi pengungkapan untuk {{ product_title }}",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Tambahkan ke keranjang",
@@ -118,7 +119,8 @@
     "open": "Buka",
     "back_to": "Kembali ke {{ title }}",
     "back_to_main_menu": "Kembali ke menu utama",
-    "zoom_media": "Perbesar media {{ index }}"
+    "zoom_media": "Perbesar media {{ index }}",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "ulasan",
@@ -318,7 +320,12 @@
       "quantity_maximum": "Maksimum {{ maximum }}",
       "in_cart": "di keranjang",
       "default_title": "Judul Bawaan",
-      "sticky_add_to_cart": "Bilah penambahan cepat ke keranjang"
+      "sticky_add_to_cart": "Bilah penambahan cepat ke keranjang",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   },
   "fields": {

@@ -57,7 +57,8 @@
       "other": "הופעלו {{ count }} מסננים",
       "many": "הופעלו {{ count }} מסננים",
       "two": "הופעלו {{ count }} מסננים"
-    }
+    },
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add": "הוספה",
@@ -102,7 +103,8 @@
       "other": "הצגת {{ count }} פריטים",
       "many": "הצגת {{ count }} פריטים",
       "two": "הצגת {{ count }} פריטים"
-    }
+    },
+    "select_option": "Select {{ option }}"
   },
   "blocks": {
     "contact_form": {
@@ -355,7 +357,12 @@
       "quantity_maximum": "מקסימום של {{ maximum }}",
       "in_cart": "בסל",
       "default_title": "כותרת ברירת מחדל",
-      "sticky_add_to_cart": "סרגל הוספה מהירה לסל"
+      "sticky_add_to_cart": "סרגל הוספה מהירה לסל",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   }
 }

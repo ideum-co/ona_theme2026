@@ -75,7 +75,8 @@
     "search_suggestions_available": "\"{{ query }}\" için kullanılabilir arama önerileri",
     "price_filter_low": "Düşük fiyat",
     "price_filter_high": "Yüksek fiyat",
-    "view_disclosure_information_for_product": "{{ product_title }} için bildirim bilgilerini görüntüleyin"
+    "view_disclosure_information_for_product": "{{ product_title }} için bildirim bilgilerini görüntüleyin",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Sepete ekle",
@@ -118,7 +119,8 @@
     "open": "Açık",
     "back_to": "Geri dön: {{ title }}",
     "back_to_main_menu": "Ana menüye dön",
-    "zoom_media": "Medyayı yakınlaştır: {{ index }}"
+    "zoom_media": "Medyayı yakınlaştır: {{ index }}",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "değerlendirme",
@@ -341,7 +343,12 @@
       "quantity_maximum": "Maksimum: {{ maximum }}",
       "in_cart": "sepette",
       "default_title": "Varsayılan Başlık",
-      "sticky_add_to_cart": "Sepete hızlı ekle çubuğu"
+      "sticky_add_to_cart": "Sepete hızlı ekle çubuğu",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   }
 }
