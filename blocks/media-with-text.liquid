@@ -1,0 +1,336 @@
+{%- doc -%}
+  Media beside text, as a block.
+
+  The "Media with text" section lays itself out through the page grid - its columns are expressed
+  as `.section--page-width` / `.section--full-width` track sizes, and its full-bleed tricks read
+  `--full-page-grid-*`. None of that exists inside another block, which is why this is a rewrite of
+  the layout rather than the section rendering itself somewhere else: a block can live in a product
+  tab, in a `section`, or in any other slot that takes theme blocks, and it has to lay out from its
+  own box.
+
+  The two halves are the same static blocks the section uses, so the editing experience is the one
+  merchants already know: a Media half with its own settings, and a Content half that takes text,
+  buttons, images or app blocks.
+
+  What is deliberately missing next to the section: extend media, media bleed and section width.
+  Those three are page-grid features - there is no page grid here to break out of.
+{%- enddoc -%}
+
+{%- liquid
+  assign settings = block.settings
+
+  assign modifiers = ''
+  if settings.media_position == 'right'
+    assign modifiers = modifiers | append: ' media-with-text--media-right'
+  endif
+  if settings.mobile_content_first
+    assign modifiers = modifiers | append: ' media-with-text--mobile-content-first'
+  endif
+  if settings.mobile_text_center
+    assign modifiers = modifiers | append: ' media-with-text--mobile-text-center'
+  endif
+  if settings.content_distribution == 'space-between'
+    assign modifiers = modifiers | append: ' media-with-text--distribute'
+  endif
+  if settings.content_padding_custom
+    assign modifiers = modifiers | append: ' media-with-text--content-padding'
+  endif
+  if settings.limit_content_width
+    assign modifiers = modifiers | append: ' media-with-text--limited'
+  endif
+
+  # Mobile heights track the section's: a tall media on a phone would push the text off screen.
+  case settings.media_height
+    when '50svh'
+      assign media_height_mobile = '30svh'
+    when '60svh'
+      assign media_height_mobile = '50svh'
+    when '80svh'
+      assign media_height_mobile = '70svh'
+    when '100svh'
+      assign media_height_mobile = '100svh'
+    else
+      assign media_height_mobile = 'auto'
+  endcase
+-%}
+
+<div
+  class="media-with-text{{ modifiers }}"
+  style="
+    --media-height: {{ settings.media_height }};
+    --media-height-mobile: {{ media_height_mobile }};
+    --media-with-text-gap: {{ settings.gap }}px;
+    {%- if settings.media_width_ratio > 0 %}
+      {%- assign content_ratio = 100 | minus: settings.media_width_ratio -%}
+      {%- if settings.media_position == 'right' %}
+        --media-with-text-split: {{ content_ratio }}fr {{ settings.media_width_ratio }}fr;
+      {%- else %}
+        --media-with-text-split: {{ settings.media_width_ratio }}fr {{ content_ratio }}fr;
+      {%- endif %}
+    {%- endif %}
+    --media-with-text-mobile-padding-inline: {{ settings.mobile_padding_inline }}px;
+    {%- if settings.content_padding_custom %}
+      --media-with-text-content-padding-inline: {{ settings.content_padding_inline }}px;
+      --media-with-text-content-padding-block-start: {{ settings.content_padding_block_start }}px;
+      --media-with-text-content-padding-block-end: {{ settings.content_padding_block_end }}px;
+    {%- endif %}
+    {%- if settings.limit_content_width %}
+      --media-with-text-max-width: {{ settings.max_width }}px;
+    {%- endif %}
+  "
+  {{ block.shopify_attributes }}
+>
+  {% content_for 'block', type: '_media-without-appearance', id: 'media' %}
+
+  {% content_for 'block', type: '_content-without-appearance', id: 'content' %}
+</div>
+
+{% stylesheet %}
+  .media-with-text {
+    display: grid;
+    gap: var(--media-with-text-gap, 0px);
+
+    /* Stacked on a phone, side by side from the tablet breakpoint the rest of the theme uses. */
+    grid-template-areas: 'media' 'content';
+
+    @media screen and (min-width: 750px) {
+      grid-template-columns: var(--media-with-text-split, 1fr 1fr);
+      grid-template-areas: 'media content';
+    }
+  }
+
+  /* The class on the content half comes from `_content-without-appearance`, which renders through
+     the `group` snippet with a fixed class - the same one the section targets. */
+  .media-with-text .media-block {
+    grid-area: media;
+  }
+
+  .media-with-text .media-with-content__content {
+    grid-area: content;
+  }
+
+  .media-with-text--media-right {
+    @media screen and (min-width: 750px) {
+      grid-template-areas: 'content media';
+    }
+  }
+
+  .media-with-text--mobile-content-first {
+    @media screen and (max-width: 749px) {
+      grid-template-areas: 'content' 'media';
+    }
+  }
+
+  .media-with-text .media-with-content__content > .group-block-content {
+    @media screen and (max-width: 749px) {
+      padding-inline: var(--media-with-text-mobile-padding-inline, 0px);
+    }
+  }
+
+  /* Only the text is centred, and only on a phone: the group's own alignment setting moves the
+     whole column on every screen, which is not the same thing. */
+  .media-with-text--mobile-text-center {
+    @media screen and (max-width: 749px) {
+      .media-with-content__content > .group-block-content {
+        text-align: center;
+      }
+    }
+  }
+
+  .media-with-text--content-padding .media-with-content__content > .group-block-content {
+    padding-inline: var(--media-with-text-content-padding-inline, 0px);
+    padding-block-start: var(--media-with-text-content-padding-block-start, 0px);
+    padding-block-end: var(--media-with-text-content-padding-block-end, 0px);
+  }
+
+  /* `margin-block-end: auto` on the first child rather than `space-between` on the column: the
+     latter spreads every child, and the design only wants the heading held apart from the rest. */
+  .media-with-text--distribute .media-with-content__content > .group-block-content > :first-child {
+    margin-block-end: auto;
+  }
+
+  .media-with-text--limited .media-with-content__content > .group-block-content {
+    max-inline-size: var(--media-with-text-max-width, 1280px);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Media with text",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "media_position",
+      "label": "t:settings.media_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "media_width_ratio",
+      "label": "t:settings.media_width",
+      "info": "t:info.media_width_ratio",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 0
+    },
+    {
+      "type": "select",
+      "id": "media_height",
+      "label": "t:settings.media_height",
+      "options": [
+        {
+          "value": "auto",
+          "label": "t:options.auto"
+        },
+        {
+          "value": "50svh",
+          "label": "t:options.small"
+        },
+        {
+          "value": "60svh",
+          "label": "t:options.medium"
+        },
+        {
+          "value": "80svh",
+          "label": "t:options.large"
+        },
+        {
+          "value": "100svh",
+          "label": "t:options.full_screen"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "t:settings.horizontal_gap",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "select",
+      "id": "content_distribution",
+      "label": "t:settings.content_distribution",
+      "options": [
+        {
+          "value": "together",
+          "label": "t:options.together"
+        },
+        {
+          "value": "space-between",
+          "label": "t:options.space_between"
+        }
+      ],
+      "default": "together"
+    },
+    {
+      "type": "checkbox",
+      "id": "limit_content_width",
+      "label": "t:settings.limit_content_width",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "t:settings.max_width",
+      "min": 400,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1280,
+      "visible_if": "{{ block.settings.limit_content_width }}"
+    },
+    {
+      "type": "header",
+      "content": "Content padding"
+    },
+    {
+      "type": "checkbox",
+      "id": "content_padding_custom",
+      "label": "t:settings.content_padding_custom",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "content_padding_inline",
+      "label": "t:settings.horizontal_padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ block.settings.content_padding_custom }}"
+    },
+    {
+      "type": "range",
+      "id": "content_padding_block_start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ block.settings.content_padding_custom }}"
+    },
+    {
+      "type": "range",
+      "id": "content_padding_block_end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ block.settings.content_padding_custom }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.mobile"
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_content_first",
+      "label": "t:settings.mobile_content_first",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_text_center",
+      "label": "t:settings.mobile_text_center",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_inline",
+      "label": "t:settings.mobile_padding_inline",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Media with text"
+    }
+  ]
+}
+{% endschema %}
