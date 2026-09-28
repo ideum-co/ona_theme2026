@@ -4,6 +4,9 @@
   The label lives here rather than on the section so a tab is one thing in the editor: rename it,
   reorder it, or fill it, all in the same place. The section reads these labels to draw the strip.
 
+  Public on purpose: a private type (an underscore prefix) is not offered in "Add block", so the
+  tabs could not be added from the editor at all.
+
   Content is whatever theme or app blocks the tab holds, which is what keeps this usable before and
   after the move to metaobjects: today a `custom-liquid` or `product-metafield-text` block reads
   `closest.product`, tomorrow the same slot takes a block that reads a metaobject entry, and the
@@ -28,7 +31,7 @@
 
 {% schema %}
 {
-  "name": "t:names.tab",
+  "name": "Tab",
   "tag": null,
   "blocks": [
     {
@@ -46,12 +49,12 @@
       "type": "text",
       "id": "label",
       "label": "t:settings.label",
-      "info": "t:info.product_tab_label"
+      "info": "The wording in the tab strip. A tab with no label keeps its content on the page but gets no tab."
     }
   ],
   "presets": [
     {
-      "name": "t:names.tab"
+      "name": "Tab"
     }
   ]
 }
