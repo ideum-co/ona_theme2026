@@ -3,6 +3,10 @@ import { Component } from '@theme/component';
 /**
  * The product page's tab strip.
  *
+ * The element is named `product-tabs-component` on purpose: `component.js` only forces the custom
+ * element upgrade for tags ending in `-component`, so a click that lands before this module has
+ * executed is still delivered instead of being silently dropped.
+ *
  * Enhancement, not structure: the markup renders every panel visible, and this adds the tab
  * behaviour on connect by setting `enhanced` on the host. A page whose JS never arrives still
  * shows all of the content, stacked, instead of one panel and two dead labels.

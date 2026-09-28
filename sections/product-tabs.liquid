@@ -1,6 +1,35 @@
 {%- liquid
   assign settings = section.settings
 
+  # Colores por producto. El estándar de merchandising es un par de metacampos en el producto -
+  # namespace y claves son ajustes, así que el estándar se fija una vez aquí y el equipo solo llena
+  # los metacampos. Sin valor, manda el color de la sección, que es lo que ve un producto nuevo
+  # hasta que alguien lo vista.
+  assign product_resource = closest.product | default: product
+
+  assign background_color = settings.background_color
+  assign text_color = settings.text_color
+
+  if settings.color_source == 'product'
+    assign namespace = settings.color_namespace | strip
+    assign background_key = settings.background_color_key | strip
+    assign text_key = settings.text_color_key | strip
+
+    if namespace != blank and background_key != blank
+      assign product_background = product_resource.metafields[namespace][background_key].value
+      if product_background != blank
+        assign background_color = product_background
+      endif
+    endif
+
+    if namespace != blank and text_key != blank
+      assign product_text = product_resource.metafields[namespace][text_key].value
+      if product_text != blank
+        assign text_color = product_text
+      endif
+    endif
+  endif
+
   # Only a tab with a label can be reached, so the strip is drawn from those; an unlabelled tab
   # still renders its panel, which keeps its content on the page rather than silently dropping it.
   assign labelled_count = 0
@@ -20,8 +49,8 @@
 <product-tabs-component
   class="product-tabs spacing-style"
   style="
-    --product-tabs-background: {{ settings.background_color }};
-    --product-tabs-color: {{ settings.text_color }};
+    --product-tabs-background: {{ background_color }};
+    --product-tabs-color: {{ text_color }};
     --product-tabs-label-size: {{ settings.label_size }}px;
     {%- if settings.label_size_mobile > 0 %}
       --product-tabs-label-size-mobile: {{ settings.label_size_mobile }}px;
@@ -195,17 +224,17 @@
 
 {% schema %}
 {
-  "name": "t:names.product_tabs",
+  "name": "Product tabs",
   "tag": "section",
   "blocks": [
     {
-      "type": "_product-tab"
+      "type": "product-tab"
     }
   ],
   "settings": [
     {
       "type": "header",
-      "content": "t:content.tabs"
+      "content": "Tabs"
     },
     {
       "type": "select",
@@ -308,7 +337,7 @@
     {
       "type": "range",
       "id": "indicator_thickness",
-      "label": "t:settings.pagination_line_thickness",
+      "label": "Indicator thickness",
       "min": 0,
       "max": 16,
       "step": 1,
@@ -318,7 +347,7 @@
     {
       "type": "color",
       "id": "indicator_color",
-      "label": "t:settings.pagination_line_color",
+      "label": "Indicator color",
       "placeholder": "t:settings.default",
       "visible_if": "{{ section.settings.indicator_thickness > 0 }}"
     },
@@ -379,6 +408,44 @@
       "content": "t:content.colors"
     },
     {
+      "type": "select",
+      "id": "color_source",
+      "label": "Color source",
+      "info": "Per product reads the metafields below, and falls back to these colors when a product has none.",
+      "options": [
+        {
+          "value": "product",
+          "label": "Per product (metafield)"
+        },
+        {
+          "value": "section",
+          "label": "These colors"
+        }
+      ],
+      "default": "product"
+    },
+    {
+      "type": "text",
+      "id": "color_namespace",
+      "label": "Metafield namespace",
+      "default": "custom",
+      "visible_if": "{{ section.settings.color_source == 'product' }}"
+    },
+    {
+      "type": "text",
+      "id": "background_color_key",
+      "label": "Background metafield key",
+      "default": "pdp_background_color",
+      "visible_if": "{{ section.settings.color_source == 'product' }}"
+    },
+    {
+      "type": "text",
+      "id": "text_color_key",
+      "label": "Text metafield key",
+      "default": "pdp_text_color",
+      "visible_if": "{{ section.settings.color_source == 'product' }}"
+    },
+    {
       "type": "color",
       "id": "background_color",
       "label": "t:settings.background_color",
@@ -393,7 +460,7 @@
     {
       "type": "color",
       "id": "active_label_color",
-      "label": "t:settings.active_color",
+      "label": "Active tab color",
       "placeholder": "t:settings.default"
     },
     {
@@ -423,7 +490,7 @@
   ],
   "presets": [
     {
-      "name": "t:names.product_tabs",
+      "name": "Product tabs",
       "category": "t:categories.products"
     }
   ],
