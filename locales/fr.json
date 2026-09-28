@@ -76,7 +76,8 @@
     "search_suggestions_available": "Rechercher des suggestions disponibles pour « {{ query }} »",
     "price_filter_low": "Prix bas",
     "price_filter_high": "Prix élevé",
-    "view_disclosure_information_for_product": "Afficher les informations sur le produit {{ product_title }}"
+    "view_disclosure_information_for_product": "Afficher les informations sur le produit {{ product_title }}",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Ajouter au panier",
@@ -120,7 +121,8 @@
     "open": "Ouvrir",
     "back_to": "Retour à {{ title }}",
     "back_to_main_menu": "Retour au menu principal",
-    "zoom_media": "Zoom du support multimédia {{ index }}"
+    "zoom_media": "Zoom du support multimédia {{ index }}",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "avis",
@@ -324,7 +326,12 @@
       "quantity_maximum": "Maximum de {{ maximum }}",
       "in_cart": "dans le panier",
       "default_title": "Titre par défaut",
-      "sticky_add_to_cart": "Barre d’ajout rapide au panier"
+      "sticky_add_to_cart": "Barre d’ajout rapide au panier",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   },
   "fields": {

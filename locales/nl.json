@@ -75,7 +75,8 @@
     "price_filter_low": "Lage prijs",
     "price_filter_high": "Hoge prijs",
     "view_disclosure_information_for_product": "Informatie over productvermeldingen bekijken voor {{ product_title }}",
-    "show_submenu": "Submenu {{ title }} weergeven"
+    "show_submenu": "Submenu {{ title }} weergeven",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Aan winkelwagen toevoegen",
@@ -118,7 +119,8 @@
     "open": "Openen",
     "back_to": "Terug naar {{ title }}",
     "zoom_media": "In-/uitzoomen op media {{ index }}",
-    "back_to_main_menu": "Terug naar hoofdmenu"
+    "back_to_main_menu": "Terug naar hoofdmenu",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "recensies",
@@ -341,7 +343,12 @@
       "quantity_maximum": "Maximum van {{ maximum }}",
       "in_cart": "in winkelwagen",
       "default_title": "Standaardtitel",
-      "sticky_add_to_cart": "Balk voor snel toevoegen aan winkelwagen"
+      "sticky_add_to_cart": "Balk voor snel toevoegen aan winkelwagen",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   }
 }

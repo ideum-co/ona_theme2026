@@ -77,7 +77,8 @@
     "price_filter_low": "Nizka cena",
     "price_filter_high": "Visoka cena",
     "view_disclosure_information_for_product": "Ogled informacij o razkritjih za {{ product_title }}",
-    "show_submenu": "Prikaži podmeni {{ title }}"
+    "show_submenu": "Prikaži podmeni {{ title }}",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Dodaj v košarico",
@@ -122,7 +123,8 @@
     "open": "Odpri",
     "back_to": "Nazaj na: {{ title }}",
     "zoom_media": "Povečava predstavnosti {{ index }}",
-    "back_to_main_menu": "Nazaj na glavni meni"
+    "back_to_main_menu": "Nazaj na glavni meni",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "ocen.",
@@ -330,7 +332,12 @@
       "quantity_maximum": "Največ od {{ maximum }}",
       "in_cart": "v košarici",
       "default_title": "Privzeti naslov",
-      "sticky_add_to_cart": "Vrstica »Hitro dodajanje v košarico«"
+      "sticky_add_to_cart": "Vrstica »Hitro dodajanje v košarico«",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   },
   "fields": {

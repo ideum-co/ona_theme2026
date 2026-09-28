@@ -75,7 +75,8 @@
     "search_suggestions_available": "Sökförslag tillgängliga för \"{{ query }}\"",
     "price_filter_low": "Lågt pris",
     "price_filter_high": "Högt pris",
-    "view_disclosure_information_for_product": "Visa produktupplysningar för {{ product_title }}"
+    "view_disclosure_information_for_product": "Visa produktupplysningar för {{ product_title }}",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Lägg till i varukorgen",
@@ -118,7 +119,8 @@
     "open": "Öppna",
     "back_to": "Tillbaka till {{ title }}",
     "back_to_main_menu": "Tillbaka till huvudmenyn",
-    "zoom_media": "Zooma media {{ index }}"
+    "zoom_media": "Zooma media {{ index }}",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "recensioner",
@@ -341,7 +343,12 @@
       "quantity_maximum": "Maximum {{ maximum }}",
       "in_cart": "i varukorg",
       "default_title": "Standardtitel",
-      "sticky_add_to_cart": "Fält för att lägga till snabbt i varukorgen"
+      "sticky_add_to_cart": "Fält för att lägga till snabbt i varukorgen",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   }
 }

@@ -77,7 +77,8 @@
     "price_filter_low": "Žema kaina",
     "price_filter_high": "Aukšta kaina",
     "view_disclosure_information_for_product": "Peržiūrėti atskleidžiamą informaciją apie {{ product_title }}",
-    "show_submenu": "Rodyti {{ title }} submeniu"
+    "show_submenu": "Rodyti {{ title }} submeniu",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Įdėti į krepšelį",
@@ -122,7 +123,8 @@
     "open": "Atidaryti",
     "back_to": "Grįžti į „{{ title }}“",
     "zoom_media": "Padidinti mediją {{ index }}",
-    "back_to_main_menu": "Atgal į pagrindinį meniu"
+    "back_to_main_menu": "Atgal į pagrindinį meniu",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "apžvalgos (-ų; -a)",
@@ -355,7 +357,12 @@
       "quantity_maximum": "Daugiausiai {{ maximum }}",
       "in_cart": "krepšelyje",
       "default_title": "Numatytasis pavadinimas",
-      "sticky_add_to_cart": "Greito pridėjimo į krepšelį juosta"
+      "sticky_add_to_cart": "Greito pridėjimo į krepšelį juosta",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   }
 }

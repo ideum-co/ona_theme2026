@@ -75,7 +75,8 @@
     "search_suggestions_available": "Søkeforslag tilgjengelige for «{{ query }}»",
     "price_filter_low": "Lav pris",
     "price_filter_high": "Høy pris",
-    "view_disclosure_information_for_product": "Se produktopplysninger for {{ product_title }}"
+    "view_disclosure_information_for_product": "Se produktopplysninger for {{ product_title }}",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Legg i handlekurv",
@@ -118,7 +119,8 @@
     "open": "Åpen",
     "back_to": "Tilbake til {{ title }}",
     "back_to_main_menu": "Tilbake til hovedmenyen",
-    "zoom_media": "Zoom medier {{ index }}"
+    "zoom_media": "Zoom medier {{ index }}",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "anmeldelser",
@@ -341,7 +343,12 @@
       "quantity_maximum": "Maksimum {{ maximum }}",
       "in_cart": "i handlekurv",
       "default_title": "Standardtittel",
-      "sticky_add_to_cart": "Hurtiglinje for «Legg i handlekurv»"
+      "sticky_add_to_cart": "Hurtiglinje for «Legg i handlekurv»",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   }
 }

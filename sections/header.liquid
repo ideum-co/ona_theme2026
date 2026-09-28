@@ -110,6 +110,9 @@
     content_for 'block', type: '_header-menu', id: 'header-menu'
   endcapture
 
+  # The three variants intentionally share one static block ID so they also share the merchant's
+  # saved menu settings. Giving each viewport a different ID would reset those settings.
+  # theme-check-disable UniqueStaticBlockId
   capture drawer_menu
     content_for 'block', type: '_header-menu', id: 'header-menu', variant: 'mobile'
   endcapture
@@ -117,6 +120,7 @@
   capture navigation_bar
     content_for 'block', type: '_header-menu', id: 'header-menu', variant: 'navigation_bar', transparent: transparent
   endcapture
+  # theme-check-enable UniqueStaticBlockId
 
   if shop.customer_accounts_enabled
     assign search_class = 'search-action--hidden-on-drawer'

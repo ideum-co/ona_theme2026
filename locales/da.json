@@ -75,7 +75,8 @@
     "price_filter_low": "Lav pris",
     "price_filter_high": "Høj pris",
     "view_disclosure_information_for_product": "Se deklarationsoplysninger for {{ product_title }}",
-    "show_submenu": "Vis undermenu for {{ title }}"
+    "show_submenu": "Vis undermenu for {{ title }}",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Læg i indkøbskurven",
@@ -118,7 +119,8 @@
     "open": "Åbn",
     "back_to": "Tilbage til {{ title }}",
     "zoom_media": "Zoom medie {{ index }}",
-    "back_to_main_menu": "Tilbage til hovedmenu"
+    "back_to_main_menu": "Tilbage til hovedmenu",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "anmeldelser",
@@ -318,7 +320,12 @@
       "quantity_maximum": "Maksimum på {{ maximum }}",
       "in_cart": "i indkøbskurv",
       "default_title": "Standardtitel",
-      "sticky_add_to_cart": "Bjælken “Læg hurtigt i indkøbskurv”"
+      "sticky_add_to_cart": "Bjælken “Læg hurtigt i indkøbskurv”",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   },
   "fields": {

@@ -75,7 +75,8 @@
     "price_filter_low": "Giá thấp",
     "price_filter_high": "Giá cao",
     "view_disclosure_information_for_product": "Xem thông tin công bố của {{ product_title }}",
-    "show_submenu": "Hiển thị menu phụ {{ title }}"
+    "show_submenu": "Hiển thị menu phụ {{ title }}",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Thêm vào giỏ hàng",
@@ -118,7 +119,8 @@
     "open": "Mở",
     "back_to": "Quay lại {{ title }}",
     "zoom_media": "Thu phóng nội dung {{ index }}",
-    "back_to_main_menu": "Quay lại menu chính"
+    "back_to_main_menu": "Quay lại menu chính",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "đánh giá",
@@ -341,7 +343,12 @@
       "quantity_maximum": "Tối đa {{ maximum }}",
       "in_cart": "trong giỏ hàng",
       "default_title": "Tiêu đề mặc định",
-      "sticky_add_to_cart": "Thanh thêm nhanh vào giỏ hàng"
+      "sticky_add_to_cart": "Thanh thêm nhanh vào giỏ hàng",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   }
 }

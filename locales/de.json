@@ -75,7 +75,8 @@
     "price_filter_low": "Niedriger Preis",
     "price_filter_high": "Hoher Preis",
     "view_disclosure_information_for_product": "Offenlegungsinformationen für {{ product_title }} anzeigen",
-    "show_submenu": "Untermenü {{ title }} anzeigen"
+    "show_submenu": "Untermenü {{ title }} anzeigen",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "In den Warenkorb legen",
@@ -118,7 +119,8 @@
     "open": "Öffnen",
     "back_to": "Zurück zu {{ title }}",
     "zoom_media": "Medien {{ index }} zoomen",
-    "back_to_main_menu": "Zurück zum Hauptmenü"
+    "back_to_main_menu": "Zurück zum Hauptmenü",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "Reviews",
@@ -318,7 +320,12 @@
       "quantity_maximum": "Maximal {{ maximum }}",
       "in_cart": "im Warenkorb",
       "default_title": "Standardtitel",
-      "sticky_add_to_cart": "Leiste „Schnell in den Warenkorb“"
+      "sticky_add_to_cart": "Leiste „Schnell in den Warenkorb“",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   },
   "fields": {

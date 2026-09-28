@@ -75,7 +75,8 @@
     "search_suggestions_available": "\"{{ query }}\"에 대한 검색 제안이 있습니다",
     "price_filter_low": "낮은 가격",
     "price_filter_high": "높은 가격",
-    "view_disclosure_information_for_product": "{{ product_title }}에 대한 고지 정보 보기"
+    "view_disclosure_information_for_product": "{{ product_title }}에 대한 고지 정보 보기",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "카트에 추가",
@@ -118,7 +119,8 @@
     "open": "열기",
     "back_to": "{{ title }}(으)로 돌아가기",
     "back_to_main_menu": "메인 메뉴로 돌아가기",
-    "zoom_media": "{{ index }} 미디어 확대/축소"
+    "zoom_media": "{{ index }} 미디어 확대/축소",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "리뷰",
@@ -318,7 +320,12 @@
       "quantity_maximum": "최대 {{ maximum }}개",
       "in_cart": "카트에 있음",
       "default_title": "기본 이름",
-      "sticky_add_to_cart": "빠른 카트 추가 바"
+      "sticky_add_to_cart": "빠른 카트 추가 바",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   },
   "fields": {

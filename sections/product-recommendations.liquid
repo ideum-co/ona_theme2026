@@ -68,7 +68,10 @@
       {{ styles }}
     "
   >
-    <div class="section-resource-list__content">
+    <div
+      class="section-resource-list__content"
+      style="--horizontal-alignment: {{ section.settings.heading_alignment }};"
+    >
       {% content_for 'blocks' %}
     </div>
 
@@ -450,6 +453,26 @@
       "default": "page-width"
     },
     {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "t:options.left"
+        },
+        {
+          "value": "center",
+          "label": "t:options.center"
+        },
+        {
+          "value": "flex-end",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "center"
+    },
+    {
       "type": "range",
       "id": "gap",
       "label": "t:settings.gap",
@@ -507,6 +530,7 @@
         "icons_style": "arrow",
         "icons_shape": "none",
         "section_width": "page-width",
+        "heading_alignment": "center",
         "gap": 28,
         "padding-block-start": 48,
         "padding-block-end": 48

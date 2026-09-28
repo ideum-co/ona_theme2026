@@ -85,7 +85,8 @@
     "price_filter_low": "Precio bajo",
     "price_filter_high": "Precio alto",
     "view_disclosure_information_for_product": "Ver los avisos sobre el producto de {{ product_title }}",
-    "show_submenu": "Mostrar submenú de {{ title }}"
+    "show_submenu": "Mostrar submenú de {{ title }}",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Agregar al carrito",
@@ -334,7 +335,12 @@
       "quantity_maximum": "Máximo de {{ maximum }}",
       "in_cart": "en el carrito",
       "default_title": "Título predeterminado",
-      "sticky_add_to_cart": "Barra de agregar rápido al carrito"
+      "sticky_add_to_cart": "Barra de agregar rápido al carrito",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   },
   "fields": {

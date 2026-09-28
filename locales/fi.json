@@ -75,7 +75,8 @@
     "price_filter_low": "Halpa hinta",
     "price_filter_high": "Kallis hinta",
     "view_disclosure_information_for_product": "Näytä tuotteen {{ product_title }} ilmoitustiedot",
-    "show_submenu": "Näytä kohteen {{ title }} alivalikko"
+    "show_submenu": "Näytä kohteen {{ title }} alivalikko",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Lisää ostoskoriin",
@@ -118,7 +119,8 @@
     "open": "Avaa",
     "back_to": "Takaisin kohteeseen {{ title }}",
     "zoom_media": "Lähennä mediasisältö: {{ index }}",
-    "back_to_main_menu": "Takaisin päävalikkoon"
+    "back_to_main_menu": "Takaisin päävalikkoon",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "arvostelua",
@@ -318,7 +320,12 @@
       "quantity_maximum": "Enimmäismäärä {{ maximum }}",
       "in_cart": "ostoskorissa",
       "default_title": "Oletusotsikko",
-      "sticky_add_to_cart": "Pikalisäys ostoskoririville"
+      "sticky_add_to_cart": "Pikalisäys ostoskoririville",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   },
   "fields": {

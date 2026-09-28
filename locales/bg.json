@@ -75,7 +75,8 @@
     "price_filter_low": "Ниска цена",
     "price_filter_high": "Висока цена",
     "view_disclosure_information_for_product": "Преглед на оповестената информация за {{ product_title }}",
-    "show_submenu": "Показване на подменю {{ title }}"
+    "show_submenu": "Показване на подменю {{ title }}",
+    "shop_by_category": "Shop by category"
   },
   "actions": {
     "add_to_cart": "Добавяне към количката",
@@ -118,7 +119,8 @@
     "open": "Отваряне",
     "back_to": "Назад към {{ title }}",
     "zoom_media": "Увеличаване на мултимедия {{ index }}",
-    "back_to_main_menu": "Назад към главното меню"
+    "back_to_main_menu": "Назад към главното меню",
+    "select_option": "Select {{ option }}"
   },
   "content": {
     "reviews": "мнения",
@@ -318,7 +320,12 @@
       "quantity_maximum": "Максимум: {{ maximum }}",
       "in_cart": "в количката",
       "default_title": "Заглавие по подразбиране",
-      "sticky_add_to_cart": "Лента за бързо добавяне в количката"
+      "sticky_add_to_cart": "Лента за бързо добавяне в количката",
+      "one_time_purchase": "One time purchase",
+      "subscribe_and_save": "Subscribe and save",
+      "save_percentage": "Save {{ percentage }}%",
+      "delivery_frequency": "Delivery frequency",
+      "subscription_details": "Subscription details"
     }
   },
   "fields": {
