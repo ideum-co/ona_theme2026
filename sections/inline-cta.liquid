@@ -1,0 +1,432 @@
+{%- liquid
+  assign settings = section.settings
+  assign heading_tag = settings.heading_tag | default: 'h2'
+  unless heading_tag == 'h2' or heading_tag == 'h3' or heading_tag == 'h4'
+    assign heading_tag = 'h2'
+  endunless
+-%}
+
+<div
+  class="inline-cta"
+  style="
+    --inline-cta-background: {{ settings.background_color }};
+    --inline-cta-text-color: {{ settings.text_color }};
+    --inline-cta-text-font: {{ settings.text_font }};
+    --inline-cta-text-size: {{ settings.text_size }}px;
+    --inline-cta-text-size-mobile: {{ settings.text_size_mobile }}px;
+    --inline-cta-text-weight: {{ settings.text_weight }};
+    --inline-cta-button-background: {{ settings.button_background_color }};
+    --inline-cta-button-color: {{ settings.button_text_color }};
+    --inline-cta-button-border-color: {{ settings.button_border_color }};
+    --inline-cta-button-font: {{ settings.button_font }};
+    --inline-cta-button-text-size: {{ settings.button_text_size }}px;
+    --inline-cta-button-text-size-mobile: {{ settings.button_text_size_mobile }}px;
+    --inline-cta-button-padding-block: {{ settings.button_padding_block }}px;
+    --inline-cta-button-padding-inline: {{ settings.button_padding_inline }}px;
+    --inline-cta-button-min-width: {{ settings.button_min_width }}px;
+    --inline-cta-button-radius: {{ settings.button_border_radius }}px;
+    --inline-cta-content-max-width: {{ settings.content_max_width }}px;
+    --inline-cta-gap: {{ settings.content_gap }}px;
+    --inline-cta-gap-mobile: {{ settings.content_gap_mobile }}px;
+    --inline-cta-padding-top: {{ settings.padding_top }}px;
+    --inline-cta-padding-bottom: {{ settings.padding_bottom }}px;
+    --inline-cta-padding-inline: {{ settings.padding_inline }}px;
+    --inline-cta-padding-inline-mobile: {{ settings.padding_inline_mobile }}px;
+    --inline-cta-justify: {{ settings.content_alignment }};
+  "
+  {{ section.shopify_attributes }}
+>
+  <div class="inline-cta__inner">
+    {%- if settings.text != blank -%}
+      <{{ heading_tag }} class="inline-cta__text">{{ settings.text }}</{{ heading_tag }}>
+    {%- endif -%}
+
+    {%- if settings.button_label != blank -%}
+      {%- if settings.button_link != blank -%}
+        <a class="inline-cta__button" href="{{ settings.button_link }}">
+          {{- settings.button_label | escape -}}
+        </a>
+      {%- else -%}
+        <span class="inline-cta__button">{{ settings.button_label | escape }}</span>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</div>
+
+{% stylesheet %}
+  .inline-cta {
+    box-sizing: border-box;
+    width: 100%;
+    padding-block: var(--inline-cta-padding-top) var(--inline-cta-padding-bottom);
+    padding-inline: var(--inline-cta-padding-inline);
+    background: var(--inline-cta-background);
+    color: var(--inline-cta-text-color);
+  }
+
+  .inline-cta__inner {
+    display: flex;
+    align-items: center;
+    justify-content: var(--inline-cta-justify, center);
+    gap: var(--inline-cta-gap);
+    width: 100%;
+    max-width: var(--inline-cta-content-max-width);
+    margin-inline: auto;
+  }
+
+  .inline-cta__text {
+    margin: 0;
+    color: var(--inline-cta-text-color);
+    font-family: var(--inline-cta-text-font);
+    font-size: var(--inline-cta-text-size);
+    font-weight: var(--inline-cta-text-weight);
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  .inline-cta__button {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--inline-cta-button-min-width);
+    padding-block: var(--inline-cta-button-padding-block);
+    padding-inline: var(--inline-cta-button-padding-inline);
+    border: 1px solid var(--inline-cta-button-border-color);
+    border-radius: var(--inline-cta-button-radius);
+    background: var(--inline-cta-button-background);
+    color: var(--inline-cta-button-color);
+    font-family: var(--inline-cta-button-font);
+    font-size: var(--inline-cta-button-text-size);
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    transition: opacity 160ms ease;
+  }
+
+  a.inline-cta__button:hover {
+    opacity: 0.88;
+  }
+
+  a.inline-cta__button:focus-visible {
+    outline: 2px solid currentcolor;
+    outline-offset: 3px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .inline-cta {
+      padding-inline: var(--inline-cta-padding-inline-mobile);
+    }
+
+    .inline-cta__inner {
+      flex-direction: column;
+      gap: var(--inline-cta-gap-mobile);
+      text-align: center;
+    }
+
+    .inline-cta__text {
+      font-size: var(--inline-cta-text-size-mobile);
+    }
+
+    .inline-cta__button {
+      font-size: var(--inline-cta-button-text-size-mobile);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "CTA inline",
+  "tag": "section",
+  "class": "inline-cta-section",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "Not sure just yet?"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Text HTML tag",
+      "options": [
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" },
+        { "value": "h4", "label": "H4" }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Try our coffee quiz"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "Content alignment",
+      "options": [
+        { "value": "flex-start", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "flex-end", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "content_max_width",
+      "label": "Content max width",
+      "min": 600,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1200
+    },
+    {
+      "type": "range",
+      "id": "content_gap",
+      "label": "Gap",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "content_gap_mobile",
+      "label": "Gap on mobile",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Text style"
+    },
+    {
+      "type": "select",
+      "id": "text_font",
+      "label": "Font",
+      "options": [
+        { "value": "var(--font-body--family)", "label": "Body" },
+        { "value": "var(--font-heading--family)", "label": "Heading" },
+        { "value": "var(--font-subheading--family)", "label": "Subheading" },
+        { "value": "var(--font-accent--family)", "label": "Accent" }
+      ],
+      "default": "var(--font-heading--family)"
+    },
+    {
+      "type": "select",
+      "id": "text_weight",
+      "label": "Weight",
+      "options": [
+        { "value": "400", "label": "Regular" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semibold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text size",
+      "min": 16,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "default": 44
+    },
+    {
+      "type": "range",
+      "id": "text_size_mobile",
+      "label": "Text size on mobile",
+      "min": 16,
+      "max": 56,
+      "step": 1,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "header",
+      "content": "Button style"
+    },
+    {
+      "type": "select",
+      "id": "button_font",
+      "label": "Button font",
+      "options": [
+        { "value": "var(--font-body--family)", "label": "Body" },
+        { "value": "var(--font-heading--family)", "label": "Heading" },
+        { "value": "var(--font-subheading--family)", "label": "Subheading" },
+        { "value": "var(--font-accent--family)", "label": "Accent" }
+      ],
+      "default": "var(--font-body--family)"
+    },
+    {
+      "type": "range",
+      "id": "button_text_size",
+      "label": "Button text size",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "button_text_size_mobile",
+      "label": "Button text size on mobile",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "button_min_width",
+      "label": "Button minimum width",
+      "min": 0,
+      "max": 500,
+      "step": 5,
+      "unit": "px",
+      "default": 250
+    },
+    {
+      "type": "range",
+      "id": "button_padding_block",
+      "label": "Button vertical padding",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "button_padding_inline",
+      "label": "Button horizontal padding",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "label": "Button corner radius",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#f5f2e8"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#500a14"
+    },
+    {
+      "type": "color",
+      "id": "button_background_color",
+      "label": "Button background",
+      "default": "#8c1238"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text",
+      "default": "#f5f2e8"
+    },
+    {
+      "type": "color",
+      "id": "button_border_color",
+      "label": "Button border",
+      "default": "#8c1238"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_inline",
+      "label": "Horizontal",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_inline_mobile",
+      "label": "Horizontal on mobile",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    }
+  ],
+  "presets": [
+    {
+      "name": "CTA inline",
+      "category": "Products"
+    }
+  ]
+}
+{% endschema %}

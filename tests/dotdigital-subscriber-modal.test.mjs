@@ -54,8 +54,8 @@ test('Dotdigital subscriber modal cookie expiry is bounded in days', () => {
     label: 'Subscriber modal cookie expiry',
     min: 1,
     max: 365,
-    step: 1,
-    unit: 'days',
+    step: 7,
+    unit: 'day',
     default: 365,
   });
 });
