@@ -88,4 +88,8 @@ test('fits the complete PDP information layout within the desktop viewport', () 
     /\.product-information__media \.product-media-container:not\(\.dialog-zoomed-gallery \*\)[\s\S]*?height: 100%;[\s\S]*?aspect-ratio: auto;/,
   );
   assert.match(contentSource, /\.deferred-media__poster-image\)[\s\S]*?object-fit: contain;/);
+  assert.match(
+    contentSource,
+    /\.product-information__grid:not\(\.product-information--media-none\) > \.product-details[\s\S]*?overflow-y: auto;[\s\S]*?scrollbar-gutter: stable;/,
+  );
 });

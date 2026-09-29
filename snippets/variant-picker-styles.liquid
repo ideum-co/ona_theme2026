@@ -15,6 +15,8 @@
   }
 
   .variant-picker__form {
+    display: grid;
+    gap: var(--variant-picker-option-gap, var(--padding-lg));
     width: 100%;
   }
 
@@ -114,7 +116,7 @@
   }
 
   .variant-option + .variant-option {
-    margin-top: var(--padding-lg);
+    margin-top: 0;
   }
 
   .variant-option--swatches {
@@ -139,7 +141,8 @@
   .variant-option--buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--gap-sm);
+    column-gap: var(--variant-picker-value-gap, var(--gap-sm));
+    row-gap: var(--variant-picker-value-gap, var(--gap-sm));
     margin: 0;
     padding: 0;
     border: none;
@@ -147,7 +150,17 @@
 
   .variant-option--buttons legend {
     padding: 0;
-    margin-block-end: var(--margin-xs);
+    width: 100%;
+    margin-block-end: var(--variant-picker-label-gap, var(--margin-xs));
+  }
+
+  .variant-option--dropdowns > label {
+    display: block;
+    margin-block-end: var(--variant-picker-label-gap, var(--margin-xs));
+  }
+
+  .variant-option--dropdowns .variant-option__select-wrapper {
+    margin-top: 0;
   }
 
   .variant-option--buttons legend,
