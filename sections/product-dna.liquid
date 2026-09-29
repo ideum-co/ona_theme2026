@@ -1,0 +1,356 @@
+{%- liquid
+  assign settings = section.settings
+  assign product_resource = closest.product | default: product
+  assign namespace = settings.metaobject_namespace | strip
+  assign metaobject_key = settings.metaobject_key | strip
+
+  assign background_color = settings.background_color
+  assign text_color = settings.text_color
+
+  if settings.color_source == 'product' and namespace != blank
+    assign background_key = settings.background_color_key | strip
+    assign text_key = settings.text_color_key | strip
+
+    if background_key != blank
+      assign product_background = product_resource.metafields[namespace][background_key].value
+      if product_background != blank
+        assign background_color = product_background
+      endif
+    endif
+
+    if text_key != blank
+      assign product_text = product_resource.metafields[namespace][text_key].value
+      if product_text != blank
+        assign text_color = product_text
+      endif
+    endif
+  endif
+
+  assign dna_reference = blank
+  if settings.content_source == 'metaobject' and namespace != blank and metaobject_key != blank
+    assign dna_reference = product_resource.metafields[namespace][metaobject_key].value
+  endif
+
+  assign heading = settings.heading
+  assign description = settings.description
+  assign dna_items = blank
+
+  if dna_reference != blank
+    assign metaobject_heading = dna_reference[settings.metaobject_heading_field].value
+    if metaobject_heading != blank
+      assign heading = metaobject_heading
+    endif
+
+    assign metaobject_description = dna_reference[settings.metaobject_description_field]
+    assign dna_items = dna_reference[settings.metaobject_items_field].value
+  endif
+
+  if heading == blank
+    assign heading = product_resource.title | append: ' DNA'
+  endif
+-%}
+
+<section
+  class="product-dna"
+  style="
+    --product-dna-background: {{ background_color }};
+    --product-dna-color: {{ text_color }};
+    --product-dna-content-width: {{ settings.content_max_width }}px;
+    --product-dna-columns: {{ settings.columns_desktop }};
+    --product-dna-items-gap: {{ settings.items_gap }}px;
+    --product-dna-row-gap: {{ settings.row_gap }}px;
+    --product-dna-image-ratio: {{ settings.image_aspect_ratio }}%;
+    --product-dna-image-radius: {{ settings.image_radius }}%;
+    --product-dna-image-fit: {{ settings.image_fit }};
+    --product-dna-heading-size: {{ settings.heading_size }}px;
+    --product-dna-heading-size-mobile: {{ settings.heading_size_mobile }}px;
+    --product-dna-label-size: {{ settings.label_size }}px;
+    --product-dna-copy-size: {{ settings.copy_size }}px;
+    --product-dna-description-size: {{ settings.description_size }}px;
+    --product-dna-description-width: {{ settings.description_max_width }}px;
+    --product-dna-heading-align: {{ settings.heading_alignment }};
+    --product-dna-item-align: {{ settings.item_alignment }};
+    --product-dna-description-align: {{ settings.description_alignment }};
+    --product-dna-heading-gap: {{ settings.heading_gap }}px;
+    --product-dna-description-gap: {{ settings.description_gap }}px;
+    --product-dna-item-content-gap: {{ settings.item_content_gap }}px;
+    --product-dna-padding-top: {{ settings.padding_top }}px;
+    --product-dna-padding-bottom: {{ settings.padding_bottom }}px;
+    --product-dna-padding-inline: {{ settings.padding_inline }}px;
+    --product-dna-padding-inline-mobile: {{ settings.padding_inline_mobile }}px;
+  "
+  {{ section.shopify_attributes }}
+>
+  <div class="product-dna__inner">
+    <h2 class="product-dna__heading">{{ heading }}</h2>
+
+    <div class="product-dna__items">
+      {%- if dna_items != blank -%}
+        {%- for dna_item in dna_items -%}
+          {%- liquid
+            assign item_image = dna_item[settings.item_image_field].value
+            assign item_label = dna_item[settings.item_label_field].value
+            assign item_copy = dna_item[settings.item_copy_field].value
+          -%}
+          <article class="product-dna__item">
+            {%- if item_image != blank -%}
+              <div class="product-dna__media">
+                {{ item_image | image_url: width: 1000 | image_tag: loading: 'lazy', widths: '240, 360, 480, 720, 1000', sizes: '(min-width: 990px) 22vw, (min-width: 750px) 45vw, 80vw', class: 'product-dna__image' }}
+              </div>
+            {%- endif -%}
+            {%- if item_label != blank or item_copy != blank -%}
+              <div class="product-dna__item-content">
+                {%- if item_label != blank -%}<h3 class="product-dna__label">{{ item_label | escape }}</h3>{%- endif -%}
+                {%- if item_copy != blank -%}<div class="product-dna__copy">{{ item_copy }}</div>{%- endif -%}
+              </div>
+            {%- endif -%}
+          </article>
+        {%- endfor -%}
+      {%- else -%}
+        {%- for block in section.blocks -%}
+          <article class="product-dna__item" {{ block.shopify_attributes }}>
+            {%- if block.settings.image != blank -%}
+              <div class="product-dna__media">
+                {{ block.settings.image | image_url: width: 1000 | image_tag: loading: 'lazy', widths: '240, 360, 480, 720, 1000', sizes: '(min-width: 990px) 22vw, (min-width: 750px) 45vw, 80vw', class: 'product-dna__image' }}
+              </div>
+            {%- else -%}
+              <div class="product-dna__media product-dna__media--placeholder">
+                {{ 'product-1' | placeholder_svg_tag: 'product-dna__placeholder' }}
+              </div>
+            {%- endif -%}
+            <div class="product-dna__item-content">
+              {%- if block.settings.label != blank -%}<h3 class="product-dna__label">{{ block.settings.label | escape }}</h3>{%- endif -%}
+              {%- if block.settings.copy != blank -%}<div class="product-dna__copy">{{ block.settings.copy }}</div>{%- endif -%}
+            </div>
+          </article>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+
+    {%- if metaobject_description != blank -%}
+      <div class="product-dna__description rte">{{ metaobject_description | metafield_tag }}</div>
+    {%- elsif description != blank -%}
+      <div class="product-dna__description rte">{{ description }}</div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .product-dna {
+    box-sizing: border-box;
+    width: 100%;
+    padding-block: var(--product-dna-padding-top) var(--product-dna-padding-bottom);
+    padding-inline: var(--product-dna-padding-inline);
+    background: var(--product-dna-background);
+    color: var(--product-dna-color);
+  }
+
+  .product-dna__inner {
+    width: 100%;
+    max-width: var(--product-dna-content-width);
+    margin-inline: auto;
+  }
+
+  .product-dna__heading {
+    margin: 0 0 var(--product-dna-heading-gap);
+    color: inherit;
+    font-family: var(--font-heading--family);
+    font-size: var(--product-dna-heading-size);
+    line-height: 1.1;
+    text-align: var(--product-dna-heading-align);
+    text-wrap: balance;
+  }
+
+  .product-dna__items {
+    display: grid;
+    grid-template-columns: repeat(var(--product-dna-columns), minmax(0, 1fr));
+    gap: var(--product-dna-row-gap) var(--product-dna-items-gap);
+  }
+
+  .product-dna__item {
+    min-width: 0;
+    color: inherit;
+    text-align: var(--product-dna-item-align);
+  }
+
+  .product-dna__media {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    padding-block-end: var(--product-dna-image-ratio);
+    border-radius: var(--product-dna-image-radius);
+    background: rgb(var(--color-foreground-rgb) / 8%);
+  }
+
+  .product-dna__image,
+  .product-dna__placeholder {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: var(--product-dna-image-fit);
+  }
+
+  .product-dna__placeholder {
+    fill: currentcolor;
+    opacity: 0.3;
+  }
+
+  .product-dna__item-content {
+    margin-block-start: var(--product-dna-item-content-gap);
+  }
+
+  .product-dna__label {
+    margin: 0;
+    color: inherit;
+    font-family: var(--font-body--family);
+    font-size: var(--product-dna-label-size);
+    font-weight: 600;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .product-dna__copy {
+    color: inherit;
+    font-size: var(--product-dna-copy-size);
+    line-height: 1.35;
+  }
+
+  .product-dna__description {
+    max-width: var(--product-dna-description-width);
+    margin: var(--product-dna-description-gap) auto 0;
+    color: inherit;
+    font-size: var(--product-dna-description-size);
+    line-height: 1.5;
+    text-align: var(--product-dna-description-align);
+  }
+
+  .product-dna__description > *:first-child { margin-block-start: 0; }
+  .product-dna__description > *:last-child { margin-block-end: 0; }
+
+  @media screen and (max-width: 989px) {
+    .product-dna__items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media screen and (max-width: 749px) {
+    .product-dna {
+      padding-inline: var(--product-dna-padding-inline-mobile);
+    }
+
+    .product-dna__heading { font-size: var(--product-dna-heading-size-mobile); }
+    .product-dna__items { grid-template-columns: 1fr; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Product DNA",
+  "tag": "section",
+  "class": "product-dna-section",
+  "enabled_on": { "templates": ["product"] },
+  "max_blocks": 8,
+  "settings": [
+    { "type": "header", "content": "Content source" },
+    {
+      "type": "select",
+      "id": "content_source",
+      "label": "Content source",
+      "options": [
+        { "value": "metaobject", "label": "Product metaobject" },
+        { "value": "blocks", "label": "Section blocks" }
+      ],
+      "default": "metaobject"
+    },
+    { "type": "text", "id": "metaobject_namespace", "label": "Product metafield namespace", "default": "custom", "visible_if": "{{ section.settings.content_source == 'metaobject' or section.settings.color_source == 'product' }}" },
+    { "type": "text", "id": "metaobject_key", "label": "Metaobject reference key", "default": "product_dna", "visible_if": "{{ section.settings.content_source == 'metaobject' }}" },
+    { "type": "text", "id": "metaobject_heading_field", "label": "Heading field", "default": "heading", "visible_if": "{{ section.settings.content_source == 'metaobject' }}" },
+    { "type": "text", "id": "metaobject_description_field", "label": "Description field", "default": "description", "visible_if": "{{ section.settings.content_source == 'metaobject' }}" },
+    { "type": "text", "id": "metaobject_items_field", "label": "Items list field", "default": "items", "visible_if": "{{ section.settings.content_source == 'metaobject' }}" },
+    { "type": "text", "id": "item_image_field", "label": "Item image field", "default": "image", "visible_if": "{{ section.settings.content_source == 'metaobject' }}" },
+    { "type": "text", "id": "item_label_field", "label": "Item label field", "default": "title", "visible_if": "{{ section.settings.content_source == 'metaobject' }}" },
+    { "type": "text", "id": "item_copy_field", "label": "Item copy field", "default": "text", "visible_if": "{{ section.settings.content_source == 'metaobject' }}" },
+    { "type": "inline_richtext", "id": "heading", "label": "Fallback heading", "default": "Product DNA" },
+    { "type": "richtext", "id": "description", "label": "Fallback description", "default": "<p>The blend changes with the seasons, but the flavour stays true.</p>" },
+
+    { "type": "header", "content": "Colors" },
+    {
+      "type": "select",
+      "id": "color_source",
+      "label": "Color source",
+      "info": "Uses the same product metafields as Product information.",
+      "options": [
+        { "value": "product", "label": "Per product (metafield)" },
+        { "value": "section", "label": "Section colors" }
+      ],
+      "default": "product"
+    },
+    { "type": "text", "id": "background_color_key", "label": "Background metafield key", "default": "pdp_background_color", "visible_if": "{{ section.settings.color_source == 'product' }}" },
+    { "type": "text", "id": "text_color_key", "label": "Text metafield key", "default": "pdp_text_color", "visible_if": "{{ section.settings.color_source == 'product' }}" },
+    { "type": "color", "id": "background_color", "label": "Fallback background", "default": "#751132" },
+    { "type": "color", "id": "text_color", "label": "Fallback text color", "default": "#F5F4E9" },
+
+    { "type": "header", "content": "Layout" },
+    { "type": "range", "id": "content_max_width", "label": "Content max width", "min": 800, "max": 1800, "step": 20, "unit": "px", "default": 1440 },
+    { "type": "range", "id": "columns_desktop", "label": "Columns on desktop", "min": 2, "max": 6, "step": 1, "default": 4 },
+    { "type": "range", "id": "items_gap", "label": "Horizontal gap", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
+    { "type": "range", "id": "row_gap", "label": "Vertical gap", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 48 },
+    { "type": "range", "id": "image_aspect_ratio", "label": "Image height", "info": "Percentage of image width.", "min": 50, "max": 150, "step": 5, "unit": "%", "default": 100 },
+    { "type": "range", "id": "image_radius", "label": "Image roundness", "min": 0, "max": 50, "step": 1, "unit": "%", "default": 50 },
+    {
+      "type": "select", "id": "image_fit", "label": "Image fit",
+      "options": [{ "value": "cover", "label": "Cover" }, { "value": "contain", "label": "Contain" }, { "value": "fill", "label": "Fill" }], "default": "cover"
+    },
+    {
+      "type": "select", "id": "heading_alignment", "label": "Heading alignment",
+      "options": [{ "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" }], "default": "left"
+    },
+    {
+      "type": "select", "id": "item_alignment", "label": "Item text alignment",
+      "options": [{ "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" }], "default": "center"
+    },
+    {
+      "type": "select", "id": "description_alignment", "label": "Description alignment",
+      "options": [{ "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" }], "default": "center"
+    },
+
+    { "type": "header", "content": "Typography" },
+    { "type": "range", "id": "heading_size", "label": "Heading size", "min": 24, "max": 96, "step": 2, "unit": "px", "default": 48 },
+    { "type": "range", "id": "heading_size_mobile", "label": "Heading size on mobile", "min": 20, "max": 64, "step": 2, "unit": "px", "default": 36 },
+    { "type": "range", "id": "label_size", "label": "Item label size", "min": 12, "max": 36, "step": 1, "unit": "px", "default": 20 },
+    { "type": "range", "id": "copy_size", "label": "Item copy size", "min": 12, "max": 32, "step": 1, "unit": "px", "default": 18 },
+    { "type": "range", "id": "description_size", "label": "Description size", "min": 12, "max": 32, "step": 1, "unit": "px", "default": 18 },
+    { "type": "range", "id": "description_max_width", "label": "Description max width", "min": 400, "max": 1400, "step": 20, "unit": "px", "default": 900 },
+
+    { "type": "header", "content": "Spacing" },
+    { "type": "range", "id": "heading_gap", "label": "Heading to items", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 72 },
+    { "type": "range", "id": "item_content_gap", "label": "Image to item text", "min": 0, "max": 80, "step": 2, "unit": "px", "default": 24 },
+    { "type": "range", "id": "description_gap", "label": "Items to description", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 120 },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 240, "step": 4, "unit": "px", "default": 80 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 240, "step": 4, "unit": "px", "default": 80 },
+    { "type": "range", "id": "padding_inline", "label": "Horizontal padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 40 },
+    { "type": "range", "id": "padding_inline_mobile", "label": "Horizontal padding on mobile", "min": 0, "max": 80, "step": 2, "unit": "px", "default": 20 }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "DNA item",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "label", "label": "Label", "default": "Sweet" },
+        { "type": "inline_richtext", "id": "copy", "label": "Copy", "default": "Caramel · Biscuit" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product DNA",
+      "blocks": [
+        { "type": "item", "settings": { "label": "Sweet", "copy": "Caramel · Biscuit" } },
+        { "type": "item", "settings": { "label": "Body", "copy": "Rich · Full" } },
+        { "type": "item", "settings": { "label": "Character", "copy": "Nutty · Spiced" } },
+        { "type": "item", "settings": { "label": "Purpose", "copy": "Made for Milk" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
