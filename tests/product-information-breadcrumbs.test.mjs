@@ -69,10 +69,23 @@ test('renders a configurable breadcrumb above the entire PDP information grid', 
   );
 });
 
-test('keeps PDP media at viewport height and fully visible', () => {
+test('fits the complete PDP information layout within the desktop viewport', () => {
+  const schema = parseSchema(sectionSource, 'Product information');
+  const setting = (id) => schema.settings.find((item) => item.id === id);
+
+  assert.equal(setting('layout_max_width')?.default, 1360);
+  assert.equal(setting('media_column_width')?.default, 60);
+  assert.match(contentSource, /class="product-information__viewport"/);
   assert.match(
     contentSource,
-    /\.product-information__media \.product-media-container:not\(\.dialog-zoomed-gallery \*\)[\s\S]*?height: 100svh;[\s\S]*?aspect-ratio: auto;/,
+    /\.product-information__viewport\s*\{[\s\S]*?height: 100svh;[\s\S]*?overflow: hidden;/,
+  );
+  assert.match(contentSource, /--product-information-max-width:[\s\S]*?settings\.layout_max_width/);
+  assert.match(contentSource, /--product-information-media-width:[\s\S]*?settings\.media_column_width/);
+  assert.match(contentSource, /minmax\(0, var\(--product-information-media-width\)\)/);
+  assert.match(
+    contentSource,
+    /\.product-information__media \.product-media-container:not\(\.dialog-zoomed-gallery \*\)[\s\S]*?height: 100%;[\s\S]*?aspect-ratio: auto;/,
   );
   assert.match(contentSource, /\.deferred-media__poster-image\)[\s\S]*?object-fit: contain;/);
 });
