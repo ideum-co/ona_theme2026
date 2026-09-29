@@ -57,13 +57,22 @@ test('renders a configurable breadcrumb above the entire PDP information grid', 
   );
   assert.match(contentSource, /{% if show_breadcrumbs %}/);
 
-  const breadcrumbIndex = contentSource.indexOf('class="product-information__breadcrumbs"');
+  const breadcrumbIndex = contentSource.indexOf('class="product-information__breadcrumb-row');
   const productComponentIndex = contentSource.indexOf('<product-component');
   assert.ok(breadcrumbIndex > -1 && breadcrumbIndex < productComponentIndex, 'breadcrumb must precede the product grid');
-  assert.match(contentSource, /\.product-information__breadcrumbs\s*\{[\s\S]*?grid-column: 2;/);
+  assert.match(contentSource, /product-information__breadcrumb-row section section--/);
+  assert.match(contentSource, /product-information section[\s\S]*?disable-section-top-offset/);
   assert.match(
     contentSource,
     /\.product-information__breadcrumbs\s*\{[\s\S]*?position: relative;[\s\S]*?z-index:/,
     'breadcrumb must remain above the PDP background and transparent-header overlap',
   );
+});
+
+test('keeps PDP media at viewport height and fully visible', () => {
+  assert.match(
+    contentSource,
+    /\.product-information__media \.product-media-container:not\(\.dialog-zoomed-gallery \*\)[\s\S]*?height: 100svh;[\s\S]*?aspect-ratio: auto;/,
+  );
+  assert.match(contentSource, /\.deferred-media__poster-image\)[\s\S]*?object-fit: contain;/);
 });

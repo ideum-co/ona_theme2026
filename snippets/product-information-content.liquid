@@ -100,26 +100,19 @@
 <div
   class="section-background{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %}"
 ></div>
-<div
-  class="product-information section section--{{ content_width }} spacing-style{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %} relative"
-  style="
-    {% render 'spacing-style', settings: settings %}
-    --gap: {{ settings.gap }}px;
-    --product-breadcrumb-gap: {{ settings.breadcrumb_gap }}px;
-    --product-breadcrumb-font-size: {{ settings.breadcrumb_font_size }}px;
-    --product-breadcrumb-font-size-mobile: {{ settings.breadcrumb_font_size_mobile }}px;
-    --product-breadcrumb-padding-top: {{ settings.breadcrumb_padding_top }}px;
-    --product-breadcrumb-padding-bottom: {{ settings.breadcrumb_padding_bottom }}px;
-    --product-breadcrumb-text-color: {{ settings.breadcrumb_text_color | default: 'currentcolor' }};
-    --product-breadcrumb-link-color: {{ settings.breadcrumb_link_color | default: settings.breadcrumb_text_color | default: 'currentcolor' }};
-  "
-  data-testid="product-information"
->
-  {% if settings.desktop_media_position == 'left' and product_has_media and request.page_type == 'product' %}
-    {% assign product_href = '#ProductInformation-' | append: section_id %}
-    {% render 'skip-to-content-link', href: product_href, text: 'accessibility.skip_to_product_info' %}
-  {% endif %}
-  {% if show_breadcrumbs %}
+{% if show_breadcrumbs %}
+  <div
+    class="product-information__breadcrumb-row section section--{{ content_width }} spacing-style{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %} relative"
+    style="
+      --padding-block-start: {{ settings.breadcrumb_padding_top }}px;
+      --padding-block-end: {{ settings.breadcrumb_padding_bottom }}px;
+      --product-breadcrumb-gap: {{ settings.breadcrumb_gap }}px;
+      --product-breadcrumb-font-size: {{ settings.breadcrumb_font_size }}px;
+      --product-breadcrumb-font-size-mobile: {{ settings.breadcrumb_font_size_mobile }}px;
+      --product-breadcrumb-text-color: {{ settings.breadcrumb_text_color | default: 'currentcolor' }};
+      --product-breadcrumb-link-color: {{ settings.breadcrumb_link_color | default: settings.breadcrumb_text_color | default: 'currentcolor' }};
+    "
+  >
     <nav
       class="product-information__breadcrumbs"
       aria-label="Breadcrumb"
@@ -144,6 +137,19 @@
         <li aria-current="page">{{ product.title | escape }}</li>
       </ol>
     </nav>
+  </div>
+{% endif %}
+<div
+  class="product-information section section--{{ content_width }} spacing-style{% if show_breadcrumbs %} disable-section-top-offset{% endif %}{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %} relative"
+  style="
+    {% render 'spacing-style', settings: settings %}
+    --gap: {{ settings.gap }}px;
+  "
+  data-testid="product-information"
+>
+  {% if settings.desktop_media_position == 'left' and product_has_media and request.page_type == 'product' %}
+    {% assign product_href = '#ProductInformation-' | append: section_id %}
+    {% render 'skip-to-content-link', href: product_href, text: 'accessibility.skip_to_product_info' %}
   {% endif %}
   <product-component
     class="{{ product_grid_class }}"
@@ -180,12 +186,10 @@
   }
 
   .product-information__breadcrumbs {
-    grid-column: 2;
     min-width: 0;
     position: relative;
     z-index: var(--layer-raised);
     display: block;
-    padding-block: var(--product-breadcrumb-padding-top) var(--product-breadcrumb-padding-bottom);
     color: var(--product-breadcrumb-text-color);
     font-size: var(--product-breadcrumb-font-size);
     line-height: 1.4;
@@ -233,6 +237,26 @@
   }
 
   .product-information__media .product-media-gallery__placeholder-image {
+    width: 100%;
+    height: 100%;
+  }
+
+  .product-information__media .product-media-container:not(.dialog-zoomed-gallery *) {
+    height: 100vh;
+    height: 100svh;
+    max-height: none;
+    aspect-ratio: auto;
+  }
+
+  .product-information__media
+    .product-media-container:not(.dialog-zoomed-gallery *)
+    :is(img, video, iframe, .deferred-media__poster-image) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .product-information__media .product-media-container:not(.dialog-zoomed-gallery *) model-viewer {
     width: 100%;
     height: 100%;
   }
