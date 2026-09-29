@@ -24,4 +24,12 @@ test('organizes PDP summary content before variants with manual and metafield fa
   const details = template.sections.main.blocks['product-details'];
   assert.equal(details.block_order[0], 'pdp_product_summary');
   assert.ok(details.block_order.indexOf('pdp_product_summary') < details.block_order.indexOf('variant_picker_R3rGDr'));
+  assert.deepEqual(
+    Object.keys(details.blocks).filter((id) => !details.block_order.includes(id)),
+    [],
+    'every saved block must remain in block_order for Shopify template validation',
+  );
+  for (const id of ['group_icgrde', 'divider_VJhene', 'best_for_pdp', 'tastes_like_pdp']) {
+    assert.equal(details.blocks[id].disabled, true, `${id} must remain preserved but disabled`);
+  }
 });
