@@ -383,6 +383,106 @@
   "settings": [
     {
       "type": "header",
+      "content": "Breadcrumbs"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "Show breadcrumbs",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "breadcrumb_root_label",
+      "label": "First link label",
+      "default": "Shop all",
+      "visible_if": "{{ section.settings.show_breadcrumbs }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "breadcrumb_show_collection",
+      "label": "Show collection",
+      "default": true,
+      "visible_if": "{{ section.settings.show_breadcrumbs }}"
+    },
+    {
+      "type": "text",
+      "id": "breadcrumb_separator",
+      "label": "Separator",
+      "default": "›",
+      "visible_if": "{{ section.settings.show_breadcrumbs }}"
+    },
+    {
+      "type": "color",
+      "id": "breadcrumb_text_color",
+      "label": "Current page color",
+      "placeholder": "t:settings.default",
+      "visible_if": "{{ section.settings.show_breadcrumbs }}"
+    },
+    {
+      "type": "color",
+      "id": "breadcrumb_link_color",
+      "label": "Link color",
+      "placeholder": "t:settings.default",
+      "visible_if": "{{ section.settings.show_breadcrumbs }}"
+    },
+    {
+      "type": "range",
+      "id": "breadcrumb_font_size",
+      "label": "Text size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 14,
+      "visible_if": "{{ section.settings.show_breadcrumbs }}"
+    },
+    {
+      "type": "range",
+      "id": "breadcrumb_font_size_mobile",
+      "label": "Text size on mobile",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 12,
+      "visible_if": "{{ section.settings.show_breadcrumbs }}"
+    },
+    {
+      "type": "range",
+      "id": "breadcrumb_gap",
+      "label": "Gap",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 8,
+      "visible_if": "{{ section.settings.show_breadcrumbs }}"
+    },
+    {
+      "type": "range",
+      "id": "breadcrumb_padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 24,
+      "visible_if": "{{ section.settings.show_breadcrumbs }}"
+    },
+    {
+      "type": "range",
+      "id": "breadcrumb_padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 24,
+      "visible_if": "{{ section.settings.show_breadcrumbs }}"
+    },
+    {
+      "type": "header",
       "content": "t:content.layout"
     },
     {
