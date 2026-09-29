@@ -1,0 +1,208 @@
+{%- liquid
+  assign settings = section.settings
+  assign badge_label = settings.accessible_label | default: settings.fallback_text | default: 'Promotion'
+-%}
+
+{%- capture badge_content -%}
+  <span class="floating-badge__rotator">
+    {%- if settings.image != blank -%}
+      {{
+        settings.image
+        | image_url: width: 800
+        | image_tag:
+          widths: '120, 180, 240, 360, 480, 640, 800',
+          sizes: '(max-width: 749px) 120px, 200px',
+          loading: 'eager',
+          class: 'floating-badge__image',
+          alt: ''
+      }}
+    {%- else -%}
+      <span class="floating-badge__fallback" aria-hidden="true">
+        {{- settings.fallback_text | escape -}}
+      </span>
+    {%- endif -%}
+  </span>
+{%- endcapture -%}
+
+<div
+  class="floating-badge floating-badge--{{ settings.position }}{% if settings.animate %} floating-badge--animated{% endif %}{% if settings.hide_on_mobile %} floating-badge--hide-mobile{% endif %}"
+  style="
+    --floating-badge-size: {{ settings.size }}px;
+    --floating-badge-size-mobile: {{ settings.size_mobile }}px;
+    --floating-badge-offset-vertical: {{ settings.offset_vertical }}px;
+    --floating-badge-offset-horizontal: {{ settings.offset_horizontal }}px;
+    --floating-badge-duration: {{ settings.duration }}s;
+    --floating-badge-direction: {{ settings.direction }};
+    --floating-badge-z-index: {{ settings.z_index }};
+    --floating-badge-background: {{ settings.fallback_background }};
+    --floating-badge-color: {{ settings.fallback_text_color }};
+  "
+  {{ section.shopify_attributes }}
+>
+  {%- if settings.link != blank -%}
+    <a
+      class="floating-badge__link"
+      href="{{ settings.link }}"
+      aria-label="{{ badge_label | escape }}"
+      {% if settings.open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
+    >
+      {{ badge_content }}
+    </a>
+  {%- else -%}
+    <div class="floating-badge__link" role="img" aria-label="{{ badge_label | escape }}">
+      {{ badge_content }}
+    </div>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .floating-badge {
+    position: fixed;
+    z-index: var(--floating-badge-z-index, 10);
+    width: var(--floating-badge-size);
+    height: var(--floating-badge-size);
+    pointer-events: none;
+  }
+
+  .floating-badge--top-left,
+  .floating-badge--top-right {
+    top: var(--floating-badge-offset-vertical);
+  }
+
+  .floating-badge--bottom-left,
+  .floating-badge--bottom-right {
+    bottom: var(--floating-badge-offset-vertical);
+  }
+
+  .floating-badge--top-left,
+  .floating-badge--bottom-left {
+    left: var(--floating-badge-offset-horizontal);
+  }
+
+  .floating-badge--top-right,
+  .floating-badge--bottom-right {
+    right: var(--floating-badge-offset-horizontal);
+  }
+
+  .floating-badge__link,
+  .floating-badge__rotator,
+  .floating-badge__image,
+  .floating-badge__fallback {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .floating-badge__link {
+    border-radius: 50%;
+    pointer-events: auto;
+    text-decoration: none;
+  }
+
+  .floating-badge__link:focus-visible {
+    outline: 2px solid currentcolor;
+    outline-offset: 4px;
+  }
+
+  .floating-badge__image {
+    object-fit: contain;
+  }
+
+  .floating-badge__fallback {
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    padding: 18%;
+    border: 1px solid currentcolor;
+    border-radius: 50%;
+    background: var(--floating-badge-background);
+    color: var(--floating-badge-color);
+    font-size: clamp(0.7rem, 1.1vw, 1rem);
+    line-height: 1.15;
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .floating-badge--animated .floating-badge__rotator {
+      animation: floating-badge-spin var(--floating-badge-duration) linear infinite var(--floating-badge-direction);
+      transform-origin: center;
+      will-change: transform;
+    }
+
+    .floating-badge--animated .floating-badge__link:hover .floating-badge__rotator {
+      animation-play-state: paused;
+    }
+  }
+
+  @keyframes floating-badge-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media screen and (max-width: 749px) {
+    .floating-badge {
+      width: var(--floating-badge-size-mobile);
+      height: var(--floating-badge-size-mobile);
+    }
+
+    .floating-badge--hide-mobile {
+      display: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Floating badge",
+  "tag": "section",
+  "class": "floating-badge-section",
+  "enabled_on": { "templates": ["index"] },
+  "settings": [
+    { "type": "header", "content": "Content" },
+    { "type": "image_picker", "id": "image", "label": "Badge image" },
+    { "type": "text", "id": "fallback_text", "label": "Fallback text", "default": "New Harvest Sale" },
+    { "type": "text", "id": "accessible_label", "label": "Accessible label", "default": "View the current promotion" },
+    { "type": "url", "id": "link", "label": "Link" },
+    { "type": "checkbox", "id": "open_in_new_tab", "label": "Open in a new tab", "default": false },
+
+    { "type": "header", "content": "Position and size" },
+    {
+      "type": "select",
+      "id": "position",
+      "label": "Position",
+      "options": [
+        { "value": "top-left", "label": "Top left" },
+        { "value": "top-right", "label": "Top right" },
+        { "value": "bottom-left", "label": "Bottom left" },
+        { "value": "bottom-right", "label": "Bottom right" }
+      ],
+      "default": "top-right"
+    },
+    { "type": "range", "id": "size", "label": "Size", "min": 60, "max": 360, "step": 5, "unit": "px", "default": 180 },
+    { "type": "range", "id": "size_mobile", "label": "Size on mobile", "min": 40, "max": 240, "step": 5, "unit": "px", "default": 100 },
+    { "type": "range", "id": "offset_vertical", "label": "Vertical offset", "min": 0, "max": 400, "step": 5, "unit": "px", "default": 140 },
+    { "type": "range", "id": "offset_horizontal", "label": "Horizontal offset", "min": 0, "max": 240, "step": 5, "unit": "px", "default": 40 },
+    { "type": "range", "id": "z_index", "label": "Layer", "min": 1, "max": 100, "step": 1, "default": 10 },
+    { "type": "checkbox", "id": "hide_on_mobile", "label": "Hide on mobile", "default": false },
+
+    { "type": "header", "content": "Animation" },
+    { "type": "checkbox", "id": "animate", "label": "Rotate continuously", "default": true },
+    { "type": "range", "id": "duration", "label": "Rotation duration", "min": 2, "max": 60, "step": 1, "unit": "s", "default": 12, "visible_if": "{{ section.settings.animate }}" },
+    {
+      "type": "select",
+      "id": "direction",
+      "label": "Direction",
+      "options": [
+        { "value": "normal", "label": "Clockwise" },
+        { "value": "reverse", "label": "Counterclockwise" }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.animate }}"
+    },
+
+    { "type": "header", "content": "Fallback style" },
+    { "type": "color", "id": "fallback_background", "label": "Background", "default": "#8A1538" },
+    { "type": "color", "id": "fallback_text_color", "label": "Text color", "default": "#F5F4EA" }
+  ],
+  "presets": [{ "name": "Floating badge" }]
+}
+{% endschema %}
