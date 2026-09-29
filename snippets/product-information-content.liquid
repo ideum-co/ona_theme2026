@@ -100,6 +100,13 @@
 <div
   class="section-background{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %}"
 ></div>
+<div
+  class="product-information__viewport"
+  style="
+    --product-information-max-width: {{ settings.layout_max_width | default: 1360 }}px;
+    --product-information-media-width: {{ settings.media_column_width | default: 60 }}%;
+  "
+>
 {% if show_breadcrumbs %}
   <div
     class="product-information__breadcrumb-row section section--{{ content_width }} spacing-style{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %} relative"
@@ -179,6 +186,7 @@
 
   {{ additional_blocks }}
 </div>
+</div>
 
 {% stylesheet %}
   .product-information {
@@ -241,26 +249,6 @@
     height: 100%;
   }
 
-  .product-information__media .product-media-container:not(.dialog-zoomed-gallery *) {
-    height: 100vh;
-    height: 100svh;
-    max-height: none;
-    aspect-ratio: auto;
-  }
-
-  .product-information__media
-    .product-media-container:not(.dialog-zoomed-gallery *)
-    :is(img, video, iframe, .deferred-media__poster-image) {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-
-  .product-information__media .product-media-container:not(.dialog-zoomed-gallery *) model-viewer {
-    width: 100%;
-    height: 100%;
-  }
-
   /* Mobile styles */
   @media screen and (max-width: 749px) {
     .product-information__breadcrumbs {
@@ -278,8 +266,30 @@
 
   /* Desktop styles */
   @media screen and (min-width: 750px) {
+    .product-information__viewport {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      width: min(100%, var(--product-information-max-width));
+      height: 100vh;
+      height: 100svh;
+      margin-inline: auto;
+      overflow: hidden;
+    }
+
+    .product-information__breadcrumb-row {
+      flex: 0 0 auto;
+    }
+
+    .product-information__viewport > .product-information {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
     .product-information__grid {
       grid-column: 2;
+      height: 100%;
+      min-height: 0;
     }
 
     /* Position when there is no media */
@@ -294,7 +304,9 @@
     .product-information__grid:not(.product-information--media-none) {
       /* Media on the left side */
       &.product-information--media-left {
-        grid-template-columns: 1fr min(50vw, var(--sidebar-width));
+        grid-template-columns:
+          minmax(0, var(--product-information-media-width))
+          minmax(0, calc(100% - var(--product-information-media-width)));
 
         .product-information__media {
           padding-right: calc(var(--gap, 0) / 2);
@@ -311,7 +323,9 @@
 
       /* Media on the right side */
       &.product-information--media-right {
-        grid-template-columns: min(50vw, var(--sidebar-width)) 1fr;
+        grid-template-columns:
+          minmax(0, calc(100% - var(--product-information-media-width)))
+          minmax(0, var(--product-information-media-width));
 
         .product-information__media {
           padding-left: calc(var(--gap, 0) / 2);
@@ -368,6 +382,34 @@
       }
     }
 
+    .product-information__media,
+    .product-information__media media-gallery,
+    .product-information__media slideshow-component,
+    .product-information__media slideshow-container,
+    .product-information__media slideshow-slide {
+      min-height: 0;
+      height: 100%;
+    }
+
+    .product-information__media .product-media-container:not(.dialog-zoomed-gallery *) {
+      height: 100%;
+      max-height: 100%;
+      aspect-ratio: auto;
+    }
+
+    .product-information__media
+      .product-media-container:not(.dialog-zoomed-gallery *)
+      :is(img, video, iframe, .deferred-media__poster-image) {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .product-information__media .product-media-container:not(.dialog-zoomed-gallery *) model-viewer {
+      width: 100%;
+      height: 100%;
+    }
+
     /* Handle full width section */
     .section--full-width {
       .product-information__grid:not(.product-information--media-none) {
@@ -404,23 +446,6 @@
           }
         }
       }
-    }
-  }
-
-  /* Wider sidebar for large screens */
-  @media screen and (min-width: 1200px) {
-    .product-information__grid:not(
-        .product-information__grid--half,
-        .product-information--media-none
-      ).product-information--media-left {
-      grid-template-columns: 2fr 1fr;
-    }
-
-    .product-information__grid:not(
-        .product-information__grid--half,
-        .product-information--media-none
-      ).product-information--media-right {
-      grid-template-columns: 1fr 2fr;
     }
   }
 
