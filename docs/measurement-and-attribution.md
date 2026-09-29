@@ -101,18 +101,52 @@ Free-form values make the pixel-side grouping unanalysable within a month.
 
 A quick-add directly from the row never loads a product page, so no `ref` travels with
 it. For those, add **one** listener — in a new file — that subscribes to Horizon's
-existing `StandardEvents.cartLinesUpdate` and publishes a custom event carrying the
-surface:
+existing `StandardEvents.cartLinesUpdate`.
+
+Two things make the naive version wrong, both verified against this theme's source:
+
+1. **`closest()` alone cannot find the surface.** On the Choose-options path,
+   `assets/quick-add.js` morphs the form into `#quick-add-modal-content`, and
+   `layout/theme.liquid:195` renders that dialog immediately before `</body>` — a
+   body-level sibling of the merchandising content. The event target is therefore outside
+   any `[data-ona-surface]`. Stamp the surface onto the dialog when it opens and fall
+   back to it.
+2. **The event fires before the cart request.** `assets/product-form.js:439` calls
+   `CartLinesUpdateEvent.createPromise()` and dispatches the event *first*; the outcome
+   arrives later on `event.promise`, resolving with `detail.didError`. Publishing on the
+   event itself would record failed adds — out of stock, validation, network — as
+   successes.
 
 ```js
 import { StandardEvents } from '@shopify/events';
 
 document.addEventListener(StandardEvents.cartLinesUpdate, (event) => {
-  const surface = event.target?.closest?.('[data-ona-surface]')?.dataset.onaSurface;
+  if (event.action !== 'add') return;
+
+  const surface =
+    event.target?.closest?.('[data-ona-surface]')?.dataset.onaSurface ??
+    document.getElementById('quick-add-dialog')?.dataset.onaSurface;
   if (!surface) return;
-  window.Shopify?.analytics?.publish('ona_surface_add', { surface });
+
+  event.promise
+    ?.then(({ detail }) => {
+      if (detail?.didError) return;
+      window.Shopify?.analytics?.publish('ona_surface_add', {
+        surface,
+        productId: detail?.productId,
+        itemCount: detail?.itemCount,
+      });
+    })
+    .catch((error) => {
+      if (error?.name !== 'AbortError') console.warn('[ona-analytics] rejected:', error);
+    });
 });
 ```
+
+This mirrors Horizon's own idiom exactly — compare `handleCartUpdate` in
+`assets/quick-add.js:326`, `assets/cart-drawer.js:69,84` and
+`assets/component-cart-items.js`, all of which gate on `event.action` and await
+`event.promise` before treating an update as real.
 
 Subscribing to an event Horizon already dispatches costs us nothing on upgrade. Adding
 a `publish()` call inside `component-cart-items.js` or `quick-add.js` would make those
