@@ -35,6 +35,11 @@
 {% enddoc %}
 
 {% liquid
+  assign show_breadcrumbs = settings.show_breadcrumbs
+  if show_breadcrumbs == nil
+    assign show_breadcrumbs = true
+  endif
+
   assign breadcrumb_collection = collection
   if breadcrumb_collection == blank and settings.breadcrumb_show_collection
     for product_collection in product.collections
@@ -114,7 +119,7 @@
     {% assign product_href = '#ProductInformation-' | append: section_id %}
     {% render 'skip-to-content-link', href: product_href, text: 'accessibility.skip_to_product_info' %}
   {% endif %}
-  {% if settings.show_breadcrumbs %}
+  {% if show_breadcrumbs %}
     <nav
       class="product-information__breadcrumbs"
       aria-label="Breadcrumb"
@@ -177,6 +182,9 @@
   .product-information__breadcrumbs {
     grid-column: 2;
     min-width: 0;
+    position: relative;
+    z-index: var(--layer-raised);
+    display: block;
     padding-block: var(--product-breadcrumb-padding-top) var(--product-breadcrumb-padding-bottom);
     color: var(--product-breadcrumb-text-color);
     font-size: var(--product-breadcrumb-font-size);

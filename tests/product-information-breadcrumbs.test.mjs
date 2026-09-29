@@ -50,10 +50,20 @@ test('renders a configurable breadcrumb above the entire PDP information grid', 
   assert.match(contentSource, /routes\.all_products_collection_url/);
   assert.match(contentSource, /breadcrumb_collection/);
   assert.match(contentSource, /aria-current="page"/);
+  assert.match(
+    contentSource,
+    /if show_breadcrumbs == nil[\s\S]*?assign show_breadcrumbs = true/,
+    'existing PDP section instances must show breadcrumbs until the new setting is explicitly disabled',
+  );
+  assert.match(contentSource, /{% if show_breadcrumbs %}/);
 
   const breadcrumbIndex = contentSource.indexOf('class="product-information__breadcrumbs"');
   const productComponentIndex = contentSource.indexOf('<product-component');
   assert.ok(breadcrumbIndex > -1 && breadcrumbIndex < productComponentIndex, 'breadcrumb must precede the product grid');
   assert.match(contentSource, /\.product-information__breadcrumbs\s*\{[\s\S]*?grid-column: 2;/);
+  assert.match(
+    contentSource,
+    /\.product-information__breadcrumbs\s*\{[\s\S]*?position: relative;[\s\S]*?z-index:/,
+    'breadcrumb must remain above the PDP background and transparent-header overlap',
+  );
 });
-
