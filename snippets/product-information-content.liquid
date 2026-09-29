@@ -35,6 +35,16 @@
 {% enddoc %}
 
 {% liquid
+  assign breadcrumb_collection = collection
+  if breadcrumb_collection == blank and settings.breadcrumb_show_collection
+    for product_collection in product.collections
+      unless product_collection.handle == 'all'
+        assign breadcrumb_collection = product_collection
+        break
+      endunless
+    endfor
+  endif
+
   # Determine render order based on media position
   if settings.desktop_media_position == 'left'
     assign render_order = 'media,product-details'
@@ -87,12 +97,48 @@
 ></div>
 <div
   class="product-information section section--{{ content_width }} spacing-style{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %} relative"
-  style="{% render 'spacing-style', settings: settings %} --gap: {{ settings.gap }}px;"
+  style="
+    {% render 'spacing-style', settings: settings %}
+    --gap: {{ settings.gap }}px;
+    --product-breadcrumb-gap: {{ settings.breadcrumb_gap }}px;
+    --product-breadcrumb-font-size: {{ settings.breadcrumb_font_size }}px;
+    --product-breadcrumb-font-size-mobile: {{ settings.breadcrumb_font_size_mobile }}px;
+    --product-breadcrumb-padding-top: {{ settings.breadcrumb_padding_top }}px;
+    --product-breadcrumb-padding-bottom: {{ settings.breadcrumb_padding_bottom }}px;
+    --product-breadcrumb-text-color: {{ settings.breadcrumb_text_color | default: 'currentcolor' }};
+    --product-breadcrumb-link-color: {{ settings.breadcrumb_link_color | default: settings.breadcrumb_text_color | default: 'currentcolor' }};
+  "
   data-testid="product-information"
 >
   {% if settings.desktop_media_position == 'left' and product_has_media and request.page_type == 'product' %}
     {% assign product_href = '#ProductInformation-' | append: section_id %}
     {% render 'skip-to-content-link', href: product_href, text: 'accessibility.skip_to_product_info' %}
+  {% endif %}
+  {% if settings.show_breadcrumbs %}
+    <nav
+      class="product-information__breadcrumbs"
+      aria-label="Breadcrumb"
+    >
+      <ol class="product-information__breadcrumb-list list-unstyled">
+        <li>
+          <a href="{{ routes.all_products_collection_url }}">
+            {{- settings.breadcrumb_root_label | escape -}}
+          </a>
+        </li>
+        {% if settings.breadcrumb_show_collection and breadcrumb_collection != blank %}
+          <li class="product-information__breadcrumb-separator" aria-hidden="true">
+            {{- settings.breadcrumb_separator | escape -}}
+          </li>
+          <li>
+            <a href="{{ breadcrumb_collection.url }}">{{ breadcrumb_collection.title | escape }}</a>
+          </li>
+        {% endif %}
+        <li class="product-information__breadcrumb-separator" aria-hidden="true">
+          {{- settings.breadcrumb_separator | escape -}}
+        </li>
+        <li aria-current="page">{{ product.title | escape }}</li>
+      </ol>
+    </nav>
   {% endif %}
   <product-component
     class="{{ product_grid_class }}"
@@ -128,6 +174,38 @@
     gap: var(--gap) 0;
   }
 
+  .product-information__breadcrumbs {
+    grid-column: 2;
+    min-width: 0;
+    padding-block: var(--product-breadcrumb-padding-top) var(--product-breadcrumb-padding-bottom);
+    color: var(--product-breadcrumb-text-color);
+    font-size: var(--product-breadcrumb-font-size);
+    line-height: 1.4;
+  }
+
+  .product-information__breadcrumb-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--product-breadcrumb-gap);
+    margin: 0;
+    padding: 0;
+  }
+
+  .product-information__breadcrumbs a {
+    color: var(--product-breadcrumb-link-color);
+    text-decoration: none;
+  }
+
+  .product-information__breadcrumbs a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .product-information__breadcrumb-separator {
+    opacity: 0.7;
+  }
+
   /* Base grid layout */
   .product-information__grid {
     display: grid;
@@ -153,6 +231,10 @@
 
   /* Mobile styles */
   @media screen and (max-width: 749px) {
+    .product-information__breadcrumbs {
+      font-size: var(--product-breadcrumb-font-size-mobile);
+    }
+
     .product-information__media {
       grid-column: 1 / -1;
     }
