@@ -518,6 +518,27 @@
       "default": "left"
     },
     {
+      "type": "range",
+      "id": "layout_max_width",
+      "label": "Content max width",
+      "min": 960,
+      "max": 1800,
+      "step": 20,
+      "unit": "px",
+      "default": 1360
+    },
+    {
+      "type": "range",
+      "id": "media_column_width",
+      "label": "Media column width",
+      "min": 50,
+      "max": 70,
+      "step": 1,
+      "unit": "%",
+      "default": 60,
+      "visible_if": "{{ section.settings.equal_columns == false }}"
+    },
+    {
       "type": "checkbox",
       "id": "equal_columns",
       "label": "t:settings.equal_columns",
