@@ -47,6 +47,19 @@
   {%- endfor -%}
 {%- endcapture -%}
 
+{%- capture button_markup -%}
+  {%- if settings.button_label != blank -%}
+    <a
+      class="club-benefits__button"
+      {% if settings.button_link != blank %}
+        href="{{ settings.button_link }}"
+      {% endif %}
+    >
+      {{- settings.button_label -}}
+    </a>
+  {%- endif -%}
+{%- endcapture -%}
+
 <div
   class="club-benefits spacing-style"
   style="
@@ -72,6 +85,10 @@
       class="club-benefits__heading"
       style="{%- render 'typography-style', settings: section.settings, type: 'heading' -%}"
     >{{ settings.heading }}</{{ heading_tag }}>
+  {%- endif -%}
+
+  {%- if settings.button_position == 'after_heading' -%}
+    {{ button_markup }}
   {%- endif -%}
 
   {%- if benefits.size > 0 -%}
@@ -106,6 +123,10 @@
     </ul>
   {%- endif -%}
 
+  {%- if settings.button_position == 'between_content' -%}
+    {{ button_markup }}
+  {%- endif -%}
+
   {%- if testimonials.size > 0 -%}
     {%- render 'slideshow',
       ref: 'clubBenefits',
@@ -124,15 +145,8 @@
     -%}
   {%- endif -%}
 
-  {%- if settings.button_label != blank -%}
-    <a
-      class="club-benefits__button"
-      {% if settings.button_link != blank %}
-        href="{{ settings.button_link }}"
-      {% endif %}
-    >
-      {{- settings.button_label -}}
-    </a>
+  {%- if settings.button_position == 'after_testimonials' -%}
+    {{ button_markup }}
   {%- endif -%}
 </div>
 
@@ -738,6 +752,26 @@
       "type": "url",
       "id": "button_link",
       "label": "t:settings.link"
+    },
+    {
+      "type": "select",
+      "id": "button_position",
+      "label": "Button position",
+      "options": [
+        {
+          "value": "after_heading",
+          "label": "After heading"
+        },
+        {
+          "value": "between_content",
+          "label": "Between benefits and testimonials"
+        },
+        {
+          "value": "after_testimonials",
+          "label": "After testimonials"
+        }
+      ],
+      "default": "after_testimonials"
     },
     {
       "type": "color",
