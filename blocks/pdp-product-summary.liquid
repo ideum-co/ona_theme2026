@@ -1,0 +1,230 @@
+{%- liquid
+  assign block_settings = block.settings
+  assign product_resource = closest.product
+  assign namespace = block_settings.namespace | strip
+
+  assign badge_1 = block_settings.badge_1
+  assign badge_2 = block_settings.badge_2
+  assign summary_description = block_settings.description
+
+  if namespace != blank
+    assign badge_1_key = block_settings.badge_1_key | strip
+    assign badge_2_key = block_settings.badge_2_key | strip
+    assign description_key = block_settings.description_key | strip
+
+    if badge_1_key != blank
+      assign badge_1_metafield = product_resource.metafields[namespace][badge_1_key].value
+      if badge_1_metafield != blank
+        assign badge_1 = badge_1_metafield
+      endif
+    endif
+
+    if badge_2_key != blank
+      assign badge_2_metafield = product_resource.metafields[namespace][badge_2_key].value
+      if badge_2_metafield != blank
+        assign badge_2 = badge_2_metafield
+      endif
+    endif
+
+    if description_key != blank
+      assign description_metafield = product_resource.metafields[namespace][description_key].value
+      if description_metafield != blank
+        assign summary_description = description_metafield
+      endif
+    endif
+  endif
+
+  assign rating = product_resource.metafields.reviews.rating.value.rating | default: block_settings.rating_value
+  assign rating_count = product_resource.metafields.reviews.rating_count.value | default: block_settings.rating_count
+-%}
+
+<div
+  class="product-summary"
+  style="
+    --product-summary-badge-size: {{ block_settings.badge_size }}px;
+    --product-summary-badge-padding-block: {{ block_settings.badge_padding_block }}px;
+    --product-summary-badge-padding-inline: {{ block_settings.badge_padding_inline }}px;
+    --product-summary-badge-gap: {{ block_settings.badge_gap }}px;
+    --product-summary-title-size: {{ block_settings.title_size }}px;
+    --product-summary-title-size-mobile: {{ block_settings.title_size_mobile }}px;
+    --product-summary-description-size: {{ block_settings.description_size }}px;
+    --product-summary-price-size: {{ block_settings.price_size }}px;
+    --product-summary-rating-size: {{ block_settings.rating_size }}px;
+    --product-summary-header-gap: {{ block_settings.header_gap }}px;
+    --product-summary-description-gap: {{ block_settings.description_gap }}px;
+    --product-summary-commerce-gap: {{ block_settings.commerce_gap }}px;
+    --product-summary-min-space: {{ block_settings.minimum_space }}px;
+    --product-summary-alignment: {{ block_settings.alignment }};
+    {% if block_settings.text_color != blank %}--product-summary-color: {{ block_settings.text_color }};{% endif %}
+    {% if block_settings.badge_border_color != blank %}--product-summary-badge-border: {{ block_settings.badge_border_color }};{% endif %}
+  "
+  {{ block.shopify_attributes }}
+>
+  {%- if badge_1 != blank or badge_2 != blank -%}
+    <div class="product-summary__badges">
+      {%- if badge_1 != blank -%}<span class="product-summary__badge">{{ badge_1 | escape }}</span>{%- endif -%}
+      {%- if badge_2 != blank -%}<span class="product-summary__badge">{{ badge_2 | escape }}</span>{%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <h1 class="product-summary__title">{{ product_resource.title | escape }}</h1>
+
+  {%- if summary_description != blank -%}
+    <div class="product-summary__description rte">{{ summary_description }}</div>
+  {%- endif -%}
+
+  <div class="product-summary__commerce">
+    <product-price
+      class="product-summary__price"
+      data-block-id="{{ block.id }}"
+      data-product-id="{{ product_resource.id }}"
+    >
+      {% render 'price', product_resource: product_resource, show_sale_price_first: true %}
+    </product-price>
+
+    {%- if block_settings.show_rating and rating != blank -%}
+      <div class="product-summary__rating" aria-label="Rating: {{ rating | round: 1 }} out of 5">
+        <span class="product-summary__stars" aria-hidden="true">★★★★★</span>
+        <span>{{ rating | round: 1 }}{% if rating_count != blank %} ({{ rating_count }}){% endif %}</span>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% stylesheet %}
+  .product-summary {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    color: var(--product-summary-color, inherit);
+    text-align: var(--product-summary-alignment);
+  }
+
+  .product-summary__badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: var(--product-summary-badge-gap);
+    margin-block-end: var(--product-summary-header-gap);
+  }
+
+  .product-summary__badge {
+    padding: var(--product-summary-badge-padding-block) var(--product-summary-badge-padding-inline);
+    border: 1px solid var(--product-summary-badge-border, currentcolor);
+    color: inherit;
+    font-size: var(--product-summary-badge-size);
+    line-height: 1.1;
+  }
+
+  .product-summary__title {
+    margin: 0;
+    color: inherit;
+    font-family: var(--font-heading--family);
+    font-size: var(--product-summary-title-size);
+    font-weight: var(--font-heading--weight);
+    line-height: 1.08;
+    text-wrap: balance;
+  }
+
+  .product-summary__description {
+    margin-block-start: var(--product-summary-description-gap);
+    color: inherit;
+    font-size: var(--product-summary-description-size);
+    line-height: 1.4;
+  }
+
+  .product-summary__description > * { color: inherit; }
+  .product-summary__description > *:first-child { margin-block-start: 0; }
+  .product-summary__description > *:last-child { margin-block-end: 0; }
+
+  .product-summary__commerce {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--product-summary-commerce-gap);
+    width: 100%;
+    margin-block-start: max(var(--product-summary-commerce-gap), var(--product-summary-min-space));
+  }
+
+  .product-summary__price {
+    flex: 0 0 auto;
+    font-size: var(--product-summary-price-size);
+    line-height: 1.1;
+  }
+
+  .product-summary__rating {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    min-width: 0;
+    font-size: var(--product-summary-rating-size);
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  .product-summary__stars {
+    font-size: 1.35em;
+    letter-spacing: 0.04em;
+  }
+
+  @media screen and (max-width: 749px) {
+    .product-summary__title { font-size: var(--product-summary-title-size-mobile); }
+
+    .product-summary__commerce {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .product-summary__rating { justify-content: flex-start; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "PDP product summary",
+  "tag": null,
+  "settings": [
+    { "type": "header", "content": "Content" },
+    { "type": "text", "id": "badge_1", "label": "First badge", "default": "Staple Range" },
+    { "type": "text", "id": "badge_2", "label": "Second badge", "default": "Best with Milk" },
+    { "type": "richtext", "id": "description", "label": "Description", "default": "<p>Caramel, biscuits, nuts and spices</p>" },
+    { "type": "checkbox", "id": "show_rating", "label": "Show rating", "default": true },
+    { "type": "range", "id": "rating_value", "label": "Fallback rating", "min": 0, "max": 5, "step": 0.1, "default": 5 },
+    { "type": "number", "id": "rating_count", "label": "Fallback review count", "default": 0 },
+
+    { "type": "header", "content": "Optional product metafields" },
+    { "type": "paragraph", "content": "When a metafield has a value it replaces the corresponding manual input above." },
+    { "type": "text", "id": "namespace", "label": "Namespace", "default": "accentuate" },
+    { "type": "text", "id": "badge_1_key", "label": "First badge key", "default": "range" },
+    { "type": "text", "id": "badge_2_key", "label": "Second badge key", "default": "roast" },
+    { "type": "text", "id": "description_key", "label": "Description key", "default": "tastes_like" },
+
+    { "type": "header", "content": "Typography" },
+    { "type": "range", "id": "badge_size", "label": "Badge text size", "min": 10, "max": 30, "step": 1, "unit": "px", "default": 18 },
+    { "type": "range", "id": "title_size", "label": "Title size", "min": 28, "max": 96, "step": 2, "unit": "px", "default": 64 },
+    { "type": "range", "id": "title_size_mobile", "label": "Title size on mobile", "min": 24, "max": 64, "step": 2, "unit": "px", "default": 48 },
+    { "type": "range", "id": "description_size", "label": "Description size", "min": 12, "max": 36, "step": 1, "unit": "px", "default": 22 },
+    { "type": "range", "id": "price_size", "label": "Price size", "min": 16, "max": 48, "step": 1, "unit": "px", "default": 32 },
+    { "type": "range", "id": "rating_size", "label": "Rating size", "min": 12, "max": 32, "step": 1, "unit": "px", "default": 20 },
+
+    { "type": "header", "content": "Layout and spacing" },
+    {
+      "type": "text_alignment", "id": "alignment", "label": "Text alignment", "default": "left"
+    },
+    { "type": "range", "id": "badge_padding_block", "label": "Badge vertical padding", "min": 0, "max": 30, "step": 1, "unit": "px", "default": 12 },
+    { "type": "range", "id": "badge_padding_inline", "label": "Badge horizontal padding", "min": 0, "max": 60, "step": 2, "unit": "px", "default": 24 },
+    { "type": "range", "id": "badge_gap", "label": "Gap between badges", "min": 0, "max": 60, "step": 2, "unit": "px", "default": 16 },
+    { "type": "range", "id": "header_gap", "label": "Badges to title", "min": 0, "max": 120, "step": 2, "unit": "px", "default": 48 },
+    { "type": "range", "id": "description_gap", "label": "Title to description", "min": 0, "max": 120, "step": 2, "unit": "px", "default": 48 },
+    { "type": "range", "id": "minimum_space", "label": "Description to commerce", "min": 0, "max": 240, "step": 4, "unit": "px", "default": 120 },
+    { "type": "range", "id": "commerce_gap", "label": "Price and rating gap", "min": 0, "max": 80, "step": 2, "unit": "px", "default": 24 },
+
+    { "type": "header", "content": "Colors" },
+    { "type": "color", "id": "text_color", "label": "Text color", "placeholder": "Default" },
+    { "type": "color", "id": "badge_border_color", "label": "Badge border color", "placeholder": "Text color" }
+  ],
+  "presets": [{ "name": "PDP product summary", "category": "Product" }]
+}
+{% endschema %}
