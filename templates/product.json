@@ -86,6 +86,38 @@
             "padding-inline-end": 0
           },
           "blocks": {
+            "pdp_product_summary": {
+              "type": "pdp-product-summary",
+              "settings": {
+                "badge_1": "Staple Range",
+                "badge_2": "Best with Milk",
+                "description": "<p>Caramel, biscuits, nuts and spices</p>",
+                "show_rating": true,
+                "rating_value": 5,
+                "rating_count": 0,
+                "namespace": "accentuate",
+                "badge_1_key": "range",
+                "badge_2_key": "roast",
+                "description_key": "tastes_like",
+                "badge_size": 18,
+                "title_size": 64,
+                "title_size_mobile": 48,
+                "description_size": 22,
+                "price_size": 32,
+                "rating_size": 20,
+                "alignment": "left",
+                "badge_padding_block": 12,
+                "badge_padding_inline": 24,
+                "badge_gap": 16,
+                "header_gap": 48,
+                "description_gap": 48,
+                "minimum_space": 120,
+                "commerce_gap": 24,
+                "text_color": "",
+                "badge_border_color": ""
+              },
+              "blocks": {}
+            },
             "group_icgrde": {
               "type": "group",
               "name": "t:names.header",
@@ -368,10 +400,7 @@
             }
           },
           "block_order": [
-            "group_icgrde",
-            "best_for_pdp",
-            "tastes_like_pdp",
-            "divider_VJhene",
+            "pdp_product_summary",
             "variant_picker_R3rGDr",
             "purchase_options_SbK4qN",
             "buy_buttons_eYQEYi",
