@@ -17,3 +17,15 @@ test('allows the Club benefits button to move without editing a template JSON', 
   assert.match(source, /capture button_markup/);
   assert.match(source, /settings\.button_position == 'between_content'/);
 });
+
+test('limits Club benefits content independently from its full-width background', () => {
+  const schema = JSON.parse(schemaMatch[1]);
+  const setting = (id) => schema.settings.find((item) => item.id === id);
+
+  assert.deepEqual(setting('section_width').options.map(({ value }) => value), ['page-width', 'full-width']);
+  assert.equal(setting('limit_content_width').type, 'checkbox');
+  assert.equal(setting('max_width').visible_if, '{{ section.settings.limit_content_width }}');
+  assert.match(source, /class="club-benefits__inner"/);
+  assert.match(source, /--club-benefits-max-width:/);
+  assert.match(source, /\.club-benefits--limited \.club-benefits__inner/);
+});

@@ -61,7 +61,7 @@
 {%- endcapture -%}
 
 <div
-  class="club-benefits spacing-style"
+  class="club-benefits club-benefits--{{ settings.section_width }}{% if settings.limit_content_width %} club-benefits--limited{% endif %} spacing-style"
   style="
     --section-heading-level-size: var({{ heading_level_size }});
     --club-benefits-background: {{ settings.background_color }};
@@ -73,6 +73,7 @@
     --club-benefits-quote-size: {{ settings.quote_size }}px;
     --club-benefits-button-background: {{ settings.button_background }};
     --club-benefits-button-color: {{ settings.button_text }};
+    --club-benefits-max-width: {{ settings.max_width }}px;
     {% if settings.background_image != blank %}
       --club-benefits-background-image: url({{ settings.background_image | image_url: width: 2400 }});
     {% endif %}
@@ -80,6 +81,7 @@
   "
   {{ section.shopify_attributes }}
 >
+  <div class="club-benefits__inner">
   {%- if settings.heading != blank -%}
     <{{ heading_tag }}
       class="club-benefits__heading"
@@ -148,13 +150,11 @@
   {%- if settings.button_position == 'after_testimonials' -%}
     {{ button_markup }}
   {%- endif -%}
+  </div>
 </div>
 
 {% stylesheet %}
   .club-benefits {
-    display: grid;
-    justify-items: center;
-    gap: var(--gap-5xl, 3.5rem);
     padding-inline: var(--page-margin, 1rem);
     background-color: var(--club-benefits-background);
     background-image: var(--club-benefits-background-image, none);
@@ -162,6 +162,22 @@
     background-position: center;
     color: var(--club-benefits-color);
     text-align: center;
+  }
+
+  .club-benefits__inner {
+    display: grid;
+    justify-items: center;
+    gap: var(--gap-5xl, 3.5rem);
+    width: 100%;
+    margin-inline: auto;
+  }
+
+  .club-benefits--page-width:not(.club-benefits--limited) .club-benefits__inner {
+    max-inline-size: var(--normal-page-width, 120rem);
+  }
+
+  .club-benefits--limited .club-benefits__inner {
+    max-inline-size: var(--club-benefits-max-width, 1360px);
   }
 
   .club-benefits__heading {
@@ -375,6 +391,43 @@
     }
   ],
   "settings": [
+    {
+      "type": "header",
+      "content": "t:content.size"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "checkbox",
+      "id": "limit_content_width",
+      "label": "t:settings.limit_content_width",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "t:settings.max_width",
+      "min": 800,
+      "max": 1800,
+      "step": 20,
+      "unit": "px",
+      "default": 1360,
+      "visible_if": "{{ section.settings.limit_content_width }}"
+    },
     {
       "type": "select",
       "id": "heading_tag",
