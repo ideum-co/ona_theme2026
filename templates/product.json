@@ -86,42 +86,9 @@
             "padding-inline-end": 0
           },
           "blocks": {
-            "pdp_product_summary": {
-              "type": "pdp-product-summary",
-              "settings": {
-                "badge_1": "Staple Range",
-                "badge_2": "Best with Milk",
-                "description": "<p>Caramel, biscuits, nuts and spices</p>",
-                "show_rating": true,
-                "rating_value": 5,
-                "rating_count": 0,
-                "namespace": "accentuate",
-                "badge_1_key": "range",
-                "badge_2_key": "roast",
-                "description_key": "tastes_like",
-                "badge_size": 18,
-                "title_size": 64,
-                "title_size_mobile": 48,
-                "description_size": 22,
-                "price_size": 32,
-                "rating_size": 20,
-                "alignment": "left",
-                "badge_padding_block": 12,
-                "badge_padding_inline": 24,
-                "badge_gap": 16,
-                "header_gap": 48,
-                "description_gap": 48,
-                "minimum_space": 120,
-                "commerce_gap": 24,
-                "text_color": "",
-                "badge_border_color": ""
-              },
-              "blocks": {}
-            },
             "group_icgrde": {
               "type": "group",
               "name": "t:names.header",
-              "disabled": true,
               "settings": {
                 "content_direction": "column",
                 "vertical_on_mobile": true,
@@ -225,7 +192,6 @@
             "divider_VJhene": {
               "type": "_divider",
               "name": "t:names.divider",
-              "disabled": true,
               "settings": {
                 "thickness": 1,
                 "corner_radius": "square",
@@ -362,7 +328,6 @@
             },
             "best_for_pdp": {
               "type": "product-metafield-text",
-              "disabled": true,
               "settings": {
                 "namespace": "accentuate",
                 "key": "roast",
@@ -383,7 +348,6 @@
             },
             "tastes_like_pdp": {
               "type": "product-metafield-text",
-              "disabled": true,
               "settings": {
                 "namespace": "accentuate",
                 "key": "tastes_like",
@@ -404,16 +368,15 @@
             }
           },
           "block_order": [
-            "pdp_product_summary",
+            "group_icgrde",
+            "best_for_pdp",
+            "tastes_like_pdp",
+            "divider_VJhene",
             "variant_picker_R3rGDr",
             "purchase_options_SbK4qN",
             "buy_buttons_eYQEYi",
             "text_aEtTtq",
-            "properties_table",
-            "group_icgrde",
-            "divider_VJhene",
-            "best_for_pdp",
-            "tastes_like_pdp"
+            "properties_table"
           ]
         }
       },
