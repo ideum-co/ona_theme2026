@@ -32,6 +32,9 @@
     class="variant-picker spacing-style variant-picker--{{ block_settings.alignment }}{% if has_custom_variant_buttons %} variant-picker--custom-{{ block.id }}{% endif %}"
     style="
       {% render 'spacing-style', settings: block_settings %}
+      --variant-picker-option-gap: {{ block_settings.option_gap | default: 16 }}px;
+      --variant-picker-value-gap: {{ block_settings.value_gap | default: 11 }}px;
+      --variant-picker-label-gap: {{ block_settings.label_gap | default: 8 }}px;
        {% if block_settings.option_label_text_color != blank %}
         --variant-option-label-color: rgba({{ block_settings.option_label_text_color.rgba }});
         --variant-option-label-color-subdued: rgba({{ block_settings.option_label_text_color.rgb }} / var(--opacity-subdued-text));

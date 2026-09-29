@@ -391,6 +391,16 @@
       height: 100%;
     }
 
+    .product-information__grid:not(.product-information--media-none) > .product-details {
+      align-self: stretch;
+      min-height: 0;
+      max-height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+    }
+
     .product-information__media .product-media-container:not(.dialog-zoomed-gallery *) {
       height: 100%;
       max-height: 100%;
