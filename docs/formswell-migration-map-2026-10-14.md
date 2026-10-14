@@ -249,9 +249,17 @@ So:
 - **`Default product`**: decide whether `ona-read-more-content` is covered by the
   `story` custom-liquid section, or whether those 6 products lose content.
 
-**Decision needed:** does equipment get its own `product.equipment.json`, or does the
-single PDP grow an optional specs/video region that stays empty for coffee? Everything
-else folds.
+**Decision needed:** does equipment get its own template, or does the single PDP grow an
+optional specs/video region that stays empty for coffee? Everything else folds.
+
+If it gets its own, **the file must be named `product.product-2.json`** — not
+`product.equipment.json`, which an earlier version of this line said. A template is
+selected by matching the resource's existing `templateSuffix`, and those 26 products
+carry `product-2`. A `product.equipment.json` would never be selected: the equipment
+products would go on silently falling back to `product.json`, with the specs/video gap
+intact and nothing to indicate why. The alternative — renaming the suffix on 26
+resources — is a live change on the published theme (§5 step 7), so it belongs with the
+cutover, not here. Same for merch: `product.product-3.json`. (Codex, PR #150.)
 
 ### 3.4 Pages — which get a Formswell rebuild and which fold onto `page.json`
 
@@ -673,11 +681,15 @@ Suggested order:
    >    the `brewguides` blog holds **747** articles — so even with fault 2 fixed, two
    >    thirds of pointers could not resolve.
    >
-   > **The shape to build instead:** render the table from the product's own
-   > `title_item`/`content_item` **outside any article gate** — it needs no lookup at
-   > all. Then, only if the "Full brewing guide" link and the prose are wanted, resolve
-   > the article with the global `articles[raw_handle]`, prefix intact: one lookup, no
-   > loop, no pagination, no 747-article scan. (Codex, PR #150.)
+   > **The shape to build instead:** render **both** the intro and the table from the
+   > product, **outside any article gate**. `content_brew_guide` is product-owned and
+   > populated on the same **32** products as the table — gating it on the article would
+   > drop it for the 8 that have no pointer, which is the same mistake as fault 1 in a
+   > different place. Resolve the article **only** for the "Full brewing guide" link, and
+   > render that link conditionally on the lookup succeeding, with the global
+   > `articles[raw_handle]`, prefix intact: one lookup, no loop, no pagination, no
+   > 747-article scan. So: intro and table unconditional, link conditional. (Codex,
+   > PR #150, twice.)
 6. Settle the three remaining product-template decisions (§3.3), all of which change
    what renders: `product-2` — own template, or an optional specs/video region on the one
    PDP; `filtersub` — whether the subscription PDP keeps omitting the coffee storytelling
