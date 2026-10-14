@@ -63,3 +63,17 @@ test('is placeable from the theme editor', () => {
   assert.equal(setting('bg_color').default, '#441925');
   assert.ok(schema.presets?.length, 'needs a preset so it can be added in the editor');
 });
+
+test('the promo badge is available inside product cards, as on live', () => {
+  // Live renders ona-product-tags on every coffee card -- that is where the
+  // "$3 PER 200G ... DONATED TO WATER FOR GOOD" line comes from on the
+  // homepage and on collection pages. In this theme the card is composed from
+  // child blocks, so the type has to be accepted by _product-card before it
+  // can be placed in any template.
+  const card = readFileSync(resolve(root, 'blocks/_product-card.liquid'), 'utf8');
+  const schema = JSON.parse(card.match(/{% schema %}\s*([\s\S]*?)\s*{% endschema %}/)[1]);
+  assert.ok(
+    schema.blocks.some((block) => block.type === 'ona-product-tags'),
+    'product cards cannot show the promo badge'
+  );
+});
