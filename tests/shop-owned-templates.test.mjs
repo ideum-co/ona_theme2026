@@ -75,6 +75,12 @@ test('every JSON template is inside Shopify\'s section and block limits', () => 
   }
 });
 
+/** Every section id the theme editor has switched off, sorted. */
+const disabledIds = (sections) =>
+  Object.keys(sections)
+    .filter((id) => sections[id].disabled === true)
+    .sort();
+
 test('index.json keeps the editor-made homepage sections', () => {
   const { sections, order } = readTemplate('index.json');
 
@@ -97,20 +103,27 @@ test('index.json keeps the editor-made homepage sections', () => {
 
   // Sections the editor had switched off. They came back enabled once.
   //
-  // The three the editor disabled on 2026-10-14 at 21:59:21Z are pinned here
-  // too. Without them a later stale reconciliation could silently re-enable a
-  // section and still pass this suite -- which is the exact overwrite this
-  // file exists to catch. Every id the editor turns off belongs in this list.
-  for (const id of [
-    'club_invite_TGPaF8',
+  // This asserts the WHOLE disabled set, not a chosen few. An earlier version
+  // listed six of the thirteen while claiming to list all of them, so
+  // re-enabling `special_release` passed the suite -- the exact overwrite this
+  // file exists to catch. Comparing the complete set also fails when a section
+  // is newly disabled, which is the point: that is a real change to the
+  // storefront and it should take a deliberate edit here to record it.
+  assert.deepEqual(disabledIds(sections), [
+    'club_benefits',
     'club_benefits_QGRDdd',
-    'product_intro_k9p6yn',
-    'floating_badge_r89NRP',
+    'club_invite_QLL4T3',
+    'club_invite_TGPaF8',
+    'discover_by_category',
     'find_your_coffee',
+    'floating_badge_r89NRP',
+    'press_band',
     'product_highlight_KkUAVM',
-  ]) {
-    assert.equal(sections[id].disabled, true, `${id} must stay disabled`);
-  }
+    'product_intro_k9p6yn',
+    'raspberry_candy',
+    'special_release',
+    'story_video_LN6zzn',
+  ], 'the set of disabled homepage sections changed');
 
   // The WFG counter is the one deliberate addition, second on the page.
   assert.equal(order[1], 'wfg_donation_counter');
@@ -131,21 +144,18 @@ test('product.json keeps the editor-wired PDP', () => {
     assert.ok(order.includes(id), `editor-made section ${id} is not in order`);
   }
 
-  // Superseded by the bespoke sections above; enabling them double-renders the
-  // brew guide, story and FAQs. The repo copy had all three on.
-  //
-  // product_dna_trxBBN and product_tabs_XnTEpK are the editor's own switch-offs:
-  // re-enabling the first puts "Maple DNA" back on all 92 products, and the
-  // second duplicates the product tabs. Pinned for the same reason as above.
-  for (const id of [
-    'story',
+  // The whole disabled set, for the reason given in the index.json test above.
+  // `story`, `brew_guide` and `faqs` are superseded by the bespoke sections and
+  // enabling them double-renders. `product_dna_trxBBN` re-enabled puts
+  // "Maple DNA" back on all 92 products; `product_tabs_XnTEpK` duplicates the
+  // product tabs.
+  assert.deepEqual(disabledIds(sections), [
     'brew_guide',
     'faqs',
     'product_dna_trxBBN',
     'product_tabs_XnTEpK',
-  ]) {
-    assert.equal(sections[id].disabled, true, `${id} must stay disabled`);
-  }
+    'story',
+  ], 'the set of disabled PDP sections changed');
 });
 
 test('the promo badge stays on both card surfaces, after the gallery', () => {
