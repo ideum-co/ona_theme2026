@@ -770,10 +770,18 @@
                 "buy_buttons",
                 "subscribe"
               ]
+            },
+            "ona_promo_tags": {
+              "type": "ona-product-tags",
+              "settings": {
+                "padding-block-start": 0,
+                "padding-block-end": 0
+              }
             }
           },
           "block_order": [
             "product_card_gallery_DNizbJ",
+            "ona_promo_tags",
             "product_title_M7MJkb",
             "roast_line",
             "tastes_line",

@@ -9,6 +9,16 @@
  */
 {
   "sections": {
+    "wfg_donation_counter": {
+      "type": "ona-donation-counter",
+      "settings": {
+        "bg_color": "#441925",
+        "title": "DOLLARS CONTRIBUTED SO FAR",
+        "subtitle": "Enjoy great coffee while helping fund clean water access.",
+        "learn_more_text": "Shop Coffees",
+        "learn_more_url": "shopify://collections/donation-products"
+      }
+    },
     "hero_ona": {
       "type": "hero",
       "blocks": {
@@ -709,10 +719,18 @@
                 "buy_buttons",
                 "subscribe"
               ]
+            },
+            "ona_promo_tags": {
+              "type": "ona-product-tags",
+              "settings": {
+                "padding-block-start": 0,
+                "padding-block-end": 0
+              }
             }
           },
           "block_order": [
             "product_card_gallery",
+            "ona_promo_tags",
             "product_title",
             "roast_line",
             "tastes_line",
@@ -3934,6 +3952,7 @@
   },
   "order": [
     "hero_ona",
+    "wfg_donation_counter",
     "find_your_coffee",
     "coffee_spotlight",
     "special_release",
