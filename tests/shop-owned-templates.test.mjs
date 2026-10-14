@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
 
@@ -25,6 +25,55 @@ import test from 'node:test';
 const root = resolve(import.meta.dirname, '..');
 const readTemplate = (name) =>
   JSON.parse(readFileSync(resolve(root, 'templates', name), 'utf8').replace(/^\s*\/\*[\s\S]*?\*\/\s*/, ''));
+
+/*
+ * Shopify's own limits, and they fail silently through the GitHub integration.
+ * PR #151 left index.json at 28 sections; the integration wrote product.json
+ * and simply declined index.json -- no error, no commit status, no sign in the
+ * admin, and the theme kept the damaged copy while the repo looked correct.
+ * The only symptom was that the file's checksum never changed. Keep every JSON
+ * template inside the limits so the suite says so instead.
+ * https://shopify.dev/docs/storefronts/themes/architecture/section-groups
+ */
+const MAX_SECTIONS = 25;
+const MAX_BLOCKS = 50;
+
+/*
+ * Theme blocks nest, so a section's `blocks` object holds only its direct
+ * children -- this theme already nests (`coffee_spotlight` ->
+ * `static-product-card` -> `ona_promo_tags`). Count the whole subtree: the
+ * stricter reading can only fail earlier, never later, and when the platform
+ * refuses a file in silence the conservative bound is the useful one. The
+ * deepest section here totals 19, so this costs nothing today. Codex, PR #152.
+ */
+const countBlocks = (blocks) =>
+  Object.values(blocks ?? {}).reduce((total, block) => total + 1 + countBlocks(block.blocks), 0);
+
+test('every JSON template is inside Shopify\'s section and block limits', () => {
+  const dir = resolve(root, 'templates');
+  const files = readdirSync(dir).filter((name) => name.endsWith('.json'));
+  assert.ok(files.length > 0, 'no JSON templates found');
+
+  for (const file of files) {
+    const { sections = {}, order = [] } = readTemplate(file);
+    const count = Object.keys(sections).length;
+
+    assert.ok(
+      count <= MAX_SECTIONS,
+      `${file} has ${count} sections; Shopify renders at most ${MAX_SECTIONS}, so the integration will refuse the whole file`,
+    );
+    assert.equal(order.length, count, `${file}: order and sections disagree`);
+
+    for (const [id, section] of Object.entries(sections)) {
+      const direct = Object.keys(section.blocks ?? {}).length;
+      const nested = countBlocks(section.blocks);
+      assert.ok(
+        nested <= MAX_BLOCKS,
+        `${file}: section ${id} has ${nested} blocks counting nested ones (${direct} direct); the limit is ${MAX_BLOCKS}`,
+      );
+    }
+  }
+});
 
 test('index.json keeps the editor-made homepage sections', () => {
   const { sections, order } = readTemplate('index.json');
