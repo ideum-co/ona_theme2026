@@ -3,7 +3,7 @@
 > **Superseded in part by [`formswell-migration-map-2026-10-14.md`](./formswell-migration-map-2026-10-14.md)**
 > (same PR). That document re-reads the template question under the agreed strategy —
 > fold onto the Formswell design, delete the old complexity — and the answer changes
-> materially: ten of the "28 missing templates" are orphans no live resource uses, the
+> materially: nine of the "28 missing templates" are orphan files no live resource uses, the
 > `article`, `llms` and `maintenance` suffixes have **no template on any theme** and
 > already fall back, and **PR #142 should be closed rather than resolved**, because its
 > diff deletes `pdp_product_summary` and reverts the Formswell PDP header.
@@ -217,12 +217,12 @@ has not been made.
    `filtersub`, promo badges, Product DNA metaobject coverage, image quality at the sizes
    this theme actually renders.
 8. **Menu / header** -- Shop, Subscriptions, Learn, Locations, Wholesale, Journal all have
-   to land on a template that exists (see step 3). Mega-menu behaviour and the transparent
+   to land on a template that exists (see step 5, and step 6 for `location`). Mega-menu behaviour and the transparent
    header over the hero.
 9. **Collections** -- card composition, badges, filters, pagination, image quality.
 10. **Search** -- predictive search and the results page share the card blocks from step 9.
 11. **Blog** -- `brewguides` and `news` fall back today; article layout and images.
-12. **Pages** -- the 19 in step 3, with Wholesale and Learn first.
+12. **Pages** -- the groups in step 5, with Wholesale and Learn first.
 13. **Cart** -- drawer and page. 4.3.0 fixes several cart bugs, which is an argument for
     doing the bump before this step rather than after.
 
@@ -237,10 +237,12 @@ has not been made.
 ## 5. On "go live tomorrow"
 
 Steps 1-4 and 6 are a day's work, and step 2 — deploying the campaign — should not wait on
-any of the rest, because the badges expire 2026-10-31. **Step 5 is the long pole:** 56
-products, 19 pages and 2 blogs need a human decision each, and that is the step that
-decides whether the site looks right the morning after. Read the migration map before
-starting it; it takes ten of the 28 templates off the list entirely.
+any of the rest, because the badges expire 2026-10-31. **Step 5 is the long pole**, and it
+is the step that decides whether the site looks right the morning after — but the decisions
+are **per suffix group, not per resource**: four product groups (`product-2`, `product-3`,
+`Default product`, `filtersub`) covering 56 products, and the page groups in map §3.4,
+where `llms` and `maintenance` need nothing at all. Read the migration map before starting
+it; it takes nine orphan files and three already-falling-back suffixes off the list.
 
 The honest shape of it: either the 28 templates fold into the generic ones -- which is
 plausible, since this theme was designed around a single rich product template, but nobody

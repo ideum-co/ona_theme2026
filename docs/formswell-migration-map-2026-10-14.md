@@ -73,7 +73,10 @@ but the template files exist in *neither repo and not on the live theme either* 
 checked by filename against theme `160335790271`. Those two pages already fall back to
 `page.json` today. They are not a regression; they are the status quo.
 
-That is ten templates off the list before any work starts.
+That is **nine template files to delete** — the eight product templates plus
+`page.melbourne.json` — and **three suffixes that need no work and have no file to
+delete**: `article`, `llms` and `maintenance`. Twelve items off the list before any work
+starts, but only nine of them are deletions.
 
 ## 3. Needs a decision
 
@@ -331,7 +334,7 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
 ## 5. What this means for scheduling
 
 Under the fold-don't-port strategy the long pole is **two pages** — `wholesale` and
-`barista-courses` — not 28 templates. Everything else is: delete ten orphans, fix three
+`barista-courses` — not 28 templates. Everything else is: delete nine orphan files, fix three
 wiring bugs, make four product-template decisions, and rebuild five shared page layouts
 from Horizon generics.
 
@@ -347,13 +350,22 @@ Suggested order:
 2. Fix the `location` / `page.locations` mismatch. (hours — estimate)
 3. Settle the badge fallbacks (§3.1) — this one is live-visible on all 92 PDPs — and
    close PR #142. Settle the Palmer Lake vs Silk Serif CTA with Formswell.
-4. Delete the ten orphan templates.
-5. Decide `product-2`: own template, or an optional specs/video region on the one PDP.
-6. Fold the five cheap pages and both blogs.
-7. Rebuild `about`, `sustainability`, `bookings`, `learn`,
+4. Delete the nine orphan template files (§2). `article`, `llms` and `maintenance` need
+   nothing — they have no file to delete and already fall back.
+5. **Restore the brew-guide, origin and sourcing content (§4.3).** This is the largest
+   content regression on the list and nothing above fixes it: the shop's `brew_guide`,
+   `story` and `faqs` sections are disabled and the `Brew Guide` and `Reviews` tabs are
+   empty, so `content_brew_guide` and `title_item`/`content_item` — populated on **32**
+   products — and `content_origin`/`content_sourcing` render nowhere. Decide where each
+   goes (the empty `Brew Guide` tab is the obvious home for the recipe, `product-dna` or
+   a tab for origin and sourcing), wire it on the **shop's** `product.json`, and verify on
+   one blend, one single origin and one drip bag before go-live.
+6. Decide `product-2`: own template, or an optional specs/video region on the one PDP.
+7. Fold the five cheap pages and both blogs.
+8. Rebuild `about`, `sustainability`, `bookings`, `learn`,
    `private-courses-and-experiences` from Horizon generics.
-8. Rebuild `wholesale` and `barista-courses` with Formswell.
-9. Then — and only then — bump Horizon 4.1.4 → 4.3.0 (26 real conflicts, 8 files with
+9. Rebuild `wholesale` and `barista-courses` with Formswell.
+10. Then — and only then — bump Horizon 4.1.4 → 4.3.0 (26 real conflicts, 8 files with
    line-level overlap, 59 lines; measured). Not the night before.
 
 ## Appendix — legacy sections with no 2026 equivalent yet
