@@ -624,7 +624,8 @@ Suggested order:
    | content | metafield | populated on | destination needed |
    |---|---|---|---|
    | brew-guide spec table | `accentuate.title_item` / `content_item` | **32** | the empty `Brew Guide` tab |
-   | brew-guide prose | `accentuate.content_brew_guide` + `select_artlice` | 32 / **24** | same tab |
+   | brew-guide intro | `accentuate.content_brew_guide` | **32** | same tab — **product-owned, render unconditionally** |
+   | brew-guide "Full brewing guide" link | `accentuate.select_artlice` | **24** | same tab — the *only* thing the pointer supplies; render the link conditionally |
    | lifestyle gallery | `accentuate.image` | **37** | no renderer exists yet |
    | product FAQs | `custom.accordion` | **23** | re-enable `faqs`, or a tab |
    | Coffee Profile prose | `accentuate.content_coffee_profile` | **37** | read only by the disabled `story` section |
@@ -699,13 +700,33 @@ Suggested order:
    > `articles[raw_handle]`, prefix intact: one lookup, no loop, no pagination, no
    > 747-article scan. So: intro and table unconditional, link conditional. (Codex,
    > PR #150, twice.)
-6. Settle the three remaining product-template decisions (§3.3), all of which change
-   what renders: `product-2` — own template, or an optional specs/video region on the one
-   PDP; `filtersub` — whether the subscription PDP keeps omitting the coffee storytelling
-   sections, which is the stripped template's whole premise and so is a deliberate yes/no,
-   not an oversight; and the six `Default product` coffees — whether `ona-read-more-content`
-   is covered by `story` or those six lose content when the suffix folds. Verify each on a
-   real product of that suffix before go-live.
+6. Settle the three remaining product-template decisions (§3.3) — **and build them in
+   the same step.** All three change what renders, and none of them is a no-op:
+
+   - **`product-2`** — own template, or an optional specs/video region on the one PDP.
+     Either way the equipment specs need a renderer: `accentuate.content_product_info`
+     (20 products) and `video_url` (6) are read by nothing today, because
+     `properties_table` reads only `accentuate.components`. Copy the paired-array loop
+     from the `brew_guide` custom-liquid; `video_url` holds a complete `<iframe>` blob
+     rather than a URL, so decide raw-vs-convert for those 6.
+   - **`filtersub`** — whether the subscription PDP keeps omitting the coffee
+     storytelling sections. That is the stripped template's whole premise, so it is a
+     deliberate yes/no — **but "keep it" is work, not inaction.** There is one shared
+     `templates/product.json`, so those sections now render for everything; suppressing
+     them for the 2 subscriptions needs a condition or a `product.filtersub.json`.
+     Deciding "keep as-is" and doing nothing produces the opposite of the decision.
+   - **`Default product`** — whether `ona-read-more-content` is covered by `story`, or
+     those six coffees lose content when the suffix folds. If it is not covered,
+     restoring it is implementation work too.
+   - **`product-3`** (merch, 22) is expected to fold; confirm nothing merch-specific is
+     lost rather than assuming it.
+
+   "Own template" means a file named for the **existing** suffix —
+   `product.product-2.json`, `product.product-3.json`, `product.filtersub.json` — never a
+   descriptive name, and never a resource re-point (§5 step 7). **Nothing later in this
+   order builds any of this**, so a decision recorded here and not implemented here
+   reaches the cutover unbuilt. Verify each on a real product of that suffix, not on a
+   coffee, before go-live. (Codex, PR #150.)
 7. Fold the five cheap pages and both blogs — and with them the **43 `news`-suffix
    Journal articles** (§3.5), the only article group that needs a decision.
 
