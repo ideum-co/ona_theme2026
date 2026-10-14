@@ -152,6 +152,19 @@ Two consequences are already visible:
 - **No star ratings on collection pages.** `/collections/all-coffee` contains
   zero `jdgm-` markup; the previous theme had 135 occurrences.
 
+**Good news on the remediation: every one of these apps is still installed.**
+Checked against `appInstallations` on 2026-10-15 — Powerful Form Builder,
+Minmaxify Order Limits, Dotdigital, EG Auto Add to Cart, Qikify Upsell,
+Judge.me Reviews, Appstle Subscription, WOD: PreOrder Now and Shopify Forms are
+all present. So the fix is a toggle per app in **Online Store → Customize → App
+embeds** on theme `154676789439`, not a reinstall. Decide each one on its merits
+rather than switching all ten back on: app embeds are a real performance cost,
+two of them are duplicate live chat widgets, and Appstle's is already redundant.
+
+Two apps are installed but had **no** embed on the previous theme either, so
+their absence here is not a regression: **Rebuy Personalization Engine** and
+**Microsoft Clarity**.
+
 **MinMaxify, EG Auto Add to Cart and Preorder Now are the ones to check first** —
 each silently changes what a customer can buy, and none of them announces its
 absence. Whether their rules are also enforced at checkout (Shopify Functions)
