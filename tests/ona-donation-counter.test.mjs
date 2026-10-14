@@ -64,6 +64,28 @@ test('is placeable from the theme editor', () => {
   assert.ok(schema.presets?.length, 'needs a preset so it can be added in the editor');
 });
 
+test('does not render an empty CTA when no url is set', () => {
+  // learn_more_text ships a nonblank default ("Shop Coffees") but
+  // learn_more_url has none, so guarding on the text alone renders
+  // <a href=""> -- a CTA that silently reloads the page -- on every
+  // instance added from the preset. Codex flagged this on PR #149.
+  assert.match(
+    source,
+    /if section\.settings\.learn_more_text != blank and section\.settings\.learn_more_url != blank/
+  );
+  const schema = JSON.parse(schemaMatch[1]);
+  const url = schema.settings.find((item) => item.id === 'learn_more_url');
+  assert.equal(url.default, undefined, 'if a url default is added, this guard can relax');
+});
+
+test('the homepage CTA points at the campaign collection, as live does', () => {
+  // Live sends this CTA to /collections/donation-products (14 participating
+  // products), not /collections/all (90, most of which contribute nothing).
+  const index = readFileSync(resolve(root, 'templates/index.json'), 'utf8');
+  const settings = JSON.parse(index.replace(/\/\*[\s\S]*?\*\//g, '')).sections.wfg_donation_counter.settings;
+  assert.equal(settings.learn_more_url, 'shopify://collections/donation-products');
+});
+
 test('the promo badge is available inside product cards, as on live', () => {
   // Live renders ona-product-tags on every coffee card -- that is where the
   // "$3 PER 200G ... DONATED TO WATER FOR GOOD" line comes from on the

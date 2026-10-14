@@ -71,7 +71,7 @@
       <p class="donation-counter__subtitle">{{ section.settings.subtitle }}</p>
     {%- endif -%}
 
-    {%- if section.settings.learn_more_text != blank -%}
+    {%- if section.settings.learn_more_text != blank and section.settings.learn_more_url != blank -%}
       <div class="donation-counter__actions">
         <a href="{{ section.settings.learn_more_url }}" class="donation-counter__cta">
           {{- section.settings.learn_more_text -}}
