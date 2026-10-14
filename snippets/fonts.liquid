@@ -1,20 +1,7 @@
 {%- comment -%}
   The brand faces are theme assets, not Shopify-hosted fonts, so the picker-driven preloads below
-  do not cover them. Only the two that render above the fold are preloaded; the rest are fetched
-  on demand. See `brand-fonts.liquid`.
+  do not cover them. Only the two brand faces that render above the fold are preloaded; the rest are fetched
+  on demand. `brand-fonts.liquid` overrides the font-picker variables globally, so preloading\n  those unused font-picker faces adds unnecessary network requests.\n  See `brand-fonts.liquid`.
 {%- endcomment -%}
 {{ 'silk-serif-regular.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2' }}
 {{ 'karla-regular.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2' }}
-
-{%- unless settings.type_body_font.system? -%}
-  {{ settings.type_body_font | font_url | preload_tag: as: 'font', type: 'font/woff2', fetchpriority: 'low' }}
-{%- endunless -%}
-{%- unless settings.type_subheading_font.system? -%}
-  {{ settings.type_subheading_font | font_url | preload_tag: as: 'font', type: 'font/woff2', fetchpriority: 'low' }}
-{%- endunless -%}
-{%- unless settings.type_heading_font.system? -%}
-  {{ settings.type_heading_font | font_url | preload_tag: as: 'font', type: 'font/woff2', fetchpriority: 'low' }}
-{%- endunless -%}
-{%- unless settings.type_accent_font.system? -%}
-  {{ settings.type_accent_font | font_url | preload_tag: as: 'font', type: 'font/woff2', fetchpriority: 'low' }}
-{%- endunless -%}
