@@ -314,8 +314,8 @@ has not been made.
    The brew guide is three separate things, and conflating them is how content gets
    dropped: render the **intro and the table unconditionally** from the product, and make
    only the **link** conditional on resolving `articles[select_artlice]` (prefix intact).
-   Do **not** start from the disabled `brew_guide` block -- map §5 step 5 lists its three
-   two faults: it gates the product-owned table on the article pointer, and its
+   Do **not** start from the disabled `brew_guide` block -- map §5 step 5 lists its two
+   faults: it gates the product-owned table on the article pointer, and its
    `paginate ... by 250` loop cannot reach an article past the first page of 747.
 
    **And build every product-suffix outcome the step 5 audit decided** -- all four of
@@ -375,6 +375,20 @@ has not been made.
     pulling it forward is exactly the night-before version change this document warns
     against. Fix any cart bug found here directly, and re-check cart after the bump.
 
+    **13a. Audit the app embeds — also a publish gate.**
+    `performance-and-compatibility.md` §1 records this as **not started**: this theme
+    has **zero app-embed blocks enabled** (no `"blocks"` key in
+    `config/settings_data.json`) while live has several — **Appstle Subscriptions
+    confirmed**, Judge.me, Rebuy and live chat likely. Publishing as-is silently removes
+    them, and **Appstle is what runs the subscription products**, so this is not a
+    cosmetic gap. Pull live's `settings_data.json` blocks list and go through it one by
+    one: confirm the app is still in use and paid for, weigh its performance cost, and
+    either enable it or write down what replaced it. One already is replaced —
+    `blocks/purchase-options.liquid` reads Shopify's real `selling_plan_groups` rather
+    than Appstle's injected widget — so decide per app rather than copying the list
+    wholesale. Note the editor has meanwhile wired a **Judge.me** widget into the PDP
+    Reviews tab (PR #159): one of these embeds is arriving by another route, which is a
+    reason to inventory rather than assume.
 14. **Validate tracking end to end — a publish gate, not a QA nicety.**
     `performance-and-compatibility.md` §2 requires this and records its status as **not
     started**. Both prior failures were *data-loss* bugs, not cosmetic ones, and

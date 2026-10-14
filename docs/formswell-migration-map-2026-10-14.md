@@ -801,7 +801,7 @@ Suggested order:
    > clearing a suffix is a live change: clear the `news` suffix and those 43 Journal
    > articles come off `ona-article-news-template` on live theme `160335790271`; clear
    > the five page suffixes or either blog suffix and the same thing happens to those
-   > pages and blogs — three steps before step 10 publishes the replacement. A
+   > pages and blogs — four steps before step 11 publishes the replacement. A
    > pre-publish step causing a live regression.
    >
    > **So fold theme-side, by adding a matching template file here, and leave every
@@ -826,11 +826,35 @@ Suggested order:
 8. Rebuild `about`, `sustainability`, `bookings`, `learn`,
    `private-courses-and-experiences` from Horizon generics.
 9. Rebuild `wholesale` and `barista-courses` with Formswell.
-10. **Publish** — swap `ona_theme2026` in for theme `160335790271`.
+10. **Two gates before publishing, both recorded as *not started* in
+   `performance-and-compatibility.md`, and both invisible from the storefront:**
+
+   a. **App embeds (§1 of that doc).** This theme has **zero app-embed blocks
+      enabled** — no `"blocks"` key in `config/settings_data.json` — while live has
+      several, **Appstle Subscriptions confirmed** and Judge.me, Rebuy and live chat
+      likely. Publishing as-is silently removes them, and Appstle is what runs the
+      subscription products. Pull live's `settings_data.json` blocks list and go
+      through it one by one: confirm the app is still in use, weigh its performance
+      cost, and either enable it or document what replaced it. One is already
+      replaced — `blocks/purchase-options.liquid` reads Shopify's real
+      `selling_plan_groups` instead of Appstle's injected widget — so the audit is
+      per-app, not all-or-nothing. Note the theme editor has meanwhile wired a
+      **Judge.me** widget into the PDP Reviews tab (PR #159), which is one of these
+      embeds arriving by another route.
+   b. **Tracking, end to end (§2).** A real test purchase confirmed in GA4
+      (Realtime + DebugView) with **revenue and session attribution intact**, plus
+      webhook delivery for that order including **Admin-UI-created** webhooks. Both
+      prior failures were silent data-loss bugs and Horizon's cart/checkout JS is not
+      the old theme's, so parity cannot be assumed.
+
+   Readiness steps 13a and 14 hold the same two gates; that document is the operational
+   authority for them. (Codex, PR #150.)
+
+11. **Publish** — swap `ona_theme2026` in for theme `160335790271`.
 
 **After go-live, and only after:**
 
-11. Bump Horizon 4.1.4 → 4.3.0 (26 real conflicts, 8 files with line-level overlap, 59
+12. Bump Horizon 4.1.4 → 4.3.0 (26 real conflicts, 8 files with line-level overlap, 59
    lines; measured). Not the night before — and not before publishing either, which this
    order previously failed to say. The readiness doc has always put it after go-live;
    this list ended with it and drew no boundary, so the two documents disagreed about the
