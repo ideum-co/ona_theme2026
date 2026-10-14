@@ -15,6 +15,7 @@
   assign body_preset = settings.body_type_preset | default: 'rte'
   assign button_preset = settings.button_type_preset | default: 'rte'
 
+  assign video_cover_image = settings.cover_image | default: settings.video.preview_image
   assign has_video = false
   if settings.source == 'uploaded' and settings.video != blank
     assign has_video = true
@@ -128,7 +129,7 @@
           video_style: video_style,
           video_loop: settings.video_loop,
           video_autoplay: settings.video_autoplay,
-          video_preview_image: settings.cover_image | default: settings.video.preview_image
+          video_preview_image: video_cover_image
         -%}
       {%- else -%}
         {%- render 'video',
