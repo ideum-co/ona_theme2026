@@ -199,8 +199,8 @@ has not been made.
 **Then, the template decision (the long pole)**
 
 5. Walk the suffixes that still need a decision -- **not all 28.** The migration map
-   removes ten as orphans with zero active resources (eight product templates plus
-   `page.melbourne`) and three more (`llms`, `maintenance`, `article`) as templates that
+   removes **nine** as orphan files with zero active resources (eight product templates
+   plus `page.melbourne.json`) and three more (`llms`, `maintenance`, `article`) as templates that
    exist on no theme and already fall back, so several of the 28 have nothing to open.
    For each remaining group, open one live example and one 2026 render side by side and
    record: fold into the generic template, rebuild, or re-point. Start where the money is

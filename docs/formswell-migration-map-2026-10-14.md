@@ -97,14 +97,27 @@ Measured coverage across all 92 active products:
 | `filtersub` — subscriptions | 2 | **0** | 2 | 2 | 0 | 0 |
 
 `accentuate.range` is **empty on all 92 products**. So on cutover, every single PDP
-prints the stored fallback **"Staple Range"**. And all 48 equipment and merch products
-print **"Best with Milk"** and **"Caramel, biscuits, nuts and spices"**, because they
-have no `roast` and no `tastes_like` either.
+prints the stored fallback **"Staple Range"**. And **55 of the 92** also print **"Best
+with Milk"** and **"Caramel, biscuits, nuts and spices"**, having neither `roast` nor
+`tastes_like`: the 26 equipment, 22 merch, 6 gift cards and the Milk Blend Bundle. The
+other 37 take the correct values from the metafields — but still print "Staple Range" as
+badge 1, which is wrong for anything in Reserve (21), Rare (8) or Special Release (9).
+
+One more, cheap: `roast` values are inconsistent — `Milk-based`, `Milk-Based`, `Espresso`,
+`Espresso ` with a trailing space, `Filter` — and `pdp-product-summary.liquid` renders
+`{{ badge_1 | escape }}` with no `| strip`. Add the filter whichever option wins.
 
 **Decision needed:** populate `accentuate.range` (and accept that equipment/merch will
 never have it, so the badge must be allowed to be absent), or blank the literal
-fallbacks in `templates/product.json` and treat the badges as optional. Either is a
-one-hour change (estimate). Shipping neither puts "Best with Milk" on a Hario dripper.
+fallbacks and treat the badges as optional. Shipping neither puts "Best with Milk" on a
+Hario dripper.
+
+**However this is decided, it is a shop-side edit, not a repo one (§4.3).** The settings
+live in `templates/product.json`, which is one of the two files the shop owns — the
+repo's copy is not the PDP that renders and must not be uploaded whole. So the change is
+a surgical edit to `pdp_product_summary`'s settings on theme `154676789439`, with any
+repo edit treated as a **mirror** of that, not the delivery mechanism. Editing only the
+repo leaves the wrong labels on all 92 PDPs.
 
 ### 3.2 PR #142 should be closed, not merged
 
