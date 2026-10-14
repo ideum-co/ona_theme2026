@@ -490,10 +490,13 @@ either**, which is what this summary used to say. There are **three long poles**
 of them are implementation rather than decisions:
 
 1. **The PDP content restoration (step 5).** The biggest of the three. Five content
-   surfaces render nowhere on 23–37 products each, **two of them have no renderer at
-   all** (the lifestyle gallery and `image_origin`), the FAQ section needs re-enabling,
-   and the `Reviews` tab opens a blank panel on all 92 PDPs. Plus the Maple copy on the
-   one shared product template (§3.1), which is live-visible on every product.
+   surfaces render nowhere on 23–37 products each, and **every image surface among them
+   has no renderer at all** — the lifestyle gallery (`accentuate.image`, 37 products),
+   `image_origin` (25) and both Coffee Profile images
+   (`image_coffee_profile_1`/`_2`, 37) — so that is four image metafields needing new
+   code, not two. The FAQ section needs re-enabling, and the `Reviews` tab opens a blank
+   panel on all 92 PDPs. Plus the Maple copy on the one shared product template (§3.1),
+   which is live-visible on every product.
 2. **`wholesale` and `barista-courses`** — the two pages that need a Formswell rebuild.
 3. **The suffix decisions (step 6 and the page groups)** — decisions rather than build,
    so compressible, but they decide how the catalogue looks.
@@ -664,23 +667,29 @@ Suggested order:
    Journal articles** (§3.5), the only article group that needs a decision.
 
    > **`templateSuffix` lives on the resource, not on the theme — so re-pointing a
-   > resource changes the *currently published* theme the moment you save it.** Clearing
-   > the `news` suffix off those 43 articles at step 7 would take them off
-   > `ona-article-news-template` on live theme `160335790271`, three steps before step 10
-   > publishes the replacement. That is a live content regression caused by a
-   > pre-publish step. The same hazard applies to every suffix decision in this
-   > document: changing a *file* in this repo only affects this theme, changing a
-   > *resource's suffix* affects whatever is published right now.
+   > resource changes the *currently published* theme the moment you save it.** Changing
+   > a *file* in this repo affects only this theme; changing a *resource's suffix*
+   > affects whatever is published right now.
    >
-   > So prefer the theme-side option: **add an `article.news.json` in this theme** (a
-   > wrapper around `main-blog-post`, or the ported bespoke layout) and leave the
-   > articles' suffix alone. If the resources really must be re-pointed, do the
-   > reassignment and the legacy-template deletion **atomically with the cutover at step
-   > 10**, never before. (Codex, PR #150.)
+   > **This governs the whole of step 7, not just the articles.** "Fold" implemented by
+   > clearing a suffix is a live change: clear the `news` suffix and those 43 Journal
+   > articles come off `ona-article-news-template` on live theme `160335790271`; clear
+   > the five page suffixes or either blog suffix and the same thing happens to those
+   > pages and blogs — three steps before step 10 publishes the replacement. A
+   > pre-publish step causing a live regression.
+   >
+   > **So fold theme-side, by adding a matching template file here, and leave every
+   > resource's suffix alone:** `article.news.json`, and a `page.<suffix>.json` /
+   > `blog.<suffix>.json` for each page and blog being folded, each a thin wrapper
+   > around the Horizon generic (or the ported bespoke layout). A wrapper is cheap and it
+   > is reversible; a suffix change is neither. **If resources genuinely must be
+   > re-pointed, do every reassignment and every legacy-template deletion atomically
+   > with the cutover at step 10** — one batch, after the swap, never before. (Codex,
+   > PR #150, twice.)
 
-   The decision itself: wrap `main-blog-post` in an `article.news.json`, or port the
-   bespoke article layout. Nothing else in this order covers them, and they are live
-   content.
+   The decision itself, for the articles: wrap `main-blog-post` in an
+   `article.news.json`, or port the bespoke article layout. Nothing else in this order
+   covers them, and they are live content.
 8. Rebuild `about`, `sustainability`, `bookings`, `learn`,
    `private-courses-and-experiences` from Horizon generics.
 9. Rebuild `wholesale` and `barista-courses` with Formswell.
