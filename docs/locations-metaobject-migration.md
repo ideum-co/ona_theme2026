@@ -8,14 +8,23 @@ create, update, or otherwise mutate metaobjects or their relationships.
 
 1. In Shopify admin, open **Online Store > Pages** and select the Locations
    page (or create it).
-2. In **Theme template**, choose the Locations template and save the page.
-   **Which name to pick:** the live page carries the suffix **`location`** (singular)
-   while this theme currently ships `templates/page.locations.json` (plural) — they do
-   not match, which is why the page falls back today. Map §3.3 schedules renaming the
-   *file* to `page.location.json` (not re-pointing the page, which would be a shop-wide
-   change affecting the published theme). So: pick `location` once that rename has
-   landed, and `locations` only if you are working against a theme that still has the
-   plural file.
+2. In **Theme template**, choose **`location`** — and only `location`.
+
+   > **Do not select `locations`, and do not change this page's template at all until
+   > the rename has landed.** The page already carries the suffix `location`.
+   > `templateSuffix` is shop-wide, not per theme, so saving `locations` here would
+   > immediately take the Locations page off its working `location` template on the
+   > **currently published** theme. That is a live regression, caused by following this
+   > guide.
+   >
+   > The mismatch is on the theme's side: this theme ships
+   > `templates/page.locations.json` (plural) and no `page.location.json`, which is why
+   > the page falls back here today. Map §3.3 fixes it by renaming the **file** to
+   > `page.location.json` — three edits in one commit: the file, this guide, and
+   > `tests/locations-page-template.test.mjs`. **Wait for that, then the existing
+   > `location` assignment just works and this step is a no-op.** (Codex, PR #150 — an
+   > earlier version of this note offered `locations` as a transitional option, which
+   > was exactly the hazard the map exists to avoid.)
 3. Open that page in the Theme Editor. The template contains **Locations
    header**, **Locations store finder**, and **Locations flagships**.
 

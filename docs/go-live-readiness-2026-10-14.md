@@ -320,14 +320,19 @@ has not been made.
    for the existing suffix, per map §3.3 -- and "fold" means the shared PDP has to carry
    the behaviour conditionally.
 
-   - **`product-2`, equipment (26 products).** The specs render nowhere either way
-     today: `accentuate.content_product_info` on **20** of them and `video_url` on
-     **6** are read by nothing, because the `properties_table` custom-liquid reads only
-     `accentuate.components`. Copy the paired-array loop from the `brew_guide`
-     custom-liquid as the pattern. `video_url` stores a complete `<iframe>` blob rather
-     than a URL, so the raw-vs-convert call has to be made for those 6.
-   - **`product-3`, merch (22 products).** Map §3.3 expects this one to fold; if it
-     does, confirm nothing merch-specific is lost rather than assuming.
+   - **`product-2`, equipment (26 products).** Nothing renders today, because
+     `properties_table` reads only `accentuate.components`. Three data shapes, measured:
+     the **labelled table** from paired arrays `accentuate.title` + `content` (**16**
+     products — `title` is the label source, and the `brew_guide` paired-array loop
+     copied without it produces an unlabelled table), `content_product_info` rich text
+     (**27** products), and ad-hoc per-spec keys (`material`, `height`,
+     `approx_weight`, `suitable_for` …) on a handful. Plus `video_url` on **6**, which
+     holds a complete `<iframe>` blob rather than a URL, so raw-vs-convert has to be
+     decided. Map §5 step 6 has the table.
+   - **`product-3`, merch (22 products).** Expected to fold -- **but not for free:**
+     `content_product_info` is on **7 merch products**, so those 7 lose their product
+     info unless whatever renders it for equipment also runs on the shared PDP. Confirm
+     on one of those 7 specifically.
    - **`filtersub`, the 2 subscriptions.** This template is the *stripped* one -- it
      deliberately omits the coffee storytelling sections. If the audit decides to
      preserve that, it is **work, not a no-op**: on the shared PDP those sections now

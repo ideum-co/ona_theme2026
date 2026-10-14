@@ -704,11 +704,21 @@ Suggested order:
    the same step.** All three change what renders, and none of them is a no-op:
 
    - **`product-2`** — own template, or an optional specs/video region on the one PDP.
-     Either way the equipment specs need a renderer: `accentuate.content_product_info`
-     (20 products) and `video_url` (6) are read by nothing today, because
-     `properties_table` reads only `accentuate.components`. Copy the paired-array loop
-     from the `brew_guide` custom-liquid; `video_url` holds a complete `<iframe>` blob
-     rather than a URL, so decide raw-vs-convert for those 6.
+     Either way the equipment specs need a renderer, and the data comes in **three
+     shapes**, measured across all 92 active products on 2026-10-15. `properties_table`
+     reads only `accentuate.components`, so none of them renders today:
+
+     | shape | metafields | populated on |
+     |---|---|---|
+     | labelled table (paired `json_string` arrays, zip by index) | **`accentuate.title`** + `accentuate.content` | **16**, all `product-2` |
+     | rich text block | `accentuate.content_product_info` | **27** — 20 `product-2` **and 7 `product-3`** |
+     | ad-hoc per-spec keys | `material`, `height`, `approx_weight`, `suitable_for`, `waterproof`, `colour_info` … | a handful, e.g. `hario-v60-dripper-clear-plastic` |
+
+     **`accentuate.title` is the label source** — the paired-array loop from the
+     `brew_guide` custom-liquid is the right pattern, but copying it without `title`
+     produces an unlabelled table. Plus `video_url` on 6 products, which holds a
+     complete `<iframe>` blob rather than a URL, so decide raw-vs-convert for those.
+     (Codex, PR #150.)
    - **`filtersub`** — whether the subscription PDP keeps omitting the coffee
      storytelling sections. That is the stripped template's whole premise, so it is a
      deliberate yes/no — **but "keep it" is work, not inaction.** There is one shared
@@ -718,8 +728,12 @@ Suggested order:
    - **`Default product`** — whether `ona-read-more-content` is covered by `story`, or
      those six coffees lose content when the suffix folds. If it is not covered,
      restoring it is implementation work too.
-   - **`product-3`** (merch, 22) is expected to fold; confirm nothing merch-specific is
-     lost rather than assuming it.
+   - **`product-3`** (merch, 22) is expected to fold — **but folding is not free, which
+     the measurement above shows:** `accentuate.content_product_info` is populated on
+     **7 merch products**, not only on equipment. Fold and those 7 lose their product
+     info unless whatever renders `content_product_info` for equipment also runs on the
+     shared PDP. Confirm on one of those 7 specifically, not on an arbitrary merch
+     product.
 
    "Own template" means a file named for the **existing** suffix —
    `product.product-2.json`, `product.product-3.json`, `product.filtersub.json` — never a
