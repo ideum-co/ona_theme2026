@@ -1,4 +1,4 @@
-# Theme `160815546559` — the two files that exist only here
+# Theme `160815546559` — the published theme's distinguishing files
 
 > **Do not delete theme `160815546559`.** It was on the clean-up list as a
 > leftover preview. It has been the **published** theme since
@@ -11,7 +11,14 @@
 Pulled 2026-10-15. Theme `160815546559` is named "PREVIEW - product media fills
 column (PR #46)", was created 2026-10-13 as a one-off preview for
 `onacoffee_theme` PR #46, and is **not connected to any GitHub branch** — so
-nothing but the theme itself holds its state.
+nothing pulls into it and no merge can update it.
+
+**Only one of the files here is theme-only.** This directory was created on the
+belief that two were; the table below, added after checking, shows that
+`product.filtersub.json` and the media snippet are byte-identical to
+`onacoffee_theme` and that `index.json` alone has no counterpart. The copies are
+kept anyway — they are a cheap, dated snapshot of exactly what the storefront
+served — but **do not treat this directory as a sole surviving copy.**
 
 File by file it is byte-identical to the pre-cutover theme `160335790271`
 across every template and across `config/settings_data.json`, except three

@@ -139,7 +139,9 @@ Paste into the body of every `staging` → `main` PR:
 
 ```markdown
 ## Release checklist
-- [ ] `node --test "tests/*.test.mjs"` passes locally (98+ pass, 0 fail)
+- [ ] `node --test tests/*.test.mjs` passes locally (98+ pass, 0 fail) — leave
+      the glob **unquoted** so the shell expands it; node's own `--test` glob
+      handling is newer than the Node 20 line and a quoted pattern fails there
 - [ ] `staging` previewed on the staging theme, on desktop **and a real phone**
 - [ ] No `templates/*.json` or `config/settings_data.json` touched
       — or, if touched: live checksum read, reconciled, recorded below
