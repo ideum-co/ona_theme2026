@@ -36,7 +36,7 @@ Status is as at 2026-10-15; **nothing here has been fixed yet.**
 
 | # | Issue | Evidence | Fix |
 |---|---|---|---|
-| 1 | **Homepage hero is a flat grey block.** The hero `<video>` reports `readyState 0`, `buffered 0`, `duration null`, `error null` after 6+ seconds — it never buffers a single byte. It has **no `poster` attribute**, so there is no fallback, and the first thing every visitor sees is empty grey. The asset itself is fine: the MP4 answers `HTTP 206`, `video/mp4`, 9,826,149 b. | Checked in preview on `154676789439`, 2026-10-15 | Add a `poster` image so the hero is never blank, **and** find why autoplay never starts. A 9.4 MB 1080p hero video also wants a hard look on its own merits. |
+| 1 | **Homepage hero is a flat grey block.** The hero `<video>` reports `readyState 0`, `buffered 0`, `duration null`, `error null` after 6+ seconds — it never buffers a single byte. It has **no `poster` attribute**, so there is no fallback, and the first thing every visitor sees is empty grey. **The file is not the problem** — see the evidence column. | Checked in preview on `154676789439`, 2026-10-15. The MP4 was probed, not assumed: ranged fetches of the first 256 KB and last 266 KB show the atom order `ftyp` (32 b) → **`moov` at offset 32** (6,385 b) → `free` → `mdat` (9,819,724 b), i.e. correctly faststart-optimised, so `preload="metadata"` needs about 6 KB to reach `readyState 1`. Brands `isom/iso2/avc1/mp41`; video track is **H.264 High profile, Level 4.0**; no audio track, as expected for a muted hero. | Add a `poster` so the hero is never blank, **and** find why autoplay never starts — with a well-formed, faststart, universally-supported file that buffers nothing, the fault is in the page, not the asset. A 9.4 MB 1080p hero also wants a hard look on its own merits. |
 | 2 | **Eight pages render a heading and nothing else.** Their content lived in bespoke templates on the old theme; this theme has none, so they fall back to `templates/page.json`, which prints only the title and the page body — and these pages have empty bodies. | Measured live while published: `/pages/wholesale` **16 chars** of visible text, `/pages/barista-courses` 15, `/pages/about` 5, `/pages/learn` 5, 3× `*-bookings` 31–34, `/pages/private-courses-and-experiences` 31 | Port each template. Originals archived in `docs/legacy-page-templates/`. **Never fix this by re-pointing `templateSuffix`** — it is shop-wide and would move the page on the live theme too. |
 | 3 | **All ten app embeds are off.** `config/settings_data.json` has no `"blocks"` key; the old theme's has ten, all enabled. MinMaxify Order Limits, EG Auto Add to Cart and Preorder Now each silently change what a customer can buy. Powerful Form Builder being off kills every Globo form. | `settings_data.json` 4,796 b vs 22,183 b; `/pages/contact` rendered a `globo-formbuilder` div that never hydrates; `/collections/all-coffee` had 0 `jdgm-` star ratings vs 135 | Every one of those apps is **still installed**, so it is a toggle each in Online Store → Customize → App embeds. Decide per app — Appstle's is genuinely redundant here. |
 | 4 | **The Water For Good promise is missing from PDPs.** The live theme prints "$3 PER 200G AND $12 PER KILO DONATED TO WATER FOR GOOD" on participating products. On `154676789439` the string does not appear at all — zero occurrences of "water for good" anywhere on `/products/maple`. The counter still claims the money. | Checked in preview, 2026-10-15 | Port the PDP contribution line before publishing, or the campaign promises on the homepage what the product page no longer says. |
@@ -76,21 +76,42 @@ Each was checked, not assumed, on `154676789439` while it was published:
 
 ## 2. Test plan
 
-Run against the **preview URL of `154676789439`**, not the live store. Pin the
-preview first, because the cookie is sticky and will silently follow you:
+Run against the **preview URL of `154676789439`**, not the live store.
 
-```bash
-curl -c jar -b jar "https://onacoffee.com.au/?preview_theme_id=154676789439"
-```
+**Pin the preview in whatever client you are actually testing with.** The
+preview is a cookie, it is sticky, and each client has its own cookie store — a
+`curl` cookie jar does **not** pin a browser, and a browser left over from an
+earlier session can still be pinned to a different theme entirely.
 
-In a browser, confirm you are on the right theme before trusting anything —
-`Shopify.theme.id` should read `154676789439`. A stale preview cookie from an
-earlier session is the single easiest way to test the wrong theme and sign off
-on it.
+- **In the browser you will test in**, open
+  `https://onacoffee.com.au/?preview_theme_id=154676789439` first, then open the
+  console and check `Shopify.theme.id` — it must read `154676789439`. Do this
+  again after anything that might have reset cookies.
+- **For `curl`**, pin into a jar and reuse that jar for every request:
+  ```bash
+  curl -c jar -b jar "https://onacoffee.com.au/?preview_theme_id=154676789439"
+  curl -c jar -b jar "https://onacoffee.com.au/products/maple"
+  ```
+
+This is not hypothetical: on 2026-10-15 a browser in this project was still
+pinned to "PREVIEW - WFG counter on 2026 theme (PR #149)" from a previous
+session, and the first screenshot taken was of the wrong theme. A stale preview
+cookie is the single easiest way to test the wrong thing and sign off on it.
+
+> ### Order matters: settle the app embeds first
+>
+> **Do T2's item #3 — the app-embed decision — before you start T1.** MinMaxify
+> Order Limits, EG Auto Add to Cart and Preorder Now each change what a customer
+> can add and buy. Running the money path first and enabling them afterwards
+> means T1 was green against a configuration that no longer exists.
+>
+> If an embed is enabled, re-enabled or dropped **after** T1 has been signed
+> off — including as a result of anything found in T2 — **re-run T1 in full.**
+> The same applies after the final merge before publishing.
 
 ### T1 — P0: money path (blocks the release)
 
-Nothing else matters if this fails.
+Nothing else matters if this fails. Settle the app embeds first (see above).
 
 - [ ] **Add to cart, simple product.** 200 g and 1 kg variants, from the PDP.
 - [ ] **Add to cart, from a collection card** (quick add), if the grid offers it.
@@ -166,7 +187,13 @@ This is where the first attempt came unstuck, so give it real time.
 
 ## 3. Before you publish
 
-- [ ] T1 and T2 fully green. Not "mostly".
+- [ ] **T1 and T2 fully green.** Not "mostly".
+- [ ] **T4 green.** It is called a publish gate above, so it gates: tracking
+      failures are silent, cost attribution rather than pixels, and are the one
+      class of defect that looks fine from the storefront. If the test purchase
+      cannot be run in time, that is a reason to move the release, or an
+      explicit, named, written-down decision to publish without it — not an
+      omission.
 - [ ] `node --test tests/*.test.mjs` passes.
 - [ ] Checksums re-read after the final merge — **an unchanged checksum means the file was refused, not that nothing changed.**
 - [ ] Rollback named out loud: **publish `160815546559`**.
@@ -176,7 +203,7 @@ This is where the first attempt came unstuck, so give it real time.
 
 ## 4. After you publish
 
-- [ ] T1 re-run **on the live store**, immediately. The cart is the one thing worth proving twice.
+- [ ] T1 re-run **on the live store**, immediately. The cart is the one thing worth proving twice — and if any app embed changed between the preview pass and the publish, this run is the only one that counts.
 - [ ] Hero, a PDP and the cart on a real phone.
 - [ ] GA4 Realtime shows traffic and at least one purchase.
 - [ ] The Water For Good counter still renders.
