@@ -9,10 +9,13 @@
 > diff deletes `pdp_product_summary` and reverts the Formswell PDP header.
 >
 > **Read the map first, and treat its §4.3 as governing for drift and deployment.** This
-> document was written before PR #149 landed and before Felipe confirmed that the GitHub
-> integration is deliberately not connected, so §1.2 and §1.4 below are historical: the
-> shop's `index.json` and `product.json` are authoritative and take surgical in-place
-> edits only. What still stands here is Horizon 4.3.0 and the broad sequencing.
+> document was written before PR #149 landed, so §1.2 and §1.4 below are historical.
+> §4.3 of the map now also corrects something this document originally got wrong in the
+> other direction: theme `154676789439` **is** GitHub-connected (`ona_theme2026/main`),
+> the connection cannot be removed, and a merge to `main` deploys within seconds. The
+> shop's editor state is still the authoritative *input*, but it is reconciled **into the
+> repo** (PR #151) rather than edited in place. What still stands here is Horizon 4.3.0
+> and the broad sequencing.
 
 Target: publish `ona_theme2026` in place of theme `160335790271`.
 
@@ -99,12 +102,12 @@ promo badge group is switched off. Resolve #142 before publishing.
 ### 1.4 The repo and the shop theme have drifted
 
 > **Historical — superseded by the migration map §4.3**, which compares the same files
-> structurally rather than by size and reflects `main` after PR #149. The table below was
-> measured when `main` was `f78e8cf`; `main` is now `ed3261d`, and `collection.json` and
-> `search.json` now differ from the shop by exactly #149's `ona_promo_tags` block, so they
-> are **not** "in step" and importing them is what ships the card badge. Size comparison
-> is also the wrong instrument: it hid that the shop's `product.json` holds five sections
-> the repo lacks.
+> structurally rather than by size, and which records what the live GitHub integration
+> then did to them. The table below was measured when `main` was `f78e8cf`; `main` is now
+> `ed3261d`, `collection.json` and `search.json` shipped #149's `ona_promo_tags` block to
+> the theme on merge, and `index.json` / `product.json` were overwritten by the same pull
+> and are restored by PR #151. Size comparison was also the wrong instrument: it hid that
+> the shop's `product.json` held five sections the repo lacked.
 
 | file | repo at `f78e8cf` | shop | verdict then |
 |---|---|---|---|
@@ -115,10 +118,11 @@ promo badge group is switched off. Resolve #142 before publishing.
 
 The shop homepage carries a `floating_badge_r89NRP` section the repo's `index.json` does
 not list, and the PDP was edited in the theme editor six days after the last commit. Push
-the repo over the top and those edits are gone — which is exactly why the GitHub
-integration is deliberately not connected and files are imported one at a time. Treat the
-shop's `index.json` and `product.json` as authoritative and edit them in place; see the
-migration map §4.3.
+the repo over the top and those edits are gone — which is precisely what the #149 merge
+went on to do, because the integration **is** connected and pulls on every commit that
+touches a file. The fix is not to avoid pushing (that is not available) but to make the
+repo carry the editor's state before anything lands. See the migration map §4.3 for the
+checksum test that tells you whether it already does.
 
 ---
 
@@ -173,24 +177,25 @@ has not been made.
 
 **Before anything else**
 
-1. **Do NOT reconcile by making the repo win.** There is no GitHub integration, by
-   design: files are imported into Shopify one at a time so that a push cannot overwrite
-   the custom JSON on the Shopify side. For `index.json` and `product.json` **the shop
-   copy is authoritative** — each holds five sections the repo does not, so uploading the
-   repo's copy or confirming "the theme matches the repo" erases editor-owned wiring. Edit
-   those two in place, surgically. `collection.json` and `search.json` hold nothing
-   shop-only and can be imported whole. See the migration map §4.3 for the per-file table.
-   Note too that the shop's `product.json`, not the repo's, is the PDP that renders — any
-   PDP analysis taken from the repo copy is wrong.
-2. **Deploy the Water For Good campaign — it is time-limited and nothing is live yet.**
-   The badges expire **2026-10-31**, and merging PR #149 changed nothing on the storefront
-   (map §4.3), so this moved ahead of the template work. Both code steps are already done:
-   #149 is merged (`ed3261d`) and `ona-product-tags` is placed on the four card surfaces.
-   What remains is Shopify-side: import `sections/ona-donation-counter.liquid` (new file,
-   nothing to lose), import `templates/collection.json` and `templates/search.json` whole,
-   then hand-insert the counter section and the card block into the **shop's**
-   `index.json` and `product.json`. Settle the Palmer Lake vs Silk Serif CTA with
-   Formswell as part of this.
+1. **Reconcile the shop's editor state into the repo, then merge once — PR #151.** The
+   GitHub integration is live and cannot be disconnected: theme `154676789439` is named
+   `ona_theme2026/main` and pulls within seconds of any commit to `main` that touches a
+   file. So "edit the shop copy in place and never push" is not a strategy that holds —
+   the next merge touching those files overwrites it, which is what happened to ten
+   editor-made sections on 2026-10-14. The shop's state is still the authoritative
+   *input*: for `index.json` and `product.json` it holds sections and editor-set values
+   the repo did not, so the repo copy is rebuilt from it rather than the other way round.
+   Before any merge that touches a shop-owned template, run the checksum test in map
+   §4.3 — equal to the repo file means the integration owns it and merging is safe,
+   unequal means the editor has diverged it and must be merged in first.
+2. **Finish the Water For Good campaign — it is time-limited and half-deployed.**
+   The badges expire **2026-10-31**, so this stays ahead of the template work. Merging
+   #149 (`ed3261d`) already deployed `sections/ona-donation-counter.liquid`,
+   `blocks/_product-card.liquid`, `templates/collection.json` and `templates/search.json`
+   to the theme, so the card badge on collection and search is shipped. What remains is
+   the counter section on the homepage and the two remaining card-badge placements, all
+   three of which are folded into PR #151 — so merging #151 completes the deploy. Settle
+   the Palmer Lake vs Silk Serif CTA with Formswell as part of this.
 3. Re-check the counter against live at desktop and at both mobile breakpoints — including
    a real phone, since Chrome on this workstation cannot reach phone width.
 4. **Resolve PR #142** -- the PDP body blocks (section 1.3). The map's recommendation is

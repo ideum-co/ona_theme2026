@@ -112,12 +112,12 @@ never have it, so the badge must be allowed to be absent), or blank the literal
 fallbacks and treat the badges as optional. Shipping neither puts "Best with Milk" on a
 Hario dripper.
 
-**However this is decided, it is a shop-side edit, not a repo one (§4.3).** The settings
-live in `templates/product.json`, which is one of the two files the shop owns — the
-repo's copy is not the PDP that renders and must not be uploaded whole. So the change is
-a surgical edit to `pdp_product_summary`'s settings on theme `154676789439`, with any
-repo edit treated as a **mirror** of that, not the delivery mechanism. Editing only the
-repo leaves the wrong labels on all 92 PDPs.
+**However this is decided, it ships through the repo (§4.3).** The settings live in
+`templates/product.json`. Once PR #151 restores the editor's wiring into the repo, that
+file is the PDP that renders and the integration deploys it on merge — so the change is
+an edit to `pdp_product_summary`'s settings in the repo, merged to `main`. Doing it as a
+shop-side edit instead would work until the next merge touching `product.json`
+overwrote it, which is the trap that cost ten sections on 2026-10-14.
 
 ### 3.2 PR #142 should be closed, not merged
 
@@ -160,9 +160,9 @@ All **14** products in the `donation-products` collection are coffee (suffix `""
 **cards only**, never on a WFG product's own PDP. Two consequences:
 
 - The **cards** gap was the live-visible, campaign-relevant one. It is **shipped** in the
-  repo as of PR #149 (`d11e425`), on all four card surfaces live uses. What remains is not
-  code: importing `collection.json` and `search.json`, and the surgical inserts for
-  `index.json` and `product.json` (§4.3).
+  repo as of PR #149 (`d11e425`), on all four card surfaces live uses, and two of those
+  four — `collection.json` and `search.json` — reached the theme when #149 merged. The
+  remaining two, on `index.json` and `product.json`, ride along with PR #151 (§4.3).
 - Placing `ona_promo_tags` on the 2026 PDP would show the badge on 14 coffee PDPs where
   live shows none. That is a deliberate improvement, not a parity fix — and the legacy
   code argues for it: `product-template-2.liquid` places the badge "under the price, not
@@ -286,42 +286,63 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
 2. **The promo badge on equipment/merch PDPs** — live's `product-template-2`/`-3` show
    it, the 2026 PDP does not. Cards are now at parity (PR #149 `d11e425`) and coffee PDPs
    already match live, which shows none (see §3.2).
-3. **Repo ↔ shop drift — and the repo is NOT the source of truth for JSON templates.**
+3. **Repo ↔ shop drift — the integration is live, and a merge to `main` is a deploy.**
 
-   **There is no GitHub integration, deliberately.** Files are imported into Shopify
-   one at a time, specifically so that a push cannot overwrite the custom JSON that
-   lives on the Shopify side. Nothing here is a broken connection, and **connecting
-   GitHub would destroy editor work** — see the table below for what would be lost.
+   **Theme `154676789439` IS GitHub-connected.** Its name, `ona_theme2026/main`, is the
+   integration's own `repo/branch` convention. A commit to `main` that touches a file
+   makes Shopify pull that file within seconds, overwriting whatever the theme editor
+   holds. The connection **cannot be removed**, so the repo has to *carry* the editor's
+   work rather than be kept away from it.
 
-   Compared structurally (parsed and diffed section by section, not by file size, which
-   hid this) against theme `154676789439`, at **`main` as of `ed3261d`, i.e. after
-   PR #149 landed**. Stating the baseline matters: all four JSON templates below also
-   carry #149's `ona_promo_tags` block, which the shop does not have yet — that is the
-   change being shipped, not drift.
+   This was established the hard way, and an earlier version of this section had it
+   backwards: it said the integration was inert and that merging #149 "changed nothing
+   on the storefront". The merge at 06:51:26Z pulled at 06:51:31–34Z and destroyed ten
+   editor-made sections across the two templates, replaced editor-set values on eighteen
+   more, and re-enabled three that were deliberately off. The theme is unpublished and
+   MAIN (`160335790271`) was untouched, so no customer saw it; PR #151 restores it. The
+   reason the wrong inference looked sound is the part worth keeping: `index.json` and
+   `product.json` had not been committed since 2026-09-07, so no pull had ever touched
+   them, while the editor diverged them on 09-29 and 10-05. **Absence of a push is not
+   absence of a connection.**
 
-   | file | shop vs repo `main` (`ed3261d`) | safe to import whole? |
+   There is a reliable per-file test:
+
+   > The integration stores the repo's bytes **verbatim**, so a file it wrote has a theme
+   > `checksumMd5` equal to the md5 of the repo file. The theme editor stores a minified
+   > form, so a file it wrote does not. **Equal → the integration owns it, merging is
+   > safe. Unequal → the editor has diverged it, and the shop copy must be merged into
+   > the repo before anything lands.**
+
+   Measured that way on 2026-10-14, after PR #151 was prepared:
+
+   | file | state | before merging a change to it |
    |---|---|---|
-   | `templates/collection.json` | differs by **exactly** `ona_promo_tags`; identical at `f78e8cf`, nothing shop-side to lose | **yes** — and importing it is what ships the badge |
-   | `templates/search.json` | same | **yes** — same |
-   | `templates/index.json` | `ona_promo_tags` **plus 5 sections only on the shop** | **no** — surgical insert only |
-   | `templates/product.json` | `ona_promo_tags` **plus 5 sections only on the shop**, 5 more differ, `order` differs | **no** — surgical insert only |
-   | `sections/ona-donation-counter.liquid` | **absent from the theme** | yes — new file, nothing to lose |
+   | `templates/collection.json` | checksum **matches** repo `ed3261d` — integration-owned | safe; `ona_promo_tags` already shipped |
+   | `templates/search.json` | checksum **matches** repo `ed3261d` — integration-owned | safe; same |
+   | `templates/index.json` | restored by PR #151: 24 shop sections + the counter + 3 kept-disabled | re-check the checksum, and stay out of the editor until it lands |
+   | `templates/product.json` | **editor-diverged at 09:32Z** (an empty `product_tabs_XnTEpK` placeholder), folded into PR #151 | as above |
+   | `sections/ona-donation-counter.liquid` | pushed by the integration at 06:51:31Z | already on the theme |
+   | `blocks/_product-card.liquid` | pushed at 06:51:31Z, carries the `ona-product-tags` schema type | already on the theme |
 
-   So the rule is not "is it identical" but **"does the shop hold anything this file
-   would overwrite"**. For `collection.json` and `search.json` it does not, so importing
-   them whole is both safe and the delivery mechanism. For `index.json` and
-   `product.json` it does, so they can only be edited in place.
+   So the rule is no longer "import this file whole, edit that one in place" — there is
+   no importing step at all, because every merge deploys. The rule is **reconcile the
+   shop's copy into the repo first, then merge once**, and the test above is how you know
+   whether reconciling is needed.
 
-   Only on the shop's `index.json`: `floating_badge_r89NRP`, `slideshow_nBcaMx`,
-   `club_benefits_937XiA`, `story_video_LN6zzn`, `section_LpJJ4p`.
-   Only on the shop's `product.json`: `product_tabs_fW4maV`, `product_dna_trxBBN`,
-   `story_video_VUwQ6f`, `inline_cta_8ann9f`, `section_EhyeAD`.
+   The ten sections that were shop-only, destroyed by the #149 merge and restored into
+   the repo by PR #151 — on `index.json`: `floating_badge_r89NRP`, `slideshow_nBcaMx`,
+   `club_benefits_937XiA`, `story_video_LN6zzn`, `section_LpJJ4p`; on `product.json`:
+   `product_tabs_fW4maV`, `product_dna_trxBBN`, `story_video_VUwQ6f`,
+   `inline_cta_8ann9f`, `section_EhyeAD`.
 
-   **The consequence that matters: the repo's `templates/product.json` is not the PDP
+   **The consequence that mattered: the repo's `templates/product.json` was not the PDP
    that renders.** All five of those sections exist in the repo as `sections/*.liquid`
-   files — only the *wiring* is shop-side. And on the shop the three custom-liquid
-   sections are **disabled**: `story`, `brew_guide` and `faqs`. So reading the PDP from
-   the repo alone gives the wrong answer, which is how §3.1–§3.3 first got written.
+   files — only the *wiring* was shop-side. And on the shop the three custom-liquid
+   sections are **disabled**: `story`, `brew_guide` and `faqs`. Reading the PDP from the
+   repo alone therefore gave the wrong answer, which is how §3.1–§3.3 first got written.
+   **Once PR #151 merges this stops being true** — the repo's copy becomes the PDP that
+   renders, because it now carries the editor's wiring. That is the point of the restore:
+   one source of truth, held in the place the integration deploys from.
 
    **A content gap falls straight out of this.** The shop's `product_tabs_fW4maV` has
    three tabs — `Profile` (populated), **`Brew Guide` (empty)** and **`Reviews`
@@ -334,12 +355,12 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    2 `filtersub`), and `title_item`/`content_item` on the same 32. This is the largest
    content regression on the list and it is invisible from the repo.
 
-   So PR #149 landing changes nothing on the storefront by itself. Deploying the counter
-   means importing `sections/ona-donation-counter.liquid` (safe) and adding the section
-   to the **shop's** `index.json` rather than uploading the repo's. `collection.json` and
-   `search.json` can be imported whole, which is what ships the card badge on collection
-   and search; the homepage and recommendations card badge needs the same surgical
-   treatment as the counter.
+   PR #149 therefore did not "change nothing" — it deployed. `ona-donation-counter.liquid`,
+   `_product-card.liquid`, `collection.json` and `search.json` all landed on the theme at
+   06:51:31–34Z, which means the card badge on collection and search is already shipped.
+   What #149 also did was overwrite the two shop-owned templates, which is what PR #151
+   repairs; the counter and the two remaining card-badge placements ride along with that
+   same restore rather than being hand-inserted.
 
    `templates/cart.json` and `templates/404.json` were identical when measured and are
    untouched by PR #149.
@@ -353,13 +374,14 @@ from Horizon generics.
 
 Suggested order:
 
-1. **Deploy what is already merged — it is not on the shop yet.** PR #149 landed as
-   `ed3261d` and changed nothing on the storefront (§4.3). Concretely: import
-   `sections/ona-donation-counter.liquid` (new file, nothing to lose); import
-   `templates/collection.json` and `templates/search.json` whole, which is what ships the
-   card badge there; then insert the counter section and the `ona_promo_tags` card block
-   into the **shop's** `index.json` and `product.json` by hand, because each holds five
-   sections the repo does not. Do not upload either of those two files.
+1. **Merge PR #151 — it both repairs the #149 damage and finishes the campaign deploy.**
+   #149 already deployed `ona-donation-counter.liquid`, `_product-card.liquid`,
+   `collection.json` and `search.json` (§4.3), so the card badge is live on collection and
+   search; what it also did was overwrite the two shop-owned templates. #151 restores them
+   with the counter and the two remaining badge placements folded in, so merging it is the
+   whole of the remaining campaign deploy. Immediately before merging, re-run the checksum
+   test in §4.3 on `index.json` and `product.json`, and keep everyone out of the theme
+   editor until the pull lands — an edit made in between is lost exactly as before.
 2. Fix the `location` / `page.locations` mismatch. (hours — estimate)
 3. Settle the badge fallbacks (§3.1) — this one is live-visible on all 92 PDPs — and
    close PR #142. Settle the Palmer Lake vs Silk Serif CTA with Formswell.
@@ -374,7 +396,11 @@ Suggested order:
    a tab for origin and sourcing), wire it on the **shop's** `product.json`, and verify on
    one blend, one single origin and one drip bag before go-live.
 6. Decide `product-2`: own template, or an optional specs/video region on the one PDP.
-7. Fold the five cheap pages and both blogs.
+7. Fold the five cheap pages and both blogs — and with them the **43 `news`-suffix
+   Journal articles** (§3.5), the only article group that needs a decision. They are a
+   single call: point them at `main-blog-post` and delete
+   `ona-article-news-template`, or keep a bespoke article template and port it. Nothing
+   else in this order covers them, and they are live content.
 8. Rebuild `about`, `sustainability`, `bookings`, `learn`,
    `private-courses-and-experiences` from Horizon generics.
 9. Rebuild `wholesale` and `barista-courses` with Formswell.
