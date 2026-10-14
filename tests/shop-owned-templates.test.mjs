@@ -38,6 +38,17 @@ const readTemplate = (name) =>
 const MAX_SECTIONS = 25;
 const MAX_BLOCKS = 50;
 
+/*
+ * Theme blocks nest, so a section's `blocks` object holds only its direct
+ * children -- this theme already nests (`coffee_spotlight` ->
+ * `static-product-card` -> `ona_promo_tags`). Count the whole subtree: the
+ * stricter reading can only fail earlier, never later, and when the platform
+ * refuses a file in silence the conservative bound is the useful one. The
+ * deepest section here totals 19, so this costs nothing today. Codex, PR #152.
+ */
+const countBlocks = (blocks) =>
+  Object.values(blocks ?? {}).reduce((total, block) => total + 1 + countBlocks(block.blocks), 0);
+
 test('every JSON template is inside Shopify\'s section and block limits', () => {
   const dir = resolve(root, 'templates');
   const files = readdirSync(dir).filter((name) => name.endsWith('.json'));
@@ -54,10 +65,11 @@ test('every JSON template is inside Shopify\'s section and block limits', () => 
     assert.equal(order.length, count, `${file}: order and sections disagree`);
 
     for (const [id, section] of Object.entries(sections)) {
-      const blocks = Object.keys(section.blocks ?? {}).length;
+      const direct = Object.keys(section.blocks ?? {}).length;
+      const nested = countBlocks(section.blocks);
       assert.ok(
-        blocks <= MAX_BLOCKS,
-        `${file}: section ${id} has ${blocks} blocks; the limit is ${MAX_BLOCKS}`,
+        nested <= MAX_BLOCKS,
+        `${file}: section ${id} has ${nested} blocks counting nested ones (${direct} direct); the limit is ${MAX_BLOCKS}`,
       );
     }
   }
