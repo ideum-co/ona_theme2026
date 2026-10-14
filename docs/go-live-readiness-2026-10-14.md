@@ -100,8 +100,8 @@ repo is not the source of truth. Reconcile before anything else lands.
 
 ## 2. What is already good
 
-- **The theme itself is well built.** 54 sections, 100 blocks, 83 passing tests before
-  today's work, a real design-token layer (`--font-brand-display` / `--font-brand-text`
+- **The theme itself is well built.** 56 sections, 103 blocks, 24 test files passing
+  before today's work, a real design-token layer (`--font-brand-display` / `--font-brand-text`
   over Horizon's own tokens), and brand fonts shipped as local woff2 rather than a CDN.
 - **PDP work is the most developed surface** -- 20 of the last 21 commits are PDP:
   breadcrumbs, transparent header, Product DNA from a metaobject, tabs, inline CTA,

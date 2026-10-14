@@ -223,12 +223,32 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    verified by filename against the theme. Rename the file or re-point the page. The
    page itself is finished; this is the single highest-value fix on the list.
 2. **`ona_promo_tags` renders nowhere on the PDP** (see §3.2).
-3. **Repo ↔ shop drift.** `templates/index.json` is 172,565 b in the repo vs 109,856 b
-   on the shop (the shop has a `floating_badge_r89NRP` the repo lacks).
+3. **Repo ↔ shop drift on the homepage, and the push is not flowing.** Measured section
+   by section, not by file size. The shop theme `154676789439` ("ona_theme2026/main",
+   repo-connected) has **24** homepage sections; repo `main` has **22**, and they are
+   not a subset of each other:
+
+   | only on the shop (editor-made) | only in the repo |
+   |---|---|
+   | `floating_badge_r89NRP` · `slideshow_nBcaMx` · `club_benefits_937XiA` · `story_video_LN6zzn` · `section_LpJJ4p` | `good_coffee_delivered` · `more_than_coffee` · `custom_liquid_RCcpAV` |
+
+   **The GitHub push is not reaching this theme.** `good_coffee_delivered` and
+   `more_than_coffee` have been in the repo's `index.json` since **2026-08-16** and
+   `custom_liquid_RCcpAV` since **2026-08-23**, yet none of the three is on the theme,
+   whose `index.json` was last written **2026-09-29**. Repo `main` has not committed
+   `index.json` since **2026-09-07**.
+
+   Two consequences, and they point opposite ways:
+   - Merging PR #149 **will not** clobber those five editor sections, because repo →
+     shop is not flowing. The merge is safe.
+   - Merging PR #149 **will not put the WFG counter on the homepage either.** It needs
+     a deliberate deploy, and a deploy of `index.json` as it stands *would* delete the
+     five editor sections. So the real blocker is deciding which `index.json` is
+     authoritative — not merging the PR.
+
    `templates/product.json` is 43,476 b vs 44,485 b, and the shop copy was edited in the
    theme editor on **2026-10-05**, six days after the last commit. `settings_data.json`,
-   `collection.json`, `cart.json` and `search.json` are identical. Reconcile before
-   anyone else touches the editor, or the next `git push` silently reverts someone.
+   `collection.json`, `cart.json` and `search.json` are identical.
 
 ## 5. What this means for scheduling
 
