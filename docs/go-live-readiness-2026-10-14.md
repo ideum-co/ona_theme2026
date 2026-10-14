@@ -32,7 +32,7 @@ renders on the default template instead. Nothing errors. It just looks wrong.
 | surface | assigned to a template this theme lacks | falls back to |
 |---|---|---|
 | Products | **62 of 92 active** -- 26 on `product-2`, 22 on `product-3`, 6 on `Default product`, **2 on `filtersub`** | `templates/product.json` |
-| Pages | **21 of 26** -- `about`, `sustainability` (x3), `privacy`, `faq`, `wholesale`, `training`, `bookings` (x3), `private-courses-and-experiences`, `learn`, `faq-subscriptions`, `text-template`, `html-sitemap`, `llms`, `maintenance`, `location` | `templates/page.json` |
+| Pages | **19 of 26** -- `about`, `sustainability` (x3), `privacy`, `faq`, `wholesale`, `training`, `bookings` (x3), `private-courses-and-experiences`, `learn`, `faq-subscriptions`, `text-template`, `html-sitemap`, `llms`, `maintenance`, `location` | `templates/page.json` |
 | Blogs | `brewguides`, `news` | `templates/blog.json` |
 
 Three of these need naming out loud:
@@ -93,8 +93,10 @@ promo badge group is switched off. Resolve #142 before publishing.
 
 The shop homepage carries a `floating_badge_r89NRP` section the repo's `index.json` does
 not list, and the PDP was edited in the theme editor six days after the last commit. Push
-the repo over the top and those edits are gone; publish the theme as it stands and the
-repo is not the source of truth. Reconcile before anything else lands.
+the repo over the top and those edits are gone — which is exactly why the GitHub
+integration is deliberately not connected and files are imported one at a time. Treat the
+shop's `index.json` and `product.json` as authoritative and edit them in place; see the
+migration map §4.3.
 
 ---
 
@@ -149,9 +151,15 @@ has not been made.
 
 **Before anything else**
 
-1. **Reconcile the repo and theme `154676789439`** (section 1.4). Decide which side wins
-   for `index.json` and `product.json`, land it in the repo, and confirm the theme matches.
-   Everything after this assumes the repo is the truth.
+1. **Do NOT reconcile by making the repo win.** There is no GitHub integration, by
+   design: files are imported into Shopify one at a time so that a push cannot overwrite
+   the custom JSON on the Shopify side. For `index.json` and `product.json` **the shop
+   copy is authoritative** — each holds five sections the repo does not, so uploading the
+   repo's copy or confirming "the theme matches the repo" erases editor-owned wiring. Edit
+   those two in place, surgically. `collection.json` and `search.json` hold nothing
+   shop-only and can be imported whole. See the migration map §4.3 for the per-file table.
+   Note too that the shop's `product.json`, not the repo's, is the PDP that renders — any
+   PDP analysis taken from the repo copy is wrong.
 2. **Resolve PR #142** -- the PDP body blocks (section 1.3).
 
 **Then, the template decision (the long pole)**
@@ -181,7 +189,7 @@ has not been made.
 9. **Collections** -- card composition, badges, filters, pagination, image quality.
 10. **Search** -- predictive search and the results page share the card blocks from step 9.
 11. **Blog** -- `brewguides` and `news` fall back today; article layout and images.
-12. **Pages** -- the 21 in step 3, with Wholesale and Learn first.
+12. **Pages** -- the 19 in step 3, with Wholesale and Learn first.
 13. **Cart** -- drawer and page. 4.3.0 fixes several cart bugs, which is an argument for
     doing the bump before this step rather than after.
 
@@ -195,7 +203,7 @@ has not been made.
 
 ## 5. On "go live tomorrow"
 
-Steps 1, 2, 4, 5 and 6 are a day's work. Step 3 is not: 62 products, 21 pages and 2 blogs
+Steps 1, 2, 4, 5 and 6 are a day's work. Step 3 is not: 62 products, 19 pages and 2 blogs
 need a human decision each, and that is the step that decides whether the site looks right
 the morning after.
 

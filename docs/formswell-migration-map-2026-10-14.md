@@ -143,7 +143,10 @@ All **14** products in the `donation-products` collection are coffee (suffix `""
 `Default product`); none is `product-2`/`product-3`. So the live WFG badge appears on
 **cards only**, never on a WFG product's own PDP. Two consequences:
 
-- The **cards** gap is the live-visible, campaign-relevant one, and it is unshipped.
+- The **cards** gap was the live-visible, campaign-relevant one. It is **shipped** in the
+  repo as of PR #149 (`d11e425`), on all four card surfaces live uses. What remains is not
+  code: importing `collection.json` and `search.json`, and the surgical inserts for
+  `index.json` and `product.json` (§4.3).
 - Placing `ona_promo_tags` on the 2026 PDP would show the badge on 14 coffee PDPs where
   live shows none. That is a deliberate improvement, not a parity fix — and the legacy
   code argues for it: `product-template-2.liquid` places the badge "under the price, not
