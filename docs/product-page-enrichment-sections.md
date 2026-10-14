@@ -59,10 +59,13 @@ hurry.
 > **32** products, with genuinely per-product values and per-product lengths
 > (`maple` 7 labels/7 values, `aspen` 6/6, `14-30 days after roast` vs `13-30`).
 > The table is built by zipping those two product arrays by index and needs no
-> article lookup. What the pointer adds is the surrounding **prose**, and it is a
-> narrower surface: `select_artlice` is on only **24** products, and absent on
-> every drip bag that has a spec table. Everything below about the pointer applies
-> to the prose, not to the table.
+> article lookup. **Neither does the intro:** `content_brew_guide` is product-owned
+> and populated on the same 32 products. What the pointer adds is **the "Full
+> brewing guide" link, and nothing else** — and it is a narrower surface:
+> `select_artlice` is on only **24** products, absent on every drip bag that has a
+> spec table. So render the intro and the table unconditionally and make only the
+> link conditional on the lookup; gating the intro on the pointer drops it for the
+> 8 products that have it. Everything below about the pointer applies to the link.
 >
 > The pointer bullets below are rewritten to match; the old "format
 > inconsistency" has an explanation now and is no longer a warning.
