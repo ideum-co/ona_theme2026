@@ -17,6 +17,28 @@ export class VideoBackgroundComponent extends Component {
 
     const { videoSources, videoElement } = this.refs;
 
+    const deviceLayer = this.closest('.ona-responsive-background');
+    if (deviceLayer) {
+      const mobile = window.matchMedia('(max-width: 749px)');
+      const shouldPlay = () => deviceLayer.classList.contains(mobile.matches ? 'ona-responsive-background--mobile' : 'ona-responsive-background--desktop');
+      const syncPlayback = () => {
+        if (shouldPlay()) {
+          for (const source of videoSources) {
+            if (source.dataset.videoSource && !source.src) source.setAttribute('src', source.dataset.videoSource);
+          }
+          videoElement.load();
+          videoElement.play().catch(() => {});
+        } else {
+          videoElement.pause();
+        }
+      };
+      syncPlayback();
+      this._mobileMedia = mobile;
+      this._syncPlayback = syncPlayback;
+      mobile.addEventListener('change', syncPlayback);
+      return;
+    }
+
     for (const source of videoSources) {
       const { videoSource } = source.dataset;
 
@@ -24,6 +46,11 @@ export class VideoBackgroundComponent extends Component {
     }
 
     videoElement.load();
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    if (this._mobileMedia && this._syncPlayback) this._mobileMedia.removeEventListener('change', this._syncPlayback);
   }
 }
 
