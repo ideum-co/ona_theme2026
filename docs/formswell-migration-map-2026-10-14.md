@@ -35,7 +35,7 @@ That is ~1,360 lines that collapse into one Horizon `media-with-content` used ni
 | Surface | How it's built in 2026 | Replaces |
 |---|---|---|
 | **Home** | `hero`, `media-with-content`, `product-highlight`, `club-invite`, `club-benefits`, `product-intro`, `story-video`, `press-quotes`, `coffee-quiz`, `collection-carousel`, `floating-badge`, `marquee`, `layered-slideshow`, `inline-cta` | `ona-banner-slider`, `ona-featured-collection` ×3, `ona-slideshow`, `ona-two-images`, `ona-image-and-text`, `ona-divider` ×4 |
-| **PDP** | `product-information` → `_product-media-gallery` + `_product-details` (`pdp-product-summary`, `variant-picker`, `purchase-options`, `buy-buttons`, description, properties) + `story` / `brew_guide` / `faqs` + `product-recommendations`. Spare parts available: `product-dna`, `product-highlight`, `product-hotspots`, `product-tabs`, `product-intro` | `ona-product-information`, `-profile`, `-sourcing`, `-image-slider`, `-origin`, `-brew-guide`, `-accordion`, `-recommendations` |
+| **PDP** | **as wired on the shop:** `product-information` → `_product-media-gallery` + `_product-details` (`pdp-product-summary`, `variant-picker`, `purchase-options`, `buy-buttons`, description, `properties_table`) + `product-tabs` + `story-video` + `product-dna` + a content section + `product-recommendations` + `inline-cta`. The repo's `product.json` instead wires `story` / `brew_guide` / `faqs`, which are **disabled on the shop** — see §4.3, the repo copy is not what renders |
 | **Collection** | `main-collection` with static `filters` block; collection description split on `<!-- split -->` into intro + below-fold; FAQs read from `collection.metafields.custom.faqs` | `ona-collection-template` + `ona-collection-faq-new` |
 | **Collection list** | `main-collection-list` | `ona-collections-redirect` |
 | **Search** | `search-header`, `search-results`, `predictive-search`, `predictive-search-empty` | `ona-search-results` |
@@ -188,6 +188,9 @@ So:
 - **`product-2` is the only genuine gap.** 20 of 26 equipment products have
   `accentuate.content_product_info` and 6 have `accentuate.video_url`, and the 2026 PDP
   renders **neither**. Its `properties_table` block only reads `accentuate.components`.
+  (`properties_table` is present and enabled on the shop's PDP too, so extending it is
+  the real path — but note the paired-array loop worth copying lives in the `brew_guide`
+  custom-liquid, which is *disabled* on the shop. Copy the code, not the wiring. §4.3.)
   The Horizon pieces all exist (`story-video`, `product-tabs`, `product-highlight`,
   `media-with-content`, `product-custom-property`, `custom-liquid`) — they just need
   assembling once.
@@ -264,35 +267,53 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
 2. **The promo badge on equipment/merch PDPs** — live's `product-template-2`/`-3` show
    it, the 2026 PDP does not. Cards are now at parity (PR #149 `d11e425`) and coffee PDPs
    already match live, which shows none (see §3.2).
-3. **Repo ↔ shop drift on the homepage, and the push is not flowing.** Measured section
-   by section, not by file size. The shop theme `154676789439` ("ona_theme2026/main",
-   repo-connected) has **24** homepage sections; repo `main` has **22**, and they are
-   not a subset of each other:
+3. **Repo ↔ shop drift — and the repo is NOT the source of truth for JSON templates.**
 
-   | only on the shop (editor-made) | only in the repo |
-   |---|---|
-   | `floating_badge_r89NRP` · `slideshow_nBcaMx` · `club_benefits_937XiA` · `story_video_LN6zzn` · `section_LpJJ4p` | `good_coffee_delivered` · `more_than_coffee` · `custom_liquid_RCcpAV` |
+   **There is no GitHub integration, deliberately.** Files are imported into Shopify
+   one at a time, specifically so that a push cannot overwrite the custom JSON that
+   lives on the Shopify side. Nothing here is a broken connection, and **connecting
+   GitHub would destroy editor work** — see the table below for what would be lost.
 
-   **The GitHub push is not reaching this theme.** `good_coffee_delivered` and
-   `more_than_coffee` have been in the repo's `index.json` since **2026-08-16** and
-   `custom_liquid_RCcpAV` since **2026-08-23**, yet none of the three is on the theme,
-   whose `index.json` was last written **2026-09-29**. Repo `main` has not committed
-   `index.json` since **2026-09-07**.
+   Compared structurally (parsed and diffed section by section, not by file size, which
+   hid this) against theme `154676789439`:
 
-   Two consequences, and they point opposite ways:
-   - Merging PR #149 **will not** clobber those five editor sections, because repo →
-     shop is not flowing. The merge is safe.
-   - Merging PR #149 **will not put the WFG counter on the homepage either.** It needs
-     a deliberate deploy, and a deploy of `index.json` as it stands *would* delete the
-     five editor sections. So the real blocker is deciding which `index.json` is
-     authoritative — not merging the PR.
+   | file | shop vs repo `main` | safe to import whole? |
+   |---|---|---|
+   | `templates/collection.json` | structurally **identical** | **yes** |
+   | `templates/search.json` | structurally **identical** | **yes** |
+   | `templates/index.json` | shop has **5** sections the repo lacks | **no** — surgical insert only |
+   | `templates/product.json` | shop has **5** sections the repo lacks, **5** more differ, `order` differs | **no** — surgical insert only |
+   | `sections/ona-donation-counter.liquid` | **absent from the theme** | yes — new file, nothing to lose |
 
-   `templates/product.json` is 43,476 b vs 44,485 b, and the shop copy was edited in the
-   theme editor on **2026-10-05**, six days after the last commit. `settings_data.json`,
-   `collection.json`, `cart.json` and `search.json` were identical when measured this
-   morning — note that PR #149 then changed `collection.json`, `search.json`,
-   `index.json` and `product.json` to place the promo badge, so those four now differ by
-   that commit as well.
+   Only on the shop's `index.json`: `floating_badge_r89NRP`, `slideshow_nBcaMx`,
+   `club_benefits_937XiA`, `story_video_LN6zzn`, `section_LpJJ4p`.
+   Only on the shop's `product.json`: `product_tabs_fW4maV`, `product_dna_trxBBN`,
+   `story_video_VUwQ6f`, `inline_cta_8ann9f`, `section_EhyeAD`.
+
+   **The consequence that matters: the repo's `templates/product.json` is not the PDP
+   that renders.** All five of those sections exist in the repo as `sections/*.liquid`
+   files — only the *wiring* is shop-side. And on the shop the three custom-liquid
+   sections are **disabled**: `story`, `brew_guide` and `faqs`. So reading the PDP from
+   the repo alone gives the wrong answer, which is how §3.1–§3.3 first got written.
+
+   **A content gap falls straight out of this.** The shop's `product_tabs_fW4maV` has
+   three tabs — `Profile` (populated), **`Brew Guide` (empty)** and **`Reviews`
+   (empty)** — while the `brew_guide` and `story` sections that used to carry that
+   content are disabled. Nothing else on the enabled PDP reads
+   `accentuate.content_brew_guide`, `title_item`/`content_item`, `content_origin` or
+   `content_sourcing`. On the real 2026 PDP today, brew-guide recipes, origin and
+   sourcing copy therefore render **nowhere**, even though the metafields are populated
+   on most coffees.
+
+   So PR #149 landing changes nothing on the storefront by itself. Deploying the counter
+   means importing `sections/ona-donation-counter.liquid` (safe) and adding the section
+   to the **shop's** `index.json` rather than uploading the repo's. `collection.json` and
+   `search.json` can be imported whole, which is what ships the card badge on collection
+   and search; the homepage and recommendations card badge needs the same surgical
+   treatment as the counter.
+
+   `templates/cart.json` and `templates/404.json` were identical when measured and are
+   untouched by PR #149.
 
 ## 5. What this means for scheduling
 
