@@ -169,12 +169,34 @@ hurry.
   is a hard no-op when its data is blank, so partial content across ~150
   products never breaks a page.
 - Verify every new block against several real products before calling it
-  done — presence is inconsistent (Profile: yes; FAQs: mostly yes; Origin/
-  Sourcing: no on the one product checked so far). Don't assume Raspberry
-  Candy is representative.
+  done — presence is inconsistent, and it is now **measured across all 92 active
+  products** rather than sampled, so schedule from these numbers instead of
+  re-running the investigation:
+
+  | surface | metafields | populated on |
+  |---|---|---|
+  | brew-guide intro + spec table | `content_brew_guide`, `title_item`/`content_item` | **32** |
+  | brew-guide article link | `select_artlice` | **24** (absent on every drip bag that has a table) |
+  | lifestyle gallery | `image` | **37** |
+  | Coffee Profile prose + 2 images | `content_coffee_profile`, `image_coffee_profile_1`/`_2` | **37** |
+  | origin + sourcing, all eight fields together | `content_origin`, `content_sourcing`, `image_origin`, `producer`, `region`, `varietal`, `process`, `altitude` | **25** |
+  | product FAQs | `custom.accordion` | **23** (coffee, equipment and merch) |
+  | equipment labelled specs | `title` + `content` paired arrays | **16** |
+  | equipment rich text | `content_product_info` | **27** (20 equipment, 7 merch) |
+
+  Origin/Sourcing is **not** "unknown, absent on the one product checked" — it is
+  25 of 92, all eight fields co-occurring exactly, and therefore **pre-publish
+  work**, not a prevalence question. Raspberry Candy is genuinely outside that 25,
+  which is why sampling it suggested the opposite: **don't assume Raspberry Candy
+  is representative.**
 - Re-sequence once more sections land — live's order is Profile → Sourcing →
   Image slider → Origin → Brew guide → FAQs → Recommendations; our dev theme
   currently only has Profile → FAQs → Recommendations.
+- The brew guide's "handle-format question" below is **settled**: `article.handle`
+  is compound, so the stored `brewguides/<handle>` is correct as-is for both
+  `articles[pointer]` and a loop comparison. Never strip it. What still deserves an
+  isolated test pass is the pointer aimed at an article that no longer exists, which
+  lot rotation makes likely.
 - Brew guide deserves its own isolated test pass given the handle-format
   question above — confirm the matching logic explicitly (including the
   case where `select_artlice` points at an article that doesn't exist) before
