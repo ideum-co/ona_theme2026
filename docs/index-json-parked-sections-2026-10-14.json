@@ -1,0 +1,304 @@
+{
+  "_readme": "Three homepage sections parked out of templates/index.json on 2026-10-14.\n\nShopify renders at most 25 sections per JSON template. The restore in PR #151 put index.json at 28, so the GitHub integration silently refused to write it -- no error, no commit status, the theme simply kept the damaged copy. These three were the only sections in that file that had never been on the theme: they are repo-authored, were disabled in #151, and render nothing. Removing them brings the file to exactly 25.\n\nThey are kept verbatim here so the authored settings are not lost. To put one back, paste its object into `sections` in templates/index.json and add its id to `order` -- and remove another section in the same change, because the homepage is now at the cap. tests/shop-owned-templates.test.mjs enforces the limit.\n",
+  "sections": {
+    "good_coffee_delivered": {
+      "type": "section",
+      "blocks": {
+        "icon_FT7q7i": {
+          "type": "icon",
+          "name": "t:names.icon",
+          "settings": {
+            "icon": "price_tag",
+            "image_upload": "shopify://shop_images/icon-ona.svg",
+            "width": 90,
+            "link": "",
+            "open_in_new_tab": false,
+            "icon_color": ""
+          },
+          "blocks": {}
+        },
+        "heading": {
+          "type": "text",
+          "name": "t:names.heading",
+          "settings": {
+            "text": "<p>More than coffee. Since 2008.</p>",
+            "width": "fit-content",
+            "max_width": "normal",
+            "alignment": "center",
+            "type_preset": "h2",
+            "font": "var(--font-body--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "text_color": "{{ settings.color_palette.background }}",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "text_hmc9WY": {
+          "type": "text",
+          "name": "t:names.text",
+          "settings": {
+            "text": "<p>From Canberra to cafés around the world, ONA has spent over 15 years championing exceptional coffee through innovation, education and meaningful producer partnerships.</p>",
+            "width": "fit-content",
+            "max_width": "normal",
+            "alignment": "left",
+            "type_preset": "paragraph",
+            "font": "var(--font-body--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "text_color": "{{ settings.color_palette.background }}",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "button_RDCLNJ": {
+          "type": "button",
+          "name": "t:names.button",
+          "settings": {
+            "label": "Learn more about ONA",
+            "link": "shopify://collections/all",
+            "open_in_new_tab": false,
+            "style_class": "button",
+            "custom_button_background": "{{ settings.color_palette.color1 }}",
+            "custom_button_text": "{{ settings.color_palette.background }}",
+            "custom_button_border": "{{ settings.color_palette.background }}",
+            "link_text_color": "",
+            "width": "fit-content",
+            "custom_width": 100,
+            "width_mobile": "fit-content",
+            "custom_width_mobile": 100
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "icon_FT7q7i",
+        "heading",
+        "text_hmc9WY",
+        "button_RDCLNJ"
+      ],
+      "disabled": true,
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "center",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 12,
+        "section_width": "full-width",
+        "section_height": "medium",
+        "section_height_custom": 50,
+        "background_media": "image",
+        "background_color": "",
+        "video_position": "cover",
+        "background_image": "shopify://shop_images/roastery2732h.jpg",
+        "background_image_position": "cover",
+        "toggle_overlay": true,
+        "overlay_color": "#18191b66",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      }
+    },
+    "more_than_coffee": {
+      "type": "section",
+      "blocks": {
+        "text": {
+          "type": "group",
+          "settings": {
+            "content_direction": "column",
+            "vertical_on_mobile": true,
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "center",
+            "align_baseline": false,
+            "horizontal_alignment_flex_direction_column": "center",
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 16,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "background_color": "",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "link": "",
+            "open_in_new_tab": false,
+            "placeholder": "",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "heading": {
+              "type": "text",
+              "name": "t:names.heading",
+              "settings": {
+                "text": "<h3>More than coffee. <em>Since 2008.</em></h3>",
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "center",
+                "type_preset": "h2",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "{{ settings.color_palette.background }}",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
+            "body": {
+              "type": "text",
+              "settings": {
+                "text": "<p>From Canberra to cafes around the world, ONA has been championing exceptional coffee through innovation, education and meaningful partnerships.</p>",
+                "width": "fit-content",
+                "max_width": "narrow",
+                "alignment": "center",
+                "type_preset": "rte",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "{{ settings.color_palette.background }}",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
+            "button": {
+              "type": "button",
+              "settings": {
+                "label": "Learn more about ONA",
+                "link": "/pages/about",
+                "open_in_new_tab": false,
+                "style_class": "button-custom",
+                "custom_button_background": "rgba(0,0,0,0)",
+                "custom_button_text": "{{ settings.color_palette.background }}",
+                "custom_button_border": "{{ settings.color_palette.background }}",
+                "link_text_color": "",
+                "width": "fit-content",
+                "custom_width": 100,
+                "width_mobile": "fit-content",
+                "custom_width_mobile": 100
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "heading",
+            "body",
+            "button"
+          ]
+        },
+        "video_photo": {
+          "type": "custom-liquid",
+          "settings": {
+            "custom_liquid": "<!-- Sasa's 30-45s welcome video isn't shot yet (DES-8 thread, 2026-08-09/10) --\n     play button is decorative only, no click handler, so it can't look like a\n     broken/dead video link. Swap for a real <video>/embed once the asset lands. -->\n<div style=\"position:relative; max-width:900px; margin:0 auto; border-radius:4px; overflow:hidden;\">\n  <img src=\"{{ 'Zerihun-and-Sasa.webp' | file_img_url: '1200x' }}\" alt=\"Sasa, ONA Coffee founder\" loading=\"lazy\" style=\"width:100%; display:block;\">\n  <span style=\"position:absolute; inset:0; display:flex; align-items:center; justify-content:center;\">\n    <span style=\"width:64px; height:64px; border-radius:999px; background:{{ settings.color_palette.background }}; display:flex; align-items:center; justify-content:center;\">\n      <svg width=\"20\" height=\"24\" viewBox=\"0 0 20 24\" fill=\"{{ settings.color_palette.foreground }}\"><path d=\"M0 0L20 12L0 24Z\"/></svg>\n    </span>\n  </span>\n</div>"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "text",
+        "video_photo"
+      ],
+      "disabled": true,
+      "name": "t:names.section",
+      "settings": {
+        "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "center",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 40,
+        "section_width": "page-width",
+        "section_height": "",
+        "section_height_custom": 50,
+        "background_media": "none",
+        "background_color": "{{ settings.color_palette.color1 }}",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
+        "padding-block-start": 80,
+        "padding-block-end": 80
+      }
+    },
+    "custom_liquid_RCcpAV": {
+      "type": "custom-liquid",
+      "name": "t:names.custom_liquid",
+      "settings": {
+        "custom_liquid": "",
+        "background_color": "{{ settings.color_palette.background }}",
+        "section_width": "page-width",
+        "padding-block-start": 0,
+        "padding-block-end": 80
+      },
+      "disabled": true
+    }
+  }
+}
