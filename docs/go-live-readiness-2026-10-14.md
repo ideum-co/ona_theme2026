@@ -296,11 +296,30 @@ has not been made.
 
    | content | metafield | populated on |
    |---|---|---|
+   | brew-guide intro | `accentuate.content_brew_guide` | 32 |
    | brew-guide spec table | `accentuate.title_item` / `content_item` | 32 |
+   | brew-guide "Full brewing guide" link | `accentuate.select_artlice` | 24 |
    | lifestyle gallery | `accentuate.image` | 37 |
    | Coffee Profile prose + 2 images | `accentuate.content_coffee_profile`, `image_coffee_profile_1`/`_2` | 37 |
    | product FAQs | `custom.accordion` | 23 |
    | origin + sourcing prose, image and specs | `content_origin`, `content_sourcing`, `image_origin`, `producer`, `region`, `varietal`, `process`, `altitude` | 25 (all eight together) |
+
+   The brew guide is three separate things, and conflating them is how content gets
+   dropped: render the **intro and the table unconditionally** from the product, and make
+   only the **link** conditional on resolving `articles[select_artlice]` (prefix intact).
+   Do **not** start from the disabled `brew_guide` block -- map §5 step 5 lists its three
+   faults; enabled as-is it renders nothing for anyone.
+
+   **And build whatever step 6 decided for `product-2`/`product-3`.** The decision is
+   recorded at step 6 and nothing else here builds it, so the equipment specs render
+   nowhere either way: `accentuate.content_product_info` on **20** equipment products and
+   `video_url` on **6** are read by nothing (the `properties_table` custom-liquid reads
+   only `accentuate.components`). Whichever option step 6 picked -- a
+   `product.product-2.json` of its own, or an optional specs/video region on the shared
+   PDP -- it gets implemented here, with the paired-array loop from the `brew_guide`
+   custom-liquid as the pattern to copy. Note `video_url` stores a complete `<iframe>`
+   blob, not a URL, so decide whether to render it raw or convert the 6 values. Map §3.3
+   has the data shapes.
 
    Plus the **`Reviews` tab**, which is enabled with no child blocks and so opens a blank
    panel on all 92 PDPs: wire a reviews integration or delete the tab. Map §5 step 5 has
