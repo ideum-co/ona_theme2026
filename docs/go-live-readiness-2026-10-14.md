@@ -177,7 +177,8 @@ has not been made.
 
 **Before anything else**
 
-1. **Reconcile the shop's editor state into the repo, then merge once — PR #151.** The
+1. **Reconcile the shop's editor state into the repo, then merge once — PR #151, then
+   PR #152.** The
    GitHub integration is live and cannot be disconnected: theme `154676789439` is named
    `ona_theme2026/main` and pulls within seconds of any commit to `main` that touches a
    file. So "edit the shop copy in place and never push" is not a strategy that holds —
@@ -188,14 +189,28 @@ has not been made.
    Before any merge that touches a shop-owned template, run the checksum test in map
    §4.3 — equal to the repo file means the integration owns it and merging is safe,
    unequal means the editor has diverged it and must be merged in first.
+
+   **#151 merged at 12:29:57Z and only half of it landed.** `product.json` pulled seven
+   seconds later and its checksum now matches the repo file. `index.json` did not pull at
+   all: at 28 sections it was over Shopify's limit of 25 per JSON template, so the
+   integration declined the whole file — silently, with no error anywhere, and with the
+   repo now looking correct. The only symptom was a checksum that had not moved. **PR
+   #152** brings the file to 25 by dropping the three sections that had never been on the
+   theme, and adds a test for both platform limits. Until #152 merges the homepage on the
+   theme is still the damaged copy. The rule this adds: **a merge is not a deploy until
+   you have re-read the checksums and confirmed every file you touched actually pulled.**
+   Note also that the homepage is then at exactly 25 of 25 — a hard platform cap, so any
+   new homepage section means removing one.
 2. **Finish the Water For Good campaign — it is time-limited and half-deployed.**
    The badges expire **2026-10-31**, so this stays ahead of the template work. Merging
    #149 (`ed3261d`) already deployed `sections/ona-donation-counter.liquid`,
    `blocks/_product-card.liquid`, `templates/collection.json` and `templates/search.json`
    to the theme, so the card badge on collection and search is shipped. What remains is
    the counter section on the homepage and the two remaining card-badge placements, all
-   three of which are folded into PR #151 — so merging #151 completes the deploy. Settle
-   the Palmer Lake vs Silk Serif CTA with Formswell as part of this.
+   three of which are folded into PR #151 — so merging #151 and #152 completes the
+   deploy. The counter rides on `index.json`, which is the file that did not pull, so
+   until #152 lands the homepage counter is **not** live on the 2026 theme. Settle the
+   Palmer Lake vs Silk Serif CTA with Formswell as part of this.
 3. Re-check the counter against live at desktop and at both mobile breakpoints — including
    a real phone, since Chrome on this workstation cannot reach phone width.
 4. **Resolve PR #142** -- the PDP body blocks (section 1.3). The map's recommendation is

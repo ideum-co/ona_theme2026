@@ -330,14 +330,39 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    |---|---|---|
    | `templates/collection.json` | checksum **matches** repo `ed3261d` — integration-owned | safe; `ona_promo_tags` already shipped |
    | `templates/search.json` | checksum **matches** repo `ed3261d` — integration-owned | safe; same |
-   | `templates/index.json` | restored by PR #151: 24 shop sections + the counter + 3 kept-disabled | re-check the checksum, and stay out of the editor until it lands |
-   | `templates/product.json` | **editor-diverged at 09:32Z** (an empty `product_tabs_XnTEpK` placeholder), folded into PR #151 | as above |
+   | `templates/index.json` | #151 merged at 12:29:57Z and this file **did not pull** — 28 sections, over the limit below. PR #152 brings it to 25 | re-check the checksum, and stay out of the editor until it lands |
+   | `templates/product.json` | restored: pulled 12:30:04Z, checksum now `d0a1df63…` = md5 of the repo file. Carries the `product_tabs_XnTEpK` placeholder the editor added at 09:32Z | as above |
    | `sections/ona-donation-counter.liquid` | pushed by the integration at 06:51:31Z | already on the theme |
    | `blocks/_product-card.liquid` | pushed at 06:51:31Z, carries the `ona-product-tags` schema type | already on the theme |
 
+   **A merge is not a deploy until the pull is verified.** Merging #151 proved the
+   integration can accept one file and silently drop another in the same commit.
+   `product.json` (11 sections) pulled seven seconds later; `index.json` never pulled at
+   all, because at 28 sections it was over Shopify's documented limit of **25 sections
+   per JSON template, and 50 blocks per section**
+   ([docs](https://shopify.dev/docs/storefronts/themes/architecture/section-groups)).
+   Over the limit, the integration declines **the whole file** — no error, no commit
+   status, no check run, nothing surfaced in the admin. And because the repo was by then
+   correct, the only observable symptom was a checksum that had not changed: still equal
+   to md5 of the file at `ed3261d`, which is the copy #149 destroyed it with. Had the
+   checksum not been re-read after the merge, the homepage would have looked repaired in
+   the repo and stayed broken on the theme until go-live.
+
+   Two consequences worth carrying:
+
+   - PR #152 drops the three sections in `index.json` that had never been on the theme
+     (`good_coffee_delivered`, `more_than_coffee`, `custom_liquid_RCcpAV` — repo-authored,
+     disabled, rendering nothing; definitions parked in
+     `docs/index-json-parked-sections-2026-10-14.json`). That leaves **the homepage at
+     exactly 25 of 25**. Adding a section there now means removing one in the same change,
+     and that is a hard platform limit, not a preference.
+   - `tests/shop-owned-templates.test.mjs` now asserts both limits across every
+     `templates/*.json`, so the refusal fails the suite instead of reaching the theme.
+
    So the rule is no longer "import this file whole, edit that one in place" — there is
    no importing step at all, because every merge deploys. The rule is **reconcile the
-   shop's copy into the repo first, then merge once**, and the test above is how you know
+   shop's copy into the repo first, then merge once, then re-read the checksums to
+   confirm every file you touched actually pulled**, and the test above is how you know
    whether reconciling is needed.
 
    The ten sections that were shop-only, destroyed by the #149 merge and restored into
@@ -402,14 +427,19 @@ from Horizon generics.
 
 Suggested order:
 
-1. **Merge PR #151 — it both repairs the #149 damage and finishes the campaign deploy.**
+1. **Merge PR #152 — it is what makes the #151 repair actually reach the theme.**
    #149 already deployed `ona-donation-counter.liquid`, `_product-card.liquid`,
    `collection.json` and `search.json` (§4.3), so the card badge is live on collection and
    search; what it also did was overwrite the two shop-owned templates. #151 restores them
    with the counter and the two remaining badge placements folded in, so merging it is the
-   whole of the remaining campaign deploy. Immediately before merging, re-run the checksum
-   test in §4.3 on `index.json` and `product.json`, and keep everyone out of the theme
-   editor until the pull lands — an edit made in between is lost exactly as before.
+   whole of the remaining campaign deploy. #151 merged at 12:29:57Z and delivered
+   `product.json`, but `index.json` was over the 25-section limit and was silently
+   declined (§4.3), so the homepage is still carrying the damaged copy until #152 lands.
+   Immediately before merging, re-run the checksum test in §4.3 on both files, and keep
+   everyone out of the theme editor until the pull lands — an edit made in between is
+   lost exactly as before. **Afterwards re-read both checksums** and confirm
+   `index.json`'s has changed; an unchanged checksum is the one symptom this whole class
+   of failure produces.
 2. Fix the `location` / `page.locations` mismatch. (hours — estimate)
 3. Settle the static copy on shared templates (§3.1) — live-visible on all 92 PDPs:
    the badge fallbacks **and** the hard-coded Maple tab. Give
