@@ -11,15 +11,26 @@ Verbatim copies, pulled 2026-10-15, of the JSON templates on theme
 **`160335790271`** ("ONA - media block fix + press quotes hidden…") — the theme
 that was published until 2026-10-14 ~15:43Z and is now the rollback.
 
-They were archived for one reason: **before this directory existed, the content
-was in no repository at all.** It is not in the Shopify page bodies, and it was
-not in git — it lived only inside themes that were candidates for deletion, so
-deleting one would have destroyed the only copy.
+## Read this before using them: `onacoffee_theme` is the better source
 
-**Committing these files is what fixed that.** The content is now in git
-history and survives the deletion of every theme that holds it. So this
-directory is not a reason to keep `160335790271` or any other theme alive —
-judge that on its own merits. It is the durable copy; the themes are not.
+**These were archived on a mistaken premise.** The README said the content was
+in no repository. Checked properly on 2026-10-15, against
+`onacoffee_theme` `origin/main`:
+
+| | |
+|---|---|
+| **12 of 14** | **identical in content** to `templates/<name>` in that repo — only JSON formatting differs, because the Admin API pretty-prints what the theme stores minified |
+| `page.wholesale.json` | same 19 sections; **one** leaf differs — `wholesale_sourcing_v6.disabled` is `true` on the theme and **absent in the repo** |
+| `product.filtersub.json` | the repo's copy is the **newer** one and has an `ona-product-complementary` section; this archived copy, taken from `160335790271`, does not |
+
+**So port from `onacoffee_theme`, not from here** — it is a working theme
+repository with history, not a flat snapshot.
+
+What this directory is still good for is narrow and worth keeping: it is a
+dated record of what theme `160335790271` actually held, and the two rows above
+are the exact places that record differs from the repo. In particular, porting
+`page.wholesale.json` straight from `onacoffee_theme` would **re-enable
+`wholesale_sourcing_v6`**, which the editor had switched off.
 
 `docs/post-publish-review-2026-10-15.md` §2 records the consequence: while the
 2026 theme was published, eight pages rendered a heading and nothing else,

@@ -101,12 +101,20 @@ redirects, unrelated to the theme.
 
 ### What fixing this costs
 
-Re-adding an empty template does nothing. The content — sections, copy, images
-— lives in the old theme's templates, which were theme-only and in no
-repository until this document's own PR committed them to
-**`docs/legacy-page-templates/`**. Work from that archive rather than from a
-live theme: it is in git, it is dated, and it does not depend on theme
-`160335790271` staying accessible.
+Re-adding an empty template does nothing; the content lives in the old theme's
+templates. **Port them from `onacoffee_theme` `origin/main`**, which holds all
+of them — checked file by file on 2026-10-15, 12 of the 14 are identical in
+content to the copies in `docs/legacy-page-templates/` and differ only in JSON
+formatting.
+
+> Two carry a real difference, and one is a trap. `page.wholesale.json` is the
+> same 19 sections in both, except that `wholesale_sourcing_v6` is
+> `disabled: true` on the theme and **absent from the repo** — porting it
+> straight from `onacoffee_theme` re-enables a section the editor switched off.
+> And the repo's `product.filtersub.json` is the **newer** one, with the
+> `ona-product-complementary` row; the archived copy from `160335790271` does
+> not have it. `docs/legacy-page-templates/` is worth keeping as the dated
+> record of exactly those differences, not as the porting source.
 
 Each page then has to be ported — the archived file targets the previous
 theme's section types, so it is a source to read for content, order and
@@ -243,8 +251,9 @@ links — all three sections are `disabled`, so they are not live defects.
 
 ## 7. The homepage is full
 
-`templates/index.json` holds **25 sections — exactly Shopify's hard cap** — and
-**11 of them are disabled**:
+`templates/index.json` holds **25 sections — exactly Shopify's hard cap**.
+**13 of them are disabled on the theme**; the repo's copy on `main` currently
+shows 10, and PR #159 reconciles it to the theme's 13. The ten common to both:
 
 ```
 special_release · club_invite_QLL4T3 · club_invite_TGPaF8 · club_benefits_QGRDdd
@@ -455,10 +464,14 @@ Verified on the live storefront after the swap:
 
 ### What to do about it
 
-1. **Decide whether this is the intended live theme.** If it is, it needs a name
-   that says so and its two unique changes need to be captured somewhere
-   durable. If it is not, publish `160335790271` instead and accept losing the
-   PR #46 fix and the `filtersub` cross-sell, or port both first.
+1. **Decide whether this is the intended live theme, and if it is, rename it.**
+   A storefront called "PREVIEW - product media fills column (PR #46)" invites
+   exactly the mistake that has already happened twice this week. Nothing needs
+   archiving: both of its distinguishing files are already durable in
+   `onacoffee_theme`, and only the editor's `index.json` settings are unique to
+   it — which is the normal state of a theme, not a gap. If it is **not** the
+   intended theme, publishing `160335790271` instead costs the PR #46 media fix
+   and the `filtersub` cross-sell row, so port both first.
 2. **Port `templates/product.filtersub.json` from `onacoffee_theme`** when the
    subscription PDP is built on the 2026 theme. It closes a measured
    8.05%-attach gap and it is safely in that repository — this was briefly

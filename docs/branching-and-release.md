@@ -66,8 +66,19 @@ After that the staging theme updates itself on every merge into `staging`, and
 its preview URL is a permanent, always-current review link.
 
 > **Do not reuse an existing preview theme for this.** A theme can be connected
-> to only one branch, and the ad-hoc preview themes
-> (`160815546559`, `160861159615`) should be deleted once this is in place.
+> to only one branch, so the staging theme has to be a new one.
+>
+> ⚠️ **`160815546559` is NOT a clean-up candidate.** It was listed as one here
+> in an earlier draft, which was wrong and dangerous: it has been the
+> **published storefront** since 2026-10-14 22:00:42Z, and the release plan
+> names it as the rollback for the next attempt at publishing
+> `154676789439`. Deleting it would either take the store down or destroy the
+> rollback. Leave it alone until another theme is live **and** a replacement
+> rollback has been named.
+>
+> `160861159615` ("PREVIEW - WFG counter on 2026 theme (PR #149)") is safe to
+> delete — it is unpublished, is not anyone's rollback, and its content is in
+> this repository.
 
 Until the staging theme exists, `staging` is still useful — it keeps unreleased
 work off production — but you will not get a preview from it.
