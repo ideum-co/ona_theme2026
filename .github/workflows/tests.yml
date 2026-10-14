@@ -1,0 +1,26 @@
+name: tests
+
+# The repository had no CI until 2026-10-15. `main` is wired to the published
+# theme through the Shopify GitHub integration, so a merge here is a deploy —
+# which makes an automated test run worth more than usual.
+#
+# This workflow is NOT a required status check yet. To make it one:
+#   Settings → Branches → main → Require status checks → add "unit".
+
+on:
+  pull_request:
+    branches: [main, staging]
+  push:
+    branches: [main, staging]
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # There is no package.json; the suite is plain node:test over tests/*.test.mjs.
+      - name: Run theme tests
+        run: node --test "tests/*.test.mjs"
