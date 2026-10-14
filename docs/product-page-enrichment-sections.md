@@ -54,30 +54,31 @@ hurry.
 > every drip bag that has a spec table. Everything below about the pointer applies
 > to the prose, not to the table.
 >
-> **And the "format inconsistency" below is not one.** Liquid's global
-> `articles[...]` is keyed by the *compound* handle `blog-handle/article-handle`
-> ([docs](https://shopify.dev/docs/api/liquid/objects/articles), e.g.
-> `articles['potion-notions/new-potions-for-spring']`), so the stored
-> `brewguides/maple` is already the correct key and `articles[pointer]` resolves it
-> directly. That is why live works, and the "unexplained behaviour" noted below was
-> only unexplained because a bare handle was assumed. **So do not strip the prefix
-> by default** — strip with `| split: '/' | last` *only* if you loop the blog and
-> compare against `article.handle`, which is bare. Stripping it and then doing a
-> direct lookup resolves nothing. Codex caught this on PR #150.
+> The pointer bullets below are rewritten to match; the old "format
+> inconsistency" has an explanation now and is no longer a warning.
 
 - **The pointer:** the product stores
-  `accentuate.select_artlice` (plain string, e.g. `"brewguides/raspberry-candy"`).
-  The live section loops every article in a *Shopify Blog* named `brewguides`
-  looking for `article.handle == target_handle`.
-- **Format inconsistency found**: the stored pointer value includes a
-  `"brewguides/"` prefix, but real article handles in that blog are bare
-  (`"raspberry-candy"`, `"maple"`, etc. — confirmed via the blog's actual
-  article list). A literal `article.handle == target_handle` comparison
-  should never match by that reading — and yet it empirically works
-  correctly on live (verified Raspberry Candy and Maple show genuinely
-  different, correct brew specs). Didn't chase down why; when this gets
-  built, use `target_handle | split: '/' | last` defensively so the port
-  isn't relying on unexplained behavior.
+  `accentuate.select_artlice` on **24** products (not 32 — it is absent on every
+  drip bag that has a spec table), a plain string like
+  `"brewguides/raspberry-candy"`. The live section loops every article in the
+  `brewguides` blog (**747** articles) comparing `article.handle`.
+- **The `brewguides/` prefix is correct, not a bug — and this resolves a loose end
+  this doc used to carry.** Liquid's global `articles[...]` is keyed by the
+  *compound* handle `blog-handle/article-handle`
+  ([docs](https://shopify.dev/docs/api/liquid/objects/articles), e.g.
+  `articles['potion-notions/new-potions-for-spring']`), so `brewguides/maple` is
+  already exactly the right key. This doc previously called the prefix an
+  inconsistency that "empirically works on live, didn't chase down why": the reason
+  is that the compound handle is right, and it only looked wrong because a bare
+  handle was assumed.
+  - **Direct lookup (preferred): `articles[pointer]`, prefix intact.** One lookup,
+    no loop over 747 articles.
+  - **Only if you loop the blog** and compare against `article.handle`, which *is*
+    bare, normalise with `| split: '/' | last`.
+  - Stripping the prefix and *then* doing a direct lookup resolves nothing. That is
+    what an earlier version of this correction told you to do. (Codex, PR #150.)
+  - Either way, handle the case where the pointer names an article that no longer
+    exists — lot rotation makes that likely.
 - The **product** carries `accentuate.content_brew_guide` (heading/intro
   HTML — generic, the same `<h3>How to get the best tasting cup</h3>` on every
   product sampled) plus two **parallel arrays**, `title_item` and `content_item` — the
@@ -86,10 +87,11 @@ hurry.
 - One brew guide article per product confirmed (not shared/reused across
   products, at least in the 5 sampled) — so this is a real per-product
   content type, not a small shared set.
-- Horizon note: Liquid supports direct handle-indexed article lookup
-  (`blogs.brewguides.articles[handle]`), which would replace live's
-  loop-over-500-articles with a single lookup — worth doing this way rather
-  than porting the loop verbatim.
+- Horizon note: use the global `articles[pointer]` with the stored value as-is —
+  a single lookup instead of live's loop over 747 articles. Note this is
+  `articles[...]`, **not** `blogs.brewguides.articles[handle]`, which an earlier
+  version of this bullet recommended: `blog.articles` is an array, and the
+  handle-indexed form is the global one keyed by the compound handle.
 
 ### 3. Origin — NOT PORTED, low priority pending a prevalence check
 - Source: `accentuate.image_origin` (single raw image URL) +

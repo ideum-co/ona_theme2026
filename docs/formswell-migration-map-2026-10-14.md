@@ -498,22 +498,44 @@ Suggested order:
    Silk Serif CTA with Formswell.
 4. Delete the nine orphan template files (§2). `article`, `llms` and `maintenance` need
    nothing — they have no file to delete and already fall back.
-5. **Restore the brew-guide, origin and sourcing content (§4.3).** This is the largest
-   content regression on the list and nothing above fixes it: the shop's `brew_guide`,
-   `story` and `faqs` sections are disabled and the `Brew Guide` and `Reviews` tabs are
-   empty, so `content_brew_guide` and `title_item`/`content_item` — populated on **32**
-   products — `content_origin`/`content_sourcing`, and the `accentuate.image` lifestyle
-   gallery on **37** products all render nowhere. Decide where each
-   goes (the empty `Brew Guide` tab is the obvious home for the recipe, `product-dna` or
-   a tab for origin and sourcing), then wire it **in the repo's** `templates/product.json`
+5. **Restore the PDP content that renders nowhere (§4.3).** This is the largest
+   content regression on the list and nothing above fixes it. The shop's `brew_guide`,
+   `story` and `faqs` sections are disabled and the `Brew Guide` and `Reviews` tabs have
+   no child blocks, so every one of these renders nowhere today. Measured 2026-10-14
+   across all 92 active products:
+
+   | content | metafield | populated on | destination needed |
+   |---|---|---|---|
+   | brew-guide spec table | `accentuate.title_item` / `content_item` | **32** | the empty `Brew Guide` tab |
+   | brew-guide prose | `accentuate.content_brew_guide` + `select_artlice` | 32 / **24** | same tab |
+   | lifestyle gallery | `accentuate.image` | **37** | no renderer exists yet |
+   | product FAQs | `custom.accordion` | **23** | re-enable `faqs`, or a tab |
+   | origin / sourcing | `accentuate.content_origin` / `content_sourcing` | ~25 | `product-dna` or a tab |
+
+   **Two of these are removals, not ports, and both are live-visible defects:**
+
+   - The **`Reviews` tab** is enabled with **zero child blocks**, so it is a clickable
+     blank panel on every PDP. Nothing in this step populates it, and there is no reviews
+     integration in the theme to populate it with. **Decide: wire a reviews app block, or
+     delete the tab.** Shipping it as-is is a visible defect on all 92 PDPs, so this is
+     pre-publish, not later. (Codex, PR #150 — the earlier rounds recorded it as a defect
+     in §4.3 but left it out of the plan that was supposed to close it.)
+   - The **`faqs` section** is the theme's *only* product-FAQ renderer and it is
+     disabled, so the `custom.accordion` content on 23 products — coffee, equipment and
+     merch alike — is dropped at go-live. Re-enable it in the right position, or move the
+     accordion into a tab.
+
+   Decide where each goes, then wire it **in the repo's** `templates/product.json`
    and deploy it by merging to `main` — the same route as every other change here, for the
    reason in §4.3: an edit made only on the shop's copy survives exactly until the next
    merge touches that file, and this is content on 32 products. Reconcile first if the
    checksum test says the editor has moved the file since #151 landed. Verify on one
-   blend, one single origin and one drip bag before go-live. The spec table reads from
-   the **product's** own `title_item`/`content_item` (see the table in §4.3), so it needs
+   blend, one single origin and one drip bag before go-live — and, for the FAQs, one
+   equipment and one merch product too, since `custom.accordion` spans all three. The
+   spec table reads from the **product's** own `title_item`/`content_item`, so it needs
    no article lookup; the image slider is a renderer that does not exist yet and must
-   preserve the `?WIDTHxHEIGHT` → `width`/`height` parsing, or CLS regresses.
+   preserve the `?WIDTHxHEIGHT` → `width`/`height` parsing, or CLS regresses. Finish by
+   clicking every tab on a real PDP: none may open an empty panel.
 6. Settle the three remaining product-template decisions (§3.3), all of which change
    what renders: `product-2` — own template, or an optional specs/video region on the one
    PDP; `filtersub` — whether the subscription PDP keeps omitting the coffee storytelling
