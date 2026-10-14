@@ -420,9 +420,13 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    surface — 24 products, not 32, and absent on every drip bag that has a spec
    table — which the legacy section follows into the `brewguides` blog (747
    articles) for the surrounding prose. Port the table from the product; if the
-   prose is wanted too, follow the pointer and normalise it with
-   `| split: '/' | last`, since the stored value is prefixed (`brewguides/maple`)
-   while article handles are bare.
+   prose is wanted too, follow the pointer — but **do not strip the prefix by
+   default.** Liquid's global `articles[...]` is keyed by the *compound* handle
+   `blog-handle/article-handle`
+   ([docs](https://shopify.dev/docs/api/liquid/objects/articles)), so the stored
+   `brewguides/maple` is already exactly the right key: `articles[pointer]` resolves
+   it directly. Only strip with `| split: '/' | last` if you instead loop the blog and
+   compare against `article.handle`, which is bare. Codex, PR #150.
 
    PR #149 therefore did not "change nothing" — it deployed. `ona-donation-counter.liquid`,
    `_product-card.liquid`, `collection.json` and `search.json` all landed on the theme at
@@ -460,19 +464,32 @@ from Horizon generics.
 
 Suggested order:
 
-1. **Merge PR #152 — it is what makes the #151 repair actually reach the theme.**
-   #149 already deployed `ona-donation-counter.liquid`, `_product-card.liquid`,
-   `collection.json` and `search.json` (§4.3), so the card badge is live on collection and
-   search; what it also did was overwrite the two shop-owned templates. #151 restores them
-   with the counter and the two remaining badge placements folded in, so merging it is the
-   whole of the remaining campaign deploy. #151 merged at 12:29:57Z and delivered
-   `product.json`, but `index.json` was over the 25-section limit and was silently
-   declined (§4.3), so the homepage is still carrying the damaged copy until #152 lands.
-   Immediately before merging, re-run the checksum test in §4.3 on both files, and keep
-   everyone out of the theme editor until the pull lands — an edit made in between is
-   lost exactly as before. **Afterwards re-read both checksums** and confirm
-   `index.json`'s has changed; an unchanged checksum is the one symptom this whole class
-   of failure produces.
+1. ~~Repair the #149 damage and finish the campaign deploy.~~ **Done 2026-10-14, and
+   verified on the theme.** Kept here as the record, because the verification is the
+   part worth copying.
+
+   #149 deployed `ona-donation-counter.liquid`, `_product-card.liquid`,
+   `collection.json` and `search.json` (§4.3) — and overwrote the two shop-owned
+   templates. #151 (12:29:57Z) restored `product.json` but was silently declined for
+   `index.json` at 28 sections; #152 (`c410869`, 12:45:49Z) brought it to 25 and it
+   pulled at 12:45:56Z. Final state, read back from theme `154676789439`:
+
+   | file | checksum | == md5 of repo file |
+   |---|---|---|
+   | `templates/product.json` | `d0a1df63…` @ 12:30:04Z | yes |
+   | `templates/index.json` | `260ba3fb…` @ 12:45:56Z | yes |
+
+   All four campaign surfaces then confirmed rendering on the theme: the counter at
+   `$11,129` with a working `/collections/donation-products` CTA, and the promo badge on
+   the homepage (7), the `donation-products` collection (14, matching live), search (9)
+   and the PDP recommendation cards (3, immediately after the gallery). All five
+   destroyed PDP sections render again.
+
+   The procedure, for the next change to a shop-owned template: run the §4.3 checksum
+   test immediately before merging, keep everyone out of the theme editor until the pull
+   lands, and **afterwards re-read the checksums and confirm each file you touched
+   actually changed** — an unchanged checksum is the only symptom a silent refusal
+   produces.
 2. Fix the `location` / `page.locations` mismatch. (hours — estimate)
 3. Settle the static copy on shared templates (§3.1) — live-visible on all 92 PDPs:
    the badge fallbacks **and** the hard-coded Maple tab. Give

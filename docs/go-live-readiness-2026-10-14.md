@@ -195,24 +195,29 @@ has not been made.
    all: at 28 sections it was over Shopify's limit of 25 per JSON template, so the
    integration declined the whole file — silently, with no error anywhere, and with the
    repo now looking correct. The only symptom was a checksum that had not moved. **PR
-   #152** brings the file to 25 by dropping the three sections that had never been on the
-   theme, and adds a test for both platform limits. Until #152 merges the homepage on the
-   theme is still the damaged copy. The rule this adds: **a merge is not a deploy until
-   you have re-read the checksums and confirmed every file you touched actually pulled.**
-   Note also that the homepage is then at exactly 25 of 25 — a hard platform cap, so any
-   new homepage section means removing one.
-2. **Finish the Water For Good campaign — it is time-limited and half-deployed.**
-   The badges expire **2026-10-31**, so this stays ahead of the template work. Merging
+   #152** (`c410869`, merged 12:45:49Z) brought the file to 25 by dropping the three
+   sections that had never been on the theme, and added a test for both platform limits.
+   It pulled at 12:45:56Z, checksum `260ba3fb…` == md5 of the repo file, so **both
+   templates are now restored and verified on the theme.** The rule this adds: **a merge
+   is not a deploy until you have re-read the checksums and confirmed every file you
+   touched actually pulled.** Note also that the homepage now sits at exactly 25 of 25 —
+   a hard platform cap, so any new homepage section means removing one.
+2. **Water For Good campaign — deployed 2026-10-14, one decision outstanding.**
+   The badges expire **2026-10-31**. Merging
    #149 (`ed3261d`) already deployed `sections/ona-donation-counter.liquid`,
    `blocks/_product-card.liquid`, `templates/collection.json` and `templates/search.json`
    to the theme, so the card badge on collection and search is shipped. What remains is
    the counter section on the homepage and the two remaining card-badge placements, all
-   three of which are folded into PR #151 — so merging #151 and #152 completes the
-   deploy. The counter rides on `index.json`, which is the file that did not pull, so
-   until #152 lands the homepage counter is **not** live on the 2026 theme. Settle the
-   Palmer Lake vs Silk Serif CTA with Formswell as part of this.
+   three of which were folded into PR #151 — and #151 plus #152 **completed the deploy
+   on 2026-10-14.** Verified rendering on theme `154676789439`: the counter at
+   `$11,129`, heading `DOLLARS CONTRIBUTED SO FAR`, CTA resolving to
+   `/collections/donation-products`; and the promo badge on the homepage (7 cards), the
+   `donation-products` collection (14, matching the live theme's count), search (9) and
+   the PDP recommendation cards (3, immediately after the gallery). What is left on this
+   item is the Palmer Lake vs Silk Serif CTA decision with Formswell.
 3. Re-check the counter against live at desktop and at both mobile breakpoints — including
-   a real phone, since Chrome on this workstation cannot reach phone width.
+   a real phone, since Chrome on this workstation cannot reach phone width. The desktop
+   render is confirmed; the two mobile breakpoints are **not** yet checked on a device.
 4. **Resolve PR #142** -- the PDP body blocks (section 1.3). The map's recommendation is
    to **close** it.
 

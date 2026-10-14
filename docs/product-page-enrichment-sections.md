@@ -51,9 +51,19 @@ hurry.
 > The table is built by zipping those two product arrays by index and needs no
 > article lookup. What the pointer adds is the surrounding **prose**, and it is a
 > narrower surface: `select_artlice` is on only **24** products, and absent on
-> every drip bag that has a spec table. Everything below about the pointer, the
-> `brewguides/` prefix and the defensive `| split: '/' | last` still holds — it
-> just applies to the prose, not to the table.
+> every drip bag that has a spec table. Everything below about the pointer applies
+> to the prose, not to the table.
+>
+> **And the "format inconsistency" below is not one.** Liquid's global
+> `articles[...]` is keyed by the *compound* handle `blog-handle/article-handle`
+> ([docs](https://shopify.dev/docs/api/liquid/objects/articles), e.g.
+> `articles['potion-notions/new-potions-for-spring']`), so the stored
+> `brewguides/maple` is already the correct key and `articles[pointer]` resolves it
+> directly. That is why live works, and the "unexplained behaviour" noted below was
+> only unexplained because a bare handle was assumed. **So do not strip the prefix
+> by default** — strip with `| split: '/' | last` *only* if you loop the blog and
+> compare against `article.handle`, which is bare. Stripping it and then doing a
+> direct lookup resolves nothing. Codex caught this on PR #150.
 
 - **The pointer:** the product stores
   `accentuate.select_artlice` (plain string, e.g. `"brewguides/raspberry-candy"`).
