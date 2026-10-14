@@ -131,7 +131,7 @@ the legacy theme rather than assumed:
 
 | surface | live | `ona_theme2026` |
 |---|---|---|
-| product cards (home, collections) | **badge shown** — `snippets/ona-product-card.liquid:42` | type accepted by `_product-card`, **nothing places it** → missing |
+| product cards (home, collections, search, recommendations) | **badge shown** — `snippets/ona-product-card.liquid:42` | **placed, PR #149 `d11e425`** → parity |
 | coffee PDP | **no badge** — `sections/ona-product-information.liquid`, which live's `product.json` uses, has zero badge references | no badge → **parity** |
 | equipment PDP (`product-2`) | badge shown — `sections/product-template-2.liquid:77` | no badge → missing |
 | merch PDP (`product-3`) | badge shown — `sections/product-template-3.liquid:45` | no badge → missing |
@@ -156,8 +156,16 @@ Edition` to 2027-02-20 and `$5 per retail box donated to Water For Good` to 2026
 and `ona-product-tags` renders every active, in-window badge. Confirm the design takes
 two before placing it.
 
-**Decision needed:** close #142; place the badge on cards (the campaign gap); and decide
-whether coffee PDPs gain a badge live does not have.
+**Done, not a decision:** the cards gap is closed in PR #149 (`d11e425`). The badge is
+placed on `index.json` (`coffee_spotlight`), `collection.json`, `search.json` and
+`product.json`'s recommendations, straight after the gallery as live has it, and
+deliberately **not** on `cart.json` or `404.json`, because live's badge-bearing card
+snippet is not used there either.
+
+**Decision needed:** close #142, and decide whether coffee PDPs gain a badge live does
+not have. Placing it would disclose the contribution before add-to-cart on all 14 WFG
+products — which is what the legacy comment argues for — but it is an improvement on
+live, not parity, so it is a call rather than a fix.
 
 ### 3.3 Equipment and merch: one template or three?
 
@@ -253,7 +261,9 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    `templates/page.locations.json` (plural, 706 b) and no `page.location.json` —
    verified by filename against the theme. Rename the file or re-point the page. The
    page itself is finished; this is the single highest-value fix on the list.
-2. **The promo badge is unplaced on product cards** — the live-visible campaign gap — and unplaced on equipment/merch PDPs. Coffee PDPs match live, which shows none (see §3.2).
+2. **The promo badge on equipment/merch PDPs** — live's `product-template-2`/`-3` show
+   it, the 2026 PDP does not. Cards are now at parity (PR #149 `d11e425`) and coffee PDPs
+   already match live, which shows none (see §3.2).
 3. **Repo ↔ shop drift on the homepage, and the push is not flowing.** Measured section
    by section, not by file size. The shop theme `154676789439` ("ona_theme2026/main",
    repo-connected) has **24** homepage sections; repo `main` has **22**, and they are
@@ -279,7 +289,10 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
 
    `templates/product.json` is 43,476 b vs 44,485 b, and the shop copy was edited in the
    theme editor on **2026-10-05**, six days after the last commit. `settings_data.json`,
-   `collection.json`, `cart.json` and `search.json` are identical.
+   `collection.json`, `cart.json` and `search.json` were identical when measured this
+   morning — note that PR #149 then changed `collection.json`, `search.json`,
+   `index.json` and `product.json` to place the promo badge, so those four now differ by
+   that commit as well.
 
 ## 5. What this means for scheduling
 
@@ -290,7 +303,7 @@ from Horizon generics.
 
 Suggested order:
 
-1. Fix the `location` / `page.locations` mismatch, place `ona_promo_tags`, reconcile the
+1. Fix the `location` / `page.locations` mismatch, reconcile the homepage
    drift. (hours — estimate)
 2. Settle the badge fallbacks (§3.1) — this one is live-visible on all 92 PDPs.
 3. Close PR #142. Merge PR #149 (WFG counter) and settle the Palmer Lake vs Silk Serif
