@@ -3,6 +3,10 @@
 > **Do not delete theme `160815546559`.** It was on the clean-up list as a
 > leftover preview. It has been the **published** theme since
 > 2026-10-14 22:00:42Z.
+>
+> Deleting it would not now destroy unique work — see the table below, which
+> corrects an earlier claim in this file — but it would unpublish the
+> storefront.
 
 Pulled 2026-10-15. Theme `160815546559` is named "PREVIEW - product media fills
 column (PR #46)", was created 2026-10-13 as a one-off preview for
@@ -11,22 +15,55 @@ nothing but the theme itself holds its state.
 
 File by file it is byte-identical to the pre-cutover theme `160335790271`
 across every template and across `config/settings_data.json`, except three
-files. Two of them are archived here; the third, the PR #46 change to
-`snippets/product-media-gallery-content.liquid`, is recoverable from
-`onacoffee_theme` because that PR is merged.
+files — and **two of those three are in the `onacoffee_theme` repository,
+byte for byte**:
 
-| file | here | on `160335790271` |
+| file | on this theme | in `onacoffee_theme` `origin/main` | theme-only? |
+|---|---|---|---|
+| `snippets/product-media-gallery-content.liquid` | `0f4cdc15f57172c6924072156c688ec5`, 36,795 b | **identical** | no |
+| `templates/product.filtersub.json` | `dc8be58f3ddd176996e89782d005d61e`, 12,780 b | **identical** | no |
+| `templates/index.json` | `fc0a8aa9fc0c4953dd830f99b2e56f91`, 47,109 b | `c73c60f976ac6a3058ea1a027202291d`, 53,823 b | **yes** |
+
+So the live theme is, in substance, **`onacoffee_theme`'s `main` plus the theme
+editor's own homepage settings**. Only `index.json` is genuinely unrecoverable
+from a repository, and only in the sense that the editor's settings are not
+mirrored anywhere.
+
+> **Correction.** An earlier version of this README, and §13 of the review, said
+> that two files existed only on this theme and that `product.filtersub.json`
+> was "not in either repository". **Both statements were wrong** — Codex raised
+> the checksum inconsistency that led to checking, and `onacoffee_theme` holds
+> both files unchanged. The practical consequence is smaller than it looked:
+> port `filtersub` from `onacoffee_theme`, not from a theme export.
+
+### What the checksums actually tell you
+
+The two numbers in the table above are both honest, and the difference between
+them is the useful part:
+
+- `product.filtersub.json` and the media snippet have a theme `checksumMd5`
+  that **equals `md5sum` of the copy here**. The Admin API returned exactly the
+  bytes the theme stores, banner and indentation included.
+- `index.json` does **not** match: 47,109 b on the theme against 65,349 b here.
+  The theme stores it minified and the API pretty-printed it on the way out.
+
+That is the same signal the GitHub integration gives: **a file whose checksum
+matches the bytes you hold was written by a repository; one whose checksum does
+not was written by the theme editor.** Here it correctly identifies
+`index.json` as the editor's and the other two as the repo's.
+
+Local hashes of the copies in this directory, for integrity checking:
+
+| file | `md5sum` here | bytes |
 |---|---|---|
-| `product.filtersub.json` | `dc8be58f3ddd176996e89782d005d61e`, **12,780 b**, 9 sections | `3a78daf74e8e733cfb2a31ebae28f3c3`, 6,596 b, 8 sections |
-| `index.json` | `fc0a8aa9fc0c4953dd830f99b2e56f91`, 47,109 b, 23 sections | `334174f366862c2ac74a396c30950f06`, 47,079 b |
-
-(As in `../legacy-page-templates/`, the checksums are the theme's own, taken over
-the minified bytes it stores. The Admin API returns the file pretty-printed with
-a generated banner, so `md5sum` of the copy here will not match.)
+| `product.filtersub.json` | `dc8be58f3ddd176996e89782d005d61e` | 12,780 |
+| `index.json` | `d9aba0bbdd38fc810166f932e9a4e62c` | 65,349 |
 
 ## `product.filtersub.json` — why this one matters
 
-It is the **only** copy of the subscription PDP that carries a cross-sell row:
+It is the subscription PDP that carries a cross-sell row — **and the same file
+is in `onacoffee_theme` on `origin/main`, byte for byte**, so port it from
+there rather than from this archive:
 
 ```
 main · profile(off) · sourcing(off) · image_slider(off) · origin(off)

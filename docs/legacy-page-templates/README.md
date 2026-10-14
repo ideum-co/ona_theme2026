@@ -16,9 +16,15 @@ It is not in git, it is not in the Shopify page bodies, and it is not on the
 published theme. It lives only inside an unpublished theme that is a candidate
 for deletion. Once that theme goes, the content is gone.
 
-`docs/post-publish-review-2026-10-15.md` §2 records the consequence: eight
-pages on the live store currently render a heading and nothing else, because
-their content lived in these templates.
+`docs/post-publish-review-2026-10-15.md` §2 records the consequence: while the
+2026 theme was published, eight pages rendered a heading and nothing else,
+because their content lived in these templates.
+
+> **Not the case right now.** Theme `160815546559` was published on
+> 2026-10-14 at 22:00:42Z and it *has* these templates, so those pages render
+> normally on the storefront today. The archive matters for the **next**
+> attempt at publishing the 2026 theme, and as insurance if the themes holding
+> this content are ever deleted.
 
 ## Provenance
 
@@ -57,7 +63,11 @@ source revision, not to verify these copies.
 
 ## Which pages each one served
 
-| suffix | pages | live now |
+The "2026 theme" column is how each page rendered while `154676789439` was
+published — the state the port has to fix. On the storefront today, served by
+`160815546559`, they all render.
+
+| suffix | pages | on the 2026 theme |
 |---|---|---|
 | `wholesale` | Wholesale Coffee | **blank** |
 | `training` | Barista Courses | **blank** |

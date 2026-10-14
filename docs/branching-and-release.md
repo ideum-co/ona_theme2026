@@ -166,11 +166,14 @@ Paste into the body of every `staging` → `main` PR:
   admin can change the live store, and this workflow cannot stop them. The only
   defence is the reconcile-first rule in §5 and agreeing who edits the live
   theme and when.
-- **There is no CI.** This repository has no `.github/workflows`, so nothing
-  runs `node --test "tests/*.test.mjs"` automatically; `main`'s "strict status
-  checks" setting has no contexts to enforce. Adding a workflow that runs the
-  tests on PRs into `staging` and `main` would make the first checklist item
-  real instead of honour-system. Worth doing.
+- **CI runs, but nothing requires it.** `.github/workflows/tests.yml` now runs
+  the suite on pushes and pull requests to both `main` and `staging` — the
+  repository had none before 2026-10-15. It is **not** a required status check,
+  so `main`'s "strict status checks" setting still has no contexts to enforce
+  and a red run does not block a merge. One settings change finishes it:
+  Settings → Branches → `main` → Require status checks → add **`unit`**, and
+  the same for `staging`. Until then the first checklist item is still
+  honour-system; it is just now honour-system with evidence next to it.
 - **Page templates and app embeds are not in git.** Both are listed in
   `docs/post-publish-review-2026-10-15.md`; the theme is the system of record
   for them until they are ported.

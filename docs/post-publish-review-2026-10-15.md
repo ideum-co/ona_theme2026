@@ -421,12 +421,22 @@ Verified on the live storefront after the swap:
 
 ### What it costs
 
-- **The live store is governed by nothing.** `160815546559` is not connected to
-  a GitHub branch, so no repository holds its state, no test runs against it,
-  and its only copy is the theme itself. Both of its unique changes — the PR #46
-  media fix and the enlarged `product.filtersub.json` — exist **only there**.
-  `onacoffee_theme` PR #46 is merged, so the media fix is recoverable from that
-  repo; the `filtersub` template is not in either repository.
+- **The live store is not connected to a branch**, so nothing pulls into it,
+  no test runs against it and no merge can update it. But it is **not**
+  ungoverned: checked against `onacoffee_theme` `origin/main`, two of its three
+  distinguishing files are byte-identical there —
+  `snippets/product-media-gallery-content.liquid` (`0f4cdc15…`, 36,795 b) and
+  `templates/product.filtersub.json` (`dc8be58f…`, 12,780 b). Only
+  `templates/index.json` differs (`fc0a8aa9…`, 47,109 b on the theme against
+  `c73c60f9…`, 53,823 b in the repo), and that difference is the theme editor's
+  homepage settings, which are never mirrored in a repo anyway.
+
+  > **Correction.** An earlier version of this section said both unique changes
+  > existed only on the theme and that the `filtersub` template "is not in
+  > either repository". Both were wrong. Codex flagged an inconsistency in the
+  > archive's checksum note, and checking it showed `onacoffee_theme` holds both
+  > files unchanged. The live theme is, in substance, that repo's `main` plus
+  > editor settings.
 - **It was scheduled for deletion.** This theme and `160861159615` were both on
   the clean-up list as leftover previews. `160815546559` must now be struck from
   that list. `160861159615` is still safe to delete.
@@ -442,9 +452,10 @@ Verified on the live storefront after the swap:
    that says so and its two unique changes need to be captured somewhere
    durable. If it is not, publish `160335790271` instead and accept losing the
    PR #46 fix and the `filtersub` cross-sell, or port both first.
-2. **Pull `templates/product.filtersub.json` off it before anything else.** It
-   is the only copy of work that closes a measured 8.05%-attach gap, and it
-   lives on a theme that was nearly deleted this week.
+2. **Port `templates/product.filtersub.json` from `onacoffee_theme`** when the
+   subscription PDP is built on the 2026 theme. It closes a measured
+   8.05%-attach gap and it is safely in that repository — this was briefly
+   believed to be a one-copy file, and it is not.
 3. **Work the §2–§7 list** before `154676789439` is published again. Nothing in
    it has been fixed — the storefront simply stopped showing it.
 
