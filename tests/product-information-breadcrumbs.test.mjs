@@ -88,8 +88,28 @@ test('fits the complete PDP information layout within the desktop viewport', () 
     /\.product-information__media \.product-media-container:not\(\.dialog-zoomed-gallery \*\)[\s\S]*?height: 100%;[\s\S]*?aspect-ratio: auto;/,
   );
   assert.match(contentSource, /\.deferred-media__poster-image\)[\s\S]*?object-fit: contain;/);
+  /*
+   * The details column scrolls independently -- that is what lets the whole layout
+   * fit a 100svh viewport, so `overflow-y: auto` is the load-bearing declaration
+   * this test exists for.
+   *
+   * It used to also require `scrollbar-gutter: stable`, which reserved gutter space
+   * so the layout did not shift horizontally when the scrollbar appeared. PR #154
+   * replaced that with hiding the scrollbar outright (`scrollbar-width: none` and
+   * the `::-webkit-scrollbar` rule). That is coherent, not a regression: a
+   * scrollbar that is never rendered takes no space, so there is no shift to
+   * stabilise. The no-layout-shift guarantee is what matters, so assert whichever
+   * mechanism provides it rather than the specific declaration -- and do not
+   * reinstate `scrollbar-gutter: stable` alongside the hiding rules, because the
+   * gutter would then be reserved for a scrollbar that never appears.
+   */
   assert.match(
     contentSource,
-    /\.product-information__grid:not\(\.product-information--media-none\) > \.product-details[\s\S]*?overflow-y: auto;[\s\S]*?scrollbar-gutter: stable;/,
+    /\.product-information__grid:not\(\.product-information--media-none\) > \.product-details[\s\S]*?overflow-y: auto;/,
+  );
+  assert.match(
+    contentSource,
+    /\.product-information__grid:not\(\.product-information--media-none\) > \.product-details[\s\S]*?scrollbar-width: none;/,
+    'the details column must not reserve or render scrollbar space, or the grid shifts',
   );
 });
