@@ -248,8 +248,10 @@ has not been made.
 10. **Search** -- predictive search and the results page share the card blocks from step 9.
 11. **Blog** -- `brewguides` and `news` fall back today; article layout and images.
 12. **Pages** -- the groups in step 5, with Wholesale and Learn first.
-13. **Cart** -- drawer and page. 4.3.0 fixes several cart bugs, which is an argument for
-    doing the bump before this step rather than after.
+13. **Cart** -- drawer and page. 4.3.0 fixes several cart bugs, but the bump stays at
+    step 14, after go-live: section 3 measured 26 real conflicts across 8 files, and
+    pulling it forward is exactly the night-before version change this document warns
+    against. Fix any cart bug found here directly, and re-check cart after the bump.
 
 **After go-live**
 
