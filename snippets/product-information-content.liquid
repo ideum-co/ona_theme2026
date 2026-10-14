@@ -398,7 +398,13 @@
       overflow-x: hidden;
       overflow-y: auto;
       overscroll-behavior: contain;
-      scrollbar-gutter: stable;
+      /* Keep independent scrolling without displaying a scrollbar. */
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
 
     .product-information__media .product-media-container:not(.dialog-zoomed-gallery *) {
