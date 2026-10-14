@@ -20,7 +20,7 @@ Everything below was measured on the shop or in the two repos on 2026-10-14. Cou
 from the Admin API over all 92 active products, 26 pages and 5 blogs -- not a sample.
 
 The headline: **the theme is in good shape; the content wiring around it is not.** Two
-thirds of the catalogue (62 of 92) and roughly three quarters of the pages (19 of 26) are
+thirds of the catalogue (56 of 92) and roughly three quarters of the pages (19 of 26) are
 assigned to templates this theme does not contain, and Shopify resolves a missing template by silently falling back to the
 generic one.
 
@@ -36,7 +36,7 @@ renders on the default template instead. Nothing errors. It just looks wrong.
 
 | surface | assigned to a template this theme lacks | falls back to |
 |---|---|---|
-| Products | **62 of 92 active** -- 26 on `product-2`, 22 on `product-3`, 6 on `Default product`, **2 on `filtersub`** | `templates/product.json` |
+| Products | **56 of 92 active** -- 26 on `product-2`, 22 on `product-3`, 6 on `Default product`, **2 on `filtersub`** | `templates/product.json` |
 | Pages | **19 of 26** -- `about`, `sustainability` (x3), `privacy`, `faq`, `wholesale`, `training`, `bookings` (x3), `private-courses-and-experiences`, `learn`, `faq-subscriptions`, `text-template`, `html-sitemap`, `llms`, `maintenance`, `location` | `templates/page.json` |
 | Blogs | `brewguides`, `news` | `templates/blog.json` |
 
@@ -69,8 +69,13 @@ The campaign runs to 31 October inclusive and this theme had none of it.
   Identical on both themes. The one difference is the CTA face -- live uses *Palmer Lake
   Print*, which this theme does not ship, so it falls back to Silk Serif. **Needs a
   Formswell decision.**
-- **PDP badge: already works.** `blocks/ona-product-tags.liquid` and both snippets are
-  here and wired into `templates/product.json`.
+- **PDP badge: built, but its only PDP placement is disabled.**
+  `blocks/ona-product-tags.liquid` and both snippets are here, and `ona_promo_tags` does
+  appear in `templates/product.json` — **inside the disabled `group_icgrde`**, so it
+  renders nowhere on the PDP. Live's `product-template-2`/`-3` *do* show it, so equipment
+  and merch PDPs are a real parity gap; live's coffee PDP shows none, so coffee is not.
+  See map §3.2. (An earlier draft of this line said the PDP badge "already works". It does
+  not.)
 - **Card badges: placed in the repo, not yet on the shop.** On live every coffee card
   carries "$3 PER 200G AND $12 PER KILO DONATED TO WATER FOR GOOD". PR #149 both taught
   `_product-card` to accept `ona-product-tags` and **placed** it on the four surfaces live
@@ -177,29 +182,38 @@ has not been made.
    shop-only and can be imported whole. See the migration map §4.3 for the per-file table.
    Note too that the shop's `product.json`, not the repo's, is the PDP that renders — any
    PDP analysis taken from the repo copy is wrong.
-2. **Resolve PR #142** -- the PDP body blocks (section 1.3).
+2. **Deploy the Water For Good campaign — it is time-limited and nothing is live yet.**
+   The badges expire **2026-10-31**, and merging PR #149 changed nothing on the storefront
+   (map §4.3), so this moved ahead of the template work. Both code steps are already done:
+   #149 is merged (`ed3261d`) and `ona-product-tags` is placed on the four card surfaces.
+   What remains is Shopify-side: import `sections/ona-donation-counter.liquid` (new file,
+   nothing to lose), import `templates/collection.json` and `templates/search.json` whole,
+   then hand-insert the counter section and the card block into the **shop's**
+   `index.json` and `product.json`. Settle the Palmer Lake vs Silk Serif CTA with
+   Formswell as part of this.
+3. Re-check the counter against live at desktop and at both mobile breakpoints — including
+   a real phone, since Chrome on this workstation cannot reach phone width.
+4. **Resolve PR #142** -- the PDP body blocks (section 1.3). The map's recommendation is
+   to **close** it.
 
 **Then, the template decision (the long pole)**
 
-3. Walk the 28 missing templates. For each suffix, open one live example and one 2026
-   render side by side, and record: fold into the generic template, rebuild, or re-point
-   the resource. Start where the money is -- `filtersub` (subscriptions), then
-   `product-2`/`product-3` (54 products: equipment, merch, candles), then `wholesale`,
-   `learn`, `location`, `faq`.
-4. Fix the `location` / `page.locations` suffix mismatch -- a rename, five minutes.
-
-**Then the campaign**
-
-5. **Both code steps are done:** PR #149 is merged (`ed3261d`) and `ona-product-tags` is
-   placed on the four card surfaces. What is left is the Shopify side — import the counter
-   section and `collection.json` / `search.json`, and hand-insert into the shop's
-   `index.json` and `product.json` (map §4.3) — plus settling the CTA font with Formswell.
-6. Re-check the counter against live at desktop and at both mobile breakpoints.
+5. Walk the suffixes that still need a decision -- **not all 28.** The migration map
+   removes ten as orphans with zero active resources (eight product templates plus
+   `page.melbourne`) and three more (`llms`, `maintenance`, `article`) as templates that
+   exist on no theme and already fall back, so several of the 28 have nothing to open.
+   For each remaining group, open one live example and one 2026 render side by side and
+   record: fold into the generic template, rebuild, or re-point. Start where the money is
+   -- `filtersub` (subscriptions, and note the map's finding that it needs *less*, not
+   more), then `product-2`/`product-3` (48 products: equipment, merch, candles), then
+   `wholesale`, `learn`, `location`, `faq`. Map §2 lists the orphans; §3 lists the real
+   decisions.
+6. Fix the `location` / `page.locations` suffix mismatch -- a rename, five minutes.
 
 **Then the surfaces, in the order you asked for**
 
 7. **PDP** -- it has had the most work and still owns the most risk: the disabled block
-   group, 54 products arriving on it from `product-2`/`product-3`, subscriptions from
+   group, 48 products arriving on it from `product-2`/`product-3`, subscriptions from
    `filtersub`, promo badges, Product DNA metaobject coverage, image quality at the sizes
    this theme actually renders.
 8. **Menu / header** -- Shop, Subscriptions, Learn, Locations, Wholesale, Journal all have
@@ -222,9 +236,11 @@ has not been made.
 
 ## 5. On "go live tomorrow"
 
-Steps 1, 2, 4, 5 and 6 are a day's work. Step 3 is not: 62 products, 19 pages and 2 blogs
-need a human decision each, and that is the step that decides whether the site looks right
-the morning after.
+Steps 1-4 and 6 are a day's work, and step 2 — deploying the campaign — should not wait on
+any of the rest, because the badges expire 2026-10-31. **Step 5 is the long pole:** 56
+products, 19 pages and 2 blogs need a human decision each, and that is the step that
+decides whether the site looks right the morning after. Read the migration map before
+starting it; it takes ten of the 28 templates off the list entirely.
 
 The honest shape of it: either the 28 templates fold into the generic ones -- which is
 plausible, since this theme was designed around a single rich product template, but nobody
