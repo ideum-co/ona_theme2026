@@ -15,8 +15,8 @@
     {%- endif -%}
 
     {% comment %}
-      Opt into cross-document (MPA) view transitions and hold first paint until #MainContent
-      parses, so the transition runs consistently.
+      Opt into cross-document (MPA) view transitions without blocking the first paint.
+      The transition script remains available, but initial content should render immediately.
       Both are gated on the same settings as the view-transitions.js opt-out switch (see snippets/scripts.liquid).
     {% endcomment %}
     {% if settings.transition_to_main_product or settings.page_transition_enabled %}
@@ -27,13 +27,6 @@
           }
         }
       {% endstyle %}
-      {% # theme-check-disable-next-line RemoteAsset %}
-      <link
-        rel="expect"
-        href="#MainContent"
-        blocking="render"
-        id="view-transition-render-blocker"
-      >
     {% endif %}
 
     {%- render 'meta-tags' -%}
