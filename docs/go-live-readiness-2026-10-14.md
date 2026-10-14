@@ -346,7 +346,10 @@ has not been made.
      (**27** products), and ad-hoc per-spec keys (`material`, `height`,
      `approx_weight`, `suitable_for` …) on a handful. Plus `video_url` on **6**, which
      holds a complete `<iframe>` blob rather than a URL, so raw-vs-convert has to be
-     decided. Map §5 step 6 has the table.
+     decided -- and `video_background` is populated on exactly the same 6, never alone,
+     so carry the pair together. `video_of_product`, the third video field §3.3 lists,
+     is populated on **zero** active products: retire it explicitly rather than porting
+     it. Map §5 step 6 has the table.
    - **`product-3`, merch (22 products).** Expected to fold -- **but not for free:**
      `content_product_info` is on **7 merch products**, so those 7 lose their product
      info unless whatever renders it for equipment also runs on the shared PDP. Confirm
@@ -424,6 +427,20 @@ has not been made.
     Until both pass, do not proceed to step 15. Everything else in this list can be seen
     by looking at the storefront; attribution loss cannot, which is why it gets its own
     gate rather than a line in a QA pass.
+    **14a. Check performance before publishing.**
+    `performance-and-compatibility.md` §3 calls performance a **gate, not a retrofit**,
+    and records that no checklist or CI gate exists yet -- "cheap to enforce now, few
+    templates; expensive to retrofit later". The work immediately before this step is
+    exactly what regresses it: **four new image renderers** (step 7a) over raw
+    `cdn.accentuate.io` URLs with no srcset or CDN transform, plus any **third-party
+    embeds** re-enabled at 13a. A storefront walkthrough will not reliably show it.
+    - Lighthouse/PageSpeed on the homepage, a collection and a PDP -- the three
+      highest-traffic templates and the three this project changed most.
+    - Confirm the lifestyle-gallery renderer preserves the `?WIDTHxHEIGHT` ->
+      `width`/`height` parsing: that is a measured CLS fix, and dropping it is the
+      single likeliest regression here.
+    - Check total script weight per page against the current theme, since embeds are
+      additive and easy to lose track of.
 15. **Publish — the cutover.** Swap `ona_theme2026` in for theme `160335790271`. This
     document had no publish step at all until now, which left the one irreversible
     action in the project undefined. Do it in this order: re-read the §4.3 checksum test

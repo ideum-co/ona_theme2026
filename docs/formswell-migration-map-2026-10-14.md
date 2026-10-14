@@ -744,9 +744,22 @@ Suggested order:
 
      **`accentuate.title` is the label source** — the paired-array loop from the
      `brew_guide` custom-liquid is the right pattern, but copying it without `title`
-     produces an unlabelled table. Plus `video_url` on 6 products, which holds a
-     complete `<iframe>` blob rather than a URL, so decide raw-vs-convert for those.
-     (Codex, PR #150.)
+     produces an unlabelled table.
+
+     **The video fields, measured 2026-10-15 across all 92 active products** — §3.3
+     lists three and only one of them had been inventoried:
+
+     | field | populated on | note |
+     |---|---|---|
+     | `accentuate.video_url` | **6**, all `product-2` | holds a complete `<iframe>` blob, **not a URL** — decide raw-vs-convert |
+     | `accentuate.video_background` | **the same 6** | always paired with `video_url`; never appears alone |
+     | `accentuate.video_of_product` | **0** | populated on no active product — **retire it explicitly** rather than porting |
+
+     So this is one video surface on 6 products, not three fields to port. Carry
+     `video_url` + `video_background` together, and write `video_of_product` off. One
+     data caveat on the 6: `rocks`'s `video_background` filename reads
+     "Paragon-Levels", so check each of the six points at the right asset rather than
+     trusting the field. (Codex, PR #150.)
    - **`filtersub`** — whether the subscription PDP keeps omitting the coffee
      storytelling sections. That is the stripped template's whole premise, so it is a
      deliberate yes/no — **but "keep it" is work, not inaction.** There is one shared
