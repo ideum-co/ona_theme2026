@@ -296,7 +296,18 @@ has not been made.
 7. **PDP** -- it has had the most work and still owns the most risk.
 
    a. **First, restore the content that renders nowhere.** This is implementation work,
-   not QA, and nothing earlier in this order covers it. `templates/product.json` is the
+   not QA, and nothing earlier in this order covers it.
+
+   > **There is a review gate on this, and it is still shut.**
+   > `product-page-enrichment-sections.md` — the handoff for exactly these sections —
+   > opens with **"Status: BLOCKED — pending Formswell + Victor review. Do not start
+   > building any of the sections below until that review lands."** Nothing earlier in
+   > this runbook obtains that approval, so an operator reaching 7a either stalls or
+   > quietly overrides a stated gate. **Get the review, or update that status**, before
+   > building. It is a short conversation rather than a work item, but it is a
+   > prerequisite and it was missing from the order. The measurements added to that doc
+   > since (which surface it is, on how many products, where each must land) are what
+   > the review needs in order to be decidable. (Codex, PR #150.) `templates/product.json` is the
    only product template, so these affect every product that has the data. Measured
    2026-10-15 across all 92 active products -- each of these renders **nowhere** on the
    2026 theme today:
@@ -345,6 +356,17 @@ has not been made.
      preserve that, it is **work, not a no-op**: on the shared PDP those sections now
      render for everything, so suppressing them for subscriptions needs a condition or
      its own template. Deciding "keep it as-is" and doing nothing produces the opposite.
+
+     **And add the complementary-recommendations row, whichever route is taken.**
+     `cross-sell-and-forward-compatibility.md` records that live's
+     `product.filtersub.json` has **no complementary entry at all**, leaving the
+     **highest-attach page on the store (8.05%, 5.7x baseline)** with no cross-sell
+     while its metafields are already curated. This theme does not fix that by default:
+     `product_recommendations_qggXJq` is `recommendation_type: "related"` and there is no
+     complementary section in `templates/product.json` at all, so folding subscriptions
+     onto the shared PDP carries the gap across. Map section 5 step 6 has the detail and
+     notes a conflict in the repo about whether live's template contains complementary --
+     the requirement is the same under either reading.
    - **`Default product`, the 6 coffees.** If `ona-read-more-content` is not covered by
      `story`, those six lose content; whatever the audit concludes, implement it here.
 
