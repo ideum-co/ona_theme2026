@@ -100,23 +100,36 @@ hurry.
   version of this bullet recommended: `blog.articles` is an array, and the
   handle-indexed form is the global one keyed by the compound handle.
 
-### 3. Origin — NOT PORTED, low priority pending a prevalence check
+### 3. Origin — NOT PORTED, **pre-publish** (prevalence measured 2026-10-15)
 - Source: `accentuate.image_origin` (single raw image URL) +
   `accentuate.content_origin` (rich HTML).
+- **Prevalence: 25 of 92 active products.** The bulk query this section used to
+  ask for is done, and the answer changes the priority: this is no longer "low
+  priority pending a check", it is pre-publish work. See §4 — Origin and
+  Sourcing turn out to be **one** populated set, not two.
 - **Blank on Raspberry Candy** — confirmed via direct query, both fields
   null. Whatever farm/lifestyle imagery appeared on Raspberry Candy's live
   page was actually the Profile block's `image_coffee_profile_1`/`_2` and
   the Image Slider photos, not a separate Origin section — corrected this
   assumption mid-investigation.
-- Before building: check how many products in the catalog actually populate
-  this (could be rare — worth a bulk metafield query across all products
-  before investing build time here).
+- Raspberry Candy is genuinely outside the 25, so it was not a measurement
+  error — but it *was* unrepresentative, which is the trap this document's own
+  closing note warns about. One blank product is not a prevalence check.
 
-### 4. Sourcing / "Story" — NOT PORTED, same caveat as Origin
+### 4. Sourcing / "Story" — NOT PORTED, **pre-publish**; one set with Origin
 - Source: `accentuate.content_sourcing` (rich HTML) + flat fields
   `producer` / `region` / `varietal` / `process` / `altitude`.
-- Also blank on Raspberry Candy. Same recommendation: check real prevalence
-  across the catalog before prioritizing.
+- **Measured 2026-10-15 across all 92 active products: Origin and Sourcing are a
+  single populated set.** On the same **25** products, every one of
+  `content_origin`, `content_sourcing`, `image_origin`, `producer`, `region`,
+  `varietal`, `process` and `altitude` is present; on the other 67, none is.
+  There is no product with one and not the others.
+- So this is **one** destination decision for a structured spec block plus an
+  image, not two independent rich-text ports — and the flat specs are the half
+  most likely to be dropped, because the prose is the part anyone notices
+  missing. In this theme the prose and the specs are read only by the **disabled**
+  `story` section, and `image_origin` has **no renderer at all**.
+- Also blank on Raspberry Candy, consistent with it being outside the 25.
 
 ### 5. Image Slider (lifestyle gallery) — NOT PORTED
 - Source: `accentuate.image`, a `json_string` array of **raw external CDN

@@ -307,18 +307,38 @@ has not been made.
 
 ## 5. On "go live tomorrow"
 
-Steps 1-4 and 6 are a day's work, and step 2 — deploying the campaign — should not wait on
-any of the rest, because the badges expire 2026-10-31. **Step 5 is the long pole**, and it
-is the step that decides whether the site looks right the morning after — but the decisions
-are **per suffix group, not per resource**: four product groups (`product-2`, `product-3`,
-`Default product`, `filtersub`) covering 56 products, and the page groups in map §3.4,
-where `llms` and `maintenance` need nothing at all. Read the migration map before starting
-it; it takes nine orphan files and three already-falling-back suffixes off the list.
+Step 2 — the campaign — is done, and it did not wait on the rest, which was right: the
+badges expire 2026-10-31.
 
-The honest shape of it: either the 28 templates fold into the generic ones -- which is
-plausible, since this theme was designed around a single rich product template, but nobody
-has confirmed it -- or tomorrow publishes a storefront where two thirds of the catalogue
-and most of the content pages render on a layout they were never designed for.
+**There are now two long poles, not one, and both are pre-publish.**
+
+**Step 5, the suffix decisions** — the step that decides whether the site looks right the
+morning after. The decisions are **per suffix group, not per resource**: four product
+groups (`product-2`, `product-3`, `Default product`, `filtersub`) covering 56 products,
+and the page groups in map §3.4, where `llms` and `maintenance` need nothing at all. Read
+the migration map before starting it; it takes nine orphan files and three
+already-falling-back suffixes off the list.
+
+**Step 7a, the PDP content restoration** — and this one is *implementation*, not
+decisions, which makes it harder to compress. Measured 2026-10-15: content renders nowhere
+on 23–37 products per surface, **two renderers do not exist at all** (the lifestyle
+gallery, `image_origin`), the FAQ section needs re-enabling, and the `Reviews` tab opens a
+blank panel on all 92 PDPs. Step 4a — the Maple copy on the one shared product template —
+is the same kind of work and is live-visible on every product. None of this is covered by
+step 5, and a summary that names only step 5 invites treating the suffix audit as the last
+blocker. It is not. (Codex, PR #150.)
+
+The honest shape of it has changed since this was written, and half the question is now
+answered. **For products it is confirmed: `templates/product.json` is the only product
+template, and all 92 active products already render it** -- so the folding is not a
+proposal, it is the current state. What that revealed is the problem: the one shared
+template carries four blocks of Maple-specific copy (step 4a) and leaves five content
+surfaces rendering nowhere (step 7a). So the risk was never "will they fold" but "what
+does the thing they fold onto actually say", and the answer needs work before publishing.
+
+For **pages** the original question still stands: the groups in map §3.4 have not been
+confirmed, and tomorrow could still publish content pages on a layout they were never
+designed for.
 
 Confirming that, for one example per suffix, is the cheapest way to find out. It is maybe
 three hours of looking.
