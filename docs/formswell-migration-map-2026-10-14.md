@@ -275,15 +275,23 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    GitHub would destroy editor work** — see the table below for what would be lost.
 
    Compared structurally (parsed and diffed section by section, not by file size, which
-   hid this) against theme `154676789439`:
+   hid this) against theme `154676789439`, at **`main` as of `ed3261d`, i.e. after
+   PR #149 landed**. Stating the baseline matters: all four JSON templates below also
+   carry #149's `ona_promo_tags` block, which the shop does not have yet — that is the
+   change being shipped, not drift.
 
-   | file | shop vs repo `main` | safe to import whole? |
+   | file | shop vs repo `main` (`ed3261d`) | safe to import whole? |
    |---|---|---|
-   | `templates/collection.json` | structurally **identical** | **yes** |
-   | `templates/search.json` | structurally **identical** | **yes** |
-   | `templates/index.json` | shop has **5** sections the repo lacks | **no** — surgical insert only |
-   | `templates/product.json` | shop has **5** sections the repo lacks, **5** more differ, `order` differs | **no** — surgical insert only |
+   | `templates/collection.json` | differs by **exactly** `ona_promo_tags`; identical at `f78e8cf`, nothing shop-side to lose | **yes** — and importing it is what ships the badge |
+   | `templates/search.json` | same | **yes** — same |
+   | `templates/index.json` | `ona_promo_tags` **plus 5 sections only on the shop** | **no** — surgical insert only |
+   | `templates/product.json` | `ona_promo_tags` **plus 5 sections only on the shop**, 5 more differ, `order` differs | **no** — surgical insert only |
    | `sections/ona-donation-counter.liquid` | **absent from the theme** | yes — new file, nothing to lose |
+
+   So the rule is not "is it identical" but **"does the shop hold anything this file
+   would overwrite"**. For `collection.json` and `search.json` it does not, so importing
+   them whole is both safe and the delivery mechanism. For `index.json` and
+   `product.json` it does, so they can only be edited in place.
 
    Only on the shop's `index.json`: `floating_badge_r89NRP`, `slideshow_nBcaMx`,
    `club_benefits_937XiA`, `story_video_LN6zzn`, `section_LpJJ4p`.
