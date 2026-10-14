@@ -119,16 +119,38 @@ an edit to `pdp_product_summary`'s settings in the repo, merged to `main`. Doing
 shop-side edit instead would work until the next merge touching `product.json`
 overwrote it, which is the trap that cost ten sections on 2026-10-14.
 
-**This is not only about badge labels.** Codex, reviewing the PR #151 restore, found a
-fourth instance of the same pattern: the restored `product_tabs_fW4maV` tab carries
-hard-coded single-product copy — *"The maple tree's enduring strength speaks to our
-commitment to nature and sustainability… Maple was created to be a traditional style
-milk…"* — plus a static `<p>Caramel, biscuts, nuts and spices</p>`. Note that string: it
-is the **same literal, typo included**, as `pdp-product-summary`'s description fallback.
-So the real issue in §3.1 is **static copy sitting on shared templates**, overridden per
-product only where a metafield happens to be populated: `range` (0 of 92), `roast` (33),
-`tastes_like` (37), and now a whole Maple tab printing on all 92 PDPs. Decide it once, as
-one question, rather than four times.
+**This is not only about badge labels, and it is the largest pre-publish blocker in this
+document.** `templates/product.json` is the **only** product template in this theme —
+there is no `product.product-2.json`, no `product.product-3.json`, no
+`product.filtersub.json` — so **all 92 active products render it**, coffee, equipment and
+merch alike. Four of its enabled sections carry hard-coded **Maple** copy, none of them
+metafield-driven, none disabled:
+
+| section | what every PDP prints |
+|---|---|
+| `product_tabs_fW4maV` | *"The maple tree's enduring strength speaks to our commitment to nature and sustainability… Maple was created to be a traditional style milk…"*, a static `<p>Caramel, biscuts, nuts and spices</p>`, **and a `maple.webp` image** |
+| `story_video_VUwQ6f` | *"Over the years, Maple has become one of ONA's most familiar coffees."* / *"Creating a coffee that feels unmistakably like Maple."* |
+| `product_dna_trxBBN` | the heading **"Maple DNA"**, and *"the flavour stays true to Maple."* |
+| `section_EhyeAD` | the panel **"Who's Maple For?"** |
+
+Verified on the theme 2026-10-15 by fetching one product of every suffix — a Kenyan
+single origin (no suffix), `aspen` (`Default product`), `ona-plastic-keep-cup`
+(`product-2`, equipment), `ona-vest` (`product-3`, merch) and
+`single-origin-subscription-filter` (`filtersub`). **All five print all four.** An ONA
+vest's product page currently says "Maple DNA" and "Who's Maple For?".
+
+Note the tab's `Caramel, biscuts, nuts and spices` string: it is the **same literal, typo
+included**, as `pdp-product-summary`'s description fallback. So the issue is one issue —
+**static single-product copy sitting on the one shared template**, overridden per product
+only where a metafield happens to be populated: `range` (0 of 92), `roast` (33),
+`tastes_like` (37). Decide it once, as one question, rather than seven times.
+
+How this was found is worth keeping: the static copy is invisible to any check that reads
+the template, because nothing in the JSON marks it as single-product. It shows up only by
+rendering a PDP that is *not* Maple. **Before publishing, fetch one product of every
+suffix and read the page.** Codex raised `story_video_VUwQ6f` and `section_EhyeAD` on
+PR #150; I had documented only the tab; `product_dna_trxBBN` and the `maple.webp` image
+were missed by both of us and turned up only in that per-suffix render.
 
 ### 3.2 PR #142 should be closed, not merged
 
@@ -491,11 +513,16 @@ Suggested order:
    actually changed** — an unchanged checksum is the only symptom a silent refusal
    produces.
 2. Fix the `location` / `page.locations` mismatch. (hours — estimate)
-3. Settle the static copy on shared templates (§3.1) — live-visible on all 92 PDPs:
-   the badge fallbacks **and** the hard-coded Maple tab. Give
+3. **Settle the static copy on shared templates (§3.1) — the biggest pre-publish item,
+   live-visible on all 92 PDPs.** `templates/product.json` is the only product template,
+   so every product renders the Maple tab (text *and* its `maple.webp` image), the Maple
+   story-video, the "Maple DNA" panel and "Who's Maple For?" — on equipment and merch
+   too. Settle those four together with the badge fallbacks; they are one question. Give
    `inline_cta_8ann9f` ("Try our coffee quiz") and `club_benefits_937XiA` ("Find your
    subscription") their destinations (§4.3). Close PR #142. Settle the Palmer Lake vs
-   Silk Serif CTA with Formswell.
+   Silk Serif CTA with Formswell. **Verify by fetching one product of every suffix and
+   reading the page** — the no-suffix, `Default product`, `product-2`, `product-3` and
+   `filtersub` cases — because static copy is invisible from the template.
 4. Delete the nine orphan template files (§2). `article`, `llms` and `maintenance` need
    nothing — they have no file to delete and already fall back.
 5. **Restore the PDP content that renders nowhere (§4.3).** This is the largest

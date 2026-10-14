@@ -218,8 +218,22 @@ has not been made.
 3. Re-check the counter against live at desktop and at both mobile breakpoints — including
    a real phone, since Chrome on this workstation cannot reach phone width. The desktop
    render is confirmed; the two mobile breakpoints are **not** yet checked on a device.
-4. **Resolve PR #142** -- the PDP body blocks (section 1.3). The map's recommendation is
-   to **close** it.
+4. **Two PDP decisions that must land before publishing.**
+
+   a. **Clear the Maple copy off the shared PDP template — the single largest
+   pre-publish item, live-visible on all 92 products.** `templates/product.json` is the
+   *only* product template in this theme, so every product renders it. Four of its
+   enabled sections carry hard-coded Maple copy, none metafield-driven: the
+   `product_tabs_fW4maV` tab (text *and* a `maple.webp` image), `story_video_VUwQ6f`
+   ("Maple has become one of ONA's most familiar coffees"), `product_dna_trxBBN`
+   (heading "Maple DNA") and `section_EhyeAD` ("Who's Maple For?"). Verified 2026-10-15
+   on one product of every suffix — an ONA vest's page currently says "Maple DNA".
+   Map §3.1 has the table; it is the same decision as the badge fallbacks, so take them
+   together. **Verify by fetching one product of each suffix and reading the page** —
+   this is invisible from the template, which is why it survived several review rounds.
+
+   b. **Resolve PR #142** -- the PDP body blocks (section 1.3). The map's recommendation
+   is to **close** it.
 
 **Then, the template decision (the long pole)**
 
