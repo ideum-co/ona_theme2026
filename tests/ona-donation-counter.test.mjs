@@ -73,9 +73,29 @@ test('does not render an empty CTA when no url is set', () => {
     source,
     /if section\.settings\.learn_more_text != blank and section\.settings\.learn_more_url != blank/
   );
+  // The guard is permanent, not a workaround: Shopify's schema does not support
+  // `default` on a `url` setting, and none of this theme's url settings has one.
   const schema = JSON.parse(schemaMatch[1]);
-  const url = schema.settings.find((item) => item.id === 'learn_more_url');
-  assert.equal(url.default, undefined, 'if a url default is added, this guard can relax');
+  const urls = schema.settings.filter((item) => item.type === 'url');
+  assert.ok(urls.length > 0);
+  for (const setting of urls) {
+    assert.equal(setting.default, undefined, `url setting ${setting.id} cannot carry a default`);
+  }
+});
+
+test('a six-figure total still fits a 320px viewport', () => {
+  // $ + n digits + a comma every third digit, so six digits is 8 children:
+  // 7x36 + 14 + 7x2 + 16 + 4 = 300px against 320 - 30 = 290px available.
+  // The 8th-child guard shrinks only that case, so the five-digit rendering
+  // matched against the live counter is untouched. Codex + reviewer, PR #150.
+  assert.match(source, /:has\(> \.donation-counter__card:nth-child\(8\)\)/);
+  const [, mobile] = source.split('@media screen and (max-width: 480px)');
+  const guarded = mobile.split(':has(> .donation-counter__card:nth-child(8))').slice(1).join('');
+  assert.match(guarded, /width: 32px;/);
+  assert.match(guarded, /width: 12px;/);
+  const card = 32, comma = 12, gap = 2, pad = 8, border = 2;
+  const width = 7 * card + comma + 7 * gap + 2 * pad + 2 * border;
+  assert.ok(width <= 320 - 2 * 15, `six-digit row is ${width}px, must fit 290px`);
 });
 
 test('the homepage CTA points at the campaign collection, as live does', () => {
