@@ -544,10 +544,22 @@ Suggested order:
    **Close PR #142 — and note that closing it does not do the fix §3.2 describes.** The
    two are separate: closing #142 *keeps* the Formswell header, but `ona_promo_tags` is
    still stranded inside the disabled `group_icgrde`, so the metafield-driven promo badge
-   renders nowhere on the PDP. The lift itself is one line — add `ona_promo_tags` to
-   `product-details`'s `block_order`; `blocks/_product-details.liquid` already accepts
-   `@theme` blocks, so no schema change. Nothing else in this order was scheduling it,
-   and the readiness doc lists "promo badges" only in its QA pass. (Codex, PR #150.)
+   renders nowhere on the PDP. Nothing else in this order was scheduling it, and the
+   readiness doc lists "promo badges" only in its QA pass. (Codex, PR #150.)
+
+   **The lift is a move, not a one-line order edit.** `ona_promo_tags` is defined
+   *only* at
+   `sections.main.blocks.product-details.blocks.group_icgrde.blocks.ona_promo_tags`, and
+   a `block_order` entry names a sibling in the same container. `product-details`'s
+   order already contains `group_icgrde`, so appending `ona_promo_tags` to that order
+   without moving anything leaves it pointing at a block that is not its sibling — the
+   badge stays absent, or the template is rejected. So: **move the whole block object up
+   into `product-details.blocks`** and then add its id to `product-details.block_order`,
+   removing it from `group_icgrde`'s `blocks` and `block_order`. Verified against the
+   live template 2026-10-15; `blocks/_product-details.liquid` accepts `@theme`, so still
+   no schema change. Worth noting the block itself is *not* disabled — only its parent
+   `group_icgrde` is, which is exactly why this looks like a placement bug rather than a
+   deliberate switch-off. (Codex, PR #150.)
 
    **But do the lift as a decision, not a chore, because the single shared template
    changes the question.** §3.4 established the parity target from live: coffee PDPs show
