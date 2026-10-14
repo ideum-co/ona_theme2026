@@ -246,6 +246,24 @@
     },
     {
       "type": "header",
+      "content": "Mobile layout"
+    },
+    {
+      "type": "range",
+      "id": "mobile_min_height",
+      "label": "Minimum height (mobile)",
+      "min": 300, "max": 1000, "step": 20, "unit": "px",
+      "default": 600
+    },
+    {
+      "type": "range",
+      "id": "mobile_content_top",
+      "label": "Content top spacing (mobile)",
+      "min": 0, "max": 600, "step": 20, "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
       "content": "t:content.appearance"
     },
     {
@@ -279,6 +297,24 @@
       "type": "video",
       "id": "video",
       "label": "t:settings.video",
+      "visible_if": "{{ section.settings.background_media == 'video' }}"
+    },
+    {
+      "type": "video",
+      "id": "mobile_video",
+      "label": "Mobile background video",
+      "info": "Optional portrait video. Desktop video is used when left blank.",
+      "visible_if": "{{ section.settings.background_media == 'video' }}"
+    },
+    {
+      "type": "select",
+      "id": "mobile_video_position",
+      "label": "Video fit (mobile)",
+      "options": [
+        {"value": "contain", "label": "Show entire video"},
+        {"value": "cover", "label": "Fill and crop"}
+      ],
+      "default": "contain",
       "visible_if": "{{ section.settings.background_media == 'video' }}"
     },
     {
