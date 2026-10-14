@@ -875,6 +875,26 @@
     z-index: var(--layer-raised);
   }
 
+  /* PDP: preserve the full product image on narrow screens.
+     The desktop media fit and zoom dialog remain unchanged. */
+  @media screen and (max-width: 749px) {
+    media-gallery .product-media-container--image:not(.dialog-zoomed-gallery *) {
+      aspect-ratio: var(--media-preview-ratio, var(--gallery-aspect-ratio, 1));
+    }
+
+    media-gallery .product-media-container--image:not(.dialog-zoomed-gallery *)
+      .product-media__image {
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .media-gallery--hint
+      :not(.dialog-zoomed-gallery) > .product-media-container--image:not(:only-child)
+      .product-media img {
+      object-fit: contain;
+    }
+  }
+
   /* Mobile thumbnails styling */
   @media screen and (max-width: 749px) {
     .media-gallery__mobile-controls[thumbnails] {
