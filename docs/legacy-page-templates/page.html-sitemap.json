@@ -1,0 +1,62 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "page_title": {
+      "type": "ona-page-title",
+      "settings": {
+        "title2": ""
+      }
+    },
+    "brewguides_and_training": {
+      "type": "ona-brewguides-and-training",
+      "blocks": {
+        "773dbd16-6a6f-468b-870a-1716f9e2ce49": {
+          "type": "block",
+          "settings": {
+            "image": "shopify://shop_images/latte_art-1.jpg",
+            "url": "shopify://pages/barista-courses",
+            "title": "Barista Courses"
+          }
+        },
+        "3ef7cb88-2524-4cc5-8c47-c3bfa8e9726d": {
+          "type": "block",
+          "settings": {
+            "image": "shopify://shop_images/brewguides-1.jpg",
+            "url": "https://onacoffee.com.au/blogs/brewguides",
+            "title": "Brewguides"
+          }
+        }
+      },
+      "block_order": [
+        "773dbd16-6a6f-468b-870a-1716f9e2ce49",
+        "3ef7cb88-2524-4cc5-8c47-c3bfa8e9726d"
+      ],
+      "disabled": true,
+      "settings": {}
+    },
+    "custom_liquid_L8mpdh": {
+      "type": "custom-liquid",
+      "name": "t:names.custom_liquid",
+      "settings": {
+        "custom_liquid": "<div class=\"html-sitemap container\">\n  <div class=\"html-sitemap__grid\">\n\n    <div class=\"html-sitemap__block\">\n  <h2>Pages</h2>\n\n  {% assign excluded_page_handles = 'search-results-page,spurit-merchant-notifications-cancelled,spurit-reminders-cancelled,spurit-invoices-cancelled,spurit-notifications-cancelled' | split: ',' %}\n\n  <ul class=\"__grid-2\">\n    {% for page_item in pages %}\n      {% unless page_item.handle == page.handle or excluded_page_handles contains page_item.handle %}\n        <li>\n          <a href=\"{{ page_item.url }}\">{{ page_item.title }}</a>\n        </li>\n      {% endunless %}\n    {% endfor %}\n  </ul>\n</div>\n\n    <div class=\"html-sitemap__block\">\n      <h2>Collections</h2>\n      <ul  class=\"__grid-2\">\n        {% for collection in collections %}\n          {% unless collection.handle == 'frontpage' %}\n            <li>\n              <a href=\"{{ collection.url }}\">{{ collection.title }}</a>\n            </li>\n          {% endunless %}\n        {% endfor %}\n      </ul>\n    </div>\n\n    <div class=\"html-sitemap__block\">\n      <h2>Products</h2>\n      <ul class=\"__grid-2\">\n        {% for product in collections.all.products limit: 250 %}\n          <li>\n            <a href=\"{{ product.url }}\">{{ product.title }}</a>\n          </li>\n        {% endfor %}\n      </ul>\n    </div>\n\n    <div class=\"html-sitemap__block\">\n  <h2>Blog Posts</h2>\n\n  {% comment %}\n    Add all your blog handles here.\n    Example blog URL: /blogs/news\n    Handle: news\n  {% endcomment %}\n\n  {% assign blog_handles = 'brewguides,flagship-stores, guides,news,recipes,news-1' | split: ',' %}\n  {% assign has_articles = false %}\n\n  {% for blog_handle in blog_handles %}\n    {% assign current_blog = blogs[blog_handle] %}\n\n    {% if current_blog != blank and current_blog.articles_count > 0 %}\n      {% assign has_articles = true %}\n\n      <h3>\n        <a href=\"{{ current_blog.url }}\">\n          {{ current_blog.title }}\n        </a>\n      </h3>\n\n      <ul class=\"__grid-2\">\n        {% for article in current_blog.articles limit: 250 %}\n          <li>\n            <a href=\"{{ article.url }}\">\n              {{ article.title }}\n            </a>\n          </li>\n        {% endfor %}\n      </ul>\n    {% endif %}\n  {% endfor %}\n\n  {% unless has_articles %}\n    <p>No blog posts found.</p>\n  {% endunless %}\n</div>\n\n  </div>\n</div>\n\n<style>\n  .html-sitemap {\n    padding-top: 40px;\n    padding-bottom: 60px;\n  }\n\n  .html-sitemap__grid {\n    display: grid;\n    grid-template-columns: repeat(1, minmax(0, 1fr));\n    gap: 40px;\n  }\n.__grid-2 {\ndisplay: grid;\n    grid-template-columns: repeat(2, minmax(0, 1fr));\ngap: 5px;\n}\n\n  .html-sitemap__block h2 {\n    margin-bottom: 16px;\n    font-size: 24px;\n  }\n\n  .html-sitemap__block h3 {\n    margin-top: 24px;\n    margin-bottom: 10px;\n    font-size: 18px;\n  }\n\n  .html-sitemap__block ul {\n    margin: 0;\n    padding-left: 20px;\n  }\n\n  .html-sitemap__block li {\n    margin-bottom: 8px;\n  }\n\n  .html-sitemap__block a {\n    text-decoration: none;\n  }\n\n  .html-sitemap__block a:hover {\n    text-decoration: underline;\n  }\n\n  @media screen and (max-width: 749px) {\n    .html-sitemap__grid {\n      grid-template-columns: 1fr;\n      gap: 32px;\n    }\n\n    .html-sitemap {\n      padding-top: 32px;\n      padding-bottom: 48px;\n    }\n  }\n</style>",
+        "color_scheme": "",
+        "section_width": "page-width",
+        "padding-block-start": 0,
+        "padding-block-end": 0
+      }
+    }
+  },
+  "order": [
+    "page_title",
+    "brewguides_and_training",
+    "custom_liquid_L8mpdh"
+  ]
+}

@@ -1,0 +1,176 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "page_title": {
+      "type": "ona-page-title",
+      "settings": {
+        "title2": "FAQ's"
+      }
+    },
+    "faq_layout": {
+      "type": "ona-faq-layout",
+      "settings": {},
+      "blocks": {
+        "cat-0": {
+          "type": "_faq-category",
+          "settings": {
+            "title": "Products"
+          },
+          "blocks": {
+            "item-0": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "Can you grind my coffee?",
+                "content": "<p>All of the coffee we sell comes as whole beans, i.e. not ground. If you are ordering coffee online and would like it to be ground, please enter your grinding preferences in the comments upon checkout. Please specify the method you will be using to prepare your coffee, e.g. 'espresso', 'Aeropress' and so on.<br/>Please be aware that not all grinders will grind coffee the same way, so what you receive may be different to the ground coffee you've had from other suppliers or grinders.</p>"
+              }
+            },
+            "item-1": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "What\u2019s the difference between filter and espresso?",
+                "content": "<p>'Filter' and 'espresso' refer to different methods of preparing coffee. Espresso or milk-based coffees are made using an espresso machine, whereas filter coffees are made with varying brewing methods. We roast our coffees in three different ways to suit these three styles (filter, espresso and milk-based).<br/> <br/>Filter roasts are less developed, meaning they are roasted for a shorter time and lighter, resulting in more delicate flavours. In contrast, our espresso and milk-based coffees are roasted for a bit longer so that the flavours are more pronounced. </p>"
+              }
+            },
+            "item-2": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "I found a coffee online but I can\u2019t order it?",
+                "content": "<p><br/>As we receive new and exciting lots of coffee worldwide, we constantly change our offerings online. Usually, this means that the coffee is out of stock or our monthly rotation has changed. If you believe that a product is incorrectly labelled as out of stock,\u00a0<a href=\"/pages/contact\" target=\"_blank\" title=\"Contact\"><strong>please let us know</strong></a><strong>.\u00a0 \u00a0</strong><br/><br/></p>"
+              }
+            },
+            "item-3": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "Why are your coffee prices changing?",
+                "content": "<p>We know price changes are never fun \u2014 but they\u2019re necessary, and we want to be completely transparent about why we\u2019re making this one.</p><p>It\u2019s been over two years since we last adjusted our prices \u2014 even through a cost of living crisis, rising interest rates, and growing pressure across the supply chain. But recently, the cost of continuing to produce and source high-quality coffee has risen significantly. From climate change affecting harvests to increased shipping and labour costs, the entire coffee world is under unprecedented strain.</p><p>Rather than compromise on quality or cut corners \u2014 which we would never do \u2014 we\u2019ve made the decision to maintain our standards. In doing so, we\u2019ve had to slightly increase our prices to support the people and processes behind every cup.</p><p>We\u2019ve also taken steps to manage the impact wherever possible, including sourcing exceptional coffees from Ethiopia, where a favourable harvest has allowed us to secure truly beautiful coffees\u00a0</p><p><strong>A note from Sasa Sestic:</strong><br/>Hear directly from our founder and CEO as he shares what\u2019s happening in the coffee world, how it impacts all of us, and what Ona is doing about it; finding best possible solutions for our community \u2014 from farm to cup. <a href=\"https://www.youtube.com/watch?v=UPs1A5-W1n0&ab_channel=ONACoffee\" target=\"_blank\" title=\"https://www.youtube.com/watch?v=UPs1A5-W1n0&ab_channel=ONACoffee\"><strong>Watch the video here.</strong></a></p><p>We appreciate your continued support \u2014 it helps us keep delivering the quality you expect, no matter the challenges.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "item-0",
+            "item-1",
+            "item-2",
+            "item-3"
+          ]
+        },
+        "cat-1": {
+          "type": "_faq-category",
+          "settings": {
+            "title": "Shipping"
+          },
+          "blocks": {
+            "item-0": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "Do you ship to China?",
+                "content": "<p>Yes, we ship to China</p>"
+              }
+            },
+            "item-1": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "I was charged additional fees when my international shipment arrived",
+                "content": "<p>All international customs clearance issues and import duty, fees or taxes costs are the responsibility of the consignee/customer. Please check your local customs import regulations and limitations before placing your order. ONA Coffee takes no responsibility to clear orders / consignments held by international customs.</p><p><br/>By default, all international orders will be set to deliver without a signature required and may be left unattended at your delivery address. If you would not like this to occur, please wait for your tracking number and use it to contact the assigned courier to your order. ONA Coffee takes no responsibility for lost or misplaced orders.</p>"
+              }
+            },
+            "item-2": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "Which courier/postal service will my order be sent with?",
+                "content": "<p>We use a range of couriers and postal services, depending on the country of delivery, type of order or delivery address. Upon checkout, you can typically select from one of several options for delivery. If your delivery address is a parcel locker or apartment, we will generally choose the courier for you. For international orders, we usually use DHL.</p>"
+              }
+            },
+            "item-3": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "How do I find my tracking details?",
+                "content": "<p>Upon payment of your order, you will receive a confirmation email with your order details. In this email, you can find a link to the tracking details for your order. </p><p>You can also select to receive updates via SMS when your order is despatched and out for delivery. Please be advised that these tracking details are provided to us by the courier.</p><p>We, unfortunately, cannot provide more information than what is listed. If you can't find your tracking information, please check your spam folder in your emails.</p>"
+              }
+            },
+            "item-4": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "I was charged additional fees when my international shipment arrived",
+                "content": "<p>ONA Coffee takes no responsibility for orders/consignments once the shipment has been picked up and left our premises. All customs clearance issues and import duty costs are the responsibility of the consignee/customer.<br/>By default, all orders will be set to deliver without a signature and may be left unattended at your delivery address. If you would not like this to occur, please wait for your tracking number and use it to contact the assigned courier to your order. ONA Coffee takes no responsibility for lost or misplaced orders.</p>"
+              }
+            },
+            "item-5": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "At the checkout, it says \u2018no shipping method available\u2019 - what does this mean?",
+                "content": "<p>We offer shipping to many countries around the world. However, if you have entered your delivery address and it says 'no delivery method available, it can mean one of several things: (i) we are unable to ship to your country due to trade embargoes; (ii) your country does not accept organic products (such as coffee) to be delivered via post or (iii) there is an error with our delivery system. If you believe there is an error, please\u00a0<a href=\"/pages/contact\" target=\"_blank\" title=\"Contact\"><strong>contact us.</strong></a><br/></p><p>Countries we cannot currently ship to: Afghanistan, Ascension Island, French Southern Territories, Gauteng (South Africa), Mexico, Russia, Solomon Islands, South Georgia & South Sandwich Islands, Turks & Caicos Islands, Outlying Islands and Ukraine.<br/></p>"
+              }
+            },
+            "item-6": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "Will I be charged duties or tariffs when ordering from the USA?",
+                "content": "<p>If any\u00a0<strong>duties, taxes, or tariffs</strong>\u00a0are ever applied by US Customs, they will be the\u00a0<strong>responsibility of the receiver</strong>. We recommend checking with your local customs office for the most up-to-date information before placing a high-value order.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "item-0",
+            "item-1",
+            "item-2",
+            "item-3",
+            "item-4",
+            "item-5",
+            "item-6"
+          ]
+        },
+        "cat-2": {
+          "type": "_faq-category",
+          "settings": {
+            "title": "Account"
+          },
+          "blocks": {
+            "item-0": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "I can't access my account, what's going on?",
+                "content": "<p>Our website is still under construction as we want to make sure that we can deliver the best experience to you. Some pages will still be unavailable during this time of development while we work hard on getting them just right. To log in to your account, please visit this <a href=\"https://onacoffee.com.au/account/login\" title=\"https://onacoffee.com.au/account/login\"><strong>page</strong></a><strong>.</strong></p>"
+              }
+            },
+            "item-1": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "I have a discount code, how do I use it?",
+                "content": "<p>If you have a valid discount code, enter it upon checkout, and your discount will be applied. If your code is not working and you believe it should be valid, please contact us at admin@onacoffee.com.au </p>"
+              }
+            },
+            "item-2": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "How can I become a wholesale partner?",
+                "content": "<p>Thanks for considering us for your business! We would love to chat with you about our wholesale program! Please get in contact with us and read more about our program <a href=\"/pages/wholesale\" title=\"Wholesale Coffee\"><strong>here.</strong></a></p><p></p>"
+              }
+            }
+          },
+          "block_order": [
+            "item-0",
+            "item-1",
+            "item-2"
+          ]
+        }
+      },
+      "block_order": [
+        "cat-0",
+        "cat-1",
+        "cat-2"
+      ]
+    }
+  },
+  "order": [
+    "page_title",
+    "faq_layout"
+  ]
+}
