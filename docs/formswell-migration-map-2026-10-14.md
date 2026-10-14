@@ -406,9 +406,12 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    three tabs — `Profile` (populated), **`Brew Guide` (empty)** and **`Reviews`
    (empty)** — while the `brew_guide` and `story` sections that used to carry that
    content are disabled. Nothing else on the enabled PDP reads
-   `accentuate.content_brew_guide`, `title_item`/`content_item`, `content_origin` or
-   `content_sourcing`. On the real 2026 PDP today, brew-guide recipes, origin and
-   sourcing copy therefore render **nowhere** — even though `accentuate.content_brew_guide`
+   `accentuate.content_brew_guide`, `title_item`/`content_item`,
+   `content_coffee_profile`, `image_coffee_profile_1`/`_2`, `content_origin`,
+   `content_sourcing`, `image_origin`, or the flat sourcing specs
+   (`producer`, `region`, `varietal`, `process`, `altitude`). On the real 2026 PDP today,
+   brew-guide recipes, the Coffee Profile prose and imagery, and origin and
+   sourcing therefore render **nowhere** — even though `accentuate.content_brew_guide`
    is populated on **32** products (of 44 coffee: 36 no-suffix, 6 `Default product`,
    2 `filtersub`), and `title_item`/`content_item` on the same 32. This is the largest
    content regression on the list and it is invisible from the repo.
@@ -556,7 +559,9 @@ Suggested order:
    | product FAQs | `custom.accordion` | **23** | re-enable `faqs`, or a tab |
    | Coffee Profile prose | `accentuate.content_coffee_profile` | **37** | read only by the disabled `story` section |
    | Coffee Profile images | `accentuate.image_coffee_profile_1` / `_2` | **37** each | no renderer exists yet |
-   | origin / sourcing | `accentuate.content_origin` / `content_sourcing` | ~25 | `product-dna` or a tab |
+   | origin / sourcing prose | `accentuate.content_origin` / `content_sourcing` | **25** | read only by the disabled `story` section |
+   | origin image | `accentuate.image_origin` | **25** | no renderer exists yet |
+   | sourcing specs | `accentuate.producer`, `region`, `varietal`, `process`, `altitude` | **25** each | read only by the disabled `story` section |
 
    **Two of these are removals, not ports, and both are live-visible defects:**
 
@@ -570,6 +575,14 @@ Suggested order:
      disabled, so the `custom.accordion` content on 23 products — coffee, equipment and
      merch alike — is dropped at go-live. Re-enable it in the right position, or move the
      accordion into a tab.
+
+   **Origin and sourcing are one populated set, not two prose fields.** All eight fields
+   above co-occur exactly: on the same **25** products, every one of
+   `content_origin`, `content_sourcing`, `image_origin`, `producer`, `region`,
+   `varietal`, `process` and `altitude` is present, and on the other 67 none is. So this
+   is a single destination decision for a structured spec block plus an image, not a
+   copy-paste of two rich-text fields — and the flat specs are the half most likely to be
+   dropped, because the prose is the part anyone notices missing. Codex, PR #150.
 
    **Coffee Profile is half-ported, which is easy to miss.** §1 of
    `product-page-enrichment-sections.md` records the section as *already ported* — and
