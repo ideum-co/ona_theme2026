@@ -1,5 +1,21 @@
 # Post-publish review — live storefront, 15 October 2026
 
+> # ⚠️ SUPERSEDED IN PART — THE PUBLISHED THEME CHANGED AGAIN AT 22:00:42Z
+>
+> **Sections 2–7 describe theme `154676789439` (`ona_theme2026/main`) while it
+> was live. It is no longer live.** At **2026-10-14 22:00:42Z**, while this
+> review was being written, a different theme was published:
+> **`160815546559` — "PREVIEW - product media fills column (PR #46)"**.
+>
+> **The blank pages and the missing app embeds are therefore no longer on the
+> storefront** — that theme is the *old* theme and has all of it. The findings
+> below remain accurate as a description of the 2026 theme, and they are the
+> work that must be done before it can be published again. **§13 records the
+> current state and what it now means.**
+>
+> **Do not delete theme `160815546559`.** It was on the delete list as a
+> leftover preview. It is now the live store.
+
 Theme **`154676789439` (`ona_theme2026/main`)** became `role: MAIN` at
 **2026-10-14 ~15:43Z**. This document records what the published storefront
 actually serves, measured by fetching live URLs and reading the live theme's
@@ -359,3 +375,83 @@ resizing at roughly 1283 px and the storefront blocks iframes via
 move media queries. The `max-width: 749px` figure above is read from the source,
 not observed. A real phone check is outstanding — as it still is for the earlier
 PDP image sizing work and the Water For Good counter.
+
+---
+
+## 13. Second publish, 22:00:42Z — what is live now
+
+Measured at the time of writing. **Two publishes happened inside about 30
+hours**, and the second was not to the theme anyone had named as the rollback.
+
+| when | theme published | what it is |
+|---|---|---|
+| 2026-10-14 ~15:43Z | `154676789439` `ona_theme2026/main` | the 2026 Horizon theme, GitHub-connected |
+| 2026-10-14 22:00:42Z | **`160815546559`** "PREVIEW - product media fills column (PR #46)" | **an ad-hoc preview theme**, created 2026-10-13, not connected to any repository |
+
+The named rollback, `160335790271`, was **not** the one published.
+
+### Was it the right thing to publish?
+
+Functionally, yes — and it is slightly *better* than the named rollback.
+Compared file by file, `160815546559` is byte-identical to `160335790271`
+across every template and across `config/settings_data.json`
+(`dc554228f3ea46bfbbdfc3dc8bd32c9c`, 22,183 b), except three files:
+
+| file | live `160815546559` | rollback `160335790271` |
+|---|---|---|
+| `snippets/product-media-gallery-content.liquid` | `0f4cdc15…`, 36,795 b | the PR #46 PDP media fix is **only** on the live one |
+| `templates/product.filtersub.json` | `dc8be58f…`, **12,780 b** | `3a78daf7…`, 6,596 b |
+| `templates/index.json` | `fc0a8aa9…`, 47,109 b | `334174f3…`, 47,079 b (+30 b) |
+
+Verified on the live storefront after the swap:
+
+- **Every finding in §2 and §4 is gone.** `/pages/about` renders 2,414 chars
+  again; `globo-formbuilder` ×24, `appstle` ×709 and `jdgm-` ×135 are back on
+  every page, because `settings_data.json` carries all ten app embeds.
+- **The Maple copy is gone from other products.** "maple tree" appears 3× on
+  `/products/maple` and **zero times** on `/products/ona-vest`.
+- **Subscriptions, Judge.me and the Water For Good counter all work** — the
+  counter still reads `data-amount="11129"` under "DOLLARS CONTRIBUTED SO FAR".
+- **The `filtersub` cross-sell gap is closed on the live store.** All PDPs,
+  including `/products/single-origin-subscription-filter`, render 19
+  complementary-recommendation references. That is the doubled
+  `product.filtersub.json` above, and it addresses exactly what
+  `cross-sell-and-forward-compatibility.md` flagged: the store's
+  highest-attach page (8.05%, 5.7× baseline) previously had no cross-sell.
+
+### What it costs
+
+- **The live store is governed by nothing.** `160815546559` is not connected to
+  a GitHub branch, so no repository holds its state, no test runs against it,
+  and its only copy is the theme itself. Both of its unique changes — the PR #46
+  media fix and the enlarged `product.filtersub.json` — exist **only there**.
+  `onacoffee_theme` PR #46 is merged, so the media fix is recoverable from that
+  repo; the `filtersub` template is not in either repository.
+- **It was scheduled for deletion.** This theme and `160861159615` were both on
+  the clean-up list as leftover previews. `160815546559` must now be struck from
+  that list. `160861159615` is still safe to delete.
+- **`main` no longer deploys.** `154676789439` is `UNPUBLISHED` again, so a merge
+  to `ona_theme2026`'s `main` reaches an unpublished theme. The staging workflow
+  in `docs/branching-and-release.md` is still the right arrangement — it is what
+  makes the *next* publish a decision rather than a side effect — but the
+  immediate pressure is off.
+
+### What to do about it
+
+1. **Decide whether this is the intended live theme.** If it is, it needs a name
+   that says so and its two unique changes need to be captured somewhere
+   durable. If it is not, publish `160335790271` instead and accept losing the
+   PR #46 fix and the `filtersub` cross-sell, or port both first.
+2. **Pull `templates/product.filtersub.json` off it before anything else.** It
+   is the only copy of work that closes a measured 8.05%-attach gap, and it
+   lives on a theme that was nearly deleted this week.
+3. **Work the §2–§7 list** before `154676789439` is published again. Nothing in
+   it has been fixed — the storefront simply stopped showing it.
+
+### And the obvious one
+
+Two unannounced publishes in thirty hours, the second of a theme named
+"PREVIEW", is the actual finding. `docs/branching-and-release.md` governs the
+repository; it cannot govern the Publish button. Agreeing who publishes, and
+that a publish is announced before it happens, is the part that has to be
+settled between people rather than in configuration.

@@ -23,13 +23,22 @@ point is that no one *chose* to deploy it.
 
 `staging` exists so that merging and deploying become two different decisions.
 
+> **Update, 2026-10-14 22:00:42Z — and this makes the case rather than weakening
+> it.** A third publish put theme **`160815546559`** ("PREVIEW - product media
+> fills column (PR #46)") live, so `154676789439` is unpublished again and a
+> merge to `main` no longer reaches customers *today*. Two unannounced publishes
+> in thirty hours is precisely the problem: the storefront changed twice without
+> a decision either time. Keep working on `staging` — the moment
+> `154676789439` is published again, `main` is production again, and nobody will
+> send a reminder. See `docs/post-publish-review-2026-10-15.md` §13.
+
 ---
 
 ## 2. The branches
 
 | branch | what it is | deploys to |
 |---|---|---|
-| `main` | **production.** Whatever is here is what customers see. | theme `154676789439`, the live store |
+| `main` | the branch the 2026 theme tracks | theme `154676789439` — **unpublished again as of 2026-10-14 22:00:42Z**, so a merge currently reaches a theme no customer sees |
 | `staging` | the integration branch. Everything lands here first. | a staging theme — see §3 |
 | `feat/*`, `fix/*`, `docs/*` | one change each | nothing |
 
@@ -135,7 +144,9 @@ Paste into the body of every `staging` → `main` PR:
 - [ ] No `templates/*.json` or `config/settings_data.json` touched
       — or, if touched: live checksum read, reconciled, recorded below
 - [ ] Section count ≤ 25 and blocks ≤ 50 for every JSON template changed
-- [ ] Rollback named: theme `160335790271` is the pre-cutover storefront
+- [ ] Rollback named — and check which theme is actually `MAIN` first; it has
+      changed twice without notice. `160335790271` is the pre-cutover theme;
+      `160815546559` is what is live as of 2026-10-14 22:00:42Z
 - [ ] Deploying at a sensible hour (AEDT), not into a promo window
 
 **Checksums read before merge:**
