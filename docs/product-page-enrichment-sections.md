@@ -84,12 +84,17 @@ hurry.
   inconsistency that "empirically works on live, didn't chase down why": the reason
   is that the compound handle is right, and it only looked wrong because a bare
   handle was assumed.
+  - **Never strip the prefix.** `article.handle` in Liquid is itself compound
+    ([docs](https://shopify.dev/docs/api/liquid/objects/article), e.g.
+    `potion-notions/how-to-tell-if-you-have-run-out-of-invisibility-potion`), so the
+    stored `brewguides/maple` is the correct form for *both* access patterns.
   - **Direct lookup (preferred): `articles[pointer]`, prefix intact.** One lookup,
     no loop over 747 articles.
-  - **Only if you loop the blog** and compare against `article.handle`, which *is*
-    bare, normalise with `| split: '/' | last`.
-  - Stripping the prefix and *then* doing a direct lookup resolves nothing. That is
-    what an earlier version of this correction told you to do. (Codex, PR #150.)
+  - **A loop also works unchanged:** `a.handle == raw_handle` compares compound with
+    compound. This is why live works, and two earlier versions of this file were
+    wrong about it — first recommending a "defensive" `| split: '/' | last`, then
+    scoping that strip to the loop case. Either would have broken all 24 matches.
+    (Codex, PR #150.)
   - Either way, handle the case where the pointer names an article that no longer
     exists — lot rotation makes that likely.
 - The **product** carries `accentuate.content_brew_guide` (heading/intro
@@ -101,10 +106,11 @@ hurry.
   products, at least in the 5 sampled) — so this is a real per-product
   content type, not a small shared set.
 - Horizon note: use the global `articles[pointer]` with the stored value as-is —
-  a single lookup instead of live's loop over 747 articles. Note this is
-  `articles[...]`, **not** `blogs.brewguides.articles[handle]`, which an earlier
-  version of this bullet recommended: `blog.articles` is an array, and the
-  handle-indexed form is the global one keyed by the compound handle.
+  a single lookup instead of live's loop over 747 articles, which is also capped at
+  the first page by its `paginate ... by 250`. Note this is `articles[...]`, **not**
+  `blogs.brewguides.articles[handle]`, which an earlier version of this bullet
+  recommended: `blog.articles` is an array, and the handle-indexed form is the global
+  one keyed by the compound handle.
 
 ### 3. Origin — NOT PORTED, **pre-publish** (prevalence measured 2026-10-15)
 - Source: `accentuate.image_origin` (single raw image URL) +

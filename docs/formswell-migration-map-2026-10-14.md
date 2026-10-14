@@ -322,17 +322,18 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
 1. **`page.locations.json` never renders.** The live page carries suffix **`location`**
    (singular); both the repo and the shop theme `154676789439` ship
    `templates/page.locations.json` (plural, 706 b) and no `page.location.json` —
-   verified by filename against the theme. **Rename the file**, in this repo, rather than
-   re-pointing the page: a page's `templateSuffix` is shop-wide, so re-pointing it would
-   also move the page on the currently published theme, where `location` presumably
-   resolves correctly today. **The rename has a dependency:**
-   `docs/locations-metaobject-migration.md` tells an operator to select and verify
-   `page.locations` in the theme editor (lines 3, 11, 15, 68), and
-   `tests/locations-page-template.test.mjs:22` hard-codes
-   `templates/page.locations.json`. Renaming the only file to `page.location.json`
-   removes the template that guide advertises and fails that test, so **the rename is
-   three edits in one commit**: the file, the guide, and the test path. (Codex, PR #150,
-   twice.) The
+   verified by filename against the theme. **Resolved 2026-10-15 by PR #157
+   (`eab4f0f`), which added `templates/page.location.json`** — byte-identical to the
+   plural file, 706 b, md5 `c70c9421…`. The `location` suffix now resolves and the page
+   no longer falls back, so this is **no longer outstanding**. Note the route taken was
+   to *add* the singular file rather than rename or re-point: adding breaks nothing,
+   whereas re-pointing the page would have been a shop-wide change on the published
+   theme (§5 step 7), and renaming would have broken
+   `docs/locations-metaobject-migration.md` and
+   `tests/locations-page-template.test.mjs:22`, both of which name the plural. **What is
+   left is only a tidy-up, and it is optional:** two byte-identical templates is a
+   duplicate, so if the plural one is deleted it has to go together with that guide and
+   that test, in one commit. (Codex, PR #150.) The
    page itself is finished; this is the single highest-value fix on the list.
 2. **The promo badge on equipment/merch PDPs** — live's `product-template-2`/`-3` show
    it, the 2026 PDP does not. Cards are now at parity (PR #149 `d11e425`) and coffee PDPs
@@ -470,8 +471,13 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    `blog-handle/article-handle`
    ([docs](https://shopify.dev/docs/api/liquid/objects/articles)), so the stored
    `brewguides/maple` is already exactly the right key: `articles[pointer]` resolves
-   it directly. Only strip with `| split: '/' | last` if you instead loop the blog and
-   compare against `article.handle`, which is bare. Codex, PR #150.
+   it directly. **Never strip it** — not for the direct lookup, and not for a loop
+   either: `article.handle` in Liquid is *itself* compound
+   ([docs](https://shopify.dev/docs/api/liquid/objects/article), e.g.
+   `potion-notions/how-to-tell-if-you-have-run-out-of-invisibility-potion`), so
+   `a.handle == raw_handle` compares like with like and matches. An earlier version of
+   this line said to strip for the loop case; that would have broken all 24. Codex,
+   PR #150, twice — the second time correcting the first.
 
    PR #149 therefore did not "change nothing" — it deployed. `ona-donation-counter.liquid`,
    `_product-card.liquid`, `collection.json` and `search.json` all landed on the theme at
@@ -551,7 +557,9 @@ Suggested order:
    lands, and **afterwards re-read the checksums and confirm each file you touched
    actually changed** — an unchanged checksum is the only symptom a silent refusal
    produces.
-2. Fix the `location` / `page.locations` mismatch. (hours — estimate)
+2. ~~Fix the `location` / `page.locations` mismatch.~~ **Done — PR #157 added
+   `templates/page.location.json`.** Optionally delete the duplicate plural file, with
+   its guide and test, in one commit.
 3. **Settle the static copy on shared templates (§3.1) — the biggest pre-publish item,
    live-visible on all 92 PDPs.** `templates/product.json` is the only product template,
    so every product renders the Maple tab (text *and* its `maple.webp` image), the Maple
@@ -685,22 +693,26 @@ Suggested order:
    `?WIDTHxHEIGHT` → `width`/`height` parsing, or CLS regresses. Finish by clicking every
    tab on a real PDP: none may open an empty panel.
 
-   > **Do not reuse the disabled `brew_guide` custom-liquid as-is. Enabled unchanged it
-   > renders nothing, for every product.** Read in full 2026-10-15; it has three
-   > independent faults, and each alone is fatal:
+   > **Do not reuse the disabled `brew_guide` custom-liquid as-is.** Read in full
+   > 2026-10-15; it has **two** faults:
    >
    > 1. `{% if raw_handle != blank and has_content %}` wraps **everything**, including
    >    the spec table. The table is product data, but 8 of the 32 products that have a
    >    table have no `select_artlice` (32 with tables, 24 with pointers) — every drip
    >    bag among them — so those render nothing even though their data is complete.
-   > 2. The match is `{% if a.handle == raw_handle %}`, comparing a **bare** article
-   >    handle against a **prefixed** pointer: `maple` vs `brewguides/maple`. That is
-   >    never true, so even the 24 products *with* pointers render nothing. This is the
-   >    loop form that §2 of `product-page-enrichment-sections.md` says needs
-   >    `| split: '/' | last`, written without it.
-   > 3. `{% paginate blogs.brewguides.articles by 250 %}` scans only the first page, and
-   >    the `brewguides` blog holds **747** articles — so even with fault 2 fixed, two
-   >    thirds of pointers could not resolve.
+   > 2. `{% paginate blogs.brewguides.articles by 250 %}` scans only the first page, and
+   >    the `brewguides` blog holds **747** articles — so a pointer at an article outside
+   >    the first 250 cannot resolve.
+   >
+   > **Corrected:** an earlier version of this note claimed a third fault — that
+   > `{% if a.handle == raw_handle %}` compares a bare handle against a prefixed pointer
+   > and so never matches, making the block render nothing for anyone. **That is wrong.**
+   > `article.handle` in Liquid is itself compound
+   > ([docs](https://shopify.dev/docs/api/liquid/objects/article)), so both operands are
+   > `blog-handle/article-handle` and the comparison matches. That is also the real
+   > explanation for the "empirically works on live, didn't chase down why" note this
+   > project carried for weeks: it works because both sides are compound. The block is
+   > buggy, not inert. (Codex, PR #150 — raising fault 1, then correcting my fault 2.)
    >
    > **The shape to build instead:** render **both** the intro and the table from the
    > product, **outside any article gate**. `content_brew_guide` is product-owned and
@@ -708,9 +720,9 @@ Suggested order:
    > drop it for the 8 that have no pointer, which is the same mistake as fault 1 in a
    > different place. Resolve the article **only** for the "Full brewing guide" link, and
    > render that link conditionally on the lookup succeeding, with the global
-   > `articles[raw_handle]`, prefix intact: one lookup, no loop, no pagination, no
-   > 747-article scan. So: intro and table unconditional, link conditional. (Codex,
-   > PR #150, twice.)
+   > `articles[raw_handle]`, **prefix intact** — one lookup, no loop, no pagination, no
+   > 747-article scan. So: intro and table unconditional, link conditional, and the
+   > pointer is never stripped.
 6. Settle the three remaining product-template decisions (§3.3) — **and build them in
    the same step.** All three change what renders, and none of them is a no-op:
 

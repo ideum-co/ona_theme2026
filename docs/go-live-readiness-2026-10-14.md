@@ -279,11 +279,15 @@ has not been made.
    more), then `product-2`/`product-3` (48 products: equipment, merch, candles), then
    `wholesale`, `learn`, `location`, `faq`. Map §2 lists the orphans; §3 lists the real
    decisions.
-6. Fix the `location` / `page.locations` suffix mismatch -- rename the **file** to
-   `page.location.json` (not the page's suffix, which is shop-wide). Update
-   two things in the same commit, or they break: `docs/locations-metaobject-migration.md`,
-   which tells an operator to pick `page.locations` in the theme editor, and
-   `tests/locations-page-template.test.mjs:22`, which hard-codes the old path.
+6. ~~Fix the `location` / `page.locations` suffix mismatch.~~ **Done 2026-10-15 — PR
+   #157 (`eab4f0f`) added `templates/page.location.json`**, byte-identical to the plural
+   file, so the `location` suffix resolves and the page no longer falls back. Adding the
+   singular file was the right route: re-pointing the page would have been a shop-wide
+   change on the published theme, and renaming would have broken
+   `docs/locations-metaobject-migration.md` and
+   `tests/locations-page-template.test.mjs:22`. All that is left is optional tidy-up --
+   the two files are duplicates, and deleting the plural one has to take that guide and
+   that test with it, in one commit.
 
 **Then the surfaces, in the order you asked for**
 
@@ -309,7 +313,8 @@ has not been made.
    dropped: render the **intro and the table unconditionally** from the product, and make
    only the **link** conditional on resolving `articles[select_artlice]` (prefix intact).
    Do **not** start from the disabled `brew_guide` block -- map §5 step 5 lists its three
-   faults; enabled as-is it renders nothing for anyone.
+   faults: it gates the product-owned table on the article pointer, and its
+   `paginate ... by 250` loop cannot reach an article past the first page of 747.
 
    **And build every product-suffix outcome the step 5 audit decided** -- all four of
    them, not just equipment. Step 5 records the choices and step 7b only QA-checks them,

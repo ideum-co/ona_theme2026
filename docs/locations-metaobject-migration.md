@@ -10,21 +10,21 @@ create, update, or otherwise mutate metaobjects or their relationships.
    page (or create it).
 2. In **Theme template**, choose **`location`** — and only `location`.
 
-   > **Do not select `locations`, and do not change this page's template at all until
-   > the rename has landed.** The page already carries the suffix `location`.
-   > `templateSuffix` is shop-wide, not per theme, so saving `locations` here would
-   > immediately take the Locations page off its working `location` template on the
-   > **currently published** theme. That is a live regression, caused by following this
-   > guide.
+   > **Do not select `locations`.** The page already carries the suffix `location`, and
+   > `templateSuffix` is shop-wide rather than per theme — so saving `locations` here
+   > would immediately take the Locations page off its working template on the
+   > **currently published** theme. That is a live regression caused by following this
+   > guide. (An earlier version of this note offered `locations` as a transitional
+   > option. It should not have.)
    >
-   > The mismatch is on the theme's side: this theme ships
-   > `templates/page.locations.json` (plural) and no `page.location.json`, which is why
-   > the page falls back here today. Map §3.3 fixes it by renaming the **file** to
-   > `page.location.json` — three edits in one commit: the file, this guide, and
-   > `tests/locations-page-template.test.mjs`. **Wait for that, then the existing
-   > `location` assignment just works and this step is a no-op.** (Codex, PR #150 — an
-   > earlier version of this note offered `locations` as a transitional option, which
-   > was exactly the hazard the map exists to avoid.)
+   > **Nothing needs waiting for: `templates/page.location.json` landed in PR #157
+   > (`eab4f0f`)**, byte-identical to the plural file. So the existing `location`
+   > assignment already resolves and **this step is normally a no-op** — open the page,
+   > confirm the template reads `location`, and change nothing.
+   >
+   > The plural `page.locations.json` is still present and is now a duplicate. If it is
+   > ever deleted, this guide and `tests/locations-page-template.test.mjs` have to go in
+   > the same commit, since both name it. (Codex, PR #150.)
 3. Open that page in the Theme Editor. The template contains **Locations
    header**, **Locations store finder**, and **Locations flagships**.
 
