@@ -302,8 +302,10 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    content are disabled. Nothing else on the enabled PDP reads
    `accentuate.content_brew_guide`, `title_item`/`content_item`, `content_origin` or
    `content_sourcing`. On the real 2026 PDP today, brew-guide recipes, origin and
-   sourcing copy therefore render **nowhere**, even though the metafields are populated
-   on most coffees.
+   sourcing copy therefore render **nowhere** — even though `accentuate.content_brew_guide`
+   is populated on **32** products (of 44 coffee: 36 no-suffix, 6 `Default product`,
+   2 `filtersub`), and `title_item`/`content_item` on the same 32. This is the largest
+   content regression on the list and it is invisible from the repo.
 
    So PR #149 landing changes nothing on the storefront by itself. Deploying the counter
    means importing `sections/ona-donation-counter.liquid` (safe) and adding the section
