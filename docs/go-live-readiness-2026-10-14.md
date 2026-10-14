@@ -310,16 +310,32 @@ has not been made.
    Do **not** start from the disabled `brew_guide` block -- map §5 step 5 lists its three
    faults; enabled as-is it renders nothing for anyone.
 
-   **And build whatever step 6 decided for `product-2`/`product-3`.** The decision is
-   recorded at step 6 and nothing else here builds it, so the equipment specs render
-   nowhere either way: `accentuate.content_product_info` on **20** equipment products and
-   `video_url` on **6** are read by nothing (the `properties_table` custom-liquid reads
-   only `accentuate.components`). Whichever option step 6 picked -- a
-   `product.product-2.json` of its own, or an optional specs/video region on the shared
-   PDP -- it gets implemented here, with the paired-array loop from the `brew_guide`
-   custom-liquid as the pattern to copy. Note `video_url` stores a complete `<iframe>`
-   blob, not a URL, so decide whether to render it raw or convert the 6 values. Map §3.3
-   has the data shapes.
+   **And build every product-suffix outcome the step 5 audit decided** -- all four of
+   them, not just equipment. Step 5 records the choices and step 7b only QA-checks them,
+   so without this item the runbook reaches cutover with none of them implemented.
+   (Step 6 is the Locations rename; an earlier version of this paragraph pointed there
+   by mistake.) Remember there is one shared `templates/product.json`, so "its own
+   template" means creating `product.product-2.json` / `product.product-3.json` -- named
+   for the existing suffix, per map §3.3 -- and "fold" means the shared PDP has to carry
+   the behaviour conditionally.
+
+   - **`product-2`, equipment (26 products).** The specs render nowhere either way
+     today: `accentuate.content_product_info` on **20** of them and `video_url` on
+     **6** are read by nothing, because the `properties_table` custom-liquid reads only
+     `accentuate.components`. Copy the paired-array loop from the `brew_guide`
+     custom-liquid as the pattern. `video_url` stores a complete `<iframe>` blob rather
+     than a URL, so the raw-vs-convert call has to be made for those 6.
+   - **`product-3`, merch (22 products).** Map §3.3 expects this one to fold; if it
+     does, confirm nothing merch-specific is lost rather than assuming.
+   - **`filtersub`, the 2 subscriptions.** This template is the *stripped* one -- it
+     deliberately omits the coffee storytelling sections. If the audit decides to
+     preserve that, it is **work, not a no-op**: on the shared PDP those sections now
+     render for everything, so suppressing them for subscriptions needs a condition or
+     its own template. Deciding "keep it as-is" and doing nothing produces the opposite.
+   - **`Default product`, the 6 coffees.** If `ona-read-more-content` is not covered by
+     `story`, those six lose content; whatever the audit concludes, implement it here.
+
+   Verify each on a real product of that suffix, not on a coffee.
 
    Plus the **`Reviews` tab**, which is enabled with no child blocks and so opens a blank
    panel on all 92 PDPs: wire a reviews integration or delete the tab. Map §5 step 5 has
