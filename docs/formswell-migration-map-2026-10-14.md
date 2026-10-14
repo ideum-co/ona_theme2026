@@ -839,8 +839,9 @@ Suggested order:
 8. Rebuild `about`, `sustainability`, `bookings`, `learn`,
    `private-courses-and-experiences` from Horizon generics.
 9. Rebuild `wholesale` and `barista-courses` with Formswell.
-10. **Two gates before publishing, both recorded as *not started* in
-   `performance-and-compatibility.md`, and both invisible from the storefront:**
+10. **Three gates before publishing, all recorded as *not started* in
+   `performance-and-compatibility.md`, and none of them visible from a storefront
+   walkthrough:**
 
    a. **App embeds (§1 of that doc).** This theme has **zero app-embed blocks
       enabled** — no `"blocks"` key in `config/settings_data.json` — while live has
@@ -860,8 +861,19 @@ Suggested order:
       prior failures were silent data-loss bugs and Horizon's cart/checkout JS is not
       the old theme's, so parity cannot be assumed.
 
-   Readiness steps 13a and 14 hold the same two gates; that document is the operational
-   authority for them. (Codex, PR #150.)
+   c. **Performance (§3).** That document calls performance "a gate, not a retrofit"
+      and records no checklist existing yet. The work immediately before this step is
+      what regresses it: **four new image renderers** over raw `cdn.accentuate.io` URLs
+      with no srcset or CDN transform, plus any embeds re-enabled at (a). Run
+      Lighthouse/PageSpeed on the homepage, a collection and a PDP; confirm the gallery
+      renderer preserves the `?WIDTHxHEIGHT` → `width`/`height` parsing, which is a
+      **measured** CLS fix and the likeliest thing a fresh renderer drops; and check
+      script weight per page against the current theme.
+
+   Readiness steps 13a, 14 and 14a hold the same three gates; that document is the
+   operational authority for them. Note all three are recorded as *not started* in
+   `performance-and-compatibility.md` — it made three recommendations and the plans were
+   carrying none of them. (Codex, PR #150.)
 
 11. **Publish** — swap `ona_theme2026` in for theme `160335790271`.
 
