@@ -4,10 +4,15 @@
 > (same PR). That document re-reads the template question under the agreed strategy —
 > fold onto the Formswell design, delete the old complexity — and the answer changes
 > materially: ten of the "28 missing templates" are orphans no live resource uses, the
-> `article`, `llms` and `maintenance` suffixes already fall back on the live theme, and
-> **PR #142 should be closed rather than resolved**, because its diff deletes
-> `pdp_product_summary` and reverts the Formswell PDP header. Read the map first; the
-> plan below is still correct about drift, Horizon 4.3.0 and sequencing.
+> `article`, `llms` and `maintenance` suffixes have **no template on any theme** and
+> already fall back, and **PR #142 should be closed rather than resolved**, because its
+> diff deletes `pdp_product_summary` and reverts the Formswell PDP header.
+>
+> **Read the map first, and treat its §4.3 as governing for drift and deployment.** This
+> document was written before PR #149 landed and before Felipe confirmed that the GitHub
+> integration is deliberately not connected, so §1.2 and §1.4 below are historical: the
+> shop's `index.json` and `product.json` are authoritative and take surgical in-place
+> edits only. What still stands here is Horizon 4.3.0 and the broad sequencing.
 
 Target: publish `ona_theme2026` in place of theme `160335790271`.
 
@@ -15,8 +20,8 @@ Everything below was measured on the shop or in the two repos on 2026-10-14. Cou
 from the Admin API over all 92 active products, 26 pages and 5 blogs -- not a sample.
 
 The headline: **the theme is in good shape; the content wiring around it is not.** Two
-thirds of the catalogue and four fifths of the pages are assigned to templates this theme
-does not contain, and Shopify resolves a missing template by silently falling back to the
+thirds of the catalogue (62 of 92) and roughly three quarters of the pages (19 of 26) are
+assigned to templates this theme does not contain, and Shopify resolves a missing template by silently falling back to the
 generic one.
 
 ---
@@ -44,8 +49,12 @@ Three of these need naming out loud:
   `location`; this theme ships `templates/page.locations.json` -- *plural*. The suffix does
   not match the file, so the Locations page falls back. Either rename the file or re-point
   the page.
-- **`llms` and `maintenance`** exist on the live theme but in neither repo -- more
-  evidence that live carries direct edits nobody has inventoried.
+- **`llms` and `maintenance`** carry suffixes on live *pages*, but
+  `templates/page.llms.*` and `templates/page.maintenance.*` exist on **neither repo, nor
+  the live theme `160335790271`, nor theme `154676789439`** -- verified by filename query
+  against all three. Both pages already fall back to `page.json` today, so this is the
+  status quo and needs no work. (An earlier draft read this as evidence of uninventoried
+  direct edits on live. That was wrong.)
 
 The decision this needs is not technical. For each of those 28, either the 2026 design
 deliberately folds it into the generic template -- in which case someone has to *look* at
@@ -62,11 +71,14 @@ The campaign runs to 31 October inclusive and this theme had none of it.
   Formswell decision.**
 - **PDP badge: already works.** `blocks/ona-product-tags.liquid` and both snippets are
   here and wired into `templates/product.json`.
-- **Card badges: enabled, not placed.** On live every coffee card carries "$3 PER 200G AND
-  $12 PER KILO DONATED TO WATER FOR GOOD". `_product-card` now accepts the
-  `ona-product-tags` block (PR #149), but the block still has to be *placed* in each
-  template that renders cards -- collection, search, the homepage product lists and
-  carousels. Until then the badge is on the PDP only.
+- **Card badges: placed in the repo, not yet on the shop.** On live every coffee card
+  carries "$3 PER 200G AND $12 PER KILO DONATED TO WATER FOR GOOD". PR #149 both taught
+  `_product-card` to accept `ona-product-tags` and **placed** it on the four surfaces live
+  uses -- `index.json` (`coffee_spotlight`), `collection.json`, `search.json` and
+  `product.json`'s recommendations -- deliberately not on `cart.json` or `404.json`. No
+  code work remains; what remains is the Shopify side (map §4.3). Note the badge is **not**
+  on the 2026 PDP: `ona_promo_tags` sits inside the disabled `group_icgrde`, and live's
+  coffee PDP shows no badge either, so that is parity rather than a gap.
 - **Cart contribution: out of scope.** The snippet in draft theme `160396837055` has never
   been live and is still unreviewed by Macarena. Shipping it tomorrow would be shipping an
   unreviewed money message.
@@ -81,10 +93,15 @@ promo badge group is switched off. Resolve #142 before publishing.
 
 ### 1.4 The repo and the shop theme have drifted
 
-`ona_theme2026/main` is `f78e8cf` and has not moved since 2026-09-29. Theme
-`154676789439` has:
+> **Historical — superseded by the migration map §4.3**, which compares the same files
+> structurally rather than by size and reflects `main` after PR #149. The table below was
+> measured when `main` was `f78e8cf`; `main` is now `ed3261d`, and `collection.json` and
+> `search.json` now differ from the shop by exactly #149's `ona_promo_tags` block, so they
+> are **not** "in step" and importing them is what ships the card badge. Size comparison
+> is also the wrong instrument: it hid that the shop's `product.json` holds five sections
+> the repo lacks.
 
-| file | repo | shop | verdict |
+| file | repo at `f78e8cf` | shop | verdict then |
 |---|---|---|---|
 | `config/settings_data.json` | `bcd4ef44` | `bcd4ef44` | in step |
 | `templates/collection.json` / `cart.json` / `search.json` | identical sizes | identical | in step |
@@ -173,8 +190,10 @@ has not been made.
 
 **Then the campaign**
 
-5. Merge PR #149, settle the CTA font with Formswell, and place the `ona-product-tags`
-   block on cards in collection, search and the homepage lists.
+5. **Both code steps are done:** PR #149 is merged (`ed3261d`) and `ona-product-tags` is
+   placed on the four card surfaces. What is left is the Shopify side — import the counter
+   section and `collection.json` / `search.json`, and hand-insert into the shop's
+   `index.json` and `product.json` (map §4.3) — plus settling the CTA font with Formswell.
 6. Re-check the counter against live at desktop and at both mobile breakpoints.
 
 **Then the surfaces, in the order you asked for**

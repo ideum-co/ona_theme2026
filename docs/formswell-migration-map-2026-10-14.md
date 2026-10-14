@@ -337,11 +337,16 @@ from Horizon generics.
 
 Suggested order:
 
-1. Fix the `location` / `page.locations` mismatch, reconcile the homepage
-   drift. (hours — estimate)
-2. Settle the badge fallbacks (§3.1) — this one is live-visible on all 92 PDPs.
-3. Close PR #142. Merge PR #149 (WFG counter) and settle the Palmer Lake vs Silk Serif
-   CTA with Formswell.
+1. **Deploy what is already merged — it is not on the shop yet.** PR #149 landed as
+   `ed3261d` and changed nothing on the storefront (§4.3). Concretely: import
+   `sections/ona-donation-counter.liquid` (new file, nothing to lose); import
+   `templates/collection.json` and `templates/search.json` whole, which is what ships the
+   card badge there; then insert the counter section and the `ona_promo_tags` card block
+   into the **shop's** `index.json` and `product.json` by hand, because each holds five
+   sections the repo does not. Do not upload either of those two files.
+2. Fix the `location` / `page.locations` mismatch. (hours — estimate)
+3. Settle the badge fallbacks (§3.1) — this one is live-visible on all 92 PDPs — and
+   close PR #142. Settle the Palmer Lake vs Silk Serif CTA with Formswell.
 4. Delete the ten orphan templates.
 5. Decide `product-2`: own template, or an optional specs/video region on the one PDP.
 6. Fold the five cheap pages and both blogs.
