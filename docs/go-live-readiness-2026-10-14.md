@@ -260,10 +260,31 @@ has not been made.
 
 **Then the surfaces, in the order you asked for**
 
-7. **PDP** -- it has had the most work and still owns the most risk: the disabled block
-   group, 48 products arriving on it from `product-2`/`product-3`, subscriptions from
-   `filtersub`, promo badges, Product DNA metaobject coverage, image quality at the sizes
-   this theme actually renders.
+7. **PDP** -- it has had the most work and still owns the most risk.
+
+   a. **First, restore the content that renders nowhere.** This is implementation work,
+   not QA, and nothing earlier in this order covers it. `templates/product.json` is the
+   only product template, so these affect every product that has the data. Measured
+   2026-10-15 across all 92 active products -- each of these renders **nowhere** on the
+   2026 theme today:
+
+   | content | metafield | populated on |
+   |---|---|---|
+   | brew-guide spec table | `accentuate.title_item` / `content_item` | 32 |
+   | lifestyle gallery | `accentuate.image` | 37 |
+   | Coffee Profile prose + 2 images | `accentuate.content_coffee_profile`, `image_coffee_profile_1`/`_2` | 37 |
+   | product FAQs | `custom.accordion` | 23 |
+   | origin + sourcing prose, image and specs | `content_origin`, `content_sourcing`, `image_origin`, `producer`, `region`, `varietal`, `process`, `altitude` | 25 (all eight together) |
+
+   Plus the **`Reviews` tab**, which is enabled with no child blocks and so opens a blank
+   panel on all 92 PDPs: wire a reviews integration or delete the tab. Map §5 step 5 has
+   the destinations and the reasoning; wire it all **in the repo**, never on the shop
+   copy. Verify on one blend, one single origin, one drip bag, one equipment and one
+   merch product, and click every tab -- none may open empty.
+
+   b. **Then the QA pass:** the disabled block group, 48 products arriving on it from
+   `product-2`/`product-3`, subscriptions from `filtersub`, promo badges, Product DNA
+   metaobject coverage, image quality at the sizes this theme actually renders.
 8. **Menu / header** -- Shop, Subscriptions, Learn, Locations, Wholesale, Journal all have
    to land on a template that exists (see step 5, and step 6 for `location`). Mega-menu behaviour and the transparent
    header over the hero.
