@@ -41,7 +41,21 @@ hurry.
   than copy-pasting when this gets built.
 
 ### 2. Brew Guide — NOT PORTED, most complex of the four remaining
-- **Data does not live on the product.** The product only stores a pointer:
+
+> **Corrected 2026-10-14.** The line below — "data does not live on the product" —
+> is wrong for the **spec table**, and it misled a PR review into planning an
+> article fetch that is not needed. Measured across all 92 active products: the
+> product itself carries `accentuate.title_item` and `accentuate.content_item` on
+> **32** products, with genuinely per-product values and per-product lengths
+> (`maple` 7 labels/7 values, `aspen` 6/6, `14-30 days after roast` vs `13-30`).
+> The table is built by zipping those two product arrays by index and needs no
+> article lookup. What the pointer adds is the surrounding **prose**, and it is a
+> narrower surface: `select_artlice` is on only **24** products, and absent on
+> every drip bag that has a spec table. Everything below about the pointer, the
+> `brewguides/` prefix and the defensive `| split: '/' | last` still holds — it
+> just applies to the prose, not to the table.
+
+- **The pointer:** the product stores
   `accentuate.select_artlice` (plain string, e.g. `"brewguides/raspberry-candy"`).
   The live section loops every article in a *Shopify Blog* named `brewguides`
   looking for `article.handle == target_handle`.
@@ -54,8 +68,9 @@ hurry.
   different, correct brew specs). Didn't chase down why; when this gets
   built, use `target_handle | split: '/' | last` defensively so the port
   isn't relying on unexplained behavior.
-- The article itself carries `accentuate.content_brew_guide` (heading/intro
-  HTML) plus two **parallel arrays**, `title_item` and `content_item` — the
+- The **product** carries `accentuate.content_brew_guide` (heading/intro
+  HTML — generic, the same `<h3>How to get the best tasting cup</h3>` on every
+  product sampled) plus two **parallel arrays**, `title_item` and `content_item` — the
   spec table (Age best used / Dose / Yield / Temperature / etc.) is built by
   zipping these two arrays together by index, not from named fields.
 - One brew guide article per product confirmed (not shared/reused across

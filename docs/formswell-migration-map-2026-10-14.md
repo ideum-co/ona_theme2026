@@ -391,6 +391,39 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    2 `filtersub`), and `title_item`/`content_item` on the same 32. This is the largest
    content regression on the list and it is invisible from the repo.
 
+   **And a fifth surface, measured 2026-10-14: `accentuate.image`, the lifestyle
+   gallery, is populated on 37 products and read nowhere in this theme** — more
+   widely than the brew guide. It is a `json_string` array of raw
+   `cdn.accentuate.io` URLs, not native Shopify media, so there is no srcset or
+   CDN transform. Each URL carries a `?WIDTHxHEIGHT` suffix from Accentuate's
+   resize service, and the legacy theme parses that suffix back into explicit
+   `width`/`height` attributes so the browser can reserve the space; its own code
+   comment cites a measured CLS improvement from doing so. **Any port must
+   replicate that or CLS regresses** — see `product-page-enrichment-sections.md`
+   §5. Raised by Codex on PR #150; I had called brew guide, origin and sourcing
+   the complete gap, and they are not.
+
+   Where this data actually lives, measured on 2026-10-14 across all 92 active
+   products, because the repo's own §2 of `product-page-enrichment-sections.md`
+   said otherwise and Codex reasonably believed it:
+
+   | metafield | populated on | lives on |
+   |---|---|---|
+   | `accentuate.title_item` / `content_item` (the spec table) | **32** products | **the product** |
+   | `accentuate.image` (lifestyle gallery) | **37** products | the product |
+   | `accentuate.select_artlice` (brew-guide article pointer) | **24** products | the product, pointing at a `brewguides` article |
+
+   The spec table is **product** data and zips the two parallel arrays by index:
+   `maple` carries 7 labels and 7 values, `aspen` 6 and 6, and the values differ
+   per product (`14-30 days after roast` vs `13-30`). So rendering the table needs
+   nothing but the product. The `select_artlice` pointer is a *separate, narrower*
+   surface — 24 products, not 32, and absent on every drip bag that has a spec
+   table — which the legacy section follows into the `brewguides` blog (747
+   articles) for the surrounding prose. Port the table from the product; if the
+   prose is wanted too, follow the pointer and normalise it with
+   `| split: '/' | last`, since the stored value is prefixed (`brewguides/maple`)
+   while article handles are bare.
+
    PR #149 therefore did not "change nothing" — it deployed. `ona-donation-counter.liquid`,
    `_product-card.liquid`, `collection.json` and `search.json` all landed on the theme at
    06:51:31–34Z, which means the card badge on collection and search is already shipped.
@@ -452,14 +485,18 @@ Suggested order:
    content regression on the list and nothing above fixes it: the shop's `brew_guide`,
    `story` and `faqs` sections are disabled and the `Brew Guide` and `Reviews` tabs are
    empty, so `content_brew_guide` and `title_item`/`content_item` — populated on **32**
-   products — and `content_origin`/`content_sourcing` render nowhere. Decide where each
+   products — `content_origin`/`content_sourcing`, and the `accentuate.image` lifestyle
+   gallery on **37** products all render nowhere. Decide where each
    goes (the empty `Brew Guide` tab is the obvious home for the recipe, `product-dna` or
    a tab for origin and sourcing), then wire it **in the repo's** `templates/product.json`
    and deploy it by merging to `main` — the same route as every other change here, for the
    reason in §4.3: an edit made only on the shop's copy survives exactly until the next
    merge touches that file, and this is content on 32 products. Reconcile first if the
    checksum test says the editor has moved the file since #151 landed. Verify on one
-   blend, one single origin and one drip bag before go-live.
+   blend, one single origin and one drip bag before go-live. The spec table reads from
+   the **product's** own `title_item`/`content_item` (see the table in §4.3), so it needs
+   no article lookup; the image slider is a renderer that does not exist yet and must
+   preserve the `?WIDTHxHEIGHT` → `width`/`height` parsing, or CLS regresses.
 6. Settle the three remaining product-template decisions (§3.3), all of which change
    what renders: `product-2` — own template, or an optional specs/video region on the one
    PDP; `filtersub` — whether the subscription PDP keeps omitting the coffee storytelling
