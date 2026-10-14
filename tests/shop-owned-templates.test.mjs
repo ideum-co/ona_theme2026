@@ -96,7 +96,19 @@ test('index.json keeps the editor-made homepage sections', () => {
   assert.equal(Object.keys(sections.hero_ona.blocks).length, 4);
 
   // Sections the editor had switched off. They came back enabled once.
-  for (const id of ['club_invite_TGPaF8', 'club_benefits_QGRDdd', 'product_intro_k9p6yn']) {
+  //
+  // The three the editor disabled on 2026-10-14 at 21:59:21Z are pinned here
+  // too. Without them a later stale reconciliation could silently re-enable a
+  // section and still pass this suite -- which is the exact overwrite this
+  // file exists to catch. Every id the editor turns off belongs in this list.
+  for (const id of [
+    'club_invite_TGPaF8',
+    'club_benefits_QGRDdd',
+    'product_intro_k9p6yn',
+    'floating_badge_r89NRP',
+    'find_your_coffee',
+    'product_highlight_KkUAVM',
+  ]) {
     assert.equal(sections[id].disabled, true, `${id} must stay disabled`);
   }
 
@@ -121,7 +133,17 @@ test('product.json keeps the editor-wired PDP', () => {
 
   // Superseded by the bespoke sections above; enabling them double-renders the
   // brew guide, story and FAQs. The repo copy had all three on.
-  for (const id of ['story', 'brew_guide', 'faqs']) {
+  //
+  // product_dna_trxBBN and product_tabs_XnTEpK are the editor's own switch-offs:
+  // re-enabling the first puts "Maple DNA" back on all 92 products, and the
+  // second duplicates the product tabs. Pinned for the same reason as above.
+  for (const id of [
+    'story',
+    'brew_guide',
+    'faqs',
+    'product_dna_trxBBN',
+    'product_tabs_XnTEpK',
+  ]) {
     assert.equal(sections[id].disabled, true, `${id} must stay disabled`);
   }
 });
