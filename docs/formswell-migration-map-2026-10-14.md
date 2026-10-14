@@ -538,8 +538,30 @@ Suggested order:
 
    The four enabled ones are pre-publish. The six disabled ones are not live, but they
    are **the same sections whose enabling is an open decision** (§4.3) — so give them
-   destinations at the moment they are enabled, not after. Close PR #142. Settle the
-   Palmer Lake vs Silk Serif CTA with Formswell. **Verify by fetching one product of
+   destinations at the moment they are enabled, not after. Settle the Palmer Lake vs
+   Silk Serif CTA with Formswell.
+
+   **Close PR #142 — and note that closing it does not do the fix §3.2 describes.** The
+   two are separate: closing #142 *keeps* the Formswell header, but `ona_promo_tags` is
+   still stranded inside the disabled `group_icgrde`, so the metafield-driven promo badge
+   renders nowhere on the PDP. The lift itself is one line — add `ona_promo_tags` to
+   `product-details`'s `block_order`; `blocks/_product-details.liquid` already accepts
+   `@theme` blocks, so no schema change. Nothing else in this order was scheduling it,
+   and the readiness doc lists "promo badges" only in its QA pass. (Codex, PR #150.)
+
+   **But do the lift as a decision, not a chore, because the single shared template
+   changes the question.** §3.4 established the parity target from live: coffee PDPs show
+   no badge, equipment (`product-template-2.liquid:77`) and merch
+   (`product-template-3.liquid:45`) PDPs do. On live those are three different templates,
+   so that split is free. Here there is **one** `templates/product.json` for all 92
+   products, so lifting the block puts the badge on coffee PDPs too — where live shows
+   none — and `blocks/ona-product-tags.liquid` renders whenever a badge is active, not
+   only for equipment. Note also that coffee PDPs showing no badge on live is a property
+   of the *template*, not of the data: In Sequence currently carries two simultaneously
+   active badges. So the options are: accept the badge on coffee PDPs as an improvement,
+   gate the block on template suffix or product type, or leave it stranded until
+   `product-2`/`product-3` get their own templates (§3.3). **Felipe's call** — it is a
+   presentation decision, and §3.1's rule applies: it ships through the repo. **Verify by fetching one product of
    every suffix and reading the page** — the no-suffix, `Default product`, `product-2`,
    `product-3` and `filtersub` cases — because static copy is invisible from the
    template.
@@ -618,8 +640,15 @@ Suggested order:
 8. Rebuild `about`, `sustainability`, `bookings`, `learn`,
    `private-courses-and-experiences` from Horizon generics.
 9. Rebuild `wholesale` and `barista-courses` with Formswell.
-10. Then — and only then — bump Horizon 4.1.4 → 4.3.0 (26 real conflicts, 8 files with
-   line-level overlap, 59 lines; measured). Not the night before.
+10. **Publish** — swap `ona_theme2026` in for theme `160335790271`.
+
+**After go-live, and only after:**
+
+11. Bump Horizon 4.1.4 → 4.3.0 (26 real conflicts, 8 files with line-level overlap, 59
+   lines; measured). Not the night before — and not before publishing either, which this
+   order previously failed to say. The readiness doc has always put it after go-live;
+   this list ended with it and drew no boundary, so the two documents disagreed about the
+   riskiest step in the project. They now agree. (Codex, PR #150.)
 
 ## Appendix — legacy sections with no 2026 equivalent yet
 
