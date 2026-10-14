@@ -518,11 +518,28 @@ Suggested order:
    so every product renders the Maple tab (text *and* its `maple.webp` image), the Maple
    story-video, the "Maple DNA" panel and "Who's Maple For?" — on equipment and merch
    too. Settle those four together with the badge fallbacks; they are one question. Give
-   `inline_cta_8ann9f` ("Try our coffee quiz") and `club_benefits_937XiA` ("Find your
-   subscription") their destinations (§4.3). Close PR #142. Settle the Palmer Lake vs
-   Silk Serif CTA with Formswell. **Verify by fetching one product of every suffix and
-   reading the page** — the no-suffix, `Default product`, `product-2`, `product-3` and
-   `filtersub` cases — because static copy is invisible from the template.
+   **every enabled CTA with no destination** a destination. Scanned both live templates
+   2026-10-15 for a non-empty label paired with an empty link — all of these render an
+   `<a>` or `<span>` with no `href`:
+
+   | section | template | label | state |
+   |---|---|---|---|
+   | `club_benefits_937XiA` | `index.json` | "Find your subscription" | **enabled** |
+   | `story_video_URBFL6` | `index.json` | "Learn more about ONA" | **enabled** |
+   | `coffee_quiz` | `index.json` | "Explore all our coffees" | **enabled** (shows after the quiz) |
+   | `inline_cta_8ann9f` | `product.json` | "Try our coffee quiz" | **enabled** — on all 92 PDPs |
+   | `club_invite_QLL4T3`, `club_invite_TGPaF8` | `index.json` | "Explore subscriptions" | disabled |
+   | `club_benefits_QGRDdd` | `index.json` | "Join the ONA Coffee Club" | disabled |
+   | `product_intro_k9p6yn` | `index.json` | "Shop now", "Subscribe & Save" | disabled |
+   | `story_video_LN6zzn` | `index.json` | "Learn more" | disabled |
+
+   The four enabled ones are pre-publish. The six disabled ones are not live, but they
+   are **the same sections whose enabling is an open decision** (§4.3) — so give them
+   destinations at the moment they are enabled, not after. Close PR #142. Settle the
+   Palmer Lake vs Silk Serif CTA with Formswell. **Verify by fetching one product of
+   every suffix and reading the page** — the no-suffix, `Default product`, `product-2`,
+   `product-3` and `filtersub` cases — because static copy is invisible from the
+   template.
 4. Delete the nine orphan template files (§2). `article`, `llms` and `maintenance` need
    nothing — they have no file to delete and already fall back.
 5. **Restore the PDP content that renders nowhere (§4.3).** This is the largest
@@ -537,6 +554,8 @@ Suggested order:
    | brew-guide prose | `accentuate.content_brew_guide` + `select_artlice` | 32 / **24** | same tab |
    | lifestyle gallery | `accentuate.image` | **37** | no renderer exists yet |
    | product FAQs | `custom.accordion` | **23** | re-enable `faqs`, or a tab |
+   | Coffee Profile prose | `accentuate.content_coffee_profile` | **37** | read only by the disabled `story` section |
+   | Coffee Profile images | `accentuate.image_coffee_profile_1` / `_2` | **37** each | no renderer exists yet |
    | origin / sourcing | `accentuate.content_origin` / `content_sourcing` | ~25 | `product-dna` or a tab |
 
    **Two of these are removals, not ports, and both are live-visible defects:**
@@ -551,6 +570,14 @@ Suggested order:
      disabled, so the `custom.accordion` content on 23 products — coffee, equipment and
      merch alike — is dropped at go-live. Re-enable it in the right position, or move the
      accordion into a tab.
+
+   **Coffee Profile is half-ported, which is easy to miss.** §1 of
+   `product-page-enrichment-sections.md` records the section as *already ported* — and
+   the flat fields (`tastes_like`, `roast`, `components`) are. But live also renders
+   `accentuate.content_coffee_profile` plus `image_coffee_profile_1`/`_2`, each populated
+   on **37** products, and in this theme the prose is read only by the **disabled**
+   `story` section while the two images have **no renderer at all**. So "ported" covers
+   the fields and not the prose or the imagery. Codex, PR #150.
 
    Decide where each goes, then wire it **in the repo's** `templates/product.json`
    and deploy it by merging to `main` — the same route as every other change here, for the

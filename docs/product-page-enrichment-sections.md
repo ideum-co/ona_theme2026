@@ -21,10 +21,17 @@ main → profile → sourcing → image_slider → origin → brew_guide → acc
 ```
 
 Five of those eight (`profile`, `sourcing`, `image_slider`, `origin`,
-`brew_guide`) pull from a legacy app's metafield namespace (`accentuate.*`),
-and **one of them — brew guide — doesn't even read from the product itself**.
+`brew_guide`) pull from a legacy app's metafield namespace (`accentuate.*`).
 That's the part worth documenting before anyone tries to port this in a
 hurry.
+
+> **Corrected 2026-10-15.** This paragraph used to end "and **one of them — brew
+> guide — doesn't even read from the product itself**", which is wrong and sent a
+> PR review off designing the whole renderer around an article lookup. Measured
+> across all 92 active products: the product owns the brew-guide intro and the
+> spec table (`title_item`/`content_item` on **32** products), and only the
+> optional surrounding prose needs the article, via `select_artlice` on **24**.
+> See §2.
 
 ## Section-by-section
 

@@ -232,7 +232,16 @@ has not been made.
    together. **Verify by fetching one product of each suffix and reading the page** —
    this is invisible from the template, which is why it survived several review rounds.
 
-   b. **Resolve PR #142** -- the PDP body blocks (section 1.3). The map's recommendation
+   b. **Give every enabled CTA a destination.** Scanned both live templates 2026-10-15
+   for a non-empty label paired with an empty link; four are **enabled** and render a
+   dead link today: `club_benefits_937XiA` ("Find your subscription"),
+   `story_video_URBFL6` ("Learn more about ONA") and `coffee_quiz` ("Explore all our
+   coffees") on the homepage, and `inline_cta_8ann9f` ("Try our coffee quiz") on all 92
+   PDPs. Six more sit in disabled sections -- and those are the same sections whose
+   enabling is an open decision, so give them destinations when they are enabled, not
+   after. Map §3.1 has the full table.
+
+   c. **Resolve PR #142** -- the PDP body blocks (section 1.3). The map's recommendation
    is to **close** it.
 
 **Then, the template decision (the long pole)**
