@@ -61,6 +61,37 @@
     }
   }
 
+
+  /* Keep purchase actions on the same baseline across a product grid. */
+  :is(.product-grid__item, .resource-list__item) .product-card__content {
+    height: 100%;
+  }
+
+  /* The picker block is still present for single-variant products, but it
+     reserves the same vertical slot without displaying a disabled selector. */
+  .product-card .product-card__variant-placeholder {
+    block-size: 64px;
+    inline-size: 100%;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* Push the purchase controls to the bottom of cards with shorter copy.
+     Works regardless of whether a Subscribe button is rendered in the row. */
+  .product-card__content > .group-block:has(.buy-buttons-block) {
+    margin-block-start: auto;
+  }
+
+  /* Consistent action-row height with either one or two visible buttons. */
+  .product-card .group-block-content:has(> .buy-buttons-block) {
+    min-block-size: 48px;
+    align-items: stretch;
+  }
+
+  .product-card .group-block-content:has(> .buy-buttons-block) > .buy-buttons-block {
+    min-width: 0;
+  }
+
   .product-card__placeholder-image svg {
     height: 100%;
   }
