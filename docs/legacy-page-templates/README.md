@@ -11,10 +11,15 @@ Verbatim copies, pulled 2026-10-15, of the JSON templates on theme
 **`160335790271`** ("ONA - media block fix + press quotes hidden…") — the theme
 that was published until 2026-10-14 ~15:43Z and is now the rollback.
 
-They are archived here for one reason: **this content exists nowhere else.**
-It is not in git, it is not in the Shopify page bodies, and it is not on the
-published theme. It lives only inside an unpublished theme that is a candidate
-for deletion. Once that theme goes, the content is gone.
+They were archived for one reason: **before this directory existed, the content
+was in no repository at all.** It is not in the Shopify page bodies, and it was
+not in git — it lived only inside themes that were candidates for deletion, so
+deleting one would have destroyed the only copy.
+
+**Committing these files is what fixed that.** The content is now in git
+history and survives the deletion of every theme that holds it. So this
+directory is not a reason to keep `160335790271` or any other theme alive —
+judge that on its own merits. It is the durable copy; the themes are not.
 
 `docs/post-publish-review-2026-10-15.md` §2 records the consequence: while the
 2026 theme was published, eight pages rendered a heading and nothing else,
@@ -23,8 +28,8 @@ because their content lived in these templates.
 > **Not the case right now.** Theme `160815546559` was published on
 > 2026-10-14 at 22:00:42Z and it *has* these templates, so those pages render
 > normally on the storefront today. The archive matters for the **next**
-> attempt at publishing the 2026 theme, and as insurance if the themes holding
-> this content are ever deleted.
+> attempt at publishing the 2026 theme: that is when these eight pages go
+> blank again unless the templates have been ported first.
 
 ## Provenance
 
