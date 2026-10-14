@@ -23,9 +23,7 @@
 <div
   class="section section--{{ section.settings.section_width }} color-custom-{{ section_id }}"
   data-testid="ui-test-section"
-  style="--ona-mobile-min-height: {{ section.settings.mobile_min_height | default: 600 }}px; --ona-mobile-content-top: {{ section.settings.mobile_content_top | default: 0 }}px;"
-
-
+ 
   {% if request.visual_preview_mode %}
     data-shopify-visual-preview
   {% endif %}
