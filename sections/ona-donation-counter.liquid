@@ -1,0 +1,300 @@
+{%- comment -%}
+  Water For Good contribution counter.
+
+  Ported from the legacy theme (`sections/ona-donation-counter.liquid` on theme
+  160335790271) for the 2026 cutover. The markup and the measurements are the
+  ones Formswell approved and that are live today — card 71x92 at 83px, 16px
+  gaps, 2px frame, and the horizontal split line across each card — so the two
+  themes render the counter identically.
+
+  Two deliberate differences from the legacy copy:
+
+  1. The styles live here. On the legacy theme they sit in ONA's `main.css`,
+     which this theme does not carry, so the section would have rendered
+     unstyled. Everything below is scoped to `.donation-counter`.
+  2. Fonts come from the brand tokens (`--font-brand-text` = Karla,
+     `--font-brand-display` = Silk Serif) instead of being hard-coded. Karla is
+     the same face the legacy counter used, so the numerals are unchanged. The
+     CTA is the one real substitution: legacy sets it in "Palmer Lake Print",
+     which this theme does not ship -- it falls back to the brand display face.
+     NEEDS A FORMSWELL DECISION before go-live.
+
+  The number itself is `shop.metafields.custom.donation_total`, written by the
+  recompute job in ona-data-platform (`scripts/ops/wfg-donation-counter.ts`).
+  The section only formats it, and renders $0 rather than breaking if the
+  metafield is missing.
+{%- endcomment -%}
+
+{%- liquid
+  assign donation_total = shop.metafields.custom.donation_total.value | default: 0
+  assign amount = donation_total | floor
+-%}
+
+<section
+  class="donation-counter"
+  style="background-color: {{ section.settings.bg_color }};"
+  {{ section.shopify_attributes }}
+>
+  <div class="donation-counter__inner">
+    {%- if section.settings.title != blank -%}
+      <h2 class="donation-counter__heading">{{ section.settings.title }}</h2>
+    {%- endif -%}
+
+    <div class="donation-counter__display" data-amount="{{ amount }}">
+      <div class="donation-counter__cards">
+        <div class="donation-counter__card donation-counter__card--symbol">
+          <span>$</span>
+        </div>
+
+        {%- assign num_str = amount | append: '' -%}
+        {%- assign num_len = num_str | size -%}
+        {%- for i in (1..num_len) -%}
+          {%- assign char_index = i | minus: 1 -%}
+          {%- assign digit = num_str | slice: char_index, 1 -%}
+
+          <div class="donation-counter__card">
+            <span>{{ digit }}</span>
+          </div>
+
+          {%- assign pos = num_len | minus: i -%}
+          {%- assign pos_mod = pos | modulo: 3 -%}
+          {%- if pos > 0 and pos_mod == 0 -%}
+            <div class="donation-counter__card donation-counter__card--comma">
+              <span>,</span>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+
+    {%- if section.settings.subtitle != blank -%}
+      <p class="donation-counter__subtitle">{{ section.settings.subtitle }}</p>
+    {%- endif -%}
+
+    {%- if section.settings.learn_more_text != blank -%}
+      <div class="donation-counter__actions">
+        <a href="{{ section.settings.learn_more_url }}" class="donation-counter__cta">
+          {{- section.settings.learn_more_text -}}
+        </a>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .donation-counter {
+    padding: 43px 30px 52px;
+    text-align: center;
+    color: #ffffff;
+  }
+
+  .donation-counter__inner {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .donation-counter__heading {
+    font-family: var(--font-brand-text, 'Karla', sans-serif);
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: calc(0.09 / 16 * 1em);
+    line-height: 1.2;
+    margin: 0 0 20px;
+    color: #fbf8f3;
+  }
+
+  .donation-counter__display {
+    display: inline-block;
+    margin: 0 auto 39px;
+  }
+
+  .donation-counter__cards {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    border: 2px solid #000;
+    border-radius: 12px;
+    padding: 13px 14px;
+  }
+
+  .donation-counter__card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 71px;
+    height: 92px;
+    background: #f2f0eb;
+    font-family: var(--font-brand-text, 'Karla', sans-serif);
+    font-size: 83px;
+    font-weight: 700;
+    line-height: 1;
+    color: #441925;
+  }
+
+  /* The split across the middle of each card -- it reads as a flip-counter. */
+  .donation-counter__card::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 100%;
+    height: 5px;
+    background-color: #441925;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .donation-counter__card--symbol {
+    background: #f2f0eb;
+  }
+
+  .donation-counter__card--comma {
+    width: 15px;
+    background: transparent;
+    color: #f2f0eb;
+    font-size: 72px;
+    font-weight: 700;
+  }
+
+  /*
+   * The comma card inherits the split line above. On the default background it
+   * is invisible -- the line is #441925 and so is the section -- which is how
+   * it renders on the live theme today, so it is left exactly as it is rather
+   * than "fixed" here. Change `bg_color` away from #441925 and a dark bar
+   * appears across the comma. Formswell's call, not a silent deviation.
+   */
+
+  .donation-counter__subtitle {
+    font-family: var(--font-brand-text, 'Karla', sans-serif);
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: calc(-0.09 / 16 * 1em);
+    line-height: 1.2;
+    margin: 0 0 7px;
+    color: #fbf8f3;
+  }
+
+  .donation-counter__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .donation-counter__cta {
+    font-family: var(--font-brand-display, 'Silk Serif', serif);
+    font-size: 43px;
+    line-height: 1.2;
+    color: #ffffff;
+    text-decoration-line: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.3em;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+  }
+
+  .donation-counter__cta:hover {
+    opacity: 0.7;
+  }
+
+  @media screen and (max-width: 749px) {
+    .donation-counter {
+      padding: 40px 15px;
+    }
+
+    .donation-counter__cards {
+      gap: 3px;
+      padding: 8px 10px;
+    }
+
+    .donation-counter__card {
+      width: 48px;
+      height: 68px;
+      font-size: 48px;
+    }
+
+    .donation-counter__card::after {
+      height: 3px;
+    }
+
+    .donation-counter__card--comma {
+      width: 18px;
+      font-size: 48px;
+    }
+
+    .donation-counter__heading {
+      font-size: 13px;
+      letter-spacing: 2px;
+    }
+
+    .donation-counter__cta {
+      font-size: 36px;
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .donation-counter__cards {
+      gap: 2px;
+      border-radius: 8px;
+      padding: 6px 8px;
+    }
+
+    .donation-counter__card {
+      width: 36px;
+      height: 52px;
+      border-radius: 4px;
+      font-size: 36px;
+    }
+
+    .donation-counter__card--comma {
+      width: 14px;
+      font-size: 36px;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Contribution counter",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "#441925"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title text",
+      "default": "DOLLARS CONTRIBUTED SO FAR"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle text",
+      "default": "Enjoy great coffee while helping fund clean water access."
+    },
+    {
+      "type": "text",
+      "id": "learn_more_text",
+      "label": "Link text",
+      "default": "Shop Coffees"
+    },
+    {
+      "type": "url",
+      "id": "learn_more_url",
+      "label": "Link url"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Contribution counter",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}
