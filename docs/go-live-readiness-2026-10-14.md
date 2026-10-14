@@ -302,7 +302,11 @@ has not been made.
 9. **Collections** -- card composition, badges, filters, pagination, image quality.
 10. **Search** -- predictive search and the results page share the card blocks from step 9.
 11. **Blog** -- `brewguides` and `news` fall back today; article layout and images.
-12. **Pages** -- the groups in step 5, with Wholesale and Learn first.
+12. **Pages** -- the groups in step 5. **This includes the third long pole: the
+    `wholesale` and `barista-courses` Formswell rebuilds**, which are builds rather than
+    a QA pass and are the reason this step is not cheap. Do `wholesale` first (it is the
+    one with revenue attached), then `barista-courses`, then `learn` and the rest of the
+    groups, which fold onto Horizon generics.
 13. **Cart** -- drawer and page. 4.3.0 fixes several cart bugs, but the bump stays at
     step 14, after go-live: section 3 measured 26 real conflicts across 8 files, and
     pulling it forward is exactly the night-before version change this document warns
@@ -321,7 +325,9 @@ has not been made.
 Step 2 — the campaign — is done, and it did not wait on the rest, which was right: the
 badges expire 2026-10-31.
 
-**There are now two long poles, not one, and both are pre-publish.**
+**There are three long poles, not one, and all three are pre-publish.** Map §5 keeps the
+canonical list — this summary had drifted from it twice, so take the map as the authority
+and treat anything here that disagrees as stale.
 
 **Step 5, the suffix decisions** — the step that decides whether the site looks right the
 morning after. The decisions are **per suffix group, not per resource**: four product
@@ -337,7 +343,12 @@ gallery, `image_origin`), the FAQ section needs re-enabling, and the `Reviews` t
 blank panel on all 92 PDPs. Step 4a — the Maple copy on the one shared product template —
 is the same kind of work and is live-visible on every product. None of this is covered by
 step 5, and a summary that names only step 5 invites treating the suffix audit as the last
-blocker. It is not. (Codex, PR #150.)
+blocker. It is not.
+
+**`wholesale` and `barista-courses`, the two Formswell page rebuilds** (step 12) — builds,
+not a QA pass, and the only two pages the fold-don't-port strategy does not absorb. This
+summary omitted them while the map counted them, which is precisely how a three-workstream
+project gets scheduled as a two-workstream one. (Codex, PR #150, twice.)
 
 The honest shape of it has changed since this was written, and half the question is now
 answered. **For products it is confirmed: `templates/product.json` is the only product
