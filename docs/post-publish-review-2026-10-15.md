@@ -306,3 +306,43 @@ checksum before merging it, because it is a snapshot of a moving target.
 6. **Run the tracking and performance gates.**
 7. Adopt the staging workflow in `docs/branching-and-release.md` so none of
    the above ships straight to the live store.
+
+---
+
+## 12. Addendum — PR #164, which deployed during this review
+
+PR #164 ("Show complete PDP product images on mobile without cropping") merged
+to `main` on 2026-10-15 while this review was being written, and was therefore
+live on the storefront within seconds. It is the cleanest possible illustration
+of why `docs/branching-and-release.md` exists: there is nothing wrong with the
+change, but nobody *chose* to deploy it.
+
+It adds 20 lines of CSS to `snippets/product-media-gallery-content.liquid`,
+scoped to `@media screen and (max-width: 749px)` and excluding the zoom dialog.
+
+**One thing I checked and it is fine.** The new rule sets
+`aspect-ratio: var(--media-preview-ratio, var(--gallery-aspect-ratio, 1))`,
+which inverts the precedence of the base rule in
+`snippets/product-media-container-styles.liquid:13`
+(`var(--gallery-aspect-ratio, var(--media-preview-ratio))`). That looks like it
+could override a merchant-configured gallery ratio with each image's native
+ratio on mobile. It cannot: the two variables are **mutually exclusive** —
+`--media-preview-ratio` is only emitted inside
+`{% if block_settings.aspect_ratio == 'adapt' %}` (line 386) and
+`--gallery-aspect-ratio` only inside the matching `{% unless %}` (line 358).
+Exactly one is ever set, so the ordering is immaterial and the `1` fallback is
+unreachable.
+
+**One thing that still needs a real device.** The substantive change is
+`object-fit: contain` on the mobile product image. Inside a fixed-ratio
+container, `contain` letterboxes rather than crops — so the product occupies
+**less area** than it did under `cover`. Coffee bags are the agreed baseline for
+PDP presentation, and the baseline is the bag's *area*, so this is exactly the
+kind of change that needs to be looked at on a phone before it is accepted.
+
+**This has not been verified here.** Chrome in this environment clamps window
+resizing at roughly 1283 px and the storefront blocks iframes via
+`frame-ancestors`, so the 749 px breakpoint cannot be reached; CSS zoom does not
+move media queries. The `max-width: 749px` figure above is read from the source,
+not observed. A real phone check is outstanding — as it still is for the earlier
+PDP image sizing work and the Water For Good counter.
