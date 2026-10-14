@@ -1,5 +1,36 @@
 # Formswell migration map — what's done, what needs a decision, what needs building
 
+> ## ⚠️ THE CUTOVER HAPPENED ON 2026-10-14 AT ~15:43Z, BEFORE THIS PLAN WAS FINISHED
+>
+> Theme **`154676789439` (`ona_theme2026/main`) is now `role: MAIN`** — it is the live
+> storefront. The previous theme `160335790271` is `UNPUBLISHED` and is therefore still
+> available as a rollback.
+>
+> **Everything below written as "before publishing" is now remediation on a live
+> store.** In particular, none of the three gates was run: the app-embed audit, the
+> end-to-end tracking test, and the performance check are all still recorded as *not
+> started* in `performance-and-compatibility.md`.
+>
+> Confirmed live on 2026-10-14, customer-facing, by fetching PDPs of each suffix:
+>
+> - **Three of the four Maple sections print on every product**, including an ONA
+>   **merch vest**: the `product_tabs_fW4maV` prose and its `maple.webp` image,
+>   `story_video_VUwQ6f` ("Maple has become one of ONA's most familiar coffees"),
+>   `section_EhyeAD` ("Who's Maple For?"), and the static
+>   "Caramel, biscuts, nuts and spices". `product_dna_trxBBN` ("Maple DNA") was
+>   disabled in the editor beforehand and does **not** print.
+> - **Subscriptions work.** `selling_plan` data renders on the subscription PDP, so
+>   `blocks/purchase-options.liquid` is carrying them natively rather than depending on
+>   the Appstle embed that is not enabled on this theme. That was the biggest risk in the
+>   app-embed gate and it has landed safely — the rest of that audit is still owed.
+> - **Judge.me renders with real data** (`data-shop-average-rating="4.81"`,
+>   `data-shop-review-count="74"`). The template setting is `review_data: "sample_data"`,
+>   so a product with no reviews of its own still needs a visual check, but it is not
+>   serving fabricated reviews.
+>
+> **Read the order below as a remediation queue, not a launch sequence**, and treat
+> anything that says "pre-publish" as "live defect, fix first".
+
 **Date:** 2026-10-14 · **Theme:** `ona_theme2026` (Horizon 4.1.4) · **Shop theme:** `154676789439`
 
 The strategy is *not* to port the legacy templates. It is to land on the Formswell
