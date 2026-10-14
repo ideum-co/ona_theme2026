@@ -6,7 +6,12 @@
 -%}
 
 {% unless product_resource == blank %}
-  {% render 'variant-main-picker', product_resource: product_resource, section: section, product: product %}
+  {% if product_resource.has_only_default_variant %}
+    {% comment %}Reserve the picker slot in product cards without showing an unavailable selector.{% endcomment %}
+    <div class="product-card__variant-placeholder" aria-hidden="true"></div>
+  {% else %}
+    {% render 'variant-main-picker', product_resource: product_resource, section: section, product: product %}
+  {% endif %}
 {% endunless %}
 
 {% schema %}
