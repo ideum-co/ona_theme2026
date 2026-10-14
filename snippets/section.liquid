@@ -23,12 +23,16 @@
 <div
   class="section section--{{ section.settings.section_width }} color-custom-{{ section_id }}"
   data-testid="ui-test-section"
+  style="--ona-mobile-min-height: {{ section.settings.mobile_min_height | default: 600 }}px; --ona-mobile-content-top: {{ section.settings.mobile_content_top | default: 0 }}px;"
+
 
   {% if request.visual_preview_mode %}
     data-shopify-visual-preview
   {% endif %}
 
   style="
+    --ona-mobile-min-height: {{ section.settings.mobile_min_height | default: 600 }}px;
+    --ona-mobile-content-top: {{ section.settings.mobile_content_top | default: 0 }}px;
     {% if section.settings.section_height == 'custom' %}
       --section-min-height: {{ section.settings.section_height_custom }}svh;
     {% elsif section.settings.section_height == 'full-screen' %}
@@ -43,13 +47,28 @@
   "
 >
   <div class="custom-section-background">
-    {% render 'background-media',
-      background_media: section.settings.background_media,
-      background_video: section.settings.video,
-      background_video_position: section.settings.video_position,
-      background_image: section.settings.background_image,
-      background_image_position: section.settings.background_image_position
-    %}
+    {% if section.settings.background_media == 'video' %}
+      <div class="ona-responsive-background ona-responsive-background--desktop">
+        {% render 'background-media',
+          background_media: 'video',
+          background_video: section.settings.video,
+          background_video_position: section.settings.video_position
+        %}
+      </div>
+      <div class="ona-responsive-background ona-responsive-background--mobile">
+        {% render 'background-media',
+          background_media: 'video',
+          background_video: section.settings.mobile_video | default: section.settings.video,
+          background_video_position: section.settings.mobile_video_position | default: 'contain'
+        %}
+      </div>
+    {% else %}
+      {% render 'background-media',
+        background_media: section.settings.background_media,
+        background_image: section.settings.background_image,
+        background_image_position: section.settings.background_image_position
+      %}
+    {% endif %}
   </div>
 
   <div
@@ -108,6 +127,21 @@
 
   .custom-section-background {
     grid-column: 1 / -1;
+  }
+
+  .ona-responsive-background--mobile {
+    display: none;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ona-responsive-background--desktop { display: none; }
+    .ona-responsive-background--mobile { display: block; }
+    .section:has(.ona-responsive-background--mobile) {
+      min-height: var(--ona-mobile-min-height);
+    }
+    .section:has(.ona-responsive-background--mobile) .section-content-wrapper {
+      padding-block-start: var(--ona-mobile-content-top);
+    }
   }
 
   .custom-section-content {
