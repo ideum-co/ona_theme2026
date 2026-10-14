@@ -324,10 +324,29 @@ has not been made.
 14. **Publish — the cutover.** Swap `ona_theme2026` in for theme `160335790271`. This
     document had no publish step at all until now, which left the one irreversible
     action in the project undefined. Do it in this order: re-read the §4.3 checksum test
-    so no shop-owned template is mid-divergence, publish, then — and only then, in one
-    batch — apply any resource `templateSuffix` reassignments and delete the superseded
-    legacy templates (see step 6's note and map §5 step 7). Keep the previous theme
-    unpublished rather than deleted until the storefront has been walked.
+    so no shop-owned template is mid-divergence, publish, then walk the storefront.
+    Keep the previous theme **unpublished rather than deleted**: republishing it is the
+    rollback.
+
+    > **Reassigning resource suffixes destroys that rollback, so do it last or not at
+    > all.** `templateSuffix` is shop-wide, so once the suffixes are changed,
+    > republishing the old theme makes it look for templates matching the *new*
+    > suffixes — which it does not ship — and if the superseded legacy templates have
+    > also been deleted, there is nothing to go back to. The two halves of this step are
+    > therefore in tension, and the resolution is order plus evidence:
+    >
+    > 1. Prefer **not reassigning at all.** Every fold in this plan can be done
+    >    theme-side with a wrapper template (step 6's note, map §5 step 7), which leaves
+    >    the rollback intact permanently. This is the default.
+    > 2. If resources genuinely must be re-pointed, do it **after the storefront has
+    >    been walked and accepted**, not at the moment of publishing — and first write
+    >    down the **reverse mapping** (resource → its current suffix) so the change can
+    >    be undone, and leave the legacy templates in place until it is accepted.
+    > 3. Delete the superseded legacy templates **last of all**, once no rollback is
+    >    wanted.
+    >
+    > A rollback that has silently stopped working is worse than no rollback, because it
+    > is relied on. (Codex, PR #150.)
 
 **After go-live**
 

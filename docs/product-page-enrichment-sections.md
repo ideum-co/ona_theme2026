@@ -28,10 +28,13 @@ hurry.
 > **Corrected 2026-10-15.** This paragraph used to end "and **one of them — brew
 > guide — doesn't even read from the product itself**", which is wrong and sent a
 > PR review off designing the whole renderer around an article lookup. Measured
-> across all 92 active products: the product owns the brew-guide intro and the
-> spec table (`title_item`/`content_item` on **32** products), and only the
-> optional surrounding prose needs the article, via `select_artlice` on **24**.
-> See §2.
+> across all 92 active products: the product owns **both** the brew-guide intro
+> (`content_brew_guide`) and the spec table (`title_item`/`content_item`), each on
+> **32** products. The article is the **link target only** — `select_artlice` on
+> **24** products resolves the "Full brewing guide" href and nothing else. Render
+> the intro and the table unconditionally; make only the link conditional on the
+> lookup succeeding, or the 8 table-bearing products with no pointer lose content
+> they have. See §2.
 
 ## Section-by-section
 

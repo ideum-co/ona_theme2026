@@ -716,10 +716,17 @@ Suggested order:
    > resource's suffix alone:** `article.news.json`, and a `page.<suffix>.json` /
    > `blog.<suffix>.json` for each page and blog being folded, each a thin wrapper
    > around the Horizon generic (or the ported bespoke layout). A wrapper is cheap and it
-   > is reversible; a suffix change is neither. **If resources genuinely must be
-   > re-pointed, do every reassignment and every legacy-template deletion atomically
-   > with the cutover at step 10** — one batch, after the swap, never before. (Codex,
-   > PR #150, twice.)
+   > is reversible; a suffix change is neither.
+   >
+   > **If resources genuinely must be re-pointed, it goes after the cutover has been
+   > accepted — not atomically with it, which an earlier version of this said.** A
+   > suffix reassignment is shop-wide, so it also destroys the rollback: republish the
+   > old theme afterwards and it looks for templates matching the *new* suffixes, which
+   > it does not ship. So the order is: publish, walk the storefront, accept it, then
+   > re-point — having first written down the reverse mapping (resource → current
+   > suffix) — and only then delete the superseded legacy templates. The readiness
+   > doc's step 14 has the full procedure. (Codex, PR #150, three times: the hazard,
+   > its scope, and then the rollback.)
 
    The decision itself, for the articles: wrap `main-blog-post` in an
    `article.news.json`, or port the bespoke article layout. Nothing else in this order
