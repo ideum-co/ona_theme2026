@@ -281,8 +281,9 @@ has not been made.
    decisions.
 6. Fix the `location` / `page.locations` suffix mismatch -- rename the **file** to
    `page.location.json` (not the page's suffix, which is shop-wide). Update
-   `docs/locations-metaobject-migration.md` in the same commit: it tells an operator to
-   pick `page.locations` in the theme editor, and the rename removes that template.
+   two things in the same commit, or they break: `docs/locations-metaobject-migration.md`,
+   which tells an operator to pick `page.locations` in the theme editor, and
+   `tests/locations-page-template.test.mjs:22`, which hard-codes the old path.
 
 **Then the surfaces, in the order you asked for**
 

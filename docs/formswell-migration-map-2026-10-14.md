@@ -327,10 +327,12 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    also move the page on the currently published theme, where `location` presumably
    resolves correctly today. **The rename has a dependency:**
    `docs/locations-metaobject-migration.md` tells an operator to select and verify
-   `page.locations` in the theme editor (lines 3, 11, 15, 68). Renaming the only file to
-   `page.location.json` removes the template that guide advertises, so update it in the
-   same commit or the documented assignment becomes impossible to perform. (Codex,
-   PR #150.) The
+   `page.locations` in the theme editor (lines 3, 11, 15, 68), and
+   `tests/locations-page-template.test.mjs:22` hard-codes
+   `templates/page.locations.json`. Renaming the only file to `page.location.json`
+   removes the template that guide advertises and fails that test, so **the rename is
+   three edits in one commit**: the file, the guide, and the test path. (Codex, PR #150,
+   twice.) The
    page itself is finished; this is the single highest-value fix on the list.
 2. **The promo badge on equipment/merch PDPs** — live's `product-template-2`/`-3` show
    it, the 2026 PDP does not. Cards are now at parity (PR #149 `d11e425`) and coffee PDPs
