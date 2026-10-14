@@ -101,11 +101,18 @@ redirects, unrelated to the theme.
 
 ### What fixing this costs
 
-Re-adding an empty template does nothing. The content — sections, copy,
-images — exists only inside the old theme's templates, which are **theme-only
-and not in this repo**. Each page has to be ported: read the old template from
-theme `160335790271`, rebuild it against Horizon's sections, commit it as
-`templates/page.<suffix>.json`. `page.wholesale.json` alone is 28.7 KB.
+Re-adding an empty template does nothing. The content — sections, copy, images
+— lives in the old theme's templates, which were theme-only and in no
+repository until this document's own PR committed them to
+**`docs/legacy-page-templates/`**. Work from that archive rather than from a
+live theme: it is in git, it is dated, and it does not depend on theme
+`160335790271` staying accessible.
+
+Each page then has to be ported — the archived file targets the previous
+theme's section types, so it is a source to read for content, order and
+metafield references, not a file to copy into `templates/`. Rebuild it against
+Horizon's sections and commit it as `templates/page.<suffix>.json`.
+`page.wholesale.json` alone is 28,724 b across 19 sections.
 
 **Do not fix this by re-pointing the pages' `templateSuffix`.** A page's suffix
 lives on the page resource, not on the theme, so changing it changes the
