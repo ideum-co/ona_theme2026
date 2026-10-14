@@ -1,6 +1,6 @@
 # Locations page: Shopify admin migration
 
-Use this guide to connect the `page.locations` alternate template to the
+Use this guide to connect the Locations alternate template to the
 existing location metaobjects. The theme reads those records; it does not
 create, update, or otherwise mutate metaobjects or their relationships.
 
@@ -8,11 +8,18 @@ create, update, or otherwise mutate metaobjects or their relationships.
 
 1. In Shopify admin, open **Online Store > Pages** and select the Locations
    page (or create it).
-2. In **Theme template**, choose `page.locations` and save the page.
+2. In **Theme template**, choose the Locations template and save the page.
+   **Which name to pick:** the live page carries the suffix **`location`** (singular)
+   while this theme currently ships `templates/page.locations.json` (plural) — they do
+   not match, which is why the page falls back today. Map §3.3 schedules renaming the
+   *file* to `page.location.json` (not re-pointing the page, which would be a shop-wide
+   change affecting the published theme). So: pick `location` once that rename has
+   landed, and `locations` only if you are working against a theme that still has the
+   plural file.
 3. Open that page in the Theme Editor. The template contains **Locations
    header**, **Locations store finder**, and **Locations flagships**.
 
-The original `page` template remains separate; assigning `page.locations`
+The original `page` template remains separate; assigning the Locations template
 does not change other pages that use `page`.
 
 ## 2. Confirm the metaobject definitions
@@ -65,7 +72,7 @@ store finder or the flagship content.
 
 ## 5. Configure the page in Theme Editor
 
-Open the Locations page with the `page.locations` template in the Theme
+Open the Locations page with the Locations template in the Theme
 Editor.
 
 - **Locations header** controls heading/body copy, typography presets and

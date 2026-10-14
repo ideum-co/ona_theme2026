@@ -325,7 +325,12 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    verified by filename against the theme. **Rename the file**, in this repo, rather than
    re-pointing the page: a page's `templateSuffix` is shop-wide, so re-pointing it would
    also move the page on the currently published theme, where `location` presumably
-   resolves correctly today. The
+   resolves correctly today. **The rename has a dependency:**
+   `docs/locations-metaobject-migration.md` tells an operator to select and verify
+   `page.locations` in the theme editor (lines 3, 11, 15, 68). Renaming the only file to
+   `page.location.json` removes the template that guide advertises, so update it in the
+   same commit or the documented assignment becomes impossible to perform. (Codex,
+   PR #150.) The
    page itself is finished; this is the single highest-value fix on the list.
 2. **The promo badge on equipment/merch PDPs** — live's `product-template-2`/`-3` show
    it, the 2026 PDP does not. Cards are now at parity (PR #149 `d11e425`) and coffee PDPs
@@ -455,9 +460,11 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    nothing but the product. The `select_artlice` pointer is a *separate, narrower*
    surface — 24 products, not 32, and absent on every drip bag that has a spec
    table — which the legacy section follows into the `brewguides` blog (747
-   articles) for the surrounding prose. Port the table from the product; if the
-   prose is wanted too, follow the pointer — but **do not strip the prefix by
-   default.** Liquid's global `articles[...]` is keyed by the *compound* handle
+   articles). **It is the link target, not a prose source**: `content_brew_guide`, the
+   intro, is product-owned and populated on the same 32 products as the table, so the
+   pointer resolves the "Full brewing guide" href and nothing else. Port the intro and
+   the table from the product, unconditionally; follow the pointer only for the link —
+   and **do not strip the prefix by default.** Liquid's global `articles[...]` is keyed by the *compound* handle
    `blog-handle/article-handle`
    ([docs](https://shopify.dev/docs/api/liquid/objects/articles)), so the stored
    `brewguides/maple` is already exactly the right key: `articles[pointer]` resolves

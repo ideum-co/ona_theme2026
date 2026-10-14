@@ -267,16 +267,22 @@ has not been made.
    > the resource, not on the theme, so changing a product's, page's or article's suffix
    > takes effect on the **currently published** theme the moment it is saved -- before
    > this theme is published at step 14 below. Prefer the theme-side option (add or rename a
-   > template file here), and if resources genuinely must be re-pointed, do it
-   > atomically with the cutover, never during this audit. Map §5 step 7 has the worked
-   > example: the 43 `news`-suffix Journal articles.
+   > template file here), and if resources genuinely must be re-pointed, do it **after
+   > the storefront has been walked and accepted** — not during this audit, and not at
+   > the moment of publishing either, because a suffix change is shop-wide and destroys
+   > the rollback. **Step 14 holds the procedure**; it is the authority for this, and
+   > anything here that disagrees with it is stale. Map §5 step 7 has the worked example:
+   > the 43 `news`-suffix Journal articles.
 
    Start where the money is
    -- `filtersub` (subscriptions, and note the map's finding that it needs *less*, not
    more), then `product-2`/`product-3` (48 products: equipment, merch, candles), then
    `wholesale`, `learn`, `location`, `faq`. Map §2 lists the orphans; §3 lists the real
    decisions.
-6. Fix the `location` / `page.locations` suffix mismatch -- a rename, five minutes.
+6. Fix the `location` / `page.locations` suffix mismatch -- rename the **file** to
+   `page.location.json` (not the page's suffix, which is shop-wide). Update
+   `docs/locations-metaobject-migration.md` in the same commit: it tells an operator to
+   pick `page.locations` in the theme editor, and the rename removes that template.
 
 **Then the surfaces, in the order you asked for**
 
