@@ -119,6 +119,17 @@ an edit to `pdp_product_summary`'s settings in the repo, merged to `main`. Doing
 shop-side edit instead would work until the next merge touching `product.json`
 overwrote it, which is the trap that cost ten sections on 2026-10-14.
 
+**This is not only about badge labels.** Codex, reviewing the PR #151 restore, found a
+fourth instance of the same pattern: the restored `product_tabs_fW4maV` tab carries
+hard-coded single-product copy — *"The maple tree's enduring strength speaks to our
+commitment to nature and sustainability… Maple was created to be a traditional style
+milk…"* — plus a static `<p>Caramel, biscuts, nuts and spices</p>`. Note that string: it
+is the **same literal, typo included**, as `pdp-product-summary`'s description fallback.
+So the real issue in §3.1 is **static copy sitting on shared templates**, overridden per
+product only where a metafield happens to be populated: `range` (0 of 92), `roast` (33),
+`tastes_like` (37), and now a whole Maple tab printing on all 92 PDPs. Decide it once, as
+one question, rather than four times.
+
 ### 3.2 PR #142 should be closed, not merged
 
 PR #142 is titled "Restore PDP customizer template blocks". Reading the diff: it
@@ -362,6 +373,23 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    repairs; the counter and the two remaining card-badge placements ride along with that
    same restore rather than being hand-inserted.
 
+   **Four defects come back with the restore, by design.** PR #151's contract is to
+   return exactly what the merge destroyed, so it restores these unchanged rather than
+   quietly editing content that is Formswell's and ONA's to decide. All four were
+   verified byte-identical to the pre-merge shop copy; all four are **pre-publish items**,
+   not regressions from #151. The theme is unpublished, so none is customer-visible today.
+
+   | item | what renders | severity |
+   |---|---|---|
+   | `product_tabs_fW4maV` tab 1 | hard-coded Maple copy on **all 92 PDPs** (§3.1) | **blocker** |
+   | `product_tabs_fW4maV` tabs 2 and 3 | `Brew Guide` and `Reviews` have **zero** child blocks — selecting either blanks the panel | blocker-adjacent; same fix as §5 step 5 |
+   | `inline_cta_8ann9f` | `button_link: ""` under the label "Try our coffee quiz" — renders an unclickable `<span>` | needs a destination |
+   | `club_benefits_937XiA` | `button_link: ""` under "Find your subscription" — renders an `<a>` with no `href` | needs a destination |
+
+   The last two are the editor-settings form of the same bug Codex caught in #149's
+   counter CTA, which that PR fixed in code by requiring both label and url to be
+   non-blank. These two need destinations set, not a code change.
+
    `templates/cart.json` and `templates/404.json` were identical when measured and are
    untouched by PR #149.
 
@@ -383,8 +411,11 @@ Suggested order:
    test in §4.3 on `index.json` and `product.json`, and keep everyone out of the theme
    editor until the pull lands — an edit made in between is lost exactly as before.
 2. Fix the `location` / `page.locations` mismatch. (hours — estimate)
-3. Settle the badge fallbacks (§3.1) — this one is live-visible on all 92 PDPs — and
-   close PR #142. Settle the Palmer Lake vs Silk Serif CTA with Formswell.
+3. Settle the static copy on shared templates (§3.1) — live-visible on all 92 PDPs:
+   the badge fallbacks **and** the hard-coded Maple tab. Give
+   `inline_cta_8ann9f` ("Try our coffee quiz") and `club_benefits_937XiA` ("Find your
+   subscription") their destinations (§4.3). Close PR #142. Settle the Palmer Lake vs
+   Silk Serif CTA with Formswell.
 4. Delete the nine orphan template files (§2). `article`, `llms` and `maintenance` need
    nothing — they have no file to delete and already fall back.
 5. **Restore the brew-guide, origin and sourcing content (§4.3).** This is the largest
