@@ -232,6 +232,7 @@
     },
     "floating_badge_r89NRP": {
       "type": "floating-badge",
+      "disabled": true,
       "name": "Floating badge",
       "settings": {
         "image": "shopify://shop_images/badge_sale.svg",
@@ -449,6 +450,7 @@
           ]
         }
       },
+      "disabled": true,
       "name": "t:names.media_with_text",
       "settings": {
         "mobile_padding_inline": 16,
@@ -1073,6 +1075,7 @@
       "block_order": [
         "spec_G64RtC"
       ],
+      "disabled": true,
       "name": "t:names.featured_product",
       "settings": {
         "heading_tag": "h3",
