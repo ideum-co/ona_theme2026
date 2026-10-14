@@ -55,6 +55,7 @@
     --story-video-heading-size: {{ settings.heading_size }}px;
     --story-video-max-width: {{ settings.video_max_width }}px;
     --story-video-overhang: {{ settings.video_overhang }}px;
+    --story-video-overhang-mobile: {{ settings.video_overhang_mobile | default: 0 }}px;
     --story-video-button-background: {{ settings.button_background }};
     --story-video-button-color: {{ settings.button_text }};
     --story-video-play-background: {{ settings.play_background }};
@@ -105,7 +106,7 @@
       Both sources go through the theme's own video snippet, which already handles the deferred
       <video> element, the YouTube/Vimeo iframe, the poster and the play button.
     {%- endcomment -%}
-    <div class="story-video__media">
+    <div class="story-video__media{% if settings.hide_video_mobile %} story-video__media--hide-mobile{% endif %}{% if settings.mobile_video != blank %} story-video__media--has-mobile{% endif %}">
       {%- capture video_style -%}
         --size-style-width: 100%;
         --size-style-width-mobile: 100%;
@@ -119,6 +120,7 @@
         {%- endif -%};
       {%- endcapture -%}
 
+      <div class="story-video__desktop-player">
       {%- if settings.source == 'uploaded' -%}
         {%- render 'video',
           video: settings.video,
@@ -138,6 +140,18 @@
           video_alt: settings.alt,
           video_preview_image: settings.cover_image
         -%}
+      {%- endif -%}
+      </div>
+      {%- if settings.mobile_video != blank -%}
+        <div class="story-video__mobile-player">
+          {%- render 'video',
+            video: settings.mobile_video,
+            video_class: 'story-video__player size-style',
+            video_loop: settings.video_loop,
+            video_autoplay: settings.video_autoplay,
+            video_preview_image: settings.mobile_video.preview_image
+          -%}
+        </div>
       {%- endif -%}
     </div>
   {%- endif -%}
@@ -245,6 +259,28 @@
      absolutely positioned iframe and play button resolved against a 640px box. */
   .story-video__player {
     display: block;
+  }
+
+  .story-video__mobile-player {
+    display: none;
+  }
+
+  @media screen and (max-width: 749px) {
+    .story-video__media {
+      margin-block-end: calc(var(--story-video-overhang-mobile, 0px) * -1);
+    }
+
+    .story-video__media--hide-mobile {
+      display: none;
+    }
+
+    .story-video__media--has-mobile .story-video__desktop-player {
+      display: none;
+    }
+
+    .story-video__media--has-mobile .story-video__mobile-player {
+      display: block;
+    }
   }
 
   /* Play button per the design: a solid disc with the triangle drawn as an outline. The theme's
@@ -1143,6 +1179,34 @@
         }
       ],
       "default": "16/9"
+    },
+    {
+      "type": "header",
+      "content": "Mobile video"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_video_mobile",
+      "label": "Hide video on mobile",
+      "default": false
+    },
+    {
+      "type": "video",
+      "id": "mobile_video",
+      "label": "Alternative mobile video",
+      "info": "Optional portrait video. Uses the desktop video if empty.",
+      "visible_if": "{{ section.settings.hide_video_mobile == false }}"
+    },
+    {
+      "type": "range",
+      "id": "video_overhang_mobile",
+      "label": "Mobile video overhang",
+      "min": 0,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.hide_video_mobile == false }}"
     },
     {
       "type": "range",
