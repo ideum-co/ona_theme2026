@@ -252,6 +252,26 @@
       width: 14px;
       font-size: 36px;
     }
+
+    /*
+     * Six-figure totals overflow a 320px viewport at the sizes above. The row
+     * is $ + n digits + a comma every third digit, so six digits is 8 children:
+     * 7 cards x 36 + 14 comma + 7 gaps x 2 + 16 padding + 4 border = 300px,
+     * against 320 - 30 section padding = 290px available. At 32/12 it comes to
+     * 270px and fits. Guarding on the 8th child means a five-digit total -- the
+     * only case this campaign can reach, goal $20,000 -- keeps the measurements
+     * that were matched against the live counter, untouched. Codex, PR #150.
+     */
+    .donation-counter__cards:has(> .donation-counter__card:nth-child(8)) .donation-counter__card {
+      width: 32px;
+      height: 46px;
+      font-size: 32px;
+    }
+
+    .donation-counter__cards:has(> .donation-counter__card:nth-child(8)) .donation-counter__card--comma {
+      width: 12px;
+      font-size: 32px;
+    }
   }
 {% endstylesheet %}
 
