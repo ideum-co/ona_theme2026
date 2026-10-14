@@ -424,9 +424,19 @@ Suggested order:
    empty, so `content_brew_guide` and `title_item`/`content_item` — populated on **32**
    products — and `content_origin`/`content_sourcing` render nowhere. Decide where each
    goes (the empty `Brew Guide` tab is the obvious home for the recipe, `product-dna` or
-   a tab for origin and sourcing), wire it on the **shop's** `product.json`, and verify on
-   one blend, one single origin and one drip bag before go-live.
-6. Decide `product-2`: own template, or an optional specs/video region on the one PDP.
+   a tab for origin and sourcing), then wire it **in the repo's** `templates/product.json`
+   and deploy it by merging to `main` — the same route as every other change here, for the
+   reason in §4.3: an edit made only on the shop's copy survives exactly until the next
+   merge touches that file, and this is content on 32 products. Reconcile first if the
+   checksum test says the editor has moved the file since #151 landed. Verify on one
+   blend, one single origin and one drip bag before go-live.
+6. Settle the three remaining product-template decisions (§3.3), all of which change
+   what renders: `product-2` — own template, or an optional specs/video region on the one
+   PDP; `filtersub` — whether the subscription PDP keeps omitting the coffee storytelling
+   sections, which is the stripped template's whole premise and so is a deliberate yes/no,
+   not an oversight; and the six `Default product` coffees — whether `ona-read-more-content`
+   is covered by `story` or those six lose content when the suffix folds. Verify each on a
+   real product of that suffix before go-live.
 7. Fold the five cheap pages and both blogs — and with them the **43 `news`-suffix
    Journal articles** (§3.5), the only article group that needs a decision. They are a
    single call: point them at `main-blog-post` and delete
