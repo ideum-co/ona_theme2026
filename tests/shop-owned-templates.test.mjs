@@ -75,11 +75,29 @@ test('every JSON template is inside Shopify\'s section and block limits', () => 
   }
 });
 
-/** Every section id the theme editor has switched off, sorted. */
-const disabledIds = (sections) =>
-  Object.keys(sections)
-    .filter((id) => sections[id].disabled === true)
-    .sort();
+/**
+ * Every node the theme editor has switched off, at ANY depth, as sorted dotted
+ * paths -- `section`, or `section.block`, or `section.block.nested`.
+ *
+ * It recurses because a first version looked only at top-level sections, and
+ * the empty Brew Guide tab is a BLOCK: `product_tabs_fW4maV.product_tab_4tzPxX`.
+ * Re-enabling it put that tab back on all 92 PDPs with the suite still green.
+ */
+const disabledPaths = (sections) => {
+  const found = [];
+  const walk = (node, path) => {
+    for (const [id, child] of Object.entries(node.blocks ?? {})) {
+      const childPath = `${path}.${id}`;
+      if (child.disabled === true) found.push(childPath);
+      walk(child, childPath);
+    }
+  };
+  for (const [id, section] of Object.entries(sections)) {
+    if (section.disabled === true) found.push(id);
+    walk(section, id);
+  }
+  return found.sort();
+};
 
 test('index.json keeps the editor-made homepage sections', () => {
   const { sections, order } = readTemplate('index.json');
@@ -103,27 +121,31 @@ test('index.json keeps the editor-made homepage sections', () => {
 
   // Sections the editor had switched off. They came back enabled once.
   //
-  // This asserts the WHOLE disabled set, not a chosen few. An earlier version
-  // listed six of the thirteen while claiming to list all of them, so
-  // re-enabling `special_release` passed the suite -- the exact overwrite this
-  // file exists to catch. Comparing the complete set also fails when a section
-  // is newly disabled, which is the point: that is a real change to the
-  // storefront and it should take a deliberate edit here to record it.
-  assert.deepEqual(disabledIds(sections), [
+  // This asserts the WHOLE disabled set at every depth, not a chosen few. Two
+  // earlier versions were incomplete: one listed six of thirteen sections while
+  // claiming to list all, and the next still missed every nested block. Both
+  // times a stale snapshot could re-enable something with the suite green --
+  // the exact overwrite this file exists to catch. Comparing the complete set
+  // also fails when something is newly disabled, which is the point: that is a
+  // real change to the storefront and should take a deliberate edit to record.
+  assert.deepEqual(disabledPaths(sections), [
     'club_benefits',
     'club_benefits_QGRDdd',
     'club_invite_QLL4T3',
     'club_invite_TGPaF8',
+    'collection_carousel_GRkRhJ.collection_f8jkdP',
     'discover_by_category',
     'find_your_coffee',
     'floating_badge_r89NRP',
+    'hero_ona.icon_9aLnRm',
     'press_band',
     'product_highlight_KkUAVM',
     'product_intro_k9p6yn',
     'raspberry_candy',
+    'slideshow_nBcaMx.slide_8Ar7Nq',
     'special_release',
     'story_video_LN6zzn',
-  ], 'the set of disabled homepage sections changed');
+  ], 'the set of disabled homepage sections and blocks changed');
 
   // The WFG counter is the one deliberate addition, second on the page.
   assert.equal(order[1], 'wfg_donation_counter');
@@ -149,13 +171,21 @@ test('product.json keeps the editor-wired PDP', () => {
   // enabling them double-renders. `product_dna_trxBBN` re-enabled puts
   // "Maple DNA" back on all 92 products; `product_tabs_XnTEpK` duplicates the
   // product tabs.
-  assert.deepEqual(disabledIds(sections), [
+  assert.deepEqual(disabledPaths(sections), [
     'brew_guide',
     'faqs',
+    // Superseded by blocks/pdp-product-summary.liquid; re-enabling these
+    // double-renders the summary. See the 2026-theme notes on group_icgrde.
+    'main.product-details.best_for_pdp',
+    'main.product-details.divider_VJhene',
+    'main.product-details.group_icgrde',
+    'main.product-details.tastes_like_pdp',
     'product_dna_trxBBN',
     'product_tabs_XnTEpK',
+    // The empty Brew Guide tab. Re-enabling it shows an empty tab on all 92 PDPs.
+    'product_tabs_fW4maV.product_tab_4tzPxX',
     'story',
-  ], 'the set of disabled PDP sections changed');
+  ], 'the set of disabled PDP sections and blocks changed');
 });
 
 test('the promo badge stays on both card surfaces, after the gallery', () => {
