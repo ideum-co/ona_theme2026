@@ -1,5 +1,14 @@
 # Go-live readiness, 14 October 2026
 
+> **Superseded in part by [`formswell-migration-map-2026-10-14.md`](./formswell-migration-map-2026-10-14.md)**
+> (same PR). That document re-reads the template question under the agreed strategy —
+> fold onto the Formswell design, delete the old complexity — and the answer changes
+> materially: ten of the "28 missing templates" are orphans no live resource uses, the
+> `article`, `llms` and `maintenance` suffixes already fall back on the live theme, and
+> **PR #142 should be closed rather than resolved**, because its diff deletes
+> `pdp_product_summary` and reverts the Formswell PDP header. Read the map first; the
+> plan below is still correct about drift, Horizon 4.3.0 and sequencing.
+
 Target: publish `ona_theme2026` in place of theme `160335790271`.
 
 Everything below was measured on the shop or in the two repos on 2026-10-14. Counts come

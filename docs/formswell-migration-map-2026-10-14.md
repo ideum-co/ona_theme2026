@@ -1,0 +1,262 @@
+# Formswell migration map — what's done, what needs a decision, what needs building
+
+**Date:** 2026-10-14 · **Theme:** `ona_theme2026` (Horizon 4.1.4) · **Shop theme:** `154676789439`
+
+The strategy is *not* to port the legacy templates. It is to land on the Formswell
+design and delete the old complexity. This document re-reads the cutover under that
+strategy, because the answer changes: most of what looked like "28 templates to port"
+is either already built, already dead, or a one-line wiring fix.
+
+Every number here was measured today against the live shop (Admin API, all 92 active
+products / 26 pages / 5 blogs / 795 articles) and against both repos — not estimated.
+
+## The headline
+
+| | legacy `onacoffee_theme` | `ona_theme2026` |
+|---|---|---|
+| sections | **147** (94 of them bespoke `ona-*`) | **57** |
+| snippets | 139 | 157 |
+| product templates | 13 | **1** |
+| page templates | 16 suffixes | 3 (`page`, `page.contact`, `page.locations`) |
+
+The duplication is not a figure of speech. `ona-wholesale-sourcing-v2 … v6` and
+`ona-traning-sourcing`, `-v2`, `-v3`, `-v4` are **nine copies of the same 151-line
+section**, differing by two lines (the schema name). v2 and v6 are byte-identical.
+That is ~1,360 lines that collapse into one Horizon `media-with-content` used nine times.
+
+---
+
+## 1. Done — built, in the Formswell design, no decision needed
+
+| Surface | How it's built in 2026 | Replaces |
+|---|---|---|
+| **Home** | `hero`, `media-with-content`, `product-highlight`, `club-invite`, `club-benefits`, `product-intro`, `story-video`, `press-quotes`, `coffee-quiz`, `collection-carousel`, `floating-badge`, `marquee`, `layered-slideshow`, `inline-cta` | `ona-banner-slider`, `ona-featured-collection` ×3, `ona-slideshow`, `ona-two-images`, `ona-image-and-text`, `ona-divider` ×4 |
+| **PDP** | `product-information` → `_product-media-gallery` + `_product-details` (`pdp-product-summary`, `variant-picker`, `purchase-options`, `buy-buttons`, description, properties) + `story` / `brew_guide` / `faqs` + `product-recommendations`. Spare parts available: `product-dna`, `product-highlight`, `product-hotspots`, `product-tabs`, `product-intro` | `ona-product-information`, `-profile`, `-sourcing`, `-image-slider`, `-origin`, `-brew-guide`, `-accordion`, `-recommendations` |
+| **Collection** | `main-collection` with static `filters` block; collection description split on `<!-- split -->` into intro + below-fold; FAQs read from `collection.metafields.custom.faqs` | `ona-collection-template` + `ona-collection-faq-new` |
+| **Collection list** | `main-collection-list` | `ona-collections-redirect` |
+| **Search** | `search-header`, `search-results`, `predictive-search`, `predictive-search-empty` | `ona-search-results` |
+| **Cart** | `main-cart` + `product-list`, plus `cart-drawer-section` | `ona-cart-template` + `ona-product-complementary` |
+| **Blog / article** | `main-blog`, `main-blog-post`, `featured-blog-posts` | `ona-blog-template`, `ona-article-template` |
+| **Locations** | `locations-header`, `locations-store-finder`, `locations-flagships` | `ona-store-finder`, `ona-flagship-intro`, `ona-locations-content` |
+| **Contact** | `main-page` + `contact-form` block | `ona-page-title`, `ona-contact-info`, `ona-contact-form` |
+| **Header / footer** | `header` (mega-menu via `_header-menu`, three variants), `header-announcements`, `footer` + `footer-brand` + `footer-utilities` | legacy header/footer |
+| **404, password, generic page** | `main-404` + `product-list`, `password`, `main-page` + `page-content` | same |
+| **Promo badges** | `blocks/ona-product-tags.liquid`, `snippets/ona-product-tags.liquid`, `snippets/ona-product-tags-pdp.liquid` — full metafield-driven system | ported, present |
+| **Brand type** | `snippets/brand-fonts.liquid` — Karla + Silk Serif as local woff2, mapped onto Horizon's `--font-*--family` | — |
+| **Analytics** | Horizon standard events via `@shopify/events` (`page-view-event.js`, `view-event-elements.js`) | **better than legacy**, which emits none |
+| **WFG counter** | `sections/ona-donation-counter.liquid` — PR #149 | ported |
+
+The locations page is the clearest proof the strategy works: three legacy bespoke
+sections became three purpose-built Formswell sections, and it is *already built*.
+
+## 2. Dead weight — delete, nothing to decide
+
+Measured against live: **no active resource uses these.**
+
+**Eight of thirteen legacy product templates are orphans.** Zero active products:
+`product.box.liquid`, `product.custom-template.liquid`, `product.custom2.liquid`,
+`product.raspberrycandydripsbags.liquid`, `product.staple-tee.liquid`,
+`product.non-purchasable.liquid`, `product.Reserve Box.liquid`,
+`product.Reserve box-4bags.liquid`.
+
+**`page.melbourne.json`** — zero pages carry suffix `melbourne`; `melbourne-bookings`
+uses `bookings`.
+
+**The `article` suffix is already dead** — see §3.5.
+
+**`page.llms` and `page.maintenance` need nothing.** Both suffixes exist on live pages,
+but the template files exist in *neither repo and not on the live theme either* —
+checked by filename against theme `160335790271`. Those two pages already fall back to
+`page.json` today. They are not a regression; they are the status quo.
+
+That is ten templates off the list before any work starts.
+
+## 3. Needs a decision
+
+### 3.1 The coffee badges print on every product — including a kettle
+
+`blocks/pdp-product-summary.liquid` resolves its two badges and its description from
+`accentuate.range`, `accentuate.roast`, `accentuate.tastes_like`, and falls back to the
+literal values stored in `templates/product.json` when a metafield is blank.
+
+Measured coverage across all 92 active products:
+
+| suffix | n | `range` | `roast` | `tastes_like` | `content_product_info` | `video_url` |
+|---|---|---|---|---|---|---|
+| (none) — coffee | 36 | **0** | 25 | 29 | 0 | 0 |
+| `product-2` — equipment | 26 | **0** | 0 | 0 | 20 | 6 |
+| `product-3` — merch | 22 | **0** | 0 | 0 | 7 | 0 |
+| `Default product` — coffee | 6 | **0** | 6 | 6 | 0 | 0 |
+| `filtersub` — subscriptions | 2 | **0** | 2 | 2 | 0 | 0 |
+
+`accentuate.range` is **empty on all 92 products**. So on cutover, every single PDP
+prints the stored fallback **"Staple Range"**. And all 48 equipment and merch products
+print **"Best with Milk"** and **"Caramel, biscuits, nuts and spices"**, because they
+have no `roast` and no `tastes_like` either.
+
+**Decision needed:** populate `accentuate.range` (and accept that equipment/merch will
+never have it, so the badge must be allowed to be absent), or blank the literal
+fallbacks in `templates/product.json` and treat the badges as optional. Either is a
+one-hour change. Shipping neither puts "Best with Milk" on a Hario dripper.
+
+### 3.2 PR #142 should be closed, not merged
+
+PR #142 is titled "Restore PDP customizer template blocks". Reading the diff: it
+**deletes `pdp_product_summary`** and re-enables `group_icgrde`, `best_for_pdp`,
+`tastes_like_pdp` and a divider.
+
+That is a straight revert of the Formswell PDP header to Horizon's default arrangement.
+`pdp_product_summary` already renders the title, the price, both badges and the
+description, and it reads the same `accentuate` keys that `best_for_pdp` (`roast`) and
+`tastes_like_pdp` (`tastes_like`) read — which is exactly why those two were disabled.
+Merging #142 would duplicate the title and price and undo the design.
+
+**One thing in #142 is real:** `ona_promo_tags` lives inside the disabled
+`group_icgrde`, so the metafield-driven promo badge currently renders **nowhere on the
+PDP**. The fix is not the revert — it is to lift `ona_promo_tags` out of the disabled
+group and into `product-details`'s `block_order` next to `pdp_product_summary`.
+`blocks/_product-details.liquid` accepts `@theme`, so it already allows the block.
+
+**Decision needed:** close #142, and agree where the promo badge sits relative to the
+title and price.
+
+### 3.3 Equipment and merch: one template or three?
+
+| | legacy section | lines | what it carries beyond title/price/variants/ATC |
+|---|---|---|---|
+| `product-2` (26 equipment) | `product-template-2` | 683 | `accentuate.video_url` + `video_background`, `content_product_info`, `video_of_product`, a repeatable `title` spec list |
+| `product-3` (22 merch) | `product-template-3` | 165 | **nothing** |
+| `filtersub` (2 subscriptions) | `product.filtersub.json` | — | **nothing — it is the *stripped* template**: `ona-product-information` + accordion + complementary + recommendations, with profile, sourcing, image-slider, origin and brew-guide all explicitly `disabled` |
+| `Default product` (6 coffee) | `product.default.json` | — | one extra `ona-read-more-content` |
+
+So:
+
+- **`product-3` folds onto the single Formswell PDP today.** It is a plain commerce page.
+  The only blocker is the badge fallback in 3.1.
+- **`filtersub` needs *less*, not more.** It was never a richer template — it is
+  `product.json` with the coffee storytelling switched off. In 2026 terms that is the
+  same template minus the `story` and `brew_guide` sections. The subscriptions are ~24%
+  of the WFG campaign by value, so this one is worth getting right, but it is a
+  settings decision, not a build.
+- **`product-2` is the only genuine gap.** 20 of 26 equipment products have
+  `accentuate.content_product_info` and 6 have `accentuate.video_url`, and the 2026 PDP
+  renders **neither**. Its `properties_table` block only reads `accentuate.components`.
+  The Horizon pieces all exist (`story-video`, `product-tabs`, `product-highlight`,
+  `media-with-content`, `product-custom-property`, `custom-liquid`) — they just need
+  assembling once.
+- **`Default product`**: decide whether `ona-read-more-content` is covered by the
+  `story` custom-liquid section, or whether those 6 products lose content.
+
+**Decision needed:** does equipment get its own `product.equipment.json`, or does the
+single PDP grow an optional specs/video region that stays empty for coffee? Everything
+else folds.
+
+### 3.4 Pages — which get a Formswell rebuild and which fold onto `page.json`
+
+Fourteen live pages carry a bespoke suffix. Sorted by how much is actually there:
+
+**Fold onto `main-page` / `custom-liquid` — cheap, no design work**
+| page | suffix | legacy sections | 2026 equivalent |
+|---|---|---|---|
+| `privacy` | `privacy` | `ona-privacy-layout` | `main-page` + `page-content` |
+| `shipping-information` | `text-template` | `ona-text-editor-box` | `main-page` + `page-content` |
+| `sitemap` | `html-sitemap` | `custom-liquid` | `custom-liquid` section (already exists) |
+| `faq` | `faq` | `ona-faq-layout` | `accordion` + `_accordion-row` blocks |
+| `subscription-faq` | `faq-subscriptions` | `ona-faq-layout` | same |
+
+**Needs a Formswell rebuild — real landing pages**
+| page | suffix | legacy sections | note |
+|---|---|---|---|
+| `wholesale` | `wholesale` | **19** | the big one. Five of those 19 are the duplicated `sourcing-v2…v6`; realistically ~8 distinct layouts |
+| `barista-courses` | `training` | **10** | four are the duplicated `traning-sourcing` family |
+| `about` | `about` | 7 | banner, content, philosophy, awards, sustainability ×2, careers |
+| `solar`, `recycled-boxes`, `womenincoffee` | `sustainability` | 2 | three pages, one template |
+| `canberra-bookings`, `sydney-bookings`, `melbourne-bookings` | `bookings` | 4 | three pages, one template. The functional part is `ona-training-iframe` — **6 lines** |
+| `private-courses-and-experiences` | `private-courses-...` | 3 | `ona-expericences-content` |
+| `learn` | `learn` | 2 | `ona-brewguides-and-training` |
+
+**Already built, just mis-wired** — see §4.
+
+**Decision needed per group, not per page:** `wholesale` and `barista-courses` are the
+only two that need design time. The other twelve pages are five shared layouts.
+
+### 3.5 Blogs and articles
+
+Exact counts from the Admin API: **795 articles** across five blogs — `brewguides` 747,
+`news` (Journal) 43, `flagship-stores` 5, `recipes` 0, `news-1` 0.
+
+| resource | suffix | count | legacy template | decision |
+|---|---|---|---|---|
+| `brewguides` blog | `brewguides` | 1 blog | `ona-blog-template` + `ona-read-more-content` + `ona-faq-lists` | fold onto `main-blog`; decide whether the read-more and FAQ strips survive |
+| `news` (Journal) blog | `news` | 1 blog | `ona-blog-news-template` | fold onto `main-blog` |
+| Journal articles | `news` | **43** | `ona-article-news-template` | fold onto `main-blog-post` — the only article template that needs a decision |
+| brewguides + flagship articles | `""` or `article` | **752** | `ona-article-template` | already covered by `article.json` |
+
+**The `article` suffix is already dead.** Older brewguides articles carry
+`templateSuffix: "article"`, but `templates/article.article.json` exists on **neither
+the live theme nor the 2026 theme** — checked by filename against both. Those articles
+already fall back to `article.json` today, exactly like `llms` and `maintenance`. No
+work, no decision.
+
+So of 795 articles, **43 need a decision** and 752 are already handled.
+
+## 4. Wiring bugs — no decision, just fix
+
+1. **`page.locations.json` never renders.** The live page carries suffix **`location`**
+   (singular); both the repo and the shop theme `154676789439` ship
+   `templates/page.locations.json` (plural, 706 b) and no `page.location.json` —
+   verified by filename against the theme. Rename the file or re-point the page. The
+   page itself is finished; this is the single highest-value fix on the list.
+2. **`ona_promo_tags` renders nowhere on the PDP** (see §3.2).
+3. **Repo ↔ shop drift.** `templates/index.json` is 172,565 b in the repo vs 109,856 b
+   on the shop (the shop has a `floating_badge_r89NRP` the repo lacks).
+   `templates/product.json` is 43,476 b vs 44,485 b, and the shop copy was edited in the
+   theme editor on **2026-10-05**, six days after the last commit. `settings_data.json`,
+   `collection.json`, `cart.json` and `search.json` are identical. Reconcile before
+   anyone else touches the editor, or the next `git push` silently reverts someone.
+
+## 5. What this means for scheduling
+
+Under the fold-don't-port strategy the long pole is **two pages** — `wholesale` and
+`barista-courses` — not 28 templates. Everything else is: delete ten orphans, fix three
+wiring bugs, make four product-template decisions, and rebuild five shared page layouts
+from Horizon generics.
+
+Suggested order:
+
+1. Fix the `location` / `page.locations` mismatch, place `ona_promo_tags`, reconcile the
+   drift. (hours)
+2. Settle the badge fallbacks (§3.1) — this one is live-visible on all 92 PDPs.
+3. Close PR #142. Merge PR #149 (WFG counter) and settle the Palmer Lake vs Silk Serif
+   CTA with Formswell.
+4. Delete the ten orphan templates.
+5. Decide `product-2`: own template, or an optional specs/video region on the one PDP.
+6. Fold the five cheap pages and both blogs.
+7. Rebuild `about`, `sustainability`, `bookings`, `learn`,
+   `private-courses-and-experiences` from Horizon generics.
+8. Rebuild `wholesale` and `barista-courses` with Formswell.
+9. Then — and only then — bump Horizon 4.1.4 → 4.3.0 (26 real conflicts, 8 files with
+   line-level overlap, 59 lines; measured). Not the night before.
+
+## Appendix — legacy sections with no 2026 equivalent yet
+
+Grouped by the page that needs them, so nothing is ported speculatively:
+
+- **wholesale**: `ona-wholesale-partnership`, `ona-wholesale-sourcing-v2…v6` (one
+  section, five uses), `ona-icon-and-content`, `ona-training`, `ona-unique-coffees`,
+  `ona-expressions`, `ona-sourcing`, `ona-supported`, `ona-wholesale-testimonial`,
+  `ona-cafe-testimonial`, `ona-exclusive-access`, `ona-gust-r`, `ona-wholesale-brands`,
+  `ona-faq-lists`
+- **training**: `ona-training-banner`, `ona-training-image-text`,
+  `ona-traning-sourcing` + `-v2…v4` (one section, four uses), `ona-traning-supported`,
+  `ona-training-form`, `ona-training-text-two-images`, `ona-training-text-image-bg`
+- **about**: `ona-inner-banner`, `ona-content`, `ona-our-philosophy`, `ona-awards`,
+  `ona-sustatnability`, `ona-sustainability-list`, `ona-careers`
+- **bookings**: `ona-sr-heading`, `ona-bookings-top`, `ona-training-iframe` (6 lines),
+  `ona-faq-lists`
+- **misc**: `ona-page-title`, `ona-bread-crumbs`, `ona-expericences-content`,
+  `ona-brewguides-and-training`, `ona-sustainability-layout`, `ona-privacy-layout`,
+  `ona-faq-layout`, `ona-text-editor-box`, `ona-read-more-content`
+
+`ona-page-title`, `ona-sr-heading` and `ona-bread-crumbs` are scaffolding that Horizon's
+section/heading blocks already provide — they should not be ported at all.
