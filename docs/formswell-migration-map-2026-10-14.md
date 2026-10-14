@@ -7,8 +7,12 @@ design and delete the old complexity. This document re-reads the cutover under t
 strategy, because the answer changes: most of what looked like "28 templates to port"
 is either already built, already dead, or a one-line wiring fix.
 
-Every number here was measured today against the live shop (Admin API, all 92 active
-products / 26 pages / 5 blogs / 795 articles) and against both repos — not estimated.
+Every **count** here was measured today against the live shop (Admin API, all 92
+active products / 26 pages / 5 blogs / 795 articles) and against both repos — product
+and page counts, metafield coverage, section and template inventories, article totals,
+file sizes and checksums. The few **effort** figures — "a one-hour change", "~8 distinct
+layouts", the "(hours)" in §5 — are estimates, flagged as such where they appear. Do not
+schedule off the estimates; the counts are what is measured.
 
 ## The headline
 
@@ -97,7 +101,7 @@ have no `roast` and no `tastes_like` either.
 **Decision needed:** populate `accentuate.range` (and accept that equipment/merch will
 never have it, so the badge must be allowed to be absent), or blank the literal
 fallbacks in `templates/product.json` and treat the badges as optional. Either is a
-one-hour change. Shipping neither puts "Best with Milk" on a Hario dripper.
+one-hour change (estimate). Shipping neither puts "Best with Milk" on a Hario dripper.
 
 ### 3.2 PR #142 should be closed, not merged
 
@@ -109,7 +113,11 @@ That is a straight revert of the Formswell PDP header to Horizon's default arran
 `pdp_product_summary` already renders the title, the price, both badges and the
 description, and it reads the same `accentuate` keys that `best_for_pdp` (`roast`) and
 `tastes_like_pdp` (`tastes_like`) read — which is exactly why those two were disabled.
-Merging #142 would duplicate the title and price and undo the design.
+Merging #142 would not duplicate anything — it removes the summary block from both
+`blocks` and `block_order`, so the group *replaces* it. The regression is the loss of
+the bespoke Formswell header and the return of Horizon's default arrangement, which is
+reason enough to close it. (Codex flagged the duplication wording on PR #150; it was
+wrong and is corrected here.)
 
 **One thing in #142 is real:** `ona_promo_tags` lives inside the disabled
 `group_icgrde`, so the metafield-driven promo badge currently renders **nowhere on the
@@ -153,7 +161,11 @@ else folds.
 
 ### 3.4 Pages — which get a Formswell rebuild and which fold onto `page.json`
 
-Fourteen live pages carry a bespoke suffix. Sorted by how much is actually there:
+**Seventeen** live pages carry a bespoke suffix, across **13** distinct suffixes
+(26 pages total: 6 carry no suffix, `contact` is already ported, and `maintenance` and
+`llms` have no template on any theme — see §2). Those 17 split 5 / 1 / 2 / 9: five
+fold cheaply, one is already built and only mis-wired, two need real design time, and
+nine share five layouts. Sorted by how much is actually there:
 
 **Fold onto `main-page` / `custom-liquid` — cheap, no design work**
 | page | suffix | legacy sections | 2026 equivalent |
@@ -167,7 +179,7 @@ Fourteen live pages carry a bespoke suffix. Sorted by how much is actually there
 **Needs a Formswell rebuild — real landing pages**
 | page | suffix | legacy sections | note |
 |---|---|---|---|
-| `wholesale` | `wholesale` | **19** | the big one. Five of those 19 are the duplicated `sourcing-v2…v6`; realistically ~8 distinct layouts |
+| `wholesale` | `wholesale` | **19** | the big one. Five of those 19 are the duplicated `sourcing-v2…v6`; ~8 distinct layouts (estimate) |
 | `barista-courses` | `training` | **10** | four are the duplicated `traning-sourcing` family |
 | `about` | `about` | 7 | banner, content, philosophy, awards, sustainability ×2, careers |
 | `solar`, `recycled-boxes`, `womenincoffee` | `sustainability` | 2 | three pages, one template |
@@ -178,7 +190,10 @@ Fourteen live pages carry a bespoke suffix. Sorted by how much is actually there
 **Already built, just mis-wired** — see §4.
 
 **Decision needed per group, not per page:** `wholesale` and `barista-courses` are the
-only two that need design time. The other twelve pages are five shared layouts.
+only two that need design time. Of the remaining fifteen, five fold onto `main-page`
+or `custom-liquid`, `locations` is already built (§4), and the other **nine** are
+**five** shared layouts — `about`, `sustainability` (3 pages), `bookings` (3 pages),
+`private-courses-and-experiences` and `learn`.
 
 ### 3.5 Blogs and articles
 
@@ -225,7 +240,7 @@ from Horizon generics.
 Suggested order:
 
 1. Fix the `location` / `page.locations` mismatch, place `ona_promo_tags`, reconcile the
-   drift. (hours)
+   drift. (hours — estimate)
 2. Settle the badge fallbacks (§3.1) — this one is live-visible on all 92 PDPs.
 3. Close PR #142. Merge PR #149 (WFG counter) and settle the Palmer Lake vs Silk Serif
    CTA with Formswell.
