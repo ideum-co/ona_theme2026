@@ -117,6 +117,25 @@
   </div>
 </product-tabs-component>
 
+<script>
+  // Theme blocks own their labels. Read the rendered panel data instead of
+  // section.blocks[*].settings, which is not reliable for theme blocks.
+  // Run independently of the deferred tabs module so labels are correct even
+  // before it connects (or if progressive enhancement is unavailable).
+  (() => {
+    const section = document.currentScript.previousElementSibling;
+    if (!section?.matches('product-tabs-component')) return;
+
+    const tabs = section.querySelectorAll('.product-tabs__strip > .product-tabs__tab');
+    const panels = section.querySelectorAll('.product-tabs__panels > .product-tabs__panel');
+
+    tabs.forEach((tab, index) => {
+      const label = panels[index]?.getAttribute('data-tab-label')?.trim();
+      if (label) tab.textContent = label;
+    });
+  })();
+</script>
+
 {% stylesheet %}
   .product-tabs {
     display: block;

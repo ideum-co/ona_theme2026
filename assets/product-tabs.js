@@ -29,14 +29,13 @@ export class ProductTabs extends Component {
 
     const { tabs, panels } = this.refs;
 
+    // Refresh labels even when the panel/tab pairing is temporarily incomplete.
+    this.#fillLabels();
+
     // One label per panel or the pairing is guesswork; leave the stacked fallback in place.
     if (!tabs?.length || !panels?.length || tabs.length !== panels.length) return;
 
     this.setAttribute('enhanced', '');
-
-    // Each panel carries its tab's label; the strip button that server-rendering gives us is a
-    // numbered placeholder. Copy the real label across, where it is authoritative.
-    this.#fillLabels();
 
     // Scrolled into view but not focused: a deep link into the third tab has to be visible in the
     // strip on a phone, while stealing focus on load would jump the page past the product.
@@ -49,6 +48,13 @@ export class ProductTabs extends Component {
     document.fonts?.ready.then(() => this.#moveIndicator());
 
     document.addEventListener('shopify:block:select', this.#handleBlockSelect);
+  }
+
+  updatedCallback() {
+    super.updatedCallback();
+    // Shopify can morph editor content without reconnecting the component.
+    this.#fillLabels();
+    this.#moveIndicator();
   }
 
   disconnectedCallback() {
