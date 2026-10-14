@@ -268,11 +268,11 @@ has not been made.
    > **"Re-point" is the one option with a live blast radius.** `templateSuffix` lives on
    > the resource, not on the theme, so changing a product's, page's or article's suffix
    > takes effect on the **currently published** theme the moment it is saved -- before
-   > this theme is published at step 14 below. Prefer the theme-side option (add or rename a
+   > this theme is published at step 15 below. Prefer the theme-side option (add or rename a
    > template file here), and if resources genuinely must be re-pointed, do it **after
    > the storefront has been walked and accepted** — not during this audit, and not at
    > the moment of publishing either, because a suffix change is shop-wide and destroys
-   > the rollback. **Step 14 holds the procedure**; it is the authority for this, and
+   > the rollback. **Step 15 holds the procedure**; it is the authority for this, and
    > anything here that disagrees with it is stale. Map §5 step 7 has the worked example:
    > the 43 `news`-suffix Journal articles.
 
@@ -371,11 +371,24 @@ has not been made.
     one with revenue attached), then `barista-courses`, then `learn` and the rest of the
     groups, which fold onto Horizon generics.
 13. **Cart** -- drawer and page. 4.3.0 fixes several cart bugs, but the bump stays at
-    step 15, after go-live: section 3 measured 26 real conflicts across 8 files, and
+    step 16, after go-live: section 3 measured 26 real conflicts across 8 files, and
     pulling it forward is exactly the night-before version change this document warns
     against. Fix any cart bug found here directly, and re-check cart after the bump.
 
-14. **Publish — the cutover.** Swap `ona_theme2026` in for theme `160335790271`. This
+14. **Validate tracking end to end — a publish gate, not a QA nicety.**
+    `performance-and-compatibility.md` §2 requires this and records its status as **not
+    started**. Both prior failures were *data-loss* bugs, not cosmetic ones, and
+    Horizon's cart/checkout JS is not the old theme's, so parity cannot be assumed:
+    - run a **real test purchase** through the new theme and confirm it lands in GA4
+      (Realtime + DebugView) with **revenue and session attribution intact** — the
+      earlier `session_id` bug was silent
+    - confirm **webhook delivery** for that test order, including **Admin-UI-created**
+      webhooks, which was the exact prior gap
+
+    Until both pass, do not proceed to step 15. Everything else in this list can be seen
+    by looking at the storefront; attribution loss cannot, which is why it gets its own
+    gate rather than a line in a QA pass.
+15. **Publish — the cutover.** Swap `ona_theme2026` in for theme `160335790271`. This
     document had no publish step at all until now, which left the one irreversible
     action in the project undefined. Do it in this order: re-read the §4.3 checksum test
     so no shop-owned template is mid-divergence, publish, then walk the storefront.
@@ -404,8 +417,8 @@ has not been made.
 
 **After go-live**
 
-15. Bump to Horizon 4.3.0 (section 3).
-16. Ship the WFG counter job in `ona-data-platform` so the number stops being written by
+16. Bump to Horizon 4.3.0 (section 3).
+17. Ship the WFG counter job in `ona-data-platform` so the number stops being written by
     hand, and re-check its storefront contract against this theme's markup.
 
 ---

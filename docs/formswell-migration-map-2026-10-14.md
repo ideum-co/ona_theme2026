@@ -225,7 +225,7 @@ live, not parity, so it is a call rather than a fix.
 |---|---|---|---|
 | `product-2` (26 equipment) | `product-template-2` | 683 | `accentuate.video_url` + `video_background`, `content_product_info`, `video_of_product`, a repeatable `title` spec list |
 | `product-3` (22 merch) | `product-template-3` | 165 | **nothing** |
-| `filtersub` (2 subscriptions) | `product.filtersub.json` | — | **nothing — it is the *stripped* template**: `ona-product-information` + accordion + complementary + recommendations, with profile, sourcing, image-slider, origin and brew-guide all explicitly `disabled` |
+| `filtersub` (2 subscriptions) | `product.filtersub.json` | — | **nothing — it is the *stripped* template**: `ona-product-information` + accordion + recommendations, with profile, sourcing, image-slider, origin and brew-guide all explicitly `disabled`. ⚠️ **This row previously also listed "complementary", which contradicts `cross-sell-and-forward-compatibility.md`** — see the note under §3.3 |
 | `Default product` (6 coffee) | `product.default.json` | — | one extra `ona-read-more-content` |
 
 So:
@@ -589,9 +589,14 @@ Suggested order:
    > cannot see a block that carries a `link` and **no label** — an `image` or a `group`.
    > `blocks/image.liquid:61` renders a non-clickable `<div>` when its link is blank, so
    > such a block goes dead silently and with nothing for a label-based scan to match.
-   > One was found on 2026-10-14 only because Codex read the diff: `learn_with_ona`'s
-   > col2, the homepage **"Brewing Guides"** card, has an empty link on both the group
-   > and its image while its two siblings have theirs, so the card is unclickable.
+   > One was found on 2026-10-14 only because Codex read a diff — and **where** it is
+   > dead matters: in this repo on `main`, col2's image still carries
+   > `/pages/brewing-guides`, so the card works. It is dead **on theme
+   > `154676789439`**, where the editor's afternoon session cleared that image link and
+   > added group-level links to col1 and col3 but not col2. So PR #159, which
+   > reconciles the theme state into the repo, is the change that brings the dead card
+   > with it. Treat the theme as the thing to inspect, not the repo: a dead link can
+   > exist on the storefront while `git` looks fine, which is the whole lesson of §4.3.
    > **Check link-bearing blocks as well as labelled buttons, and compare siblings** —
    > an asymmetry between cards in the same group is the signal. (Codex, PR #159.) Settle the Palmer Lake vs
    Silk Serif CTA with Formswell.
@@ -748,6 +753,26 @@ Suggested order:
      `templates/product.json`, so those sections now render for everything; suppressing
      them for the 2 subscriptions needs a condition or a `product.filtersub.json`.
      Deciding "keep as-is" and doing nothing produces the opposite of the decision.
+
+     **And whichever route is taken, add the complementary-recommendations row.**
+     `cross-sell-and-forward-compatibility.md` records that live's
+     `product.filtersub.json` has **no complementary entry at all**, leaving the
+     highest-attach page on the store (**8.05%, 5.7× baseline**) with no cross-sell
+     while its metafields are already curated. This theme does not fix that by default:
+     `product_recommendations_qggXJq` is set to `recommendation_type: "related"` and
+     there is no complementary section anywhere in `templates/product.json`. So
+     subscriptions arrive here with the same gap, and "fold onto the shared PDP" does
+     not close it.
+
+     ⚠️ **Note a conflict inside this repo, unresolved:** the §3.3 table above used to
+     list live's `filtersub` as containing *complementary*, while
+     `cross-sell-and-forward-compatibility.md` says it contains none. Both describe the
+     same live template, which is **theme-only and not in this repo** (that file's item
+     7 flags exactly that risk), so neither can be checked from git. I have taken the
+     cross-sell document as authoritative — it is a dedicated investigation and carries
+     the attach-rate measurement — and removed the claim from the table. **Confirm
+     against the live theme before building.** Either way the requirement is the same:
+     include the complementary row. (Codex, PR #150.)
    - **`Default product`** — whether `ona-read-more-content` is covered by `story`, or
      those six coffees lose content when the suffix folds. If it is not covered,
      restoring it is implementation work too.
