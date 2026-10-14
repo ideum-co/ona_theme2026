@@ -21,7 +21,7 @@ schedule off the estimates; the counts are what is measured.
 | sections | **147** (94 of them bespoke `ona-*`) | **57** |
 | snippets | 139 | 157 |
 | product templates | 13 | **1** |
-| page templates | 16 suffixes | 3 (`page`, `page.contact`, `page.locations`) |
+| page templates | 16 suffixes | 4 (`page`, `page.contact`, `page.locations`, `page.location` — the last added by PR #157) |
 
 The duplication is not a figure of speech. `ona-wholesale-sourcing-v2 … v6` and
 `ona-traning-sourcing`, `-v2`, `-v3`, `-v4` are **nine copies of the same 151-line
@@ -319,10 +319,10 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
 
 ## 4. Wiring bugs — no decision, just fix
 
-1. **`page.locations.json` never renders.** The live page carries suffix **`location`**
-   (singular); both the repo and the shop theme `154676789439` ship
-   `templates/page.locations.json` (plural, 706 b) and no `page.location.json` —
-   verified by filename against the theme. **Resolved 2026-10-15 by PR #157
+1. ~~**`page.locations.json` never renders.**~~ **Fixed.** The live page carries suffix
+   **`location`** (singular), while the repo and theme `154676789439` shipped only
+   `templates/page.locations.json` (plural, 706 b) — verified by filename against the
+   theme, which is why the page fell back. **Resolved 2026-10-15 by PR #157
    (`eab4f0f`), which added `templates/page.location.json`** — byte-identical to the
    plural file, 706 b, md5 `c70c9421…`. The `location` suffix now resolves and the page
    no longer falls back, so this is **no longer outstanding**. Note the route taken was

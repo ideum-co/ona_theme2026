@@ -23,7 +23,7 @@ Everything below was measured on the shop or in the two repos on 2026-10-14. Cou
 from the Admin API over all 92 active products, 26 pages and 5 blogs -- not a sample.
 
 The headline: **the theme is in good shape; the content wiring around it is not.** Two
-thirds of the catalogue (56 of 92) and roughly three quarters of the pages (19 of 26) are
+thirds of the catalogue (56 of 92) and roughly three quarters of the pages (18 of 26) are
 assigned to templates this theme does not contain, and Shopify resolves a missing template by silently falling back to the
 generic one.
 
@@ -40,7 +40,7 @@ renders on the default template instead. Nothing errors. It just looks wrong.
 | surface | assigned to a template this theme lacks | falls back to |
 |---|---|---|
 | Products | **56 of 92 active** -- 26 on `product-2`, 22 on `product-3`, 6 on `Default product`, **2 on `filtersub`** | `templates/product.json` |
-| Pages | **19 of 26** -- `about`, `sustainability` (x3), `privacy`, `faq`, `wholesale`, `training`, `bookings` (x3), `private-courses-and-experiences`, `learn`, `faq-subscriptions`, `text-template`, `html-sitemap`, `llms`, `maintenance`, `location` | `templates/page.json` |
+| Pages | **18 of 26** (was 19; `location` resolved by PR #157) -- `about`, `sustainability` (x3), `privacy`, `faq`, `wholesale`, `training`, `bookings` (x3), `private-courses-and-experiences`, `learn`, `faq-subscriptions`, `text-template`, `html-sitemap`, `llms`, `maintenance` | `templates/page.json` |
 | Blogs | `brewguides`, `news` | `templates/blog.json` |
 
 Three of these need naming out loud:
@@ -48,11 +48,13 @@ Three of these need naming out loud:
 - **`filtersub`** carries both subscription products (`single-origin-subscription-filter`,
   `single-origin-subscription-espresso-coffee`). Subscriptions are ~24% of the Water For
   Good campaign by value. They would render as ordinary coffees.
-- **`location`** looks covered but is not. The page `locations` carries the suffix
-  `location`; this theme ships `templates/page.locations.json` -- *plural*. The suffix does
-  not match the file, so the Locations page falls back. **Rename the file**, not the page:
-  a page's `templateSuffix` is shop-wide, so re-pointing it would also move the page on
-  the currently published theme.
+- **`location`** was a blocker and **is resolved.** The page `locations` carries the
+  suffix `location`, this theme shipped only `templates/page.locations.json` (*plural*),
+  and the mismatch made the page fall back -- until PR #157 (`eab4f0f`) added
+  `templates/page.location.json`. It now resolves. The plural file is a duplicate and
+  deleting it is optional tidy-up (step 6). Note the fix added a file rather than
+  re-pointing the page: `templateSuffix` is shop-wide, so re-pointing would also have
+  moved the page on the currently published theme.
 - **`llms` and `maintenance`** carry suffixes on live *pages*, but
   `templates/page.llms.*` and `templates/page.maintenance.*` exist on **neither repo, nor
   the live theme `160335790271`, nor theme `154676789439`** -- verified by filename query
@@ -313,7 +315,7 @@ has not been made.
    dropped: render the **intro and the table unconditionally** from the product, and make
    only the **link** conditional on resolving `articles[select_artlice]` (prefix intact).
    Do **not** start from the disabled `brew_guide` block -- map §5 step 5 lists its three
-   faults: it gates the product-owned table on the article pointer, and its
+   two faults: it gates the product-owned table on the article pointer, and its
    `paginate ... by 250` loop cannot reach an article past the first page of 747.
 
    **And build every product-suffix outcome the step 5 audit decided** -- all four of
@@ -429,7 +431,7 @@ decisions, which makes it harder to compress. Measured 2026-10-15: content rende
 on 23–37 products per surface, **every image surface among them has no renderer at all**
 — `accentuate.image` (37), `image_origin` (25) and `image_coffee_profile_1`/`_2` (37), so
 four image metafields needing new code — the FAQ section needs re-enabling, the disabled
-`brew_guide` block cannot be reused as-is (map §5 step 5 has its three faults), and the
+`brew_guide` block cannot be reused as-is (map §5 step 5 has its two faults), and the
 `Reviews` tab opens a blank panel on all 92 PDPs. Step 4a — the Maple copy on the one shared product template —
 is the same kind of work and is live-visible on every product. None of this is covered by
 step 5, and a summary that names only step 5 invites treating the suffix audit as the last
