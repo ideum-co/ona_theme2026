@@ -112,4 +112,13 @@ test('fits the complete PDP information layout within the desktop viewport', () 
     /\.product-information__grid:not\(\.product-information--media-none\) > \.product-details[\s\S]*?scrollbar-width: none;/,
     'the details column must not reserve or render scrollbar space, or the grid shifts',
   );
+  // `scrollbar-width` is unsupported in WebKit and older Chromium, which need the
+  // pseudo-element. Without this, dropping the `::-webkit-scrollbar` rule would
+  // bring the rendered scrollbar -- and the shift -- back in those browsers while
+  // the assertion above still passed.
+  assert.match(
+    contentSource,
+    /\.product-information__grid:not\(\.product-information--media-none\) > \.product-details[\s\S]*?&::-webkit-scrollbar\s*\{[\s\S]*?display: none;/,
+    'WebKit needs the ::-webkit-scrollbar rule too, or the scrollbar returns there',
+  );
 });
