@@ -119,3 +119,38 @@ test('the promo badge is available inside product cards, as on live', () => {
     'product cards cannot show the promo badge'
   );
 });
+
+test('the promo badge is actually placed on the card surfaces live uses', () => {
+  // Accepting the type only makes it selectable in the editor -- _product-card
+  // renders the children each template configures, so an unplaced block ships
+  // nothing. Live renders the badge through snippets/ona-product-card.liquid,
+  // which is used by recommendations, search, main-collection and
+  // featured-collection -- not by cart or 404. Those four get it here.
+  // Position matches live: straight after the gallery, ahead of the title.
+  const surfaces = [
+    ['templates/index.json', 'coffee_spotlight', 'static-product-card'],
+    ['templates/collection.json', 'main', 'product-card'],
+    ['templates/search.json', 'main', 'product-card'],
+    ['templates/product.json', 'product_recommendations_qggXJq', 'static-product-card'],
+  ];
+  for (const [file, section, card] of surfaces) {
+    const raw = readFileSync(resolve(root, file), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    const config = JSON.parse(raw).sections[section].blocks[card];
+    assert.equal(config.blocks.ona_promo_tags?.type, 'ona-product-tags', `${file}: block missing`);
+    const order = config.block_order;
+    const at = order.indexOf('ona_promo_tags');
+    assert.ok(at > 0, `${file}: not in block_order`);
+    assert.match(order[at - 1], /gallery/, `${file}: should follow the gallery`);
+  }
+});
+
+test('cart and 404 cards stay badge-free, as on live', () => {
+  for (const [file, section, card] of [
+    ['templates/cart.json', 'product_list_NNFgcy', 'static-product-card'],
+    ['templates/404.json', 'product_list_iA96Tq', 'static-product-card'],
+  ]) {
+    const raw = readFileSync(resolve(root, file), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    const config = JSON.parse(raw).sections[section].blocks[card];
+    assert.ok(!config.block_order.includes('ona_promo_tags'), `${file}: live has no badge here`);
+  }
+});
