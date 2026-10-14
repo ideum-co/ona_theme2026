@@ -120,13 +120,44 @@ reason enough to close it. (Codex flagged the duplication wording on PR #150; it
 wrong and is corrected here.)
 
 **One thing in #142 is real:** `ona_promo_tags` lives inside the disabled
-`group_icgrde`, so the metafield-driven promo badge currently renders **nowhere on the
-PDP**. The fix is not the revert — it is to lift `ona_promo_tags` out of the disabled
-group and into `product-details`'s `block_order` next to `pdp_product_summary`.
-`blocks/_product-details.liquid` accepts `@theme`, so it already allows the block.
+`group_icgrde`, so the metafield-driven promo badge renders **nowhere on the PDP**.
+The fix is not the revert — it is to lift `ona_promo_tags` out of the disabled group
+into `product-details`'s `block_order`. `blocks/_product-details.liquid` accepts
+`@theme`, so it already allows the block, and `blocks/ona-product-tags.liquid` already
+renders nothing when no badge is active and shows a placeholder in design mode only.
 
-**Decision needed:** close #142, and agree where the promo badge sits relative to the
-title and price.
+**But check what live actually does before calling this a regression.** Traced through
+the legacy theme rather than assumed:
+
+| surface | live | `ona_theme2026` |
+|---|---|---|
+| product cards (home, collections) | **badge shown** — `snippets/ona-product-card.liquid:42` | type accepted by `_product-card`, **nothing places it** → missing |
+| coffee PDP | **no badge** — `sections/ona-product-information.liquid`, which live's `product.json` uses, has zero badge references | no badge → **parity** |
+| equipment PDP (`product-2`) | badge shown — `sections/product-template-2.liquid:77` | no badge → missing |
+| merch PDP (`product-3`) | badge shown — `sections/product-template-3.liquid:45` | no badge → missing |
+
+(`sections/ona-product-template.liquid` does carry badge markup, but no template
+references it — it is dead.)
+
+All **14** products in the `donation-products` collection are coffee (suffix `""` or
+`Default product`); none is `product-2`/`product-3`. So the live WFG badge appears on
+**cards only**, never on a WFG product's own PDP. Two consequences:
+
+- The **cards** gap is the live-visible, campaign-relevant one, and it is unshipped.
+- Placing `ona_promo_tags` on the 2026 PDP would show the badge on 14 coffee PDPs where
+  live shows none. That is a deliberate improvement, not a parity fix — and the legacy
+  code argues for it: `product-template-2.liquid` places the badge "under the price, not
+  after the form … otherwise the add-to-cart button comes before the discount is ever
+  disclosed." In Formswell's block order that is immediately after `pdp_product_summary`
+  and before `variant_picker`.
+
+One edge case: In Sequence carries **two** simultaneously active badges (`Limited
+Edition` to 2027-02-20 and `$5 per retail box donated to Water For Good` to 2026-10-31),
+and `ona-product-tags` renders every active, in-window badge. Confirm the design takes
+two before placing it.
+
+**Decision needed:** close #142; place the badge on cards (the campaign gap); and decide
+whether coffee PDPs gain a badge live does not have.
 
 ### 3.3 Equipment and merch: one template or three?
 
@@ -222,7 +253,7 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    `templates/page.locations.json` (plural, 706 b) and no `page.location.json` —
    verified by filename against the theme. Rename the file or re-point the page. The
    page itself is finished; this is the single highest-value fix on the list.
-2. **`ona_promo_tags` renders nowhere on the PDP** (see §3.2).
+2. **The promo badge is unplaced on product cards** — the live-visible campaign gap — and unplaced on equipment/merch PDPs. Coffee PDPs match live, which shows none (see §3.2).
 3. **Repo ↔ shop drift on the homepage, and the push is not flowing.** Measured section
    by section, not by file size. The shop theme `154676789439` ("ona_theme2026/main",
    repo-connected) has **24** homepage sections; repo `main` has **22**, and they are
