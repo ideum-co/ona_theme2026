@@ -574,7 +574,18 @@ Suggested order:
 
    The four enabled ones are pre-publish. The six disabled ones are not live, but they
    are **the same sections whose enabling is an open decision** (§4.3) — so give them
-   destinations at the moment they are enabled, not after. Settle the Palmer Lake vs
+   destinations at the moment they are enabled, not after.
+
+   > **That scan has a blind spot, so do not treat the table as the whole list.** It
+   > matched on a **non-empty label paired with an empty link**, which structurally
+   > cannot see a block that carries a `link` and **no label** — an `image` or a `group`.
+   > `blocks/image.liquid:61` renders a non-clickable `<div>` when its link is blank, so
+   > such a block goes dead silently and with nothing for a label-based scan to match.
+   > One was found on 2026-10-14 only because Codex read the diff: `learn_with_ona`'s
+   > col2, the homepage **"Brewing Guides"** card, has an empty link on both the group
+   > and its image while its two siblings have theirs, so the card is unclickable.
+   > **Check link-bearing blocks as well as labelled buttons, and compare siblings** —
+   > an asymmetry between cards in the same group is the signal. (Codex, PR #159.) Settle the Palmer Lake vs
    Silk Serif CTA with Formswell.
 
    **Close PR #142 — and note that closing it does not do the fix §3.2 describes.** The
