@@ -652,10 +652,32 @@ Suggested order:
    checksum test says the editor has moved the file since #151 landed. Verify on one
    blend, one single origin and one drip bag before go-live — and, for the FAQs, one
    equipment and one merch product too, since `custom.accordion` spans all three. The
-   spec table reads from the **product's** own `title_item`/`content_item`, so it needs
-   no article lookup; the image slider is a renderer that does not exist yet and must
-   preserve the `?WIDTHxHEIGHT` → `width`/`height` parsing, or CLS regresses. Finish by
-   clicking every tab on a real PDP: none may open an empty panel.
+   image slider is a renderer that does not exist yet and must preserve the
+   `?WIDTHxHEIGHT` → `width`/`height` parsing, or CLS regresses. Finish by clicking every
+   tab on a real PDP: none may open an empty panel.
+
+   > **Do not reuse the disabled `brew_guide` custom-liquid as-is. Enabled unchanged it
+   > renders nothing, for every product.** Read in full 2026-10-15; it has three
+   > independent faults, and each alone is fatal:
+   >
+   > 1. `{% if raw_handle != blank and has_content %}` wraps **everything**, including
+   >    the spec table. The table is product data, but 8 of the 32 products that have a
+   >    table have no `select_artlice` (32 with tables, 24 with pointers) — every drip
+   >    bag among them — so those render nothing even though their data is complete.
+   > 2. The match is `{% if a.handle == raw_handle %}`, comparing a **bare** article
+   >    handle against a **prefixed** pointer: `maple` vs `brewguides/maple`. That is
+   >    never true, so even the 24 products *with* pointers render nothing. This is the
+   >    loop form that §2 of `product-page-enrichment-sections.md` says needs
+   >    `| split: '/' | last`, written without it.
+   > 3. `{% paginate blogs.brewguides.articles by 250 %}` scans only the first page, and
+   >    the `brewguides` blog holds **747** articles — so even with fault 2 fixed, two
+   >    thirds of pointers could not resolve.
+   >
+   > **The shape to build instead:** render the table from the product's own
+   > `title_item`/`content_item` **outside any article gate** — it needs no lookup at
+   > all. Then, only if the "Full brewing guide" link and the prose are wanted, resolve
+   > the article with the global `articles[raw_handle]`, prefix intact: one lookup, no
+   > loop, no pagination, no 747-article scan. (Codex, PR #150.)
 6. Settle the three remaining product-template decisions (§3.3), all of which change
    what renders: `product-2` — own template, or an optional specs/video region on the one
    PDP; `filtersub` — whether the subscription PDP keeps omitting the coffee storytelling

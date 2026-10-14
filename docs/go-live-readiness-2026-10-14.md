@@ -242,8 +242,17 @@ has not been made.
    enabling is an open decision, so give them destinations when they are enabled, not
    after. Map §3.1 has the full table.
 
-   c. **Resolve PR #142** -- the PDP body blocks (section 1.3). The map's recommendation
-   is to **close** it.
+   c. **Resolve PR #142, and separately decide the promo badge's placement.** The
+   map's recommendation on #142 is to **close** it -- but closing it only *keeps* the
+   Formswell header; it does not move `ona_promo_tags`, which stays inside the disabled
+   `group_icgrde` where the badge renders nowhere on the PDP. That is a second, separate
+   action, and it is a decision rather than a chore: there is one shared
+   `templates/product.json`, so lifting the block puts the badge on coffee PDPs too,
+   where the live theme shows none. Map §3.2 has the three options (accept it on coffee,
+   gate on suffix or product type, or leave it stranded until `product-2`/`product-3`
+   get their own templates) and the exact move -- the block definition has to move
+   containers, not just gain an order entry. Step 7b lists badges only as QA, so this
+   will not get done unless it is decided here.
 
 **Then, the template decision (the long pole)**
 
@@ -346,9 +355,11 @@ already-falling-back suffixes off the list.
 
 **Step 7a, the PDP content restoration** — and this one is *implementation*, not
 decisions, which makes it harder to compress. Measured 2026-10-15: content renders nowhere
-on 23–37 products per surface, **two renderers do not exist at all** (the lifestyle
-gallery, `image_origin`), the FAQ section needs re-enabling, and the `Reviews` tab opens a
-blank panel on all 92 PDPs. Step 4a — the Maple copy on the one shared product template —
+on 23–37 products per surface, **every image surface among them has no renderer at all**
+— `accentuate.image` (37), `image_origin` (25) and `image_coffee_profile_1`/`_2` (37), so
+four image metafields needing new code — the FAQ section needs re-enabling, the disabled
+`brew_guide` block cannot be reused as-is (map §5 step 5 has its three faults), and the
+`Reviews` tab opens a blank panel on all 92 PDPs. Step 4a — the Maple copy on the one shared product template —
 is the same kind of work and is live-visible on every product. None of this is covered by
 step 5, and a summary that names only step 5 invites treating the suffix audit as the last
 blocker. It is not.
