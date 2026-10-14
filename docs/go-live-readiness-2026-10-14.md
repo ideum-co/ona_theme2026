@@ -50,8 +50,9 @@ Three of these need naming out loud:
   Good campaign by value. They would render as ordinary coffees.
 - **`location`** looks covered but is not. The page `locations` carries the suffix
   `location`; this theme ships `templates/page.locations.json` -- *plural*. The suffix does
-  not match the file, so the Locations page falls back. Either rename the file or re-point
-  the page.
+  not match the file, so the Locations page falls back. **Rename the file**, not the page:
+  a page's `templateSuffix` is shop-wide, so re-pointing it would also move the page on
+  the currently published theme.
 - **`llms` and `maintenance`** carry suffixes on live *pages*, but
   `templates/page.llms.*` and `templates/page.maintenance.*` exist on **neither repo, nor
   the live theme `160335790271`, nor theme `154676789439`** -- verified by filename query
@@ -251,7 +252,17 @@ has not been made.
    plus `page.melbourne.json`) and three more (`llms`, `maintenance`, `article`) as templates that
    exist on no theme and already fall back, so several of the 28 have nothing to open.
    For each remaining group, open one live example and one 2026 render side by side and
-   record: fold into the generic template, rebuild, or re-point. Start where the money is
+   record: fold into the generic template, rebuild, or re-point.
+
+   > **"Re-point" is the one option with a live blast radius.** `templateSuffix` lives on
+   > the resource, not on the theme, so changing a product's, page's or article's suffix
+   > takes effect on the **currently published** theme the moment it is saved -- before
+   > this theme is published at step 10. Prefer the theme-side option (add or rename a
+   > template file here), and if resources genuinely must be re-pointed, do it
+   > atomically with the cutover, never during this audit. Map §5 step 7 has the worked
+   > example: the 43 `news`-suffix Journal articles.
+
+   Start where the money is
    -- `filtersub` (subscriptions, and note the map's finding that it needs *less*, not
    more), then `product-2`/`product-3` (48 products: equipment, merch, candles), then
    `wholesale`, `learn`, `location`, `faq`. Map §2 lists the orphans; §3 lists the real

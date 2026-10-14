@@ -314,7 +314,10 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
 1. **`page.locations.json` never renders.** The live page carries suffix **`location`**
    (singular); both the repo and the shop theme `154676789439` ship
    `templates/page.locations.json` (plural, 706 b) and no `page.location.json` —
-   verified by filename against the theme. Rename the file or re-point the page. The
+   verified by filename against the theme. **Rename the file**, in this repo, rather than
+   re-pointing the page: a page's `templateSuffix` is shop-wide, so re-pointing it would
+   also move the page on the currently published theme, where `location` presumably
+   resolves correctly today. The
    page itself is finished; this is the single highest-value fix on the list.
 2. **The promo badge on equipment/merch PDPs** — live's `product-template-2`/`-3` show
    it, the 2026 PDP does not. Cards are now at parity (PR #149 `d11e425`) and coffee PDPs
@@ -482,10 +485,23 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
 
 ## 5. What this means for scheduling
 
-Under the fold-don't-port strategy the long pole is **two pages** — `wholesale` and
-`barista-courses` — not 28 templates. Everything else is: delete nine orphan files, fix three
-wiring bugs, make four product-template decisions, and rebuild five shared page layouts
-from Horizon generics.
+Under the fold-don't-port strategy this is not 28 templates. But it is **not two pages
+either**, which is what this summary used to say. There are **three long poles**, and two
+of them are implementation rather than decisions:
+
+1. **The PDP content restoration (step 5).** The biggest of the three. Five content
+   surfaces render nowhere on 23–37 products each, **two of them have no renderer at
+   all** (the lifestyle gallery and `image_origin`), the FAQ section needs re-enabling,
+   and the `Reviews` tab opens a blank panel on all 92 PDPs. Plus the Maple copy on the
+   one shared product template (§3.1), which is live-visible on every product.
+2. **`wholesale` and `barista-courses`** — the two pages that need a Formswell rebuild.
+3. **The suffix decisions (step 6 and the page groups)** — decisions rather than build,
+   so compressible, but they decide how the catalogue looks.
+
+Everything else is: delete nine orphan files, fix three wiring bugs, and rebuild five
+shared page layouts from Horizon generics. (Codex, PR #150 — this headline named only
+the two pages after step 5 had grown into implementation work, which would reproduce the
+underestimated schedule the readiness doc §5 was just corrected for.)
 
 Suggested order:
 
@@ -645,10 +661,26 @@ Suggested order:
    is covered by `story` or those six lose content when the suffix folds. Verify each on a
    real product of that suffix before go-live.
 7. Fold the five cheap pages and both blogs — and with them the **43 `news`-suffix
-   Journal articles** (§3.5), the only article group that needs a decision. They are a
-   single call: point them at `main-blog-post` and delete
-   `ona-article-news-template`, or keep a bespoke article template and port it. Nothing
-   else in this order covers them, and they are live content.
+   Journal articles** (§3.5), the only article group that needs a decision.
+
+   > **`templateSuffix` lives on the resource, not on the theme — so re-pointing a
+   > resource changes the *currently published* theme the moment you save it.** Clearing
+   > the `news` suffix off those 43 articles at step 7 would take them off
+   > `ona-article-news-template` on live theme `160335790271`, three steps before step 10
+   > publishes the replacement. That is a live content regression caused by a
+   > pre-publish step. The same hazard applies to every suffix decision in this
+   > document: changing a *file* in this repo only affects this theme, changing a
+   > *resource's suffix* affects whatever is published right now.
+   >
+   > So prefer the theme-side option: **add an `article.news.json` in this theme** (a
+   > wrapper around `main-blog-post`, or the ported bespoke layout) and leave the
+   > articles' suffix alone. If the resources really must be re-pointed, do the
+   > reassignment and the legacy-template deletion **atomically with the cutover at step
+   > 10**, never before. (Codex, PR #150.)
+
+   The decision itself: wrap `main-blog-post` in an `article.news.json`, or port the
+   bespoke article layout. Nothing else in this order covers them, and they are live
+   content.
 8. Rebuild `about`, `sustainability`, `bookings`, `learn`,
    `private-courses-and-experiences` from Horizon generics.
 9. Rebuild `wholesale` and `barista-courses` with Formswell.
