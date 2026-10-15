@@ -116,6 +116,16 @@ Two consequences worth stating plainly:
    `ona_theme2026` does not define, so there is no block to paste settings into.
    The images are shop-level Files (`Inseq3nce_top.png`, `Insekmob.png`) and are
    already uploaded, so only the slide needs building.
+   **Where it could go.** The 2026 homepage opens with `hero_ona` (type `hero`) —
+   which is review finding §1, the flat grey block — followed by the WFG counter
+   and a floating badge. There is no slider at the top to drop a slide into. The
+   closest existing host is **`special_release`** (`media-with-content`, position
+   5, currently **disabled**), which is shaped for exactly this: one image, a
+   heading, a line of copy and a CTA. Enabling it costs nothing against the
+   25-section cap, because it is already one of the 25. That is a suggestion for
+   whoever builds it, not a decision — and it puts the campaign below the fold,
+   which is a real difference from today's placement at the very top.
+
 3. **Whoever publishes should re-read `templates/index.json`'s checksum
    immediately beforehand.** The editor has now moved this file on 10-13 and
    again on 10-15; the copy in this repo is a snapshot, and a snapshot of an
