@@ -1,0 +1,79 @@
+<section class="training">
+  <div class="container">
+    <div class="image">
+      <div class="image-box wowo fadeInUp">
+        <svg class="animated-svg" width="477" height="428" viewBox="0 0 477 428" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path class="start" fill-rule="evenodd" clip-rule="evenodd" d="M303.54 8.44133C485.703 41.8113 483.242 203.892 473.395 261.098C463.551 318.303 414.315 430.33 212.456 427.948C10.5982 425.565 5.67617 289.702 0.750898 232.497C-4.17113 175.291 15.5235 125.235 47.5231 89.485C84.0757 48.6496 121.376 -24.9255 303.54 8.44133Z" fill="#D0994D"/>
+          <path class="medium" fill-rule="evenodd" clip-rule="evenodd" d="M253.083 11.4377C303.071 12.6213 357.494 -5.59109 399.107 20.4967C441.117 46.8333 452.913 98.663 465.566 144.645C477.5 188.018 482.164 232.571 469.335 275.717C456.089 320.27 432.142 362.79 392.55 390.221C352.81 417.755 302.333 422.572 253.083 425.547C200.482 428.723 145.433 432.989 99.9712 407.891C52.1271 381.478 11.0283 337.959 1.33754 286.568C-7.95053 237.313 33.5649 195.084 50.9259 147.802C67.8319 101.759 59.5423 41.8362 101.619 13.4532C143.686 -14.9223 201.34 10.2126 253.083 11.4377Z" fill="#D0994D"/>
+          <path class="end" fill-rule="evenodd" clip-rule="evenodd" d="M250.84 0.00212098C303.616 0.391388 332.777 54.8053 372.755 86.0789C408.5 114.041 457.478 132.406 472.137 173.117C486.803 213.85 465.173 256.572 448.588 296.694C432.748 335.014 415.403 374.322 378.988 398.462C342.521 422.636 295.967 429.271 250.84 427.782C206.994 426.335 167.979 408.998 129.287 390.223C84.0733 368.283 27.59 352.998 8.05926 309.974C-11.7347 266.369 8.42456 216.036 30.9175 173.523C51.3027 134.994 91.936 112.311 127.476 84.2698C167.292 52.855 198.084 -0.386992 250.84 0.00212098Z" fill="#D0994D"/>
+        </svg>
+        <img src="{{ section.settings.image | img_url: '988x' }}" alt="{{ section.settings.image.alt | escape }}" loading="lazy" decoding="async">
+      </div>
+    </div>
+    <div class="text wowo fadeInUp">
+      <h2>{{ section.settings.title2 }}</h2>
+      <h3>{{ section.settings.content }}</h3>
+      {% if section.blocks.size > 0 %}
+      <ul class="courses">
+        {% for block in section.blocks %}
+        <li><a href="{{ block.settings.link }}">{{ block.settings.title }} <i class="icon-arrow-smaller"></i></a></li>
+        {% endfor %}
+      </ul>
+      {% endif %} 
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Image & text"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title2",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "content",
+      "label": {
+		"en": "Content"
+      }
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": {
+		"en": "Image"
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "type": "block",
+      "name": {
+        "en": "Links"
+      },
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": {
+            "en": "Link"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
