@@ -1,0 +1,82 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "ona-blog-template",
+      "settings": {
+        "layout": "list",
+        "blog_show_author": true,
+        "blog_show_date": true
+      }
+    },
+    "ona_read_more_content_npmFNr": {
+      "type": "ona-read-more-content",
+      "name": "Read more content",
+      "settings": {
+        "title": "",
+        "content": "<p>At ONA Coffee, we believe that great coffee starts with great preparation. Our brew guide coffee directory can help you pull optimal espresso shots, perfect a pour-over or experiment with cold brew. Each coffee brewing guide provides step-by-step instructions to make every cup taste its best. </p><p>Developed by ONA’s award-winning baristas and coffee educators, these recipes reflect the same precision and passion we apply at our cafés and training facilities.</p><h2>Who our coffee brew guides are for</h2><p>Our brew guides for coffee are designed for home brewers of all levels. Whether you’re a beginner learning the fundamentals or an experienced coffee enthusiast chasing the perfect extraction, our detailed instructions help you brew confidently at home.</p><h2>What you’ll learn</h2><p>Each coffee-making guide covers different brewing styles and coffee types, including:</p><ul><li><strong>Espresso </strong>— Dial in your grind, dose and yield for consistent, balanced shots.</li><li><strong>Filter coffee </strong>— Master pour-over and batch brew for clarity and sweetness.</li><li><strong>Cold brew </strong>— Learn how to brew refreshing coffee that’s smooth and low in acidity.</li><li><strong>Specialty methods </strong>— Discover how to brew with AeroPress, Syphon or other creative tools.</li></ul><h2>Why use a brew guide?</h2><p>Even small changes in grind size, water temperature or brew time can dramatically alter your coffee’s flavour. Our brew guide coffee series removes the guesswork, offering reliable recipes tested by professionals so you can consistently recreate the flavours you love.</p><p>We also share insights from our team on topics like <a href=\"https://onacoffee.com.au/blogs/news/how-to-store-and-use-frozen-coffee\">how to store and use frozen coffee</a>, helping you protect freshness and elevate your coffee preparation from bean to cup.</p><h2>Start brewing better coffee</h2><p>Browse all ONA Coffee brew guides and experiment with your favourite beans from <a href=\"https://onacoffee.com.au/collections/all\">our online shop</a>.</p>",
+        "read_more_label": "Read More",
+        "read_less_label": "Read Less",
+        "visible_blocks": "2"
+      }
+    },
+    "ona_faq_lists_DXDtgA": {
+      "type": "ona-faq-lists",
+      "blocks": {
+        "block_BtMMcg": {
+          "type": "block",
+          "settings": {
+            "title": "What brewing methods do the guides cover?",
+            "content": "<p>Our brew guides for coffee cover a wide range of brewing styles — from espresso and filter to cold brew and specialty methods like AeroPress and Syphon. Each coffee brewing guide provides step-by-step instructions to help you achieve the best flavour, whether you prefer precision brewing or a quick, easy cup.</p>"
+          }
+        },
+        "block_JfX3px": {
+          "type": "block",
+          "settings": {
+            "title": "Do I need special equipment to follow the brew guides?",
+            "content": "<p>Not necessarily. Many of our coffee-making guides include methods that use standard home equipment, such as kettles and grinders. For those looking to refine their setup, our guides also feature tools used by professionals.</p>"
+          }
+        },
+        "block_t79hGd": {
+          "type": "block",
+          "settings": {
+            "title": "Where can I buy the coffee and gear mentioned in the guides?",
+            "content": "<p>You can find all the coffees and gear featured in our brew guides at <a href=\"https://onacoffee.com.au/\">ONA Coffee</a>.</p>"
+          }
+        },
+        "block_ApnbzK": {
+          "type": "block",
+          "settings": {
+            "title": "How can I choose the right brew method for my taste preferences?",
+            "content": "<p>Each brewing guide coffee page includes flavour insights to help you choose the right method for your preferences. And if you’d like to dive deeper into coffee preparation, explore our <a href=\"https://onacoffee.com.au/pages/barista-courses\">barista courses</a> for hands-on learning.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "block_BtMMcg",
+        "block_JfX3px",
+        "block_t79hGd",
+        "block_ApnbzK"
+      ],
+      "name": "FAQ list",
+      "settings": {
+        "id": "",
+        "title2": "FAQs",
+        "tips": ""
+      }
+    }
+  },
+  "order": [
+    "main",
+    "ona_read_more_content_npmFNr",
+    "ona_faq_lists_DXDtgA"
+  ]
+}
