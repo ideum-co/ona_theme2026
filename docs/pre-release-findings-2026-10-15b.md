@@ -28,71 +28,124 @@ snapshot before the release**, not just before a rollback.
 
 ## 1. Price does not react to variant change on collections and search — **2026**
 
-**Confirmed, root cause already known, and the existing fix is incomplete.**
+**Confirmed, fixed, and the cause is not the one this document first gave.**
+Fixed in **PR #167** (`assets/product-card.js`).
 
-The diagnosis is written out in full in `onacoffee_theme`'s
-`assets/product-card-price-sync.js` header comment. In Horizon, a card's price
-is updated by `product-price.js`, which matches
-`product-price[data-block-id=…]` inside HTML fetched from the Section Rendering
-API. The reference section it fetches — `sections/section-rendering-product-card.liquid`
-— renders a **bare `<product-price>` with no `data-block-id`**, so the selector
-never matches, `updatePrice()` returns early, and the card keeps whichever
-variant's price it first rendered with. **The PDP is unaffected** because the
-product page's own `<product-price>` always carries a real block id. That is
-exactly the asymmetry Felipe reported.
+> **Correction.** The first version of this section said the cause was the bare
+> `<product-price>` with no `data-block-id` in
+> `sections/section-rendering-product-card.liquid`, and that the fix was to port
+> `onacoffee_theme`'s `assets/product-card-price-sync.js`. **Both were wrong for
+> this theme.** That diagnosis is accurate for `onacoffee_theme` (Horizon 3.5.1);
+> Horizon 4.1.4 reworked this path completely. What follows was measured on the
+> pinned theme, not read off the source.
 
-`sections/section-rendering-product-card.liquid:55` in **this** repo renders the
-same bare `<product-price>`, so the mechanism is present here too.
+### What actually happens
 
-Measured on the 2026 collection page (`/collections/all-coffee`, pinned):
+`assets/product-price.js` in 4.1.4 opens its handler with:
 
-| | count |
-|---|---|
-| `<product-price>` elements | 24 |
-| `<variant-picker>` | 21 |
-| `<variant-select-component>` | 23 |
-| `product-card-price-sync.js` loaded | **0** |
+```js
+if (!(event.target instanceof Element) || event.target.closest('product-card')) return;
+```
 
-So the trigger is present and the fix is absent. `assets/product-card-price-sync.js`
-**does not exist in this repository**.
+so cards are **deliberately excluded** and handed to `ProductCard.updatePrice()`
+in `assets/product-card.js`, which reads:
 
-### The port is not a one-file copy
+```js
+const priceContainer = this.querySelectorAll(`product-price [ref='priceContainer']`)[1];
+```
 
-In `onacoffee_theme` the script is included in exactly one place —
-`sections/main-collection.liquid:18`. But `search-results.liquid` and
-`product-list.liquid` also render product cards. **So search results are not
-covered even in `onacoffee_theme`**, which is why Felipe sees the bug on both
-surfaces. Copying the asset and its single include would fix collections and
-leave search exactly as broken as it is now.
+Index **`[1]`** only exists once quick-add has injected the modal's own
+`<product-price>` earlier in the card's DOM. **ONA runs quick-add off**
+(`--quick-add-display: none` on every card), so each card renders exactly
+**one** price container, `priceContainer` is `undefined`, the
+`if (newPriceElement && priceContainer)` guard fails, and the morph never runs.
+Counted on the pinned collection page: 24 cards, **1** `product-price
+[ref='priceContainer']` each. Same on `/search?q=maple`: 7 cards, 1 each.
 
-`sections/product-list.liquid` is the shared grid used by both and is the
-better insertion point; whichever is chosen, **the test has to cover search as
-well as a collection**, or the half-fix will read as a pass.
+**Reproduced and then fixed in the browser**, on `/collections/all-coffee`
+pinned to `154676789439`, clicking **1kg** on the Raspberry Candy card:
+
+| | before | after the one-line fix |
+|---|---|---|
+| card link | → `?variant=40126205657279` ✓ | ✓ |
+| card price | **stays `$24.00`** ✗ | **`$95.00`** ✓ |
+| back to 200g | — | `$24.00` ✓ |
+
+The link moving while the price does not is the proof: `event.promise` resolves,
+`#updateProductUrl(html)` runs from the same `.then()`, and `updatePrice(html)`
+is the only step that fails.
+
+**Why the PDP works** is the explicit `closest('product-card')` guard above —
+the product page's own `<product-price>` is handled by `product-price.js` and
+never reaches this method. That is exactly the asymmetry Felipe reported.
+
+### Why the port would not have worked
+
+Three independent reasons, each fatal:
+
+1. `onacoffee_theme`'s script listens for `ThemeEvents.variantUpdate`.
+   **Horizon 4.1.4 has removed `variantUpdate`, `variantSelected` and
+   `cartUpdate` from `ThemeEvents` altogether** — this theme's `assets/events.js`
+   declares only `mediaStartedPlaying`, `quantitySelectorUpdate`, `megaMenuHover`
+   and `zoomMediaSelected`. The listener would never fire.
+2. It is included only from `sections/main-collection.liquid:18`, so **search
+   would have stayed broken** — which is why both surfaces were reported.
+3. It would have sat alongside a native card-price updater that 3.5.1 did not
+   have, duplicating the morph.
+
+The fix in PR #167 keeps `[1]` first and falls back to `[0]`, so a card with
+quick-add enabled still behaves exactly like stock Horizon. One change, both
+grids, nothing ported.
 
 ---
 
-## 2. New Harvest campaign assets — **2026 only**
+## 2. New Harvest campaign assets — **already off on the theme; the repo would switch them back on**
 
-The live storefront has **zero** occurrences of "new harvest" (checked on the
-homepage, `/collections/all-coffee` and `/products/raspberry-candy`). This is
-entirely a 2026 leftover, in two places:
+The live storefront has **zero** occurrences of "new harvest" (homepage,
+`/collections/all-coffee`, `/products/raspberry-candy`). It is entirely a 2026
+item — and re-checking the theme itself rather than the repo changed the answer.
 
-| where | setting |
-|---|---|
-| `floating_badge_r89NRP` (type `floating-badge`, **enabled**, position 2 on the homepage) | `image: badge_sale.svg`, `fallback_text: "New Harvest Sale"` |
-| `hero_ona` (type `hero`, position 0) | also references `badge_sale.svg` |
+### The theme is already correct
 
-Turning the campaign off means both, not just the badge.
+`templates/index.json` pulled from theme `154676789439` on 2026-10-15
+(`updatedAt` **2026-10-14T21:59:21Z**) has `floating_badge_r89NRP`
+**`disabled: true`**. The badge does not render: the pinned homepage has no
+`floating-badge` element and no `badge_sale` anywhere in the DOM, and shows 14
+section wrappers against the 15 enabled sections the repo lists.
 
-Two details worth knowing before someone "fixes" it:
+`hero_ona`'s `icon_9aLnRm` block also points at `badge_sale.svg`, and it too is
+already `disabled: true` — so **no further action is needed for the campaign
+itself.**
+
+### The hazard is the other direction
+
+`main` and `staging` still carry **`floating_badge_r89NRP` enabled**, and two
+more sections the editor switched off:
+
+| section | on the theme | on `main` / `staging` |
+|---|---|---|
+| `floating_badge_r89NRP` (`floating-badge`) | **disabled** | enabled |
+| `find_your_coffee` (`media-with-content`) | **disabled** | enabled |
+| `product_highlight_KkUAVM` (`product-highlight`) | **disabled** | enabled |
+
+> **So merging `main` to the theme without PR #159 first would re-enable the
+> New Harvest badge and two sections someone deliberately turned off.** The
+> request to turn the campaign off is already satisfied; the risk is undoing it.
+
+**PR #159 closes this and is already exact.** Its `templates/index.json` was
+compared section by section against the theme's live copy on 2026-10-15:
+**identical, all 25 sections, settings included, same order.** Merge it before
+anything else reaches the theme.
+
+### Two details still worth keeping
 
 - **The visible asset is the SVG, not the text.** `fallback_text` only renders
-  when `image` is blank (`sections/floating-badge.liquid:19-22`), so editing
-  the words "New Harvest Sale" changes nothing on screen. Disable the section.
-- **The empty `link` is not a dead link.** `settings.link` is blank, but the
-  section guards it: blank renders `<div class="floating-badge__link" role="img">`
-  rather than an `<a href="">`. It is correctly non-interactive. Do not file
-  this with the real dead CTAs.
+  when `image` is blank (`sections/floating-badge.liquid:19-22`), so editing the
+  words "New Harvest Sale" would have changed nothing on screen. Disabling the
+  section — which is what was done — is the only thing that works.
+- **The empty `link` is not a dead link.** The section guards it and renders
+  `<div class="floating-badge__link" role="img">` rather than `<a href="">`. Do
+  not file it with the real dead CTAs.
 
 `badge_sale.svg` is **318 KB** with its text converted to outlines — heavy for a
 decorative badge that is `position: fixed` on every page, and worth a second
@@ -160,10 +213,25 @@ blocks stripped so app templates do not pollute the count:
 | `/pages/about` | 104 | 0 |
 | `/cart` | 118 | 0 |
 
-The two real ones are both on the homepage and both are
-`<a class="coffee-quiz__action">` **with no `href` attribute at all** — the
-`coffee_quiz` section's empty link settings, already item 6 in the release
-register.
+> **Correction: it is one, not two, and it is not where the scan suggests.**
+> Both flagged anchors are `<a class="coffee-quiz__action">` with no `href`,
+> and both live **inside `<template ref="resultTemplate">`** in
+> `sections/coffee-quiz.liquid` (lines 201-237). A template's contents are in
+> the HTML source but **not in the rendered DOM** — a shopper only meets them
+> after finishing the quiz. So neither is clickable on page load, and the raw
+> count overstates the homepage.
+>
+> Of the two, only one is a defect:
+>
+> | anchor | verdict |
+> |---|---|
+> | `[data-subscribe]` | **not a defect.** `assets/coffee-quiz.js:264-275` either sets `href = match.url` or removes the element outright. |
+> | "Explore all our coffees" | **real.** Gated on `settings.explore_label` only, while `settings.explore_link` is `""`, and the string `explore` appears nowhere in `coffee-quiz.js` — so nothing can ever fill it in. |
+>
+> **Fixed in PR #167**: the anchor is now gated on the link as well as the
+> label, so a blank setting renders nothing instead of a dead CTA. Setting the
+> link itself is a one-line follow-up that belongs **after PR #159**, which
+> rewrites `templates/index.json` wholesale.
 
 The eight flagged on `/products/maple` are **all Judge.me** (`jdgm-paginate__page`,
 `jdgm-medal`, `jdgm-write-rev-link`) and carry `role="button"` with `tabindex`.
@@ -182,20 +250,32 @@ Felipe's instinct was right, and the cause is measurable rather than cosmetic.
 The header's three icon buttons are each 44 × 44, but **their click boxes
 overlap**, so the Search button is mostly not clickable.
 
-Measured by hit-testing `document.elementFromPoint` across the button at 2px
-intervals — not inferred from rectangles:
+Measured by hit-testing `document.elementFromPoint` across the button at 1px
+intervals — not inferred from rectangles. Re-measured 2026-10-15 at a second
+viewport width (1920 CSS px, DPR 1.33), with the element boxes read alongside
+the hit test:
 
-| x range | width | what receives the click |
+| element | box | what actually receives the click |
 |---|---|---|
-| 1429.3 – 1443.7 | **14.4px** | **Account** |
-| 1445 – 1463 | ~20px | Search ✓ |
-| 1465.3 – 1473.3 | **8px** | **Cart** |
+| account button | 1486.5 – 1530.5 | account, all 44px ✓ |
+| **search button** | **1516.1 – 1560.1** | only **1531 – 1552** searches |
+| ↳ its left 14.4px | 1516.1 – 1530.5 | **account** ✗ |
+| ↳ its right 8px | 1552.1 – 1560.1 | **cart** ✗ |
+| cart button | 1552.1 – 1596.1 | cart, all 44px ✓ |
 
-The Search button is 44px wide and **about 20px of it actually searches**. The
-magnifier icon is centred in the 44px box, so **the left half of the visible
-icon opens the account page** and the right edge opens the cart. Nothing looks
-wrong in a screenshot — the icons are evenly spaced — which is why this reads as
-a vague "quirk" rather than an obvious break.
+The search button is 44px wide and **21px of it actually searches**; 23px
+belong to its neighbours. The first measurement at 1745px gave the same three
+widths (14.4 / ~20 / 8), so this does not depend on viewport width.
+
+> **Correction.** The first version of this section said "the left half of the
+> visible magnifier opens the account page." That overstated it. The icon is
+> **24.8px** wide (1525.7 – 1550.5) and the dead strip over it is
+> **1526 – 1530 — about 5px**, the leftmost fifth. The tap *target* loses more
+> than half; the visible *icon* loses a sliver. The defect is real either way,
+> but the sliver is the honest number.
+
+Nothing looks wrong in a screenshot — the icons are evenly spaced — which is
+why this reads as a vague "quirk" rather than an obvious break.
 
 **Root cause** — `snippets/search.liquid:63-66`:
 
@@ -223,20 +303,46 @@ instead of Horizon's. So the bug is dormant today and **arrives with the
 cutover**. It is not something that regressed recently; it is something the
 2026 header exposes for the first time.
 
+**Fixed in PR #167.** The three buttons already sit flush — the right column's
+`gap` never separates them — so the negative margin is purely a squeeze, and
+removing it gives all three a full 44px target. The only visible change is the
+icon group widening by 22.4px. The sibling rule for
+`[data-menu-style='menu'] .header__column--left .search-action` is the same
+pattern and was left alone: ONA's header puts search in the right column, so it
+does not render today.
+
 The rest of the open mega menu is clean: six `header-megamenu__primary-link`
 items and three `header-megamenu__card` items, zero overlapping pairs among all
 21 visible interactive elements at the width tested.
 
 ---
 
+## Where each item stands
+
+Updated 2026-10-15 after building the fixes.
+
+| # | item | state |
+|---|---|---|
+| 0 | In Sequence banner | **open — decision needed.** Confirmed running on live, exists in no repository, and the 2026 theme has no `ona-banner-slider` section to put it in. |
+| 1 | Card price not reactive | **fixed — PR #167.** One line in `assets/product-card.js`; covers collections and search together. Verified in the browser both ways. |
+| 2 | New Harvest campaign | **already off on the theme.** No action on the campaign; the action is to **merge PR #159 first** so a later merge does not switch it back on. |
+| 3 | Raspberry Candy low-res | **open — needs approval.** It is product media, not theme code, and repointing a product changes the live storefront immediately. |
+| 4 | Dead links | **fixed — PR #167.** One real CTA, not two, and it only appears after the quiz is completed. |
+| 5 | Menu overlap | **fixed — PR #167.** Measured before and after. |
+
 ## Suggested order for the afternoon
 
-1. **In Sequence banner** — confirmed running, and nothing else can be signed
-   off while the homepage is wrong.
-2. **Menu hit boxes** — a one-rule CSS fix with a measured before/after, and it
-   affects every page.
-3. **Price sync** — port the asset *and* decide the include so search is covered.
-4. **New Harvest badge + hero reference** — disable, do not edit the text.
-5. **Product images** — repoint the four products to the full-res originals;
-   benefits both themes and is safe to do before the release.
-6. **The two coffee-quiz CTAs** — give them destinations or hide them.
+1. **Merge PR #159 first.** Its `templates/index.json` is identical to the
+   theme's; merging anything else before it re-enables the New Harvest badge
+   and two sections the editor turned off. Re-read the checksum afterwards.
+2. **Review and merge PR #167** — the three fixes above, with their regression
+   tests. They are independent of `index.json` and so cannot conflict with #159.
+3. **In Sequence banner** — the one that still needs a decision, because
+   nothing else can be signed off while the homepage is wrong and there is
+   nowhere in the 2026 theme to put it yet.
+4. **Product images** — repoint the four products to the full-res originals.
+   Benefits live *and* 2026, the mega-menu cards and the PDP at once, and is
+   safe before the release — but it writes to live products, so it needs an
+   explicit go-ahead.
+5. **Set the quiz's explore link** — one line in `templates/index.json`, after
+   #159 has landed so it does not conflict.
