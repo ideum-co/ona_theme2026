@@ -76,3 +76,11 @@
  #MainContent .banner-detail-top .pc-show { display:none; }
  #MainContent .banner-detail-top .mobile-show { display:block; }
 }
+
+
+/* Native enquiry forms replace literal legacy app shortcodes until integrations are reconfigured. */
+#MainContent .ona-legacy-contact-form { display:grid; gap:12px; max-width:100%; }
+#MainContent .ona-legacy-contact-form label { font-size:14px; font-weight:600; }
+#MainContent .ona-legacy-contact-form :is(input,textarea) { display:block; width:100%; min-width:0; border:1px solid currentColor; background:transparent; color:inherit; border-radius:0; padding:12px; font:inherit; }
+#MainContent .ona-legacy-contact-form textarea { resize:vertical; }
+#MainContent .ona-legacy-contact-form button { margin-block-start:12px; justify-self:start; }
