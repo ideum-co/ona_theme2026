@@ -8,8 +8,17 @@
 ## What these are
 
 Verbatim copies, pulled 2026-10-15, of the JSON templates on theme
-**`160335790271`** ("ONA - media block fix + press quotes hidden…") — the theme
-that was published until 2026-10-14 ~15:43Z and is now the rollback.
+**`160335790271`** ("ONA - media block fix + press quotes hidden…"), the theme
+that was published until 2026-10-14 ~15:43Z.
+
+> ⚠️ **`160335790271` is NOT the rollback for the next release.** Do not restore
+> it on the strength of this README. The rollback named by
+> `docs/release-test-plan-2026-10-15.md` is **`160815546559`**, the theme
+> published right now, because `160335790271` is missing three things it has:
+> the PR #46 PDP media CSS, the `ona-product-complementary` section in
+> `product.filtersub.json`, and the current **In Sequence** homepage banner copy.
+> `160335790271` is the *historical pre-cutover* theme and the source these
+> archived files were read from — nothing more. (Codex, PR #165.)
 
 ## Read this before using them: `onacoffee_theme` is the better source
 

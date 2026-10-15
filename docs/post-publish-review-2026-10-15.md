@@ -41,8 +41,8 @@ Nothing in this document is an estimate. Every number below was measured.
 | 2 | 3 more pages lost their body content | contact, faq, subscription-faq | **High** |
 | 3 | All 10 app embeds are off; previous theme had them on | sitewide | **High** |
 | 4 | Maple-specific copy prints on all 92 PDPs | every product, incl. merch and equipment | **High** |
-| 5 | Two dead CTAs render with no destination | homepage + all 92 PDPs | Medium |
-| 6 | Homepage is at the hard 25-section cap, 11 of them disabled | homepage editing | Medium |
+| 5 | Three dead CTAs render with no destination | homepage + all 92 PDPs | Medium |
+| 6 | Homepage is at the hard 25-section cap, 13 of them disabled on the theme (10 in the repo copy) | homepage editing | Medium |
 | 7 | Three publish gates were never run | — | Medium |
 
 What is **not** broken, verified rather than assumed: blogs, collections, cart,

@@ -40,6 +40,7 @@ Status is as at 2026-10-15; **nothing here has been fixed yet.**
 | 2 | **Eight pages render a heading and nothing else.** Their content lived in bespoke templates on the old theme; this theme has none, so they fall back to `templates/page.json`, which prints only the title and the page body — and these pages have empty bodies. | Measured live while published: `/pages/wholesale` **16 chars** of visible text, `/pages/barista-courses` 15, `/pages/about` 5, `/pages/learn` 5, 3× `*-bookings` 31–34, `/pages/private-courses-and-experiences` 31 | Port each template. Originals archived in `docs/legacy-page-templates/`. **Never fix this by re-pointing `templateSuffix`** — it is shop-wide and would move the page on the live theme too. |
 | 3 | **All ten app embeds are off.** `config/settings_data.json` has no `"blocks"` key; the old theme's has ten, all enabled. MinMaxify Order Limits, EG Auto Add to Cart and Preorder Now each silently change what a customer can buy. Powerful Form Builder being off kills every Globo form. | `settings_data.json` 4,796 b vs 22,183 b; `/pages/contact` rendered a `globo-formbuilder` div that never hydrates; `/collections/all-coffee` had 0 `jdgm-` star ratings vs 135 | Every one of those apps is **still installed**, so it is a toggle each in Online Store → Customize → App embeds. Decide per app — Appstle's is genuinely redundant here. |
 | 4 | **The Water For Good promise is missing from PDPs.** The live theme prints "$3 PER 200G AND $12 PER KILO DONATED TO WATER FOR GOOD" on participating products. On `154676789439` the string does not appear at all — zero occurrences of "water for good" anywhere on `/products/maple`. The counter still claims the money. | Checked in preview, 2026-10-15 | Port the PDP contribution line before publishing, or the campaign promises on the homepage what the product page no longer says. |
+| 4b | **The In Sequence homepage banner would disappear.** The live storefront's **first section** is an `ona-banner-slider` whose lead slide was switched on and re-pointed to the In Sequence campaign by hand on **2026-10-15T01:01:41Z**. `ona_theme2026` has **no banner-slider section at all**, and no reference to `in-sequence` or the `Inseq*` images anywhere in the tree — so publishing drops a running campaign off the top of the homepage. | Full timestamp sweep of every directory on theme `160815546559`: four files post-date the bulk copy, and this is the only one absent from every repository. `onacoffee_theme` `origin/main` still holds the **previous Afterpay slide, `disabled: true`**. Rendering confirmed in served HTML (`Inseq3nce_top_1920x.png`, `<a href="/products/in-sequence">Shop Now</a>`). Full audit: `docs/manual-theme-work-2026-10-15.md` | **First ask whether the campaign is still running** — it links one product and will expire. If it is, rebuild the slide in Horizon; the images are already shop-level Files, so only the slide needs building. **Do not "port it from `onacoffee_theme`"** — for `index.json` that repo is behind the theme and would restore an expired, disabled Afterpay promo. |
 | 5 | **Maple-specific copy prints on all 92 products**, including an ONA merch vest and a V60 dripper: the maple-tree prose and `maple.webp`, "Maple has become one of ONA's most familiar coffees", and "Who's Maple For?". | `product_tabs_fW4maV`, `story_video_VUwQ6f`, `section_EhyeAD` all enabled on the single shared `templates/product.json` | Disable or rewrite all three. Fix the typo **"biscuts"** and the two "Shop now" buttons pointing at `shopify://collections/all` at the same time. |
 
 ### P1 — should be fixed before publishing
@@ -196,7 +197,18 @@ This is where the first attempt came unstuck, so give it real time.
       omission.
 - [ ] `node --test tests/*.test.mjs` passes.
 - [ ] Checksums re-read after the final merge — **an unchanged checksum means the file was refused, not that nothing changed.**
-- [ ] Rollback named out loud: **publish `160815546559`**.
+- [ ] **Manual theme work accounted for.** Four files on `160815546559` were
+      edited by hand after it was copied; three are in `onacoffee_theme`
+      byte-for-byte, and the fourth — the **In Sequence homepage banner** — is in
+      no repository. Either it has been rebuilt in Horizon, or someone has said
+      out loud that the campaign is over and it is meant to go. See
+      `docs/manual-theme-work-2026-10-15.md`, and **re-read
+      `templates/index.json`'s checksum first**: the editor has moved that file
+      twice in three days, so the repo's snapshot of it goes stale silently.
+- [ ] Rollback named out loud: **publish `160815546559`**. Note this also
+      restores the banner; the older `160335790271` restores it with the
+      **previous wording** (`explore Ethiopian coffee through four processing
+      methods`), which is the single leaf separating the two homepages.
 - [ ] Someone other than the person publishing has seen the storefront.
 - [ ] Publishing announced before it happens, not after. Two of the last three publishes were not, and one of them put a theme named "PREVIEW" in front of customers.
 - [ ] Not inside a promo window, and not at the end of someone's day.

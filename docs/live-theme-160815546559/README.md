@@ -29,12 +29,45 @@ byte for byte**:
 |---|---|---|---|
 | `snippets/product-media-gallery-content.liquid` | `0f4cdc15f57172c6924072156c688ec5`, 36,795 b | **identical** | no |
 | `templates/product.filtersub.json` | `dc8be58f3ddd176996e89782d005d61e`, 12,780 b | **identical** | no |
-| `templates/index.json` | `fc0a8aa9fc0c4953dd830f99b2e56f91`, 47,109 b | `c73c60f976ac6a3058ea1a027202291d`, 53,823 b | **yes** |
+| `templates/index.json` | `3a34348d83ba0c51337436fdb357dc95`, 47,077 b (re-pulled 2026-10-15 after a further edit) | `c73c60f976ac6a3058ea1a027202291d`, 53,823 b — **stale**, see §"The homepage divergence is a live campaign" | **yes** |
 
 So the live theme is, in substance, **`onacoffee_theme`'s `main` plus the theme
 editor's own homepage settings**. Only `index.json` is genuinely unrecoverable
-from a repository, and only in the sense that the editor's settings are not
-mirrored anywhere.
+from a repository — and that phrase undersells it, so read the next section
+before treating it as cosmetic.
+
+## The homepage divergence is a live campaign, not a settings nicety
+
+Re-audited 2026-10-15. Every file on this theme was written by the bulk copy at
+01:45–01:47Z on 2026-10-13 **except four**, and the audit of all four is in
+`docs/manual-theme-work-2026-10-15.md`. Three are accounted for in a repository.
+The fourth is `templates/index.json`, last edited **2026-10-15T01:01:41Z**, and
+the edit is the homepage's **In Sequence** banner:
+
+| setting | before (what `onacoffee_theme` still holds) | live now |
+|---|---|---|
+| `disabled` | `true` — the slide was switched off | **absent → the slide is live** |
+| `title2` | `Drop What You're Doing` | **`In Sequence`** |
+| `content` | `Aftterpay day is here! Spend $125+ and receive a gift` | **`Experience Ethiopian coffee through processing methods`** |
+| `button_link` | `shopify://collections/all` | **`shopify://products/in-sequence`** |
+| `bg` / `bgmb` | `Afterpay_top_ban.png` / `Afterpayday_mob2.png` | **`Inseq3nce_top.png` / `Insekmob.png`** |
+| `button_bg_colour` | `#f8bfd8` | **`#702429`** |
+
+It is the **first section on the homepage** (`ona-banner-slider`, slide
+`image_picker_WzjDbw`), it renders — verified in the served HTML, which carries
+`Inseq3nce_top_1920x.png` and `<a href="/products/in-sequence" …>Shop Now</a>` —
+and it exists in **no repository**:
+
+- `onacoffee_theme` `origin/main` still has the **Afterpay** slide, **disabled**
+- `ona_theme2026` has **no `ona-banner-slider` section at all**, and no
+  reference to `in-sequence` or the `Inseq*` images anywhere in the tree
+
+**So "port the page templates from `onacoffee_theme`" is right for pages and
+wrong for `index.json`.** For the homepage, this directory's copy — refreshed
+2026-10-15 and byte-verified against the theme — is the newest artifact that
+exists. The pre-cutover theme `160335790271` carries the same banner but with
+**older copy** (`explore Ethiopian coffee through four processing methods`),
+which is the single leaf separating the two themes' homepages.
 
 > **Correction.** An earlier version of this README, and §13 of the review, said
 > that two files existed only on this theme and that `product.filtersub.json`

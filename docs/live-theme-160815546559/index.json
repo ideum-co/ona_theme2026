@@ -14,18 +14,17 @@
       "blocks": {
         "image_picker_WzjDbw": {
           "type": "image_picker",
-          "disabled": true,
           "settings": {
-            "title2": "Drop What You're Doing",
-            "content": "Aftterpay day is here! Spend $125+ and receive a gift",
+            "title2": "In Sequence",
+            "content": "Experience Ethiopian coffee through processing methods",
             "image": "shopify://shop_images/Blank.png",
-            "bg": "shopify://shop_images/Afterpay_top_ban.png",
-            "bgmb": "shopify://shop_images/Afterpayday_mob2.png",
+            "bg": "shopify://shop_images/Inseq3nce_top.png",
+            "bgmb": "shopify://shop_images/Insekmob.png",
             "button_text": "Shop Now",
-            "button_link": "shopify://collections/all",
+            "button_link": "shopify://products/in-sequence",
             "button_style": "filled",
             "button_size": "medium",
-            "button_bg_colour": "#f8bfd8",
+            "button_bg_colour": "#702429",
             "button_text_colour": "#ffffff",
             "button_text_size": 16
           }

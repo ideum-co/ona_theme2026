@@ -187,6 +187,14 @@ Paste into the body of every `staging` → `main` PR:
   Settings → Branches → `main` → Require status checks → add **`unit`**, and
   the same for `staging`. Until then the first checklist item is still
   honour-system; it is just now honour-system with evidence next to it.
-- **Page templates and app embeds are not in git.** Both are listed in
-  `docs/post-publish-review-2026-10-15.md`; the theme is the system of record
-  for them until they are ported.
+- **The page templates are in git; the Horizon implementations are not.** An
+  earlier version of this bullet called the theme the system of record for them.
+  That is false, and believing it makes recovery depend on keeping a Shopify
+  theme alive. Every one of the 14 legacy page templates exists in
+  **`onacoffee_theme` `origin/main`**, which is the preferred porting source, and
+  a dated copy of each sits in `docs/legacy-page-templates/` with the two
+  real differences recorded. What is genuinely absent from any repository is the
+  *Horizon-compatible* rebuild of those pages — that work has not been done yet,
+  which is a backlog item, not a storage problem. **App embeds are the real
+  not-in-git item**: they live in `config/settings_data.json` on each theme and
+  are listed in `docs/post-publish-review-2026-10-15.md` §4.
