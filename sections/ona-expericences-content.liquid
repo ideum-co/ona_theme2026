@@ -12,7 +12,21 @@
       <div class="right-box wowo fadeInUp">
         <div class="form">
           <h2>Get in touch</h2>
-		  {formbuilder:50341}
+		  {% form 'contact', id: 'ona-experiences-' | append: section.id, class: 'ona-legacy-contact-form' %}
+  {% if form.posted_successfully? %}
+    <p role="status">Thank you. Your enquiry has been sent.</p>
+  {% elsif form.errors %}
+    <div role="alert">{{ form.errors | default_errors }}</div>
+  {% endif %}
+  <input type="hidden" name="contact[subject]" value="Private courses and experiences enquiry">
+  <label for="ona-experiences-name-{{ section.id }}">Name</label>
+  <input required type="text" id="ona-experiences-name-{{ section.id }}" name="contact[name]" autocomplete="name" value="{{ form.name | escape }}">
+  <label for="ona-experiences-email-{{ section.id }}">Email</label>
+  <input required type="email" id="ona-experiences-email-{{ section.id }}" name="contact[email]" autocomplete="email" value="{{ form.email | escape }}">
+  <label for="ona-experiences-message-{{ section.id }}">How can we help?</label>
+  <textarea required id="ona-experiences-message-{{ section.id }}" name="contact[body]" rows="5">{{ form.body | escape }}</textarea>
+  <button type="submit" class="button">Send enquiry</button>
+{% endform %}
         </div>
       </div>
     </div>
