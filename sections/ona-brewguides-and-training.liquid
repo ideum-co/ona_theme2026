@@ -1,0 +1,58 @@
+<section class="learn-list wowo fadeInUp">
+  <div class="container">
+    <div class="content">
+      {% if section.blocks.size > 0 %}
+      {% for block in section.blocks %}
+      <div class="list">
+        <a href="{{ block.settings.url }}" class="list-box">
+          <div class="img-bg" style="background-image: url('{{ block.settings.image | img_url: '' }}')"></div>
+          <div class="a-box">
+            <h2>{{ block.settings.title }}</h2>
+            <span>Learn more</span>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+      {% endif %} 
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Blocks"
+  },
+  "max_blocks": 2,
+  "blocks": [
+    {
+      "type": "block",
+      "name": {
+        "en": "Block"
+      },
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": {
+            "en": "Image"
+          }
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": {
+            "en": "Link"
+          }
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "en": "Title"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
