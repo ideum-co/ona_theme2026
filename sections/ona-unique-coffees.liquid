@@ -1,0 +1,128 @@
+<section class="add-image-and-text invert-columns show-faqs unique-coffee-block  wowo show-image-slider fadeIn" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
+    <div class="container">
+        <div class="content">
+            <div class="img imgs-slider-unique"> 
+               {% for block in section.blocks %}
+                    <div class="slider-block">
+                        <img src="{{ block.settings.image | img_url: '800x' }}" alt="{{ section.settings.image.alt | escape }}" class="wowo fadeInup" data-wow-duration="0.75s" data-wow-delay="300ms" loading="lazy" decoding="async">                    
+                        <img src="{{ block.settings.image2 | img_url: '800x' }}" alt="{{ section.settings.image2.alt | escape }}" class="wowo fadeInup" data-wow-duration="0.75s" data-wow-delay="600ms" loading="lazy" decoding="async">                
+                        <img src="{{ block.settings.image3 | img_url: '800x' }}" alt="{{ section.settings.image3.alt | escape }}" class="wowo fadeInup" data-wow-duration="0.75s" data-wow-delay="900ms" loading="lazy" decoding="async">                 
+                    </div> 
+               {% endfor %}
+            </div>
+            <div class="text wowo fadeInUp" data-wow-duration="0.75s" data-wow-delay="900ms">
+                <h2>{{ section.settings.title }}</h2>
+                <h3>{{ section.settings.subtitle }}</h3>
+                <p>{{ section.settings.content }}</p>
+                <div class="add-faqs">
+                  {% assign i = 0  %}
+                  {% for block in section.blocks %}
+                    <div class="block">
+                      <div class="faqs-title">
+                        <p class="slider-handle" data-item="{{i}}">{{ block.settings.title }}</p>
+                      </div>
+                      <div class="faqs-text">
+                        <p>{{ block.settings.content }}</p>
+                      </div>
+                    </div>    
+                  {% assign i = i | plus:1 %}
+                  {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% schema %}
+{
+  "name": {
+    "en": "Unique coffees"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "id",
+      "label": {
+        "en": "ID"
+      }
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": {
+		"en": "Subtitle"
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "content",
+      "label": {
+		"en": "Content"
+      }
+    }    
+  ],
+  "blocks": [
+    {
+      "type": "block",
+      "name": {
+        "en": "Block"
+      },
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "textarea",
+          "id": "content",
+          "label": {
+            "en": "Content"
+          }
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": {
+            "en": "Image"
+          }
+        },
+        {
+          "type": "image_picker",
+          "id": "image2",
+          "label": {
+            "en": "Image"
+          }
+        },
+        {
+          "type": "image_picker",
+          "id": "image3",
+          "label": {
+            "en": "Image"
+          }
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": {
+        "en": "Unique coffees"
+      },
+      "category": {
+        "en": "Text"
+      }
+    }
+  ]
+}
+{% endschema %}
+
