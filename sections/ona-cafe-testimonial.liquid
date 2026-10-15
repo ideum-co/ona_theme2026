@@ -1,0 +1,86 @@
+<section class="add-image-and-text-slider section-full-large" id="{{ section.settings.id }}">
+    <div class="add-images-slider wowo fadeInUp">
+        {% for block in section.blocks %}
+        <div class="slider-block">
+			<div class="slider-block match-height">
+				<div class="block">
+                    <div class="img">
+                      <div class="bg-img" style="background-image: url('{{ block.settings.image | img_url: '800x' }}');"> </div>
+					</div>
+					<div class="text  equal-height">
+						<blockquote>{{ block.settings.content }}</blockquote>
+						<cite>
+							{{ block.settings.title }}
+							{{ block.settings.subtitle }}
+						</cite>
+					</div>					
+				</div>
+			</div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Cafe Testimonial"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "id",
+      "label": {
+        "en": "ID"
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "type": "block",
+      "name": {
+        "en": "Block"
+      },
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": {
+            "en": "Image"
+          }
+        },
+        {
+          "type": "textarea",
+          "id": "content",
+          "label": {
+            "en": "Content"
+          }
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "label": {
+            "en": "Subtitle"
+          }
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": {
+        "en": "Cafe Testimonial"
+      },
+      "category": {
+        "en": "Text"
+      }
+    }
+  ]
+}
+{% endschema %}
