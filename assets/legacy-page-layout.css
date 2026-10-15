@@ -1,0 +1,46 @@
+/* Legacy ONA page templates: responsive layout while retaining original editorial blocks.
+   Loaded only for the six migrated page suffixes. */
+#MainContent { --legacy-page-gutter: clamp(20px, 5vw, 72px); --legacy-page-gap: clamp(48px, 7vw, 110px); }
+#MainContent > .shopify-section { min-width:0; }
+#MainContent :is(.medium-container,.container) { width:min(100% - 2 * var(--legacy-page-gutter), 1280px); max-width:1280px; margin-inline:auto; }
+#MainContent :is(.about,.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) { position:relative; padding-block:var(--legacy-page-gap); }
+#MainContent :is(.about,.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) :is(h1,h2,h3,p) { overflow-wrap:break-word; }
+#MainContent :is(.about,.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) h2 { font-family:var(--font-heading--family,serif); font-size:clamp(30px,4.5vw,60px); line-height:1.1; margin:0 0 20px; }
+#MainContent :is(.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) h3 { font-size:clamp(20px,2.2vw,32px); line-height:1.35; margin:0 0 16px; }
+#MainContent :is(.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) p { font-size:clamp(15px,1.1vw,18px); line-height:1.65; margin:0 0 18px; }
+#MainContent :is(.our-philoshophy,.awards,.careers,.sustainability-top) :is(.content,.medium-container) { min-width:0; }
+#MainContent .about .medium-container { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.5fr); align-items:start; gap:clamp(24px,4vw,70px); }
+#MainContent .about .right-box h3 { font-family:var(--font-heading--family,serif); font-weight:400; font-size:clamp(24px,3vw,43px); line-height:1.3; margin:0; }
+#MainContent .about .animated-svg { position:absolute; z-index:0; width:min(50vw,450px); max-height:380px; inset-inline-start:5%; inset-block-start:0; pointer-events:none; opacity:.6; }
+#MainContent .about .medium-container { position:relative; z-index:1; }
+#MainContent .our-philoshophy .content,
+#MainContent .awards .content,
+#MainContent .careers .content { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(28px,5vw,76px); align-items:start; }
+#MainContent .our-philoshophy .image img,
+#MainContent .careers .img img,
+#MainContent .awards img,
+#MainContent .sustainability-top img { display:block; width:100%; height:auto; }
+#MainContent .awards table { width:100%; border-collapse:collapse; }
+#MainContent .awards td { padding:12px 8px; border-bottom:1px solid currentColor; }
+#MainContent .sustainability-top .content { width:min(100% - 2 * var(--legacy-page-gutter),1280px); margin-inline:auto; }
+#MainContent .sustainability-list { display:grid; gap:clamp(28px,4vw,64px); width:min(100% - 2 * var(--legacy-page-gutter),1280px); margin-inline:auto; }
+#MainContent .sustainability-list .list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:32px; align-items:center; }
+#MainContent .sustainability-list .img-bg { min-height:280px; background-size:cover; background-position:center; }
+#MainContent .banner-top { position:relative; min-height:clamp(240px,35vw,520px); display:flex; align-items:center; isolation:isolate; padding-block:50px; overflow:hidden; }
+#MainContent .banner-top .img-bg { position:absolute; inset:0; background-position:center; background-size:cover; z-index:-1; }
+#MainContent .banner-top .medium-container { position:relative; }
+#MainContent .banner-top h1 { font-size:clamp(34px,5.5vw,76px); line-height:1.1; max-width:900px; margin:0; }
+#MainContent .animated-svg { max-width:100%; height:auto; }
+#MainContent img { max-width:100%; }
+@media(max-width:749px){
+ #MainContent { --legacy-page-gutter:20px; --legacy-page-gap:52px; }
+ #MainContent .about .medium-container,
+ #MainContent .our-philoshophy .content,
+ #MainContent .awards .content,
+ #MainContent .careers .content,
+ #MainContent .sustainability-list .list { grid-template-columns:minmax(0,1fr); gap:24px; }
+ #MainContent .about .animated-svg { width:min(80vw,320px); opacity:.45; }
+ #MainContent .about .right-box h3 { font-size:clamp(25px,6.5vw,36px); line-height:1.27; }
+ #MainContent .banner-top { min-height:250px; }
+ #MainContent .sustainability-list .img-bg { min-height:220px; }
+}
