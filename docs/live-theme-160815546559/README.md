@@ -84,8 +84,10 @@ them is the useful part:
 - `product.filtersub.json` and the media snippet have a theme `checksumMd5`
   that **equals `md5sum` of the copy here**. The Admin API returned exactly the
   bytes the theme stores, banner and indentation included.
-- `index.json` does **not** match: 47,109 b on the theme against 65,349 b here.
-  The theme stores it minified and the API pretty-printed it on the way out.
+- `index.json` does **not** match: **47,077 b** on the theme against
+  **65,305 b** here. The theme stores it minified and the API pretty-printed it
+  on the way out. (Both numbers moved when the file was re-pulled on 2026-10-15;
+  the earlier 47,109 / 65,349 pair described the pre-In-Sequence snapshot.)
 
 That is the same signal the GitHub integration gives: **a file whose checksum
 matches the bytes you hold was written by a repository; one whose checksum does
@@ -97,7 +99,12 @@ Local hashes of the copies in this directory, for integrity checking:
 | file | `md5sum` here | bytes |
 |---|---|---|
 | `product.filtersub.json` | `dc8be58f3ddd176996e89782d005d61e` | 12,780 |
-| `index.json` | `d9aba0bbdd38fc810166f932e9a4e62c` | 65,349 |
+| `index.json` | `5468f4dc16f6090da7ce6d48479fd50f` | 65,305 |
+
+> Re-pulled 2026-10-15. **Re-run `md5sum` on this directory whenever
+> `index.json` is refreshed** — an integrity table that still describes the
+> previous snapshot rejects the archive it is meant to vouch for, which is worse
+> than having no table.
 
 ## `product.filtersub.json` — why this one matters
 

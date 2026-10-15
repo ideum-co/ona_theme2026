@@ -25,19 +25,43 @@ PAGES=( "" "collections/all-coffee" "products/maple" "products/raspberry-candy"
         "pages/about" "pages/wholesale" "pages/faq" "pages/contact"
         "search?q=maple" "cart" "blogs/news" )
 
+# A failed fetch must stop the run, not become a data point. `set -e` is not on
+# (fetch_theme returns a status the callers check), and plain `curl -s` exits 0
+# on a 429 or a 500 and writes the error page to the output file. The Python
+# phase would then diff a Shopify error page against a real one and report it as
+# content loss -- or, on a timeout, silently skip the pair and read as a pass.
+# So: bound every request, and check the status code of every one.
+CURL_OPTS=( -sL --connect-timeout 10 --max-time 60 --retry 2 --retry-delay 2 )
+
+fetch_page () {                         # $1=jar  $2=url  $3=outfile ("" = discard)
+  local jar="$1" url="$2" dest="${3:-/dev/null}" code
+  code=$(curl "${CURL_OPTS[@]}" -b "$jar" -c "$jar" -w '%{http_code}' -o "$dest" "$url") || {
+    echo "ABORT: curl failed (exit $?) for $url" >&2; return 1
+  }
+  if [ "$code" != "200" ]; then
+    echo "ABORT: HTTP $code for $url" >&2; return 1
+  fi
+}
+
 fetch_theme () {                        # $1=label  $2=theme_id
   local label="$1" id="$2" jar="$OUT/.jar-$1"
   rm -f "$jar"
-  curl -sL -c "$jar" -b "$jar" "$BASE/?preview_theme_id=$id" -o /dev/null
-  local pinned
-  pinned=$(curl -sL -b "$jar" -c "$jar" "$BASE/" | grep -oE '"id":1[0-9]{11}' | head -1 | cut -d: -f2)
+  fetch_page "$jar" "$BASE/?preview_theme_id=$id" "" || return 1
+  local probe="$OUT/.probe-$label.html" pinned
+  fetch_page "$jar" "$BASE/" "$probe" || return 1
+  pinned=$(grep -oE '"id":1[0-9]{11}' "$probe" | head -1 | cut -d: -f2)
+  rm -f "$probe"
   if [ "$pinned" != "$id" ]; then
-    echo "ABORT: $label pinned to $pinned, expected $id" >&2; return 1
+    echo "ABORT: $label pinned to ${pinned:-nothing}, expected $id" >&2; return 1
   fi
   echo "  $label pinned to $pinned OK" >&2
   for p in "${PAGES[@]}"; do
     local safe; safe=$(echo "${p:-home}" | tr '/?=&' '____')
-    curl -sL -b "$jar" -c "$jar" "$BASE/$p" -o "$OUT/$label--$safe.html"
+    fetch_page "$jar" "$BASE/$p" "$OUT/$label--$safe.html" || return 1
+    # An empty or truncated 200 is just as misleading as a 500.
+    if [ ! -s "$OUT/$label--$safe.html" ]; then
+      echo "ABORT: empty response for $BASE/$p" >&2; return 1
+    fi
   done
 }
 
