@@ -1,0 +1,43 @@
+<section class="our-philoshophy">
+    <div class="medium-container">
+        <div class="content">
+            <div class="text wowo fadeInUp">
+                <h2>{{ section.settings.title2 }}</h2>
+                {{ section.settings.content }}
+            </div>
+            <div class="image wowo fadeInUp">
+                <img src="{{ section.settings.image | img_url: '1006x' }}" alt="{{ section.settings.image.alt | escape }}">
+            </div>
+        </div>
+    </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Our philosophy"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title2",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": {
+		"en": "Content"
+      }
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": {
+		"en": "Image"
+      }
+    }
+  ]
+}
+{% endschema %}
