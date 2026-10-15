@@ -1,0 +1,54 @@
+<section class="training-bg">
+  <div class="container">
+    <div class="text wowo fadeInUp">
+      <h2>{{ section.settings.title2 }}</h2>
+      <h3>{{ section.settings.subtitle }}</h3>
+      {% if section.settings.video !='' %}
+      <div class="video-link embed">
+        <a href="javascript:void(0);" class="a-link">Watch videos</a>
+        <div class="data-video">{{ section.settings.video }}</div>
+      </div>
+      {% endif %}
+    </div>
+    <div class="image wowo fadeInUp">
+      <img src="{{ section.settings.image | img_url: '1108x' }}" alt="{{ section.settings.image.alt | escape }}">
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Video & image (BG)"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title2",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": {
+		"en": "Sub title"
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "video",
+      "label": {
+		"en": "Video embed"
+      }
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": {
+		"en": "Image"
+      }
+    }
+  ]
+}
+{% endschema %}
