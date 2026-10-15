@@ -1,0 +1,172 @@
+<section class="add-image-and-text  wowo fadeInUp section-full-large img-right" data-wow-duration="1s" data-wow-delay="300ms" id="{{ section.settings.id }}">
+    <div class="container">
+        <div class="content">
+            <div class="img imgs-slider wowo fadeIn slider-{{ section.settings.id }}" data-auto="{{ section.settings.slider_autoplay }}" id="slider-{{ section.settings.id }}">
+              {% assign i = 0  %}
+              {% for block in section.blocks %}
+                {%- case block.type -%}
+                  {%- when 'slider' -%}
+                    <div class="slider-block" data-parent="slider-{{ section.settings.id }}">
+                        {% if block.settings.media_type == 'embed' or block.settings.media_type == 'upload' %}
+                        <div class="scale-video">    
+                            {% assign unique_id = 'now' | date: '%s' %} 
+                            {%assign player_id = section.settings.id | append: 'uplaod_video_' | append:unique_id | append:i %}
+                            {% assign video_id = '' %}
+                            {% assign video_url = '' %} 
+                            
+                            {% assign autoplay = block.settings.autoplay %} 
+                            {% if block.settings.media_type == 'upload' %}
+                                  {% assign video_id = block.settings.video.sources[0].url %}
+                                  {% assign video_url = video_id %} 
+                                  <video id="{{ player_id }}" class="video-js" controls muted defaultMuted playsinline preload="auto" data-src="{{video_id}}"></video>
+                            {% else %}  
+                                {% assign video_url = block.settings.video_url %} 
+                                {% assign video_id_index = video_url | split: '/' | size | minus: 1 %}
+                                {% if video_url contains 'v=' %}{% assign video_id = video_url | split: 'v=' | last | split: '&' | first %}{% else %}{% assign video_id = video_url | split: '/' | last | split: '?' | first %}{% endif %}
+                                {% if video_url contains 'vimeo' %}
+                                    <iframe id="{{ player_id }}" src="https://player.vimeo.com/video/{{ video_id }}" data-auto="{{ autoplay }}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen playsinline></iframe>
+                                {% else if video_url != '' %}                    
+                                    <div id="{{ player_id }}" data-auto="{{ autoplay }}"></div>              
+                                {% endif  %}
+                             {% endif  %}                              
+                        </div> 
+                          <a class="scale-cover-video play-video" data-auto="{{ autoplay }}" data-url="{{ video_url }}" data-video="{{ video_id }}" data-type="{{ block.settings.media_type }}" data-id="{{ player_id }}">
+                              {% if block.settings.play_icon != blank %}<img src="{{ block.settings.play_icon | img_url: '100x' }}" alt="title-play-video" loading="lazy" decoding="async"/>{% endif %}
+                          </a>
+                          <img src="{{ block.settings.image | img_url: '800x' }}" alt="{{ block.settings.image.alt | escape }}" class="wowo fadeInup scale-cover-image" data-wow-duration="0.75s" data-wow-delay="300ms" loading="lazy" decoding="async">
+                          {% else %}
+                              <img src="{{ block.settings.image | img_url: '800x' }}" alt="{{ block.settings.image.alt | escape }}" class="wowo fadeInup" data-wow-duration="0.75s" data-wow-delay="300ms" loading="lazy" decoding="async">
+                          {% endif %}
+                    </div>
+                    {% assign i = i | plus:1 %}
+                {% endcase %}
+              {% endfor %}  
+            </div>            
+            <div class="text wowo fadeInUp">
+                {% if section.settings.overlay != '' %}
+                  <div class="overlay-imagee">
+                      <img src="{{ section.settings.overlay | img_url: '300x' }}" alt="{{ block.settings.overlay.alt | escape }}" loading="lazy" decoding="async">
+                  </div>
+                {% endif %}
+                <h2>{{ section.settings.title }}</h2>
+                {{ section.settings.content }}
+            </div>
+        </div>
+    </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Exclusive access"
+  },
+  "blocks": [ 
+    {
+      "type": "slider",
+        "name": {
+          "en": "Slider"
+        },
+        "settings": [
+          {
+            "type": "select",
+            "id": "media_type",
+            "label": "Media Type",
+            "info": "Select media to show",
+            "options": [
+              {
+                "value": "image",
+                "label": "Image"
+              },
+              {
+                "value": "embed",
+                "label": "YouTube/Vimeo URL"
+              },
+              {
+                "value": "upload",
+                "label": "Upload Video"
+              }    
+            ]
+          },  
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": {
+      		"en": "Image"
+            }
+          },
+          {
+            "type": "video",
+            "id": "video",  
+            "label": "Select Video"
+          },
+          {
+              "type": "video_url",
+              "id": "video_url",
+              "label": "YouTube/Vimeo",
+              "accept": [
+                "youtube",
+                "vimeo"
+              ]
+          }, {
+          "type": "image_picker",
+          "id": "play_icon",      
+          "label": {
+    		"en": "Play Icon"
+          }
+       },
+        {
+            "type": "checkbox",
+            "id": "autoplay",
+            "label": "Enable Auto Play",
+            "default":false
+          }
+        ]
+      }
+  ],
+  "settings": [
+    {
+      "type": "text",
+      "id": "id",
+      "label": {
+        "en": "ID"
+      }
+    },   
+    {
+      "type": "text",
+      "id": "title",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": {
+		"en": "Content"
+      }
+    },
+    {
+      "type": "image_picker",
+      "id": "overlay",
+      "label": {
+        "en": "Overlay Image"
+      }
+    },
+    {
+      "type": "checkbox",
+      "id": "slider_autoplay",
+      "label": "Slider Auto Play",
+      "default":false
+    } 
+  ],
+  "presets": [
+    {
+      "name": {
+        "en": "Exclusive access"
+      },
+      "category": {
+        "en": "Text"
+      }
+    }
+  ]
+}
+{% endschema %}
