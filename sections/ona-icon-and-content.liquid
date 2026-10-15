@@ -1,0 +1,82 @@
+<section class="col-4-icons wowo fadeIn" data-wow-duration="0.75s" data-wow-delay="300ms">
+    <div class="container">
+        <div class="title wow fadeInDown" data-wow-duration="1s" data-wow-delay="600ms">
+            <h2>{{ section.settings.title }}</h2>
+        </div>
+        <div class="content">
+          {% assign duration = 100 %}
+          {% for block in section.blocks %}
+
+            {% assign duration = duration | plus: 100 %}
+            <div class="block  wowo fadeInUp" data-wow-duration="1s" data-wow-delay="{{ duration }}ms">
+                <a href="{{ block.settings.url }}" class="box icon-box-anchor">
+                  <div class="icon-c">
+                     <img src="{{ block.settings.icon | img_url: '400x' }}" alt="{{ block.settings.icon.alt | escape }}" class="wowo animate__heartBeat" data-wow-duration="1.5s" loading="lazy" decoding="async">
+                  </div>
+                  <div class="text wowo fadeInDown" data-wow-duration="1s" data-wow-delay="{{ duration }}ms">
+                      <p>{{ block.settings.title }}</p>
+                  </div>
+                </a>
+            </div>
+          {% endfor %}
+        </div>
+    </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Icons and content"
+  },
+  "max_blocks": 5,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": {
+		"en": "Title"
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "type": "block",
+      "name": {
+        "en": "Block"
+      },
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon",
+          "label": {
+            "en": "Icon"
+          }
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": {
+            "en": "Url"
+          }
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": {
+        "en": "Icons and content"
+      },
+      "category": {
+        "en": "Text"
+      }
+    }
+  ]
+}
+{% endschema %}

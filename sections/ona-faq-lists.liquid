@@ -1,0 +1,86 @@
+<section class="add-faqs-section " id="{{ section.settings.id }}">
+    <div class="container">
+        <div class="title">
+            <h2>{{ section.settings.title2 }}</h2>
+        </div>
+        <div class="add-faqs">
+        {% for block in section.blocks %}
+          <div class="block is-active">
+              <div class="faqs-title {% if forloop.index == 1 %}is-active{% endif %}">
+                  <p>{{ block.settings.title }}</p>
+              </div>
+              <div class="faqs-text {% if forloop.index == 1 %}is-active{% endif %}">
+                  {{ block.settings.content }}
+              </div>
+          </div>
+        {% endfor %}
+        </div>
+        <div class="end-text">
+            {{ section.settings.tips }}
+        </div>
+    </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "FAQ list"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "id",
+      "label": {
+        "en": "ID"
+      }
+    },
+    {
+      "type": "text",
+      "id": "title2",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "richtext",
+      "id": "tips",
+      "label": {
+		"en": "Tips"
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "type": "block",
+      "name": {
+        "en": "Block"
+      },
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": {
+            "en": "Content"
+          }
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": {
+        "en": "FAQ list"
+      },
+      "category": {
+        "en": "Text"
+      }
+    }
+  ]
+}
+{% endschema %}

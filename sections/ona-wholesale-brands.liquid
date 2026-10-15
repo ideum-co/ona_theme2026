@@ -1,0 +1,88 @@
+<section class="add-image-and-text  wholesale-brands wowo fadeInUp" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
+    <div class="container">
+        <div class="content">            
+            <div class="text wowo fadeInUp">
+                <h2  class="align-center text-center">{{ section.settings.title }}</h2>
+            </div>            
+            <div class="img wowo brand-thumb fadeIn">
+                  {% for block in section.blocks %}
+                    <div class="brand-item ">
+                       <a href="{{ block.settings.link}}" class="match-height">
+                           {%- assign wb_h = 150 | divided_by: block.settings.image.aspect_ratio | round -%}
+                           <img src="{{ block.settings.image | img_url: '150x' }}" alt="{{ block.settings.title }}" width="150" height="{{ wb_h }}" loading="lazy" decoding="async" />
+                       </a>
+                    </div>
+                  {% endfor %}
+             </div>
+        </div>
+    </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Brands"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "id",
+      "label": {
+        "en": "ID"
+      }
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "content",
+      "label": {
+		"en": "Content"
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "type": "block",
+      "name": {
+        "en": "Block"
+      },
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": {
+            "en": "Image"
+          }
+        },
+        {
+            "type": "url",
+            "id": "link",
+            "label": "Website URL"
+          }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": {
+        "en": "Brands"
+      },
+      "category": {
+        "en": "Text"
+      }
+    }
+  ]
+}
+{% endschema %}

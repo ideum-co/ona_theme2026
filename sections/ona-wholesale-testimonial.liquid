@@ -1,0 +1,211 @@
+<section class="add-image-and-text unique-testimonial-block testimonial_video_section section-full-large bg-red wowo no-padding show-image-slider fadeIn section-relative-image" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
+    <div class="container">
+        <div class="content">
+            <div class="img imgs-slider-testimonial wowo fadeIn slider-{{ section.settings.id }}" data-auto="{{ section.settings.slider_autoplay }}" id="slider-{{ section.settings.id }}"> 
+               {% assign i = 0  %}
+               
+               {% for block in section.blocks %}
+                {%- case block.type -%}
+                  {%- when 'block' -%}
+                    <div class="slider-block episode_{{ forloop.index }}" data-parent="slider-{{ section.settings.id }}">
+                        {% if block.settings.media_type == 'embed' or block.settings.media_type == 'upload' %}
+                        <div class="scale-video">    
+                            {% assign unique_id = 'now' | date: '%s' %} 
+                            {%assign player_id = section.settings.id | append: 'uplaod_video_' | append:unique_id | append:i %}
+                            {% assign video_id = '' %}
+                            {% assign video_url = '' %} 
+                            
+                            {% assign autoplay = block.settings.autoplay %} 
+                            {% if block.settings.media_type == 'upload' %}
+                             
+                                  {% assign video_id = block.settings.video.sources[1].url %}
+                                  {% assign video_url = video_id %} 
+                                  <video id="{{ player_id }}" class="video-js" controls muted defaultMuted playsinline preload="auto" data-src="{{video_id}}"></video>
+                            {% else %}  
+                                {% assign video_url = block.settings.video_url %} 
+                                {% assign video_id_index = video_url | split: '/' | size | minus: 1 %}
+                                {% if video_url contains 'v=' %}{% assign video_id = video_url | split: 'v=' | last | split: '&' | first %}{% else %}{% assign video_id = video_url | split: '/' | last | split: '?' | first %}{% endif %}
+                                {% if video_url contains 'vimeo' %}
+                                    <iframe id="{{ player_id }}" src="https://player.vimeo.com/video/{{ video_id }}" data-auto="{{ autoplay }}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen playsinline></iframe>
+                                {% else if video_url != '' %}                    
+                                    <div id="{{ player_id }}" data-auto="{{ autoplay }}"></div>              
+                                {% endif  %}
+                             {% endif  %}                              
+                        </div> 
+                          <a class="scale-cover-video play-video" data-auto="{{ autoplay }}" data-url="{{ video_url }}" data-video="{{ video_id }}" data-type="{{ block.settings.media_type }}" data-id="{{ player_id }}">
+                              {% if block.settings.play_icon != blank %}<img src="{{ block.settings.play_icon | img_url: '100x' }}" alt="title-play-video" />{% endif %}
+                          </a>
+                          <img src="{{ block.settings.image | img_url: '800x' }}" alt="{{ block.settings.image.alt | escape }}" class="wowo fadeInup scale-cover-image" data-wow-duration="0.75s" data-wow-delay="300ms">
+                          {% else %}
+                              <img src="{{ block.settings.image | img_url: '800x' }}" alt="{{ block.settings.image.alt | escape }}" class="wowo fadeInup" data-wow-duration="0.75s" data-wow-delay="300ms">
+                          {% endif %}
+
+                          {% if block.settings.video_title != '' %}
+                            <div class="testimonial_video_title">
+                              <h5 class="video_episode_name">Episode {{ forloop.index }}</h5>
+                              <h5 class="video_title">{{ block.settings.video_title }}</h5>
+                            </div>
+                          {% endif %}
+                    </div>
+                    {% assign i = i | plus:1 %}
+                {% endcase %}
+              {% endfor %}     
+             
+            </div>
+            <div class="text wowo fadeInUp" data-wow-duration="0.75s" data-wow-delay="900ms">
+                <h2>{{ section.settings.title }}</h2>
+                <h3>{{ section.settings.subtitle }}</h3>
+                <p>{{ section.settings.content }}</p> 
+              <p></p>
+                  <p>
+                  <a href="https://forms.monday.com/forms/6b1a3a5478c16210a1dae4ae5b3f86dc?r=use1" class="more-btn" target="_blank" rel="noreferrer noopener">Get In Touch</a>
+                </p>
+                <div class="video_select_wrap video_select_field">
+                  <div class="filter-select">
+                    <div class="current-value" data-current-tag="episode_1">Episode Select</div>
+                    <ul>
+                      {% comment %} <li><button data-tag="episode_1" disabled style="pointer-event:none">Episode Select</button></li> {% endcomment %}
+                      {% for block in section.blocks %}
+                      {% if block.settings.video_title != '' %}
+                        <li class="{% if forloop.index == 1  %}selected{% endif %}"><button data-tag="episode_{{ forloop.index }}">Ep {{ forloop.index }}. {{ block.settings.video_title }}</button></li>
+                      {% endif %}
+                      {% endfor %}
+                    </ul>
+                    {% comment %}
+                    <select class="testimonial_video_dropdown">
+                      <option value="episode_1" disabled>Episode Select</option>
+                      {% for block in section.blocks %}
+                          {% if block.settings.video_title != '' %}
+                              <option value="episode_{{ forloop.index }}" {% if forloop.index == 1  %}selected{% endif %}>Ep {{ forloop.index }}. {{ block.settings.video_title }}</option>
+                          {% endif %}
+                      {% endfor %}
+                    </select>   
+                    {% endcomment %}
+                  </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Testimonials"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "id",
+      "label": {
+        "en": "ID"
+      }
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": {
+		"en": "Subtitle"
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "content",
+      "label": {
+		"en": "Content"
+      }
+    },
+    {
+      "type": "checkbox",
+      "id": "slider_autoplay",
+      "label": "Slider Auto Play",
+      "default":false
+    }     
+  ], 
+  "blocks": [
+    {
+      "type": "block",
+      "name": {
+        "en": "Slider"
+      },
+      "settings": [
+          {
+            "type": "select",
+            "id": "media_type",
+            "label": "Media Type",
+            "info": "Select media to show",
+            "options": [
+              {
+                "value": "image",
+                "label": "Image"
+              },
+              {
+                "value": "embed",
+                "label": "YouTube/Vimeo URL"
+              },
+              {
+                "value": "upload",
+                "label": "Upload Video"
+              }    
+            ]
+          },  
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": {
+      		"en": "Image"
+            }
+          },
+          {
+            "type": "video",
+            "id": "video",  
+            "label": "Select Video"
+          },
+          {
+              "type": "video_url",
+              "id": "video_url",
+              "label": "YouTube/Vimeo",
+              "accept": [
+                "youtube",
+                "vimeo"
+              ]
+          },
+          {
+            "type": "text",
+            "id": "video_title",  
+            "label": "Title"
+          },
+        {
+          "type": "image_picker",
+          "id": "play_icon",      
+          "label": {
+    		"en": "Play Icon"
+          }
+       },
+        {
+            "type": "checkbox",
+            "id": "autoplay",
+            "label": "Enable Auto Play",
+            "default":false
+          }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": {
+        "en": "Testimonials"
+      },
+      "category": {
+        "en": "Text"
+      }
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,39 @@
+<section class="bread-crumbs-content">
+  <div class="container">
+    <ul>
+      {% for block in section.blocks %}
+        {% if block.type == 'link' %}
+          <li><a href="{{ block.settings.url }}">{{ block.settings.label }}</a></li>
+        {% endif %}
+      {% endfor %}
+      <li>{% if section.settings.current_label != blank %}{{ section.settings.current_label }}{% else %}{{ page.title }}{% endif %}</li>
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Breadcrumbs",
+  "settings": [
+    {
+      "type": "text",
+      "id": "current_label",
+      "label": "Current page label",
+      "info": "Leave blank to fall back to page.title"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "link",
+      "name": "Crumb",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Label" },
+        { "type": "url", "id": "url", "label": "URL" }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "Breadcrumbs", "category": "Navigation" }
+  ]
+}
+{% endschema %}

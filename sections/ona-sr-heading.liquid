@@ -1,0 +1,38 @@
+{%- comment -%}
+  Visually-hidden H1 for templates whose existing sections don't expose one.
+  Reachable by screen readers, Google, and accessibility audits; invisible to users.
+{%- endcomment -%}
+<h1 class="ona-sr-heading">{{ section.settings.text | default: page.title | default: shop.name | escape }}</h1>
+
+{% stylesheet %}
+  .ona-sr-heading {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "SEO heading (hidden)",
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "H1 text",
+      "info": "Leave blank to fall back to the page title. Hidden on screen, exposed to screen readers and search engines."
+    }
+  ],
+  "presets": [
+    {
+      "name": "SEO heading (hidden)"
+    }
+  ]
+}
+{% endschema %}

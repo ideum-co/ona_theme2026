@@ -1,0 +1,40 @@
+{
+  "sections": {
+    "expericences_content": {
+      "type": "ona-expericences-content",
+      "settings": {
+        "title2": "Private Courses and Experiences",
+        "image": "shopify://shop_images/image-43.jpg",
+        "leadtext": "<p>Classes are popular and book out in advance. 48 hours notice is required for cancellations and changes.<br/></p><p>In Canberra classes can be run in Korean on request.<br/>캔버라의 수업은 요청 시 한국어로 가르칠 수 있습니다</p>",
+        "content": "<p>We offer a wide range of private and personally tailored courses to fit your needs. Some examples are: <br/><strong>Cupping Sessions:</strong> 1-hour cupping of a range of unique coffees selected from our freezer vault.</p><p><strong>Personal Training: </strong>2-3 hours coffee training (1-4 people) Using our tried and tested curriculum, or tailored to you.</p><p><strong>Specialty Session:</strong> 2-3 hours of specialist coffee training in an area of your choosing to hone in on your skills or to develop new ones.</p><p>Looking for something that isn't listed? Get in touch!</p>"
+      }
+    },
+    "bread_crumbs": {
+      "type": "ona-bread-crumbs",
+      "settings": {},
+      "blocks": {
+        "crumb1": {
+          "type": "link",
+          "settings": {
+            "label": "TRAINING",
+            "url": "/pages/barista-courses"
+          }
+        }
+      },
+      "block_order": [
+        "crumb1"
+      ]
+    },
+    "sr_heading": {
+      "type": "ona-sr-heading",
+      "settings": {
+        "text": ""
+      }
+    }
+  },
+  "order": [
+    "sr_heading",
+    "bread_crumbs",
+    "expericences_content"
+  ]
+}

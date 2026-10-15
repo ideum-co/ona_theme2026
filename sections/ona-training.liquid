@@ -1,0 +1,177 @@
+<section class="add-image-and-text show-faqs bg-red section-full-large img-right wowo fadeInUp section-relative-image  media-{{ section.settings.media_type }}" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
+    <div class="container">
+        <div class="content">
+            <div class="img wowo fadeIn">   
+              {% if section.settings.media_type == 'embed' or section.settings.media_type == 'upload' %}
+              <div class="scale-video">
+                {% assign unique_id = 'now' | date: '%s' %} 
+                {%assign player_id = section.settings.id | append: 'uplaod_video_' | append:unique_id %}
+                {% assign video_id = '' %}
+                {% assign video_url = '' %} 
+                
+                {% assign autoplay = section.settings.autoplay %} 
+                {% if section.settings.media_type == 'upload' %}
+                      {% assign video_id = section.settings.video.sources[0].url %}
+                      {% assign video_url = video_id %} 
+                      <video id="{{ player_id }}" class="video-js" muted defaultMuted playsinline controls preload="auto" data-src="{{video_id}}"></video>
+                {% else %}  
+                    {% assign video_url = section.settings.video_url %} 
+                    {% assign video_id_index = video_url | split: '/' | size | minus: 1 %}
+                    {% if video_url contains 'v=' %}{% assign video_id = video_url | split: 'v=' | last | split: '&' | first %}{% else %}{% assign video_id = video_url | split: '/' | last | split: '?' | first %}{% endif %}
+                    {% if video_url contains 'vimeo' %}
+                        <iframe id="{{ player_id }}" src="https://player.vimeo.com/video/{{ video_id }}" data-auto="{{ autoplay }}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen playsinline></iframe>
+                    {% else if video_url != '' %}                    
+                        <div id="{{ player_id }}" data-auto="{{ autoplay }}"></div>              
+                    {% endif  %}
+                 {% endif  %} 
+              </div> 
+                <a class="scale-cover-video play-video" data-auto="{{ autoplay }}" data-url="{{ video_url }}" data-video="{{ video_id }}" data-type="{{ section.settings.media_type }}" data-id="{{ player_id }}">
+                    {% if section.settings.play_icon != blank %}<img src="{{ section.settings.play_icon | img_url: '100x' }}" alt="title-play-video" loading="lazy" decoding="async"/>{% endif %}
+                </a>
+                <img src="{{ section.settings.image | img_url: '800x' }}" alt="{{ section.settings.image.alt | escape }}" class="wowo fadeInup scale-cover-image" data-wow-duration="0.75s" data-wow-delay="300ms" loading="lazy" decoding="async">
+                {% else %}
+                    <img src="{{ section.settings.image | img_url: '800x' }}" alt="{{ section.settings.image.alt | escape }}" class="wowo fadeInup" data-wow-duration="0.75s" data-wow-delay="300ms" loading="lazy" decoding="async">
+                {% endif %}
+            </div>
+            <div class="text wowo fadeInUp">
+                <h2>{{ section.settings.title }}</h2>
+                 {% if section.settings.content %} {{ section.settings.content }} {% endif %}
+                <div class="add-faqs">
+                  {% for block in section.blocks %}
+                    <div class="block">
+                        <div class="faqs-title">
+                            <p>{{ block.settings.title }}</p>
+                        </div>
+                        <div class="faqs-text">
+                          <p>{{ block.settings.content }}</p>
+                        </div>
+                    </div>
+                  {% endfor %}
+                  <p></p>
+                  <p>
+                <a href="https://forms.monday.com/forms/6b1a3a5478c16210a1dae4ae5b3f86dc?r=use1" class="more-btn" target="_blank" rel="noreferrer noopener">Get In Touch</a>
+                </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Training"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "id",
+      "label": {
+        "en": "ID"
+      }
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": {
+		"en": "Title"
+      }
+    },
+     {
+      "type": "richtext",
+      "id": "content",
+      "label": {
+		"en": "Content"
+      }
+    },
+    {
+      "type": "select",
+      "id": "media_type",
+      "label": "Media Type",
+      "info": "Select media to show",
+      "options": [
+        {
+          "value": "image",
+          "label": "Image"
+        },
+        {
+          "value": "embed",
+          "label": "YouTube/Vimeo URL"
+        },
+        {
+          "value": "upload",
+          "label": "Upload Video"
+        }    
+      ]
+    },  
+    {
+      "type": "image_picker",
+      "id": "image",
+      "info": "This image will be used as cover image if video is selected",
+      "label": {
+		"en": "Image"
+      }
+    },
+    {
+      "type": "video",
+      "id": "video",  
+      "label": "Select Video"
+    },
+    {
+        "type": "video_url",
+        "id": "video_url",
+        "label": "YouTube/Vimeo",
+        "accept": [
+          "youtube",
+          "vimeo"
+        ]
+      },
+    {
+      "type": "image_picker",
+      "id": "play_icon",      
+      "label": {
+		"en": "Play Icon"
+      }
+    },
+    {
+        "type": "checkbox",
+        "id": "autoplay",
+        "label": "Enable Auto Play",
+        "default":true
+      }
+  ],
+  "blocks": [
+    {
+      "type": "block",
+      "name": {
+        "en": "Block"
+      },
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "textarea",
+          "id": "content",
+          "label": {
+            "en": "Content"
+          }
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": {
+        "en": "Training"
+      },
+      "category": {
+        "en": "Text"
+      }
+    }
+  ]
+}
+{% endschema %}
