@@ -1,6 +1,6 @@
 # Locations page: Shopify admin migration
 
-Use this guide to connect the `page.locations` alternate template to the
+Use this guide to connect the Locations alternate template to the
 existing location metaobjects. The theme reads those records; it does not
 create, update, or otherwise mutate metaobjects or their relationships.
 
@@ -8,11 +8,27 @@ create, update, or otherwise mutate metaobjects or their relationships.
 
 1. In Shopify admin, open **Online Store > Pages** and select the Locations
    page (or create it).
-2. In **Theme template**, choose `page.locations` and save the page.
+2. In **Theme template**, choose **`location`** — and only `location`.
+
+   > **Do not select `locations`.** The page already carries the suffix `location`, and
+   > `templateSuffix` is shop-wide rather than per theme — so saving `locations` here
+   > would immediately take the Locations page off its working template on the
+   > **currently published** theme. That is a live regression caused by following this
+   > guide. (An earlier version of this note offered `locations` as a transitional
+   > option. It should not have.)
+   >
+   > **Nothing needs waiting for: `templates/page.location.json` landed in PR #157
+   > (`eab4f0f`)**, byte-identical to the plural file. So the existing `location`
+   > assignment already resolves and **this step is normally a no-op** — open the page,
+   > confirm the template reads `location`, and change nothing.
+   >
+   > The plural `page.locations.json` is still present and is now a duplicate. If it is
+   > ever deleted, this guide and `tests/locations-page-template.test.mjs` have to go in
+   > the same commit, since both name it. (Codex, PR #150.)
 3. Open that page in the Theme Editor. The template contains **Locations
    header**, **Locations store finder**, and **Locations flagships**.
 
-The original `page` template remains separate; assigning `page.locations`
+The original `page` template remains separate; assigning the Locations template
 does not change other pages that use `page`.
 
 ## 2. Confirm the metaobject definitions
@@ -65,7 +81,7 @@ store finder or the flagship content.
 
 ## 5. Configure the page in Theme Editor
 
-Open the Locations page with the `page.locations` template in the Theme
+Open the Locations page with the Locations template in the Theme
 Editor.
 
 - **Locations header** controls heading/body copy, typography presets and
