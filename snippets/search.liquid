@@ -60,9 +60,22 @@
     }
   }
 
+  /*
+    Stock Horizon pulls the search button 14.4px into the account button and 8px
+    into the cart button with negative margins. The three buttons are 44px wide
+    and already sit flush, so the pull makes their boxes overlap and the
+    neighbours -- painted later -- take the clicks: measured on theme
+    154676789439 the search button owned only 21px of its 44px target, and the
+    leftmost ~5px of the visible magnifier opened the account page instead.
+    Removing the pull restores a full 44px target for all three and widens the
+    icon group by 22.4px, which is the only visible change.
+    The sibling rule below for `[data-menu-style='menu'] .header__column--left`
+    is the same pattern; it is left alone because ONA's header puts search in the
+    right column and that rule does not render today.
+  */
   .header__column--right .search-action {
     @media screen and (min-width: 750px) {
-      margin-inline: calc(var(--gap-md) * -1) calc(var(--gap-xs) * -1);
+      margin-inline: 0;
     }
   }
 
