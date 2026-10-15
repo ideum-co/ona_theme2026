@@ -44,3 +44,35 @@
  #MainContent .banner-top { min-height:250px; }
  #MainContent .sustainability-list .img-bg { min-height:220px; }
 }
+
+
+/* Migrated pages: editorial content layouts and whitespace. */
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings,.learn-list,.product-search) { padding-block:var(--legacy-page-gap); }
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.training-bookings) :is(.container,.content,.text,.img,.image,.left-box,.right-box) { min-width:0; }
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.two-columns-title-intro,.training-bookings) > .container > .content,
+#MainContent .training > .container { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(24px,5vw,70px); align-items:center; }
+#MainContent .training-bookings .content { align-items:start; }
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings,.learn-list) h2 { font-size:clamp(30px,4vw,58px); line-height:1.14; margin:0 0 20px; }
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings) h3 { font-size:clamp(20px,2.3vw,32px); line-height:1.4; margin:0 0 18px; }
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings) p { font-size:clamp(15px,1.2vw,18px); line-height:1.65; }
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.training-bookings) :is(img,video,iframe) { max-width:100%; }
+#MainContent .banner-detail-top { position:relative; isolation:isolate; display:flex; align-items:center; min-height:clamp(260px,38vw,540px); }
+#MainContent .banner-detail-top .img-bg { position:absolute; inset:0; z-index:-1; background-size:cover; background-position:center; }
+#MainContent .banner-detail-top .mobile-show { display:none; }
+#MainContent .banner-detail-top h1 { font-size:clamp(36px,6vw,80px); line-height:1.1; }
+#MainContent .learn-list > .container > .content { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:32px; }
+#MainContent .learn-list .img-bg { background-size:cover; background-position:center; aspect-ratio:4/3; }
+#MainContent .learn-list .a-box { padding-block:20px; }
+#MainContent .bread-crumbs-content { padding-block:20px; }
+#MainContent .bread-crumbs-content ul { display:flex; flex-wrap:wrap; gap:12px; list-style:none; padding:0; }
+#MainContent .product-search iframe { max-width:100%; width:100%; }
+#MainContent .training-bookings .form { padding:clamp(20px,3vw,40px); }
+#MainContent .add-image-and-text-slider .add-images-slider { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; width:min(100% - 2 * var(--legacy-page-gutter),1280px); margin-inline:auto; }
+@media(max-width:749px) {
+ #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.two-columns-title-intro,.training-bookings) > .container > .content,
+ #MainContent .training > .container,
+ #MainContent .learn-list > .container > .content,
+ #MainContent .add-image-and-text-slider .add-images-slider { grid-template-columns:minmax(0,1fr); }
+ #MainContent .banner-detail-top .pc-show { display:none; }
+ #MainContent .banner-detail-top .mobile-show { display:block; }
+}
