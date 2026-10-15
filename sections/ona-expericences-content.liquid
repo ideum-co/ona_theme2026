@@ -1,0 +1,57 @@
+<section class="training-bookings">
+  <div class="container">
+    <div class="content">
+      <div class="left-box wowo fadeInUp">
+        <h2>{{ section.settings.title2 }}</h2>
+        <img src="{{ section.settings.image | img_url: '1630x' }}" alt="{{ section.settings.image.alt | escape }}">
+        <div class="lead-text">
+          {{ section.settings.leadtext }}
+        </div>
+        {{ section.settings.content }}
+      </div>
+      <div class="right-box wowo fadeInUp">
+        <div class="form">
+          <h2>Get in touch</h2>
+		  {formbuilder:50341}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Content"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title2",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": {
+		"en": "Image"
+      }
+    },
+    {
+      "type": "richtext",
+      "id": "leadtext",
+      "label": {
+		"en": "Lead text"
+      }
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": {
+		"en": "Content"
+      }
+    }
+  ]
+}
+{% endschema %}
