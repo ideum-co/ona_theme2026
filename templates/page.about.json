@@ -1,0 +1,50 @@
+{
+  "sections": {
+    "hero": {
+      "type": "legacy-page-feature",
+      "settings": {
+        "heading": "Connecting Communities, Sharing Flavour.",
+        "image": "shopify://shop_images/PHONE-WALLPAPER.jpg"
+      }
+    },
+    "intro": {
+      "type": "legacy-page-feature",
+      "settings": {
+        "heading": "ABOUT ONA",
+        "body": "<p>Coffee is our passion. As one of Australia's most highly regarded specialty roasters, we've always had one simple goal: creating the best and most sustainable coffee in the world.</p>"
+      }
+    },
+    "philosophy": {
+      "type": "legacy-page-feature",
+      "settings": {
+        "heading": "OUR PHILOSOPHY",
+        "body": "<p>2008 was a big year in the eyes of many. The hit blockbuster Twilight was released. China held the summer Olympic Games in Beijing, and former Olympic handball player Saša Šestić started his own coffee roastery out of his garage in Canberra, Australia.</p><p>Saša had a simple vision for the company when he first launched in 2008. He wanted to create great coffee and share it with as many people as possible. To help make his dream a reality, Saša worked around the three core values he personally stood for, <strong>innovation, community and excellence.</strong></p><p>As we have grown and changed over the years, we have found new ways to share flavour and connect with communities around the world.</p>",
+        "image": "shopify://shop_images/image-34_1006x_b3c2d6ce-20b9-4f6c-8804-127391891d86.png"
+      }
+    },
+    "awards": {
+      "type": "legacy-page-feature",
+      "settings": {
+        "heading": "Awards",
+        "body": "<p>We want to celebrate the achievements that our community has accomplished.</p>"
+      }
+    },
+    "careers": {
+      "type": "legacy-page-feature",
+      "settings": {
+        "heading": "Careers",
+        "body": "<p>ONA is constantly growing and we are always on the lookout for passionate and kind people to join our team.</p><p>For the latest job listings with ONA Coffee, visit our Seek profile.</p>",
+        "link": "https://www.seek.com.au/ONA-Coffee-jobs",
+        "link_label": "View careers",
+        "image": "shopify://shop_images/1.jpg"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "intro",
+    "philosophy",
+    "awards",
+    "careers"
+  ]
+}
