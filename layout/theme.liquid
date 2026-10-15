@@ -31,6 +31,13 @@
 
     {%- render 'meta-tags' -%}
     {%- render 'stylesheets' -%}
+    {%- comment -%}Only migrated legacy page templates use these scoped layout rules.{%- endcomment -%}
+    {% if template.name == 'page' %}
+      {% assign legacy_page_suffixes = 'about,wholesale,training,bookings,learn,private-courses-and-experiences' | split: ',' %}
+      {% if legacy_page_suffixes contains template.suffix %}
+        {{ 'legacy-page-layout.css' | asset_url | stylesheet_tag }}
+      {% endif %}
+    {% endif %}
     {%- render 'card-hover-effect-styles' -%}
     {%- render 'fonts' -%}
     {%- render 'scripts' -%}
