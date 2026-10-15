@@ -1,0 +1,49 @@
+<!-- CANARY-R34-2026-04-28 hero LCP preload + pc-show/mobile-show split (mirrors R26 ona-banner-slider) -->
+{%- comment -%}
+  R34 — page.training hero LCP preload outside <section> (R33: avoid slick wrapping <link> as slide).
+  Single-width preload per media query strictly matches the inline url in pc-show/mobile-show
+  to avoid the R27/#36 double-fetch (preload imagesrcset != inline single url).
+{%- endcomment -%}
+{%- if section.settings.image != blank -%}
+  <link rel="preload" as="image"
+        href="{{ section.settings.image | img_url: '800x' }}"
+        media="(max-width: 991.98px)" fetchpriority="high">
+  <link rel="preload" as="image"
+        href="{{ section.settings.image | img_url: '1920x' }}"
+        media="(min-width: 992px)" fetchpriority="high">
+{%- endif -%}
+<section class="banner-detail-top">
+    <div class="img-bg pc-show wowo zoomOut" style="background-image: url('{{ section.settings.image | img_url: '1920x' }}')"></div>
+    <div class="img-bg mobile-show wowo zoomOut" style="background-image: url('{{ section.settings.image | img_url: '800x' }}')"></div>
+  <div class="container">
+    <div class="text wowo fadeInUp">
+      <div class="go-to-back">
+        <a href="/pages/learn"><i class="icon-arrow-smaller"></i>Learn</a>
+      </div>
+      <h1>{{ section.settings.title2 }}</h1>
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Training banner"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title2",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": {
+		"en": "Image"
+      }
+    }
+  ]
+}
+{% endschema %}
