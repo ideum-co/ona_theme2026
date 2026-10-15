@@ -308,7 +308,16 @@ export class ProductCard extends ProductCardLink {
    * @param {Document} html - The parsed HTML document with updated variant data.
    */
   updatePrice(html) {
-    const priceContainer = this.querySelectorAll(`product-price [ref='priceContainer']`)[1];
+    // Stock Horizon indexes [1] because a card with quick-add enabled renders the
+    // quick-add modal's own <product-price> earlier in the card's DOM, making the
+    // card's price the second match. ONA's cards have quick-add off, so each card
+    // renders exactly ONE `product-price [ref='priceContainer']`, [1] is undefined,
+    // the guard below fails and the card price silently keeps the first-rendered
+    // variant's value -- on collection AND search grids, while the card's own link
+    // updates correctly (measured on theme 154676789439, 2026-10-15).
+    // Falling back to [0] keeps stock behaviour wherever a second price exists.
+    const priceContainers = this.querySelectorAll(`product-price [ref='priceContainer']`);
+    const priceContainer = priceContainers[1] ?? priceContainers[0];
     const newPriceElement = html.querySelector(`product-price [ref='priceContainer']`);
 
     if (newPriceElement && priceContainer) {

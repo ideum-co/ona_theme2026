@@ -1,0 +1,154 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "page_title": {
+      "type": "ona-page-title",
+      "settings": {
+        "title2": "FAQ's"
+      }
+    },
+    "faq_layout": {
+      "type": "ona-faq-layout",
+      "settings": {},
+      "blocks": {
+        "cat-0": {
+          "type": "_faq-category",
+          "settings": {
+            "title": "Coffee when and when you need it"
+          },
+          "blocks": {
+            "item-0": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "How do ONA Coffee's subscriptions work?",
+                "content": "<p>Our coffee subscriptions are your way to enjoy caf\u00e9\u2011quality coffee at home, without manually ordering. Choose your favourite coffee, pick a delivery frequency, and we\u2019ll take care of the rest.<br/><br/>If you're searching for a gift, we also offer several fixed term, Prepaid subscriptions for 3-12 months. <br/><br/>Browse <a href=\"https://onacoffee.com.au/collections/coffee-subscriptions\" target=\"_blank\" title=\"https://onacoffee.com.au/collections/coffee-subscriptions\"><span style=\"text-decoration:underline\"><strong>here</strong></span></a><span style=\"text-decoration:underline\"><strong> </strong></span>to learn more. </p>"
+              }
+            },
+            "item-1": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "Is there a minimum before I can cancel?",
+                "content": "<p>All ongoing subscriptions (not prepaid) have a minimum of two deliveries before cancellation can be made.<br/><br/>Some of the coffees we offer as part of our coffee subscription can either be purchased as a single order, or as a recurring subscription. Others are subscription-only, and can't be ordered only the one time.</p><p>If you're unsure about how long you'd like to maintain your subscription, we recommend trying a coffee subscription for a few deliveries. That way, coffee will automatically be delivered to your door and you can decide how to proceed from there. Plus, the longer you subscribe, the more you save! <br/><br/>If a subscription is repeatedly ordered and cancelled, your account might be restricted. </p>"
+              }
+            },
+            "item-2": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "Do you offer coffee subscriptions outside of Australia?",
+                "content": "<p>Yes, several of our subscriptions can be delivered overseas. However, free shipping applies to Australia only to all applicable subscriptions \u2013 if ordering with delivery outside Australia, you will <span style=\"text-decoration:underline\">not</span> receive free shipping. </p><p>At this time, our Prepaid coffee subscriptions are only available to be shipped to Australian addresses. </p><p>If you're based overseas and want to organise a subscription for someone who lives in Australia, you're more than welcome to do so (plus, it's a very nice thing to do).</p>"
+              }
+            },
+            "item-3": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "How do I start a subscription?",
+                "content": "<p>It's pretty simple \u2013 just select your favourite coffee or subscription type , choose your delivery frequency, and check out. Your first order ships right away. </p><p>We offer both prepaid subscription options \u2013 meaning you can pay everything in advance \u2013 or open-term subscriptions. The latter can be paused, skipped, cancelled or changed whenever suits you. </p><p>You will also be emailed a magic link to access <a href=\"https://onacoffee.com.au/apps/subscriptions\" target=\"_blank\" title=\"https://onacoffee.com.au/apps/subscriptions\"><strong>your subscription account</strong>,</a> from which you can make any changes you like to open-term subscriptions. Great, huh? </p>"
+              }
+            },
+            "item-4": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "Do I need an account to manage my subscription?",
+                "content": "<p>Yes \u2013 but we\u2019ll make it easy. After your first order, we\u2019ll email you a magic link to set up your account. Once you\u2019re in, you can update your preferences, skip deliveries, or cancel anytime.<br/><br/>If you need any assistance, email admin@onacoffee.com.au</p>"
+              }
+            },
+            "item-5": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "How do I log in to my coffee subscription account?",
+                "content": "<p>If you already have a coffee subscription, click here to\u00a0<a href=\"https://onacoffee.com.au/apps/subscriptions\" target=\"_blank\" title=\"https://onacoffee.com.au/apps/subscriptions\"><strong>log in</strong></a>\u00a0to your account. Here, you can change your coffee, delivery schedule, or even the amount of coffee you receive with each delivery.</p><p>If you're having trouble logging in, email admin@onacoffee.com.au and we'll send you a link to access your subscription account.</p>"
+              }
+            },
+            "item-6": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "Can I pause, skip or cancel my coffee subscription?",
+                "content": "<p>Absolutely \u2013 life happens! Log in to your Subscription account\u00a0<a href=\"https://onacoffee.com.au/apps/subscriptions\" target=\"_blank\" title=\"https://onacoffee.com.au/apps/subscriptions\"><strong>here</strong></a>\u00a0and choose to pause or skip an upcoming delivery with just a click. If you don't have an account or can't access it, contact our team and we'll help you take care of it.<br/><br/>Please note that all ongoing subscriptions (not prepaid) have a minimum of two deliveries before cancellation can be made.</p>"
+              }
+            },
+            "item-7": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "Can I change my coffee subscription?",
+                "content": "<p>If you have an ongoing subscription, you\u2019re in full control. If you already have a subscription,\u00a0<a href=\"https://onacoffee.com.au/apps/subscriptions\" target=\"_blank\" title=\"https://onacoffee.com.au/apps/subscriptions\"><strong>log in</strong></a>\u00a0to your account to change your coffee, delivery schedule, or even the amount of coffee you receive with each delivery.<br/><br/>If you have a pre-paid subscription, you cannot change the coffee you receive.</p>"
+              }
+            },
+            "item-8": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "When will I be charged for my subscription?",
+                "content": "<p>You\u2019ll be charged on the day each subscription order is processed \u2014 based on the schedule you set. You\u2019ll get a heads-up before each charge.</p><p>If you have ordered a Prepaid subscription, you'll pay for the entire length of your subscription in one go, and there's free shipping (in Australia). From there, coffee will arrive to your door monthly for the length of your subscription, with no additional charges. </p>"
+              }
+            },
+            "item-9": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "When will my coffee subscription be shipped?",
+                "content": "<p>We ship your order according to your delivery schedule \u2013 for example, if you ordered a weekly subscription on a Monday, the next order will be placed the following Monday.<br/><br/>You can choose a delivery schedule that suits your routine \u2013 weekly, every 2 weeks, monthly, and more. You\u2019re in control, and you can update it anytime through your subscription account by skipping, pausing or changing the delivery date.</p><p>We use a range of couriers and postal services, depending on the country of delivery, type of order or delivery address. Upon checkout, you can typically select from one of several options for delivery. Remote areas may take a little longer for shipment. You\u2019ll receive a confirmation and tracking link every time your subscription is sent.</p><p><em>Please note: Prepaid coffee subscriptions are shipped monthly and can\u2019t be adjusted.</em></p>"
+              }
+            },
+            "item-10": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "I want to order a coffee subscription as a gift. How does that work?",
+                "content": "<p>Our Prepaid subscriptions allow you to purchase coffee for someone else \u2013 so nice of you! Choose from a range of delivery frequencies, the coffee your loved one<br/>will enjoy, and we'll do the rest.</p><p>And don't worry \u2013 if your email is associated with the subscription, the recipient can't extend the subscription themselves, so you<br/>won't get any surprise charges.<br/><br/>Please note that Prepaid subscriptions are available for delivery in Australia only. </p>"
+              }
+            },
+            "item-11": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "Can you grind the coffee in my coffee subscription?",
+                "content": "<p>All of the coffee we sell comes as whole beans, i.e. not ground. If you are<br/>ordering coffee online and would like it to be ground, please enter your<br/>grinding preferences in the comments <strong>upon checkout</strong>. Please specify the method<br/>you will be using to prepare your coffee, e.g. 'espresso', 'Aeropress' and so<br/>on.<br/><br/>Please be aware that not all grinders will grind coffee the same way, so what<br/>you receive may be different to the ground coffee you've had from other<br/>suppliers or grinders.</p><p>We highly recommend checking out the range of\u00a0<a href=\"https://onacoffee.com.au/collections/brew-gear\" target=\"_blank\" title=\"https://onacoffee.com.au/collections/brew-gear\">hand grinders</a>\u00a0we offer, so that you can grind your coffee wherever and whenever you want!</p>"
+              }
+            },
+            "item-12": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "I was charged for shipping. Why?",
+                "content": "<p>Free shipping applies to several of our subscription products, in Australia only. For example, our 200g subscription coffees do not automatically include free shipping, whereas the 1kg coffees do.</p><p>If you are ordering for delivery outside of Australia, you will not receive free shipping and will be charged a standard rate. <br/><br/>If you believe that you were incorrectly charged for shipping, please contact admin@onacoffee.com.au </p>"
+              }
+            },
+            "item-13": {
+              "type": "_faq-item",
+              "settings": {
+                "title": "Can I get a refund on a coffee subscription?",
+                "content": "<p>All open-term subscriptions can be paused, cancelled or changed whenever you like, by logging into your account. <br/><br/>If you forgot to pause or cancel your subscription and received a delivery, we cannot refund you once it is dispatched. </p><p>If you were accidentally charged for a coffee you did not order, please contact admin@onacoffee.com.au </p><p>Prepaid coffee subscriptions cannot be refunded. </p>"
+              }
+            }
+          },
+          "block_order": [
+            "item-0",
+            "item-1",
+            "item-2",
+            "item-3",
+            "item-4",
+            "item-5",
+            "item-6",
+            "item-7",
+            "item-8",
+            "item-9",
+            "item-10",
+            "item-11",
+            "item-12",
+            "item-13"
+          ]
+        }
+      },
+      "block_order": [
+        "cat-0"
+      ]
+    }
+  },
+  "order": [
+    "page_title",
+    "faq_layout"
+  ]
+}

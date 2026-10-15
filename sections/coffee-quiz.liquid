@@ -218,17 +218,21 @@
         <a class="coffee-quiz__action" data-subscribe></a>
       </div>
 
-      {%- if settings.explore_label != blank -%}
+      {%- comment -%}
+        The link is required, not optional: with `explore_link` blank this used to
+        render <a class="coffee-quiz__action"> with no href at all -- a CTA that
+        looks clickable and does nothing. It is inside the result template, so it
+        only appears once a shopper finishes the quiz, which is why a scan of the
+        initial homepage DOM does not see it. Nothing in coffee-quiz.js fills this
+        href in (unlike [data-subscribe], which the script either points at the
+        matched product or removes), so a blank setting can only ever be dead.
+      {%- endcomment -%}
+      {%- if settings.explore_label != blank and settings.explore_link != blank -%}
         <p class="coffee-quiz__explore">
           {%- if settings.explore_prompt != blank -%}
             <span>{{ settings.explore_prompt }}</span>
           {%- endif -%}
-          <a
-            class="coffee-quiz__action"
-            {% if settings.explore_link != blank %}
-              href="{{ settings.explore_link }}"
-            {% endif %}
-          >
+          <a class="coffee-quiz__action" href="{{ settings.explore_link }}">
             {{- settings.explore_label -}}
           </a>
         </p>
