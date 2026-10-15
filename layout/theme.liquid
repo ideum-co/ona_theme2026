@@ -31,6 +31,9 @@
 
     {%- render 'meta-tags' -%}
     {%- render 'stylesheets' -%}
+    {% if request.page_type == 'index' %}
+      {{ 'home-mobile-overflow.css' | asset_url | stylesheet_tag }}
+    {% endif %}
     {%- comment -%}Only migrated legacy page templates use these scoped layout rules.{%- endcomment -%}
     {% if template.name == 'page' %}
       {% assign legacy_page_suffixes = 'about,wholesale,training,bookings,learn,private-courses-and-experiences' | split: ',' %}
