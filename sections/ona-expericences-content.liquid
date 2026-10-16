@@ -12,10 +12,23 @@
       <div class="right-box wowo fadeInUp">
         <div class="form">
           <h2>Get in touch</h2>
-		  {% form 'contact', id: 'ona-experiences-' | append: section.id, class: 'ona-legacy-contact-form' %}
-  {% if form.posted_successfully? %}
+		  {%- assign form_id = 'ona-experiences-' | append: section.id -%}
+		  {% form 'contact', id: form_id, class: 'ona-legacy-contact-form' %}
+  <input type="hidden" name="contact[id]" value="{{ form_id }}">
+  {%- liquid
+    comment
+      Shopify exposes one form result to every contact form on the page, so an
+      unguarded success or error message appears on forms the customer never
+      submitted. Match on the posted contact[id], as blocks/contact-form.liquid does.
+    endcomment
+    assign form_matches = false
+    if form.id == form_id or form.id == blank
+      assign form_matches = true
+    endif
+  -%}
+  {% if form.posted_successfully? and form_matches %}
     <p role="status">Thank you. Your enquiry has been sent.</p>
-  {% elsif form.errors %}
+  {% elsif form.errors and form_matches %}
     <div role="alert">{{ form.errors | default_errors }}</div>
   {% endif %}
   <input type="hidden" name="contact[subject]" value="Private courses and experiences enquiry">
