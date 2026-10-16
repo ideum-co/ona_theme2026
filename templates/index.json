@@ -3061,7 +3061,7 @@
                   "type": "image",
                   "settings": {
                     "image": "shopify://shop_images/imag-2.webp",
-                    "link": "/pages/brewing-guides",
+                    "link": "/blogs/brewguides",
                     "image_ratio": "adapt",
                     "width": "fill",
                     "custom_width": 100,
