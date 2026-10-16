@@ -13,7 +13,8 @@
       </div>
       <div class="right-box wowo fadeInUp">
         <h2>Enquire about barista training</h2>
-        {% form 'contact', id: 'ona-training-' | append: section.id, class: 'ona-legacy-contact-form' %}
+        {%- assign form_id = 'ona-training-' | append: section.id -%}
+        {% form 'contact', id: form_id, class: 'ona-legacy-contact-form' %}
   {% if form.posted_successfully? %}
     <p role="status">Thank you. Your enquiry has been sent.</p>
   {% elsif form.errors %}

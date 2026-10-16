@@ -12,7 +12,8 @@
       <div class="right-box wowo fadeInUp">
         <div class="form">
           <h2>Get in touch</h2>
-		  {% form 'contact', id: 'ona-experiences-' | append: section.id, class: 'ona-legacy-contact-form' %}
+		  {%- assign form_id = 'ona-experiences-' | append: section.id -%}
+		  {% form 'contact', id: form_id, class: 'ona-legacy-contact-form' %}
   {% if form.posted_successfully? %}
     <p role="status">Thank you. Your enquiry has been sent.</p>
   {% elsif form.errors %}
