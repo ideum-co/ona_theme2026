@@ -3,14 +3,28 @@
   R34 — page.training hero LCP preload outside <section> (R33: avoid slick wrapping <link> as slide).
   Single-width preload per media query strictly matches the inline url in pc-show/mobile-show
   to avoid the R27/#36 double-fetch (preload imagesrcset != inline single url).
+
+  The 992px boundary came from the production theme, where pc-show/mobile-show
+  switched there. In this theme they switch at Horizon's 750px, in
+  assets/legacy-page-layout.css -- so these two queries must bracket 749px, or
+  the invariant above is broken for every viewport in between. PR #171 migrated
+  the section and PR #172 wrote the CSS; neither noticed the pairing.
+
+  The desktop hint is `not all and (max-width: 749px)` rather than
+  `(min-width: 750px)` because those are not the same set. A layout viewport of
+  749.5px -- an embedded storefront, or a zoom and DPR combination -- satisfies
+  neither `max-width: 749px` nor `min-width: 750px`, so nothing would be
+  preloaded while the CSS, whose rule also stops applying above 749px, paints
+  the 1920px background. The negation is the exact complement of the CSS
+  condition, which is what "strictly matches" has to mean. Codex, PR #180.
 {%- endcomment -%}
 {%- if section.settings.image != blank -%}
   <link rel="preload" as="image"
         href="{{ section.settings.image | img_url: '800x' }}"
-        media="(max-width: 991.98px)" fetchpriority="high">
+        media="(max-width: 749px)" fetchpriority="high">
   <link rel="preload" as="image"
         href="{{ section.settings.image | img_url: '1920x' }}"
-        media="(min-width: 992px)" fetchpriority="high">
+        media="not all and (max-width: 749px)" fetchpriority="high">
 {%- endif -%}
 <section class="banner-detail-top">
     <div class="img-bg pc-show wowo zoomOut" style="background-image: url('{{ section.settings.image | img_url: '1920x' }}')"></div>
