@@ -121,6 +121,31 @@
     height: auto;
   }
 
+  /* Homepage mixes tall coffee bags and short bundle imagery. Give every
+     gallery the same portrait canvas so card copy starts at the same baseline.
+     Contain keeps the full bundle artwork visible inside that common frame. */
+  .ui-test-product-list .product-card .card-gallery {
+    --gallery-aspect-ratio: 4 / 5 !important;
+    width: 100%;
+  }
+
+  .ui-test-product-list .product-card .card-gallery .product-media-container {
+    --product-media-fit: contain !important;
+  }
+
+  /* An absent promo tag, roast, or tasting note must not collapse its slot. */
+  .ui-test-product-list .product-card .ona-pdp-tags {
+    min-block-size: 1lh;
+  }
+
+  .ui-test-product-list .product-card .product-metafield-text--empty {
+    min-block-size: 1lh;
+  }
+
+  .ui-test-product-list .product-card .product-metafield-text--empty[data-metafield-key='tastes_like'] {
+    min-block-size: 2lh;
+  }
+
   /* Consistent action-row height with either one or two visible buttons. */
   .product-card .group-block-content:has(> .buy-buttons-block) {
     min-block-size: 48px;
