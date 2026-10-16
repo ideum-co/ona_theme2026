@@ -163,8 +163,18 @@ paints a 1920px background that was never preloaded. Two downloads, and the LCP 
 un-preloaded one. Correct on a phone, correct on a desktop — which is exactly why checking both
 ends missed it.
 
+There is a second, subtler half to it. The obvious repair is `(min-width: 750px)`, and that is
+still wrong: `max-width: 749px` and `min-width: 750px` are not complements. A layout viewport of
+749.5px — an embedded storefront, a zoom and DPR combination — satisfies neither, so nothing is
+preloaded while the CSS, whose rule has also stopped applying, paints the 1920px image. The
+desktop hint is therefore `not all and (max-width: 749px)`, the exact set the CSS condition
+excludes. If you ever see that "tidied up" back to a `min-width`, it is a regression.
+
 `tests/responsive-breakpoint-pairing.test.mjs` reads the switch point out of the stylesheet
-rather than hardcoding it, so moving one without the other fails the suite.
+rather than hardcoding it, requires the owning media block to carry **both** halves of the swap,
+and checks the default-state rule that hides the mobile image outside any media query. Keying on
+one rule was not enough: moving `.mobile-show` to another block left the test green and the
+banner blank on a phone.
 
 **The general rule: when you change a breakpoint, grep for the number.** Preload hints, `sizes`
 attributes, `imagesrcset`, inline `{% style %}` blocks and JS matchMedia all carry copies of it,
