@@ -34,20 +34,50 @@ point is that no one *chose* to deploy it.
 
 ---
 
+## 1a. What happened to the first `staging`, and the rule it broke
+
+> **2026-10-16.** The original `staging` branch and its theme `160919748799` are
+> both retired. They are left in place as evidence, not as somewhere to work.
+>
+> **The theme stopped syncing.** It last updated `2026-10-15T11:17:45Z`. Three
+> commits merged into `origin/staging` at 13:04Z and never arrived. Of eight
+> probed files only `layout/theme.liquid` exists on it; all six JSON templates
+> are missing. This is the same silent validation drop described in
+> `docs/victor-review-2026-10-16.md` §1 — a clean merge, no error anywhere, and
+> a theme quietly a day behind its branch.
+>
+> **The branch fell behind and never came back.** §4 below already said *"`main`
+> must never be ahead of `staging`."* Nine commits went straight to `main`
+> between 13:05Z and 15:15Z on 2026-10-15 and nothing merged back. By the next
+> morning `staging` held **nothing that `main` lacked** — 52 files existed only
+> on `main`, 2 differed in `main`'s favour, 0 existed only on `staging`. There
+> was nothing to port and no useful way to merge it.
+>
+> The replacement is **`staging-v2`**, created at `77174e8` — byte-identical to
+> `main` on the day it was made. The names below all refer to it. The rule in §4
+> step 5 is the one that failed, so treat it as the load-bearing one:
+> **fast-forward `staging-v2` to `main` after every merge to `main`, including
+> the hotfixes that bypass it.** A staging branch that is allowed to drift is
+> worse than none, because it looks like a safety net until the day you need it.
+
+---
+
 ## 2. The branches
 
 | branch | what it is | deploys to |
 |---|---|---|
 | `main` | the branch the 2026 theme tracks | theme `154676789439` — **unpublished again as of 2026-10-14 22:00:42Z**, so a merge currently reaches a theme no customer sees |
-| `staging` | the integration branch. Everything lands here first. | a staging theme — see §3 |
+| `staging-v2` | the integration branch. Everything lands here first. | a staging theme — see §3 |
 | `feat/*`, `fix/*`, `docs/*` | one change each | nothing |
 
 Protection as configured:
 
 - **`main`** — PR required, linear history, conversation resolution required,
   strict status checks, admins included, no force-push, no deletion.
-- **`staging`** — linear history, no force-push, no deletion. Deliberately
+- **`staging-v2`** — linear history, no force-push, no deletion. Deliberately
   lighter: staging should be easy to land on.
+- **`staging`** (retired) — left in place as evidence. Do not branch from it,
+  do not merge into it. See §1a.
 
 ---
 
@@ -58,12 +88,17 @@ through the Admin API — connecting a theme to a GitHub branch is an Admin UI
 action. Someone with Shopify admin access needs to do this once:
 
 1. **Online Store → Themes → Add theme → Connect from GitHub**
-2. Pick the `ideum-co/ona_theme2026` repository and the **`staging`** branch.
-3. Name the theme **`ona_theme2026/staging`** so it is obvious in the list.
+2. Pick the `ideum-co/ona_theme2026` repository and the **`staging-v2`** branch.
+3. Name the theme **`ona_theme2026/staging-v2`** so it is obvious in the list.
+   Theme `160919748799` can be reconnected instead of making a new one, but
+   disconnect it from the dead `staging` branch first and then confirm the sync
+   by checksum — it failed silently once already (§1a).
 4. **Leave it unpublished.** Never publish it.
 
-After that the staging theme updates itself on every merge into `staging`, and
-its preview URL is a permanent, always-current review link.
+After that the staging theme updates itself on every merge into `staging-v2`,
+and its preview URL is a permanent, always-current review link. **Verify the
+first sync by checksum rather than by the theme appearing in the list** — an
+empty or partial first sync looks identical to a healthy one in the admin.
 
 > **Do not reuse an existing preview theme for this.** A theme can be connected
 > to only one branch, so the staging theme has to be a new one.
@@ -88,22 +123,25 @@ work off production — but you will not get a preview from it.
 ## 4. The flow
 
 ```
-feat/thing ──PR──▶ staging ──release PR──▶ main ──▶ LIVE
+feat/thing ──PR──▶ staging-v2 ──release PR──▶ main ──▶ LIVE
                       │
                       └─▶ ona_theme2026/staging (preview, unpublished)
 ```
 
-1. Branch from **`staging`**, not from `main`.
-2. Open the PR **into `staging`**. Review it, get Codex on it, merge it.
+1. Branch from **`staging-v2`**, not from `main`.
+2. Open the PR **into `staging-v2`**. Review it, get Codex on it, merge it.
 3. Check it on the staging theme's preview URL.
 4. When a batch is ready to ship, open **one release PR from `staging` into
    `main`**, titled `release: <date> — <summary>`, with the §6 checklist in the
    body. Merging that PR is the deploy.
-5. Keep `staging` in sync afterwards — `main` must never be ahead of `staging`.
+5. Keep `staging-v2` in sync afterwards — `main` must never be ahead of
+   `staging-v2`. This is the step that killed the first staging branch (§1a);
+   do it in the same sitting as the merge, not later.
 
 **Hotfixes.** A genuine production emergency may branch from `main` and PR
-straight into `main`. Immediately afterwards, merge `main` back into `staging`
-so the two do not drift. "This is small" is not an emergency.
+straight into `main`. Immediately afterwards, fast-forward `staging-v2` to
+`main` so the two do not drift. "This is small" is not an emergency, and nine
+small ones in two hours is how the first staging branch died (§1a).
 
 ---
 
@@ -146,14 +184,14 @@ repo side and carries this procedure in its header.
 
 ## 6. Release PR checklist
 
-Paste into the body of every `staging` → `main` PR:
+Paste into the body of every `staging-v2` → `main` PR:
 
 ```markdown
 ## Release checklist
 - [ ] `node --test tests/*.test.mjs` passes locally (98+ pass, 0 fail) — leave
       the glob **unquoted** so the shell expands it; node's own `--test` glob
       handling is newer than the Node 20 line and a quoted pattern fails there
-- [ ] `staging` previewed on the staging theme, on desktop **and a real phone**
+- [ ] `staging-v2` previewed on the staging theme, on desktop **and a real phone**
 - [ ] No `templates/*.json` or `config/settings_data.json` touched
       — or, if touched: live checksum read, reconciled, recorded below
 - [ ] Section count ≤ 25 and blocks ≤ 50 for every JSON template changed
@@ -185,7 +223,7 @@ Paste into the body of every `staging` → `main` PR:
   so `main`'s "strict status checks" setting still has no contexts to enforce
   and a red run does not block a merge. One settings change finishes it:
   Settings → Branches → `main` → Require status checks → add **`unit`**, and
-  the same for `staging`. Until then the first checklist item is still
+  the same for `staging-v2`. Until then the first checklist item is still
   honour-system; it is just now honour-system with evidence next to it.
 - **The page templates are in git; the Horizon implementations are not.** An
   earlier version of this bullet called the theme the system of record for them.
