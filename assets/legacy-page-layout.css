@@ -84,3 +84,18 @@
 #MainContent .ona-legacy-contact-form :is(input,textarea) { display:block; width:100%; min-width:0; border:1px solid currentColor; background:transparent; color:inherit; border-radius:0; padding:12px; font:inherit; }
 #MainContent .ona-legacy-contact-form textarea { resize:vertical; }
 #MainContent .ona-legacy-contact-form button { margin-block-start:12px; justify-self:start; }
+
+/* Training intro images need an intrinsic box; background-only divs are otherwise zero-height. */
+#MainContent .training-intro { padding-block:var(--legacy-page-gap); }
+#MainContent .training-intro .content { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:center; gap:clamp(24px,5vw,70px); }
+#MainContent .training-intro .content > * { min-width:0; }
+#MainContent .training-intro .right-box { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:16px; align-items:center; }
+#MainContent .training-intro .img-bg { display:block; width:100%; aspect-ratio:4 / 5; background-size:cover; background-position:center; }
+#MainContent .training-intro .image-2 { aspect-ratio:3 / 4; }
+@media (min-width:750px) and (max-width:989px) {
+ #MainContent .training-intro .content { grid-template-columns:minmax(0,1fr); gap:32px; }
+}
+@media (max-width:749px) {
+ #MainContent .training-intro .content { grid-template-columns:minmax(0,1fr); gap:24px; }
+ #MainContent .training-intro .right-box { gap:10px; }
+}
