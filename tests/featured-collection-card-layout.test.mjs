@@ -11,7 +11,7 @@ test('Featured collection uses explicit rows, not individual card heights', () =
 test('The carousel card gallery, title and action positions remain consistent', () => {
   assert.match(css, /\.ui-test-product-list[^{]*\.card-gallery\s*\{[^}]*grid-row:\s*1/s);
   assert.match(css, /\.ui-test-product-list[^{]*\.group-block:has\(\.buy-buttons-block\)\s*\{[^}]*grid-row:\s*8/s);
-  assert.match(css, /\.ui-test-product-list[^{]*\.product-card__variant-placeholder\s*\{[^}]*grid-row:\s*7/s);
+  assert.match(css, /\.ui-test-product-list[^{]*\.product-card__variant-placeholder\)\s*\{[^}]*grid-row:\s*7/s);
 });
 test('No automatic height override in homepage carousel', () => {
   assert.doesNotMatch(css, /\.resource-list__carousel \.resource-list__item \.product-card,\s*\.resource-list__carousel \.resource-list__item \.product-card__content\s*\{\s*height:\s*auto/s);
