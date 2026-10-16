@@ -222,6 +222,7 @@
     },
     "floating_badge_r89NRP": {
       "type": "floating-badge",
+      "disabled": true,
       "name": "Floating badge",
       "settings": {
         "image": "shopify://shop_images/badge_sale.svg",
@@ -239,8 +240,8 @@
         "animate": true,
         "duration": 12,
         "direction": "normal",
-        "fallback_background": "#8A1538",
-        "fallback_text_color": "#F5F4EA"
+        "fallback_background": "#8a1538",
+        "fallback_text_color": "#f5f4ea"
       }
     },
     "find_your_coffee": {
@@ -1052,7 +1053,7 @@
           "type": "spec",
           "settings": {
             "label": "Tastes like",
-            "value": "Winey, dark chocolate and dark fruit"
+            "value": "Citrus, floral and fruity"
           }
         }
       },
@@ -1062,7 +1063,7 @@
       "name": "t:names.featured_product",
       "settings": {
         "heading_tag": "h3",
-        "product": "raspberry-candy-filter",
+        "product": "in-sequence",
         "heading": "Special <em>release</em>",
         "heading_size": 50,
         "heading_gap": 200,
@@ -1109,9 +1110,9 @@
         "spec_value_case": "none",
         "spec_value_wrap": "pretty",
         "content_distribution": "together",
-        "eyebrow": "MILK-BASED",
+        "eyebrow": "FILTER",
         "show_product_title": true,
-        "description": "<p>Ugly Sweater draws from winter's more questionable traditions: a little bold and loud, but full of nostalgia.</p><p>The kind of thing you wouldn't usually choose, but end up appreciating anyway.</p>",
+        "description": "<p>A limited-edition tasting experience exploring Ethiopian coffee through four processing methods. Each box includes four 80g bags, from Supernatural and Carbonic Maceration to Nitrogen Maceration and Koji. Taste them in sequence to explore how processing shapes fruit, sweetness and texture in the cup.</p>",
         "eyebrow_size": 0,
         "title_size": 0,
         "description_size": 0,
@@ -1119,7 +1120,7 @@
         "spec_value_size": 0,
         "heading_size_mobile": 0,
         "heading_gap_mobile": 60,
-        "image": "shopify://shop_images/ugly.webp",
+        "image": "shopify://shop_images/Inseq3nce_top.png",
         "media_position": "right",
         "media_width": 55,
         "image_fit": "contain",
@@ -3060,7 +3061,7 @@
                   "type": "image",
                   "settings": {
                     "image": "shopify://shop_images/imag-2.webp",
-                    "link": "/pages/brewing-guides",
+                    "link": "/blogs/brewguides",
                     "image_ratio": "adapt",
                     "width": "fill",
                     "custom_width": 100,
