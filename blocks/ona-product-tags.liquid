@@ -32,7 +32,7 @@
   <div class="product_single_custom_tag_black ona-pdp-tags ona-pdp-tags--placeholder" style="margin-top: 0;" {{ block.shopify_attributes }}>
     <span class="custom_product_tags"><h5>Promo tag — none active</h5></span>
   </div>
-{%- elsif product_resource != blank -%}
+{%- elsif product_resource != blank and section.settings.layout_type == 'carousel' -%}
   {%- comment -%}
     In product cards, keep the promo-label slot even when no label is active.
     The invisible element preserves the position of title and purchase actions.
