@@ -76,10 +76,49 @@
     pointer-events: none;
   }
 
-  /* Push the purchase controls to the bottom of cards with shorter copy.
-     Works regardless of whether a Subscribe button is rendered in the row. */
-  .product-card__content > .group-block:has(.buy-buttons-block) {
-    margin-block-start: auto;
+  /*
+    Product list / collection cards: reserve consistent text slots instead of
+    pushing the action row to the bottom of a carousel slide. The previous
+    margin-block-start:auto produced a large empty gap between picker and CTA.
+  */
+  :is(.product-grid__item, .resource-list__item) .product-card .product-title-link .text-block {
+    min-block-size: 2lh;
+  }
+
+  :is(.product-grid__item, .resource-list__item) .product-card .product-title-link .text-block > * {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+    overflow: hidden;
+  }
+
+  :is(.product-grid__item, .resource-list__item) .product-card .product-metafield-text {
+    min-block-size: 1lh;
+  }
+
+  :is(.product-grid__item, .resource-list__item) .product-card .product-metafield-text[data-metafield-key='tastes_like'] {
+    min-block-size: 2lh;
+  }
+
+  :is(.product-grid__item, .resource-list__item) .product-card .product-metafield-text__value {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  /* Match the space used by a real dropdown even if a product has only its
+     default variant. The empty slot is inert and hidden from accessibility. */
+  :is(.product-grid__item, .resource-list__item) .product-card .product-card__variant-placeholder {
+    block-size: 64px;
+  }
+
+  /* Carousel slides can be as tall as their neighbours, but do not stretch
+     the card internals to fill that entire height: no artificial CTA gap. */
+  .resource-list__carousel .resource-list__item .product-card,
+  .resource-list__carousel .resource-list__item .product-card__content {
+    height: auto;
   }
 
   /* Consistent action-row height with either one or two visible buttons. */
