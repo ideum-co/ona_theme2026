@@ -126,6 +126,22 @@
     --product-media-fit: contain !important;
   }
 
+  /*
+    Featured collection image optical sizing: all card boxes already share
+    identical dimensions. Only adjust the artwork within the fixed image frame.
+    These two existing product assets have different apparent packaging scale.
+    No image replacement and no changes to card/slide/CTA dimensions.
+  */
+  .ui-test-product-list .resource-list__carousel .card-gallery img[src*='2024_200gBlendBundle_mockup'] {
+    transform: scale(1.18);
+    transform-origin: center;
+  }
+
+  .ui-test-product-list .resource-list__carousel .card-gallery img[src*='coffee_hero_som_'] {
+    transform: scale(0.84);
+    transform-origin: center;
+  }
+
   /* An absent promo tag, roast, or tasting note must not collapse its slot. */
   .ui-test-product-list .product-card .ona-pdp-tags {
     min-block-size: 1lh;
