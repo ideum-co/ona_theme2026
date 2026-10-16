@@ -126,22 +126,6 @@
     --product-media-fit: contain !important;
   }
 
-  /*
-    Featured collection image optical sizing: all card boxes already share
-    identical dimensions. Only adjust the artwork within the fixed image frame.
-    These two existing product assets have different apparent packaging scale.
-    No image replacement and no changes to card/slide/CTA dimensions.
-  */
-  .ui-test-product-list .resource-list__carousel .card-gallery img[src*='2024_200gBlendBundle_mockup'] {
-    transform: scale(1.18);
-    transform-origin: center;
-  }
-
-  .ui-test-product-list .resource-list__carousel .card-gallery img[src*='coffee_hero_som_'] {
-    transform: scale(0.84);
-    transform-origin: center;
-  }
-
   /* An absent promo tag, roast, or tasting note must not collapse its slot. */
   .ui-test-product-list .product-card .ona-pdp-tags {
     min-block-size: 1lh;
@@ -164,15 +148,17 @@
   .ui-test-product-list .resource-list__carousel .product-card__content {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    /* Explicit text tracks: missing content, short names, or a long product
+       name cannot change the purchase controls' vertical position. */
     grid-template-rows:
-      minmax(0, auto) /* image */
-      minmax(1.4lh, auto) /* promotion */
-      minmax(2lh, auto) /* title */
-      minmax(1.5lh, auto) /* roast */
-      minmax(2lh, auto) /* tasting notes */
-      minmax(1.5lh, auto) /* price */
-      minmax(64px, auto) /* variant picker or invisible placeholder */
-      minmax(48px, auto); /* buttons */
+      minmax(0, auto) /* shared image frame */
+      32px /* promo tag, including absent ones */
+      84px /* title: two lines */
+      28px /* roast */
+      45px /* tasting notes */
+      24px /* price */
+      minmax(64px, auto) /* functional variant picker */
+      minmax(52px, auto); /* functional buttons */
     align-content: start;
     align-items: center;
     min-width: 0;
@@ -220,6 +206,27 @@
     min-width: 0;
     margin-block-start: 0;
     align-self: stretch;
+  }
+
+  /* Prevent long labels or optional marketing text from expanding the
+     reserved tracks. Functional controls are intentionally not clipped. */
+  .ui-test-product-list .resource-list__carousel .product-card__content > :is(.ona-pdp-tags, .product-metafield-text, product-price),
+  .ui-test-product-list .resource-list__carousel .product-card__content .product-title-link .text-block {
+    max-block-size: 100%;
+    min-block-size: 0;
+    overflow: hidden;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content .product-title-link .text-block > * {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    max-block-size: 84px;
+    overflow: hidden;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > .card-gallery {
+    overflow: hidden;
   }
 
   /* Consistent action-row height with either one or two visible buttons. */
