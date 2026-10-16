@@ -57,3 +57,42 @@ test('each restored legacy enquiry form posts to Shopify contact', () => {
     assert.match(source, /name="contact\[subject\]"/, `${path} needs a subject so enquiries are triageable`);
   }
 });
+
+test('each restored form only shows feedback for its own submission', () => {
+  // Shopify hands the result of a contact submission to EVERY contact form
+  // rendered on that page, so `form.posted_successfully?` alone puts "Thank you"
+  // under forms the customer never touched -- and `form.errors` puts a validation
+  // error under them too. The Wholesale page is the live case: ona-gust-r's popup
+  // form and the page's own enquiry form can both be on screen. Horizon's own
+  // blocks/contact-form.liquid solves this by posting a hidden contact[id] and
+  // comparing it with form.id; mirror that rather than trusting the HTML id.
+  // Codex, PR #178.
+  for (const path of [
+    'sections/ona-training-form.liquid',
+    'sections/ona-expericences-content.liquid',
+    'sections/ona-gust-r.liquid',
+  ]) {
+    const source = read(path);
+
+    assert.match(
+      source,
+      /<input type="hidden" name="contact\[id\]" value="\{\{ form_id \}\}">/,
+      `${path} must post the discriminator Shopify compares against form.id`,
+    );
+    assert.match(
+      source,
+      /if form\.id == form_id or form\.id == blank\s*\n\s*assign form_matches = true/,
+      `${path} must derive form_matches from the posted contact[id]`,
+    );
+    assert.match(
+      source,
+      /\{% if form\.posted_successfully\? and form_matches %\}/,
+      `${path}: the success message must be gated on form_matches`,
+    );
+    assert.match(
+      source,
+      /\{% elsif form\.errors and form_matches %\}/,
+      `${path}: the error message must be gated on form_matches`,
+    );
+  }
+});
