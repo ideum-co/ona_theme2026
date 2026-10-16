@@ -7,10 +7,10 @@
 {%- if section.settings.image != blank -%}
   <link rel="preload" as="image"
         href="{{ section.settings.image | img_url: '800x' }}"
-        media="(max-width: 991.98px)" fetchpriority="high">
+        media="(max-width: 749px)" fetchpriority="high">
   <link rel="preload" as="image"
         href="{{ section.settings.image | img_url: '1920x' }}"
-        media="(min-width: 992px)" fetchpriority="high">
+        media="not all and (max-width: 749px)" fetchpriority="high">
 {%- endif -%}
 <section class="banner-detail-top">
     <div class="img-bg pc-show wowo zoomOut" style="background-image: url('{{ section.settings.image | img_url: '1920x' }}')"></div>
