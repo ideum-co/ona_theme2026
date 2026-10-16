@@ -29,14 +29,15 @@
 {%- if ona_tags_trimmed != blank -%}
   {{ ona_tags_markup }}
 {%- elsif request.design_mode -%}
-  {%- comment -%}
-    With no active badge this block renders nothing, which would leave the
-    merchant an invisible, unselectable block in the editor. Show a placeholder
-    in design mode only — never on the storefront.
-  {%- endcomment -%}
   <div class="product_single_custom_tag_black ona-pdp-tags ona-pdp-tags--placeholder" style="margin-top: 0;" {{ block.shopify_attributes }}>
     <span class="custom_product_tags"><h5>Promo tag — none active</h5></span>
   </div>
+{%- elsif product_resource != blank -%}
+  {%- comment -%}
+    In product cards, keep the promo-label slot even when no label is active.
+    The invisible element preserves the position of title and purchase actions.
+  {%- endcomment -%}
+  <div class="ona-pdp-tags ona-pdp-tags--empty" aria-hidden="true"></div>
 {%- endif -%}
 
 {% stylesheet %}
@@ -69,6 +70,8 @@
     font-size: 14px;
     text-transform: uppercase;
   }
+
+  .product-card .ona-pdp-tags--empty { visibility: hidden; min-block-size: 1lh; pointer-events: none; }
 
   .ona-pdp-tags--placeholder h5 {
     opacity: 0.45;
