@@ -54,6 +54,7 @@
 <div
   class="product-metafield-text{% if value == blank %} product-metafield-text--empty{% endif %} text-block {{ text_block_classes }} text-{{ block_settings.alignment }} {{ block_settings.type_preset | default: 'paragraph' }} spacing-style"
   data-product-id="{{ product_resource.id }}"
+  data-metafield-key="{{ key | escape }}"
   {% if value == blank %}
     aria-hidden="true"
   {% endif %}
