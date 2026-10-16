@@ -114,13 +114,6 @@
     block-size: 64px;
   }
 
-  /* Carousel slides can be as tall as their neighbours, but do not stretch
-     the card internals to fill that entire height: no artificial CTA gap. */
-  .resource-list__carousel .resource-list__item .product-card,
-  .resource-list__carousel .resource-list__item .product-card__content {
-    height: auto;
-  }
-
   /* Homepage mixes tall coffee bags and short bundle imagery. Give every
      gallery the same portrait canvas so card copy starts at the same baseline.
      Contain keeps the full bundle artwork visible inside that common frame. */
@@ -144,6 +137,73 @@
 
   .ui-test-product-list .product-card .product-metafield-text--empty[data-metafield-key='tastes_like'] {
     min-block-size: 2lh;
+  }
+
+  /*
+    Featured collection: eight predictable vertical slots for each carousel
+    slide, including products with no promo, roast, notes, or extra variants.
+    The gallery ratio is a FRAME ratio; images still use contain and are never
+    cropped. No auto margin between the picker and purchase buttons.
+  */
+  .ui-test-product-list .resource-list__carousel .product-card__content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows:
+      minmax(0, auto) /* image */
+      minmax(1.4lh, auto) /* promotion */
+      minmax(2lh, auto) /* title */
+      minmax(1.5lh, auto) /* roast */
+      minmax(2lh, auto) /* tasting notes */
+      minmax(1.5lh, auto) /* price */
+      minmax(64px, auto) /* variant picker or invisible placeholder */
+      minmax(48px, auto); /* buttons */
+    align-content: start;
+    align-items: center;
+    min-width: 0;
+    height: 100%;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > .card-gallery {
+    grid-row: 1;
+    aspect-ratio: 4 / 5;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > .ona-pdp-tags {
+    grid-row: 2;
+    min-width: 0;
+  }
+
+  /* Product title link uses display:contents; its text element is the grid item. */
+  .ui-test-product-list .resource-list__carousel .product-card__content .product-title-link .text-block {
+    grid-row: 3;
+    min-width: 0;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > .product-metafield-text[data-metafield-key='roast'] {
+    grid-row: 4;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > .product-metafield-text[data-metafield-key='tastes_like'] {
+    grid-row: 5;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > product-price {
+    grid-row: 6;
+    min-width: 0;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > :is(variant-picker, .product-card__variant-placeholder) {
+    grid-row: 7;
+    min-width: 0;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > .group-block:has(.buy-buttons-block) {
+    grid-row: 8;
+    min-width: 0;
+    margin-block-start: 0;
+    align-self: stretch;
   }
 
   /* Consistent action-row height with either one or two visible buttons. */
