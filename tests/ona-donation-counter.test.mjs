@@ -27,7 +27,7 @@ test('carries its own styles, because this theme has no legacy main.css', () => 
     /\.donation-counter__card\s*{/,
     /\.donation-counter__card::after\s*{/,
     /\.donation-counter__subtitle\s*{/,
-    /\.donation-counter__cta\s*{/,
+    /\.donation-counter__cta\.button\s*{/,
   ]) {
     assert.match(source, rule);
   }
@@ -57,11 +57,20 @@ test('is placeable from the theme editor', () => {
   assert.ok(schemaMatch);
   const schema = JSON.parse(schemaMatch[1]);
   const setting = (id) => schema.settings.find((item) => item.id === id);
-  for (const id of ['bg_color', 'title', 'subtitle', 'learn_more_text', 'learn_more_url']) {
+  for (const id of ['bg_color', 'title', 'subtitle', 'learn_more_text', 'learn_more_url', 'button_bg_color', 'button_text_color']) {
     assert.ok(setting(id), `missing setting ${id}`);
   }
   assert.equal(setting('bg_color').default, '#441925');
+  assert.equal(setting('button_bg_color').type, 'color');
+  assert.equal(setting('button_text_color').type, 'color');
   assert.ok(schema.presets?.length, 'needs a preset so it can be added in the editor');
+});
+
+test('uses the global button component and configurable colors for its CTA', () => {
+  assert.match(source, /class="button donation-counter__cta"/);
+  assert.match(source, /--button-background-color: var\(--donation-button-background\)/);
+  assert.match(source, /--button-color: var\(--donation-button-text\)/);
+  assert.doesNotMatch(source, /\.donation-counter__cta\s*\{[^}]*font-size:\s*43px/s);
 });
 
 test('does not render an empty CTA when no url is set', () => {
