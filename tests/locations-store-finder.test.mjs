@@ -82,11 +82,36 @@ test('rejects javascript and data website schemes while retaining absolute HTTP 
 });
 
 test('renders explicitly labelled filters, live status, and selected view controls', () => {
-  for (const control of ['search', 'state', 'tag', 'radius']) {
+  // Search and distance are single inputs, so they take a label[for].
+  for (const control of ['search', 'radius']) {
     assert.match(
       section,
       new RegExp(`<label[^>]*for="LocationsFinder-${control}-\\{\\{ section\\.id \\}\\}"[\\s\\S]*?<[^>]+id="LocationsFinder-${control}-\\{\\{ section\\.id \\}\\}"`),
       `${control} must have an explicit label`,
+    );
+  }
+
+  /*
+   * Venue type and state are radio groups, so a label[for] is the wrong
+   * mechanism -- the group is named by its <legend> and each choice by its own
+   * label. Asserting the parts that make it operable: a fieldset, a legend,
+   * and radios sharing one name so arrow keys move between them.
+   */
+  for (const [control, attribute] of [['tag', 'data-tag-filter'], ['state', 'data-state-filter']]) {
+    const group = section.match(
+      new RegExp(`<fieldset\\b[^>]*${attribute}[\\s\\S]*?</fieldset>`),
+    );
+    assert.ok(group, `${control} must be a fieldset`);
+    assert.match(group[0], /<legend>/, `${control} must be named by a legend`);
+    assert.match(
+      group[0],
+      new RegExp(`<input type="radio" name="LocationsFinder-${control}-\\{\\{ section\\.id \\}\\}" value="" checked>`),
+      `${control} must open on its "all" choice`,
+    );
+    assert.match(
+      group[0],
+      new RegExp(`data-choice-name="LocationsFinder-${control}-\\{\\{ section\\.id \\}\\}"`),
+      `${control} must tell the script which name to give choices it adds`,
     );
   }
 
@@ -219,31 +244,61 @@ test('builds venue options from every location so a related tag beyond the first
 test('places a related venue tag beyond fifty into the actual filter control', async () => {
   const { LocationsStoreFinder } = await import(`${javascriptPath}?tag-control-51=${Date.now()}`);
   const finder = new LocationsStoreFinder();
-  const allVenues = { value: '', textContent: 'All venues' };
-  const tagFilter = {
-    options: [allVenues],
-    value: '',
-    replaceChildren(option) {
-      this.options = [option];
+
+  // The server renders the leading "All venues" radio; renderChoices keeps it
+  // and rebuilds everything after it.
+  const allInput = { type: 'radio', name: 'tag', value: '', checked: true };
+  const allChoice = { children: [allInput] };
+  const container = {
+    children: [allChoice],
+    get firstElementChild() {
+      return this.children[0];
     },
-    append(option) {
-      this.options.push(option);
+    replaceChildren(first) {
+      this.children = [first];
+    },
+    append(child) {
+      this.children.push(child);
     },
   };
+  const inputsOf = () => container.children.flatMap((child) => child.children ?? []);
+  const tagFilter = {
+    dataset: { choiceName: 'tag' },
+    querySelector(selector) {
+      if (selector === '[data-choice-options]') return container;
+      if (selector === 'input:checked') return inputsOf().find((input) => input.checked) ?? null;
+      return null;
+    },
+    querySelectorAll: () => inputsOf(),
+  };
+
   finder.tagFilter = tagFilter;
   finder.config = {
     tags: Array.from({ length: 50 }, (_, index) => ({ label: `Venue ${index + 1}`, slug: `venue-${index + 1}` })),
   };
   finder.locations = [{ tagOptions: [{ label: 'Venue 51', slug: 'venue-51' }] }];
-  finder.ownerDocument = { createElement: () => ({ value: '', textContent: '' }) };
+  finder.ownerDocument = {
+    createElement: (tag) => ({
+      tagName: tag.toUpperCase(),
+      children: [],
+      append(...kids) {
+        this.children.push(...kids);
+      },
+    }),
+  };
 
   finder.populateTagFilter();
 
-  assert.equal(tagFilter.options.length, 52);
-  assert.deepEqual(
-    tagFilter.options.find(({ value }) => value === 'venue-51'),
-    { value: 'venue-51', textContent: 'Venue 51' },
+  assert.equal(container.children.length, 52, 'the fifty-first venue must reach the control');
+  const choice = container.children.find((child) =>
+    (child.children ?? []).some(({ value }) => value === 'venue-51'),
   );
+  assert.ok(choice, 'venue-51 must be rendered as a choice');
+  const [input, text] = choice.children;
+  assert.equal(input.type, 'radio');
+  assert.equal(input.name, 'tag', 'a added choice must join the existing radio group');
+  assert.equal(input.value, 'venue-51');
+  assert.equal(text.textContent, 'Venue 51');
 });
 
 test('uses coordinates only for distance filtering and map markers', async () => {
@@ -1333,4 +1388,38 @@ test('each card offers two real buttons and labelled address and hours', () => {
   const stylesheet = section.match(/{%\s*stylesheet\s*%}([\s\S]*?){%\s*endstylesheet\s*%}/)[1];
   assert.match(stylesheet, /\.locations-store-finder__card-row\s*\{[^}]*grid-template-columns:\s*auto\s+minmax\(0,\s*1fr\)/,
     'an icon row must not let the icon squash the text');
+});
+
+test('the hidden radios stay operable by keyboard', () => {
+  /*
+   * The pill and tab styling hangs off `input:checked + span`, so the radio has
+   * to stay in the accessibility tree and the tab order. The tempting tidy-up
+   * is `display: none` or `visibility: hidden` on the input -- either removes
+   * it from the tab order outright and the filters become mouse-only, with
+   * nothing on screen to show it. Clipping keeps it focusable.
+   *
+   * Because the input itself is invisible, its focus ring has to be drawn on
+   * the label's span instead, or a keyboard visitor cannot see where they are.
+   */
+  const stylesheet = section.match(/{%\s*stylesheet\s*%}([\s\S]*?){%\s*endstylesheet\s*%}/)[1];
+
+  const hidden = stylesheet.match(/\.locations-store-finder__choice input\s*\{([^}]*)\}/);
+  assert.ok(hidden, 'the radio must be visually hidden');
+  assert.doesNotMatch(hidden[1], /display:\s*none/, 'display: none removes the radio from the tab order');
+  assert.doesNotMatch(hidden[1], /visibility:\s*hidden/, 'visibility: hidden removes the radio from the tab order');
+  assert.match(hidden[1], /clip-path:\s*inset\(50%\)/, 'the radio must be clipped, not removed');
+
+  assert.match(
+    stylesheet,
+    /\.locations-store-finder__choice input:focus-visible \+ span\s*\{[^}]*outline:/,
+    'focus must be visible on the span, since the input itself is not',
+  );
+
+  for (const variant of ['pills', 'tabs']) {
+    assert.match(
+      stylesheet,
+      new RegExp(`\\.locations-store-finder__choices--${variant} \\.locations-store-finder__choice input:checked \\+ span`),
+      `${variant} must show which choice is selected`,
+    );
+  }
 });

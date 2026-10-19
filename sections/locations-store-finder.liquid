@@ -110,34 +110,7 @@
           >
         </div>
 
-        {%- if section.settings.enable_state_filter -%}
-          <div class="locations-store-finder__field">
-            <label for="LocationsFinder-state-{{ section.id }}">
-              {{- section.settings.state_label | default: 'State or territory' | escape -}}
-            </label>
-            <select id="LocationsFinder-state-{{ section.id }}" data-state-filter>
-              <option value="">{{ section.settings.all_states_label | default: 'All states' | escape }}</option>
-            </select>
-          </div>
-        {%- endif -%}
 
-        {%- if section.settings.enable_tag_filter -%}
-          <div class="locations-store-finder__field">
-            <label for="LocationsFinder-tag-{{ section.id }}">
-              {{- section.settings.tag_label | default: 'Venue type' | escape -}}
-            </label>
-            <select id="LocationsFinder-tag-{{ section.id }}" data-tag-filter>
-              <option value="">{{ section.settings.all_tags_label | default: 'All venues' | escape }}</option>
-              {%- for tag in shop.metaobjects.store_tag.values -%}
-                {%- liquid
-                  assign tag_label = tag.label.value | default: tag.label
-                  assign tag_slug = tag.slug.value | default: tag.slug | default: tag_label | handleize
-                -%}
-                <option value="{{ tag_slug | escape }}">{{ tag_label | escape }}</option>
-              {%- endfor -%}
-            </select>
-          </div>
-        {%- endif -%}
 
         {%- if section.settings.enable_radius_filter -%}
           <div class="locations-store-finder__field">
@@ -162,6 +135,55 @@
           {{- section.settings.reset_label | default: 'Clear filters' | escape -}}
         </button>
       </div>
+
+      {%- comment -%}
+        Venue type and state are single-choice filters, so they are radio
+        groups: one tap instead of a select's open-scan-tap, keyboard arrows
+        for free, and every option visible at once. Production renders the same
+        two filters this way. The radios are real inputs -- the pill and tab
+        styling is on the label -- so this needs no JavaScript to be operable.
+      {%- endcomment -%}
+      {%- if section.settings.enable_tag_filter -%}
+        <fieldset
+          class="locations-store-finder__choice-group"
+          data-tag-filter
+          data-choice-name="LocationsFinder-tag-{{ section.id }}"
+        >
+          <legend>{{ section.settings.tag_label | default: 'Venue type' | escape }}</legend>
+          <div class="locations-store-finder__choices locations-store-finder__choices--pills" data-choice-options>
+            <label class="locations-store-finder__choice">
+              <input type="radio" name="LocationsFinder-tag-{{ section.id }}" value="" checked>
+              <span>{{ section.settings.all_tags_label | default: 'All venues' | escape }}</span>
+            </label>
+            {%- for tag in shop.metaobjects.store_tag.values -%}
+              {%- liquid
+                assign tag_label = tag.label.value | default: tag.label
+                assign tag_slug = tag.slug.value | default: tag.slug | default: tag_label | handleize
+              -%}
+              <label class="locations-store-finder__choice">
+                <input type="radio" name="LocationsFinder-tag-{{ section.id }}" value="{{ tag_slug | escape }}">
+                <span>{{ tag_label | escape }}</span>
+              </label>
+            {%- endfor -%}
+          </div>
+        </fieldset>
+      {%- endif -%}
+
+      {%- if section.settings.enable_state_filter -%}
+        <fieldset
+          class="locations-store-finder__choice-group"
+          data-state-filter
+          data-choice-name="LocationsFinder-state-{{ section.id }}"
+        >
+          <legend>{{ section.settings.state_label | default: 'State or territory' | escape }}</legend>
+          <div class="locations-store-finder__choices locations-store-finder__choices--tabs" data-choice-options>
+            <label class="locations-store-finder__choice">
+              <input type="radio" name="LocationsFinder-state-{{ section.id }}" value="" checked>
+              <span>{{ section.settings.all_states_label | default: 'All states' | escape }}</span>
+            </label>
+          </div>
+        </fieldset>
+      {%- endif -%}
 
       <p class="locations-store-finder__status" data-location-status role="status" aria-live="polite"></p>
 
@@ -524,6 +546,91 @@
     color: #fff;
   }
 
+  /*
+   * Venue type renders as pills and state as a tab row, matching production.
+   * The radio itself is visually hidden but still focused and operated as
+   * normal -- which is why the focus ring is drawn on the label's span, not
+   * the input. A fieldset defaults to min-content width, so min-inline-size
+   * keeps a long pill row from pushing the page sideways.
+   */
+  .locations-store-finder__choice-group {
+    margin: 0 0 1rem;
+    padding: 0;
+    border: 0;
+    min-inline-size: 0;
+  }
+
+  .locations-store-finder__choice-group legend {
+    padding: 0;
+    margin-block-end: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .locations-store-finder__choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .locations-store-finder__choice {
+    cursor: pointer;
+  }
+
+  .locations-store-finder__choice input {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .locations-store-finder__choice span {
+    display: inline-block;
+    transition: background-color var(--animation-speed) var(--animation-easing),
+      color var(--animation-speed) var(--animation-easing),
+      border-color var(--animation-speed) var(--animation-easing);
+  }
+
+  .locations-store-finder__choice input:focus-visible + span {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .locations-store-finder__choices--pills .locations-store-finder__choice span {
+    padding: 0.45rem 0.95rem;
+    border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+    border-radius: 999px;
+    font-size: 0.85rem;
+  }
+
+  .locations-store-finder__choices--pills .locations-store-finder__choice input:checked + span {
+    background: var(--locations-finder-accent-color);
+    border-color: var(--locations-finder-accent-color);
+    color: #fff;
+  }
+
+  .locations-store-finder__choices--tabs {
+    gap: 0.25rem 1.25rem;
+    border-block-end: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  }
+
+  .locations-store-finder__choices--tabs .locations-store-finder__choice span {
+    padding-block: 0.4rem;
+    border-block-end: 2px solid transparent;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .locations-store-finder__choices--tabs .locations-store-finder__choice input:checked + span {
+    border-block-end-color: var(--locations-finder-accent-color);
+    color: var(--locations-finder-accent-color);
+  }
+
   .locations-store-finder__results {
     display: grid;
     gap: 1.25rem;
@@ -724,7 +831,7 @@
     }
 
     /*
-     * Map view below 990px: the map goes ABOVE the list, and the list stays on
+     * Map view below 989px: the map goes ABOVE the list, and the list stays on
      * the page. It used to be `display: none`, which meant a visitor whose
      * script had not run -- or had failed -- was left with an empty grey box
      * and no way to reach 250 locations. Production stacks them the same way
