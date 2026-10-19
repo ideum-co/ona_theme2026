@@ -549,6 +549,10 @@
   </div>
 </div>
 
+{%- if media_1 == 'video' or media_2 == 'video' or media_1_mobile == 'video' or media_2_mobile == 'video' -%}
+  <script src="{{ 'autoplay-video.js' | asset_url }}" type="module" fetchpriority="low"></script>
+{%- endif -%}
+
 {% stylesheet %}
   .hero-wrapper {
     --hero-height-offset: 0px;
