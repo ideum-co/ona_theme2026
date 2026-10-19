@@ -614,9 +614,34 @@
     border: 1px solid currentColor;
   }
 
+  /*
+   * Map and list share one height, and the list scrolls inside itself rather
+   * than extending the page.
+   *
+   * Before this, the list rendered all 300 locations in a single uncapped
+   * column. Measured on 2026-10-19: the list panel was 96,216px tall, the page
+   * 100,203px, which put the flagship section 96,985px down and the footer past
+   * 100,000px -- roughly 158 screens of scrolling to reach either. Production
+   * caps the same list at 540px with its own scrollbar
+   * (sections/ona-store-finder.liquid, .ona-sf__list, scroll height 74,121px
+   * inside it) and its whole page measures 3,376px.
+   */
+  .locations-store-finder {
+    --locations-finder-panel-size: 34rem;
+  }
+
   .locations-store-finder__map-panel,
   .locations-store-finder__map {
-    min-block-size: 34rem;
+    min-block-size: var(--locations-finder-panel-size);
+  }
+
+  .locations-store-finder[data-active-view='map'] .locations-store-finder__list-panel {
+    max-block-size: var(--locations-finder-panel-size);
+    overflow-y: auto;
+    /* Reaching the end of the list must not start scrolling the page behind it. */
+    overscroll-behavior: contain;
+    /* Keeps card borders clear of the scrollbar. */
+    padding-inline-end: 0.5rem;
   }
 
   .locations-store-finder__map-panel {
@@ -643,7 +668,7 @@
     margin: 0.2rem;
   }
 
-  @media (max-width: 990px) {
+  @media (max-width: 989px) {
     .locations-store-finder__controls {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -682,7 +707,7 @@
     }
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: 749px) {
     .locations-store-finder__controls,
     .locations-store-finder__list {
       grid-template-columns: 1fr;

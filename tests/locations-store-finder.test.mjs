@@ -1233,3 +1233,62 @@ test('the map opens on the country, and only re-frames once results are narrowed
     'the un-narrowed branch must restore the national framing, not leave the camera where it was',
   );
 });
+
+test('the result list scrolls inside itself instead of extending the page', () => {
+  /*
+   * Map view puts the list beside the map, and the list holds every location
+   * the loader has aggregated -- 300 of them. Measured on the deployed theme on
+   * 2026-10-19, with no cap on the panel: the list was 96,216px tall and the
+   * page 100,203px, which left the flagship section 96,985px down and the
+   * footer past 100,000px. Production caps the same list at 540px with its own
+   * scrollbar (sections/ona-store-finder.liquid, .ona-sf__list) and its whole
+   * page measures 3,376px.
+   *
+   * Both panels read the one custom property, so the map cannot grow past the
+   * list or the list past the map.
+   */
+  const stylesheet = section.match(/{%\s*stylesheet\s*%}([\s\S]*?){%\s*endstylesheet\s*%}/);
+  assert.ok(stylesheet, 'the store finder must carry a scoped stylesheet');
+  const css = stylesheet[1];
+
+  const listPanel = css.match(
+    /\.locations-store-finder\[data-active-view='map'\]\s+\.locations-store-finder__list-panel\s*\{([^}]*)\}/,
+  );
+  assert.ok(listPanel, 'map view must style the list panel');
+  assert.match(listPanel[1], /max-block-size:\s*var\(--locations-finder-panel-size\)/,
+    'the list panel must be capped to the shared panel height');
+  assert.match(listPanel[1], /overflow-y:\s*auto/,
+    'the list panel must scroll inside itself');
+  assert.match(listPanel[1], /overscroll-behavior:\s*contain/,
+    'reaching the end of the list must not scroll the page behind it');
+
+  const mapPanel = css.match(
+    /\.locations-store-finder__map-panel,\s*\n\s*\.locations-store-finder__map\s*\{([^}]*)\}/,
+  );
+  assert.ok(mapPanel, 'the map panel must declare its height');
+  assert.match(mapPanel[1], /min-block-size:\s*var\(--locations-finder-panel-size\)/,
+    'the map must read the same custom property as the list');
+
+  assert.match(css, /--locations-finder-panel-size:\s*[\d.]+rem/,
+    'the shared panel height must be defined once');
+});
+
+test('the finder stays on Horizon\'s two breakpoints', () => {
+  /*
+   * Horizon has 749/750 and 989/990 and the whole theme is built on them. This
+   * section had invented 990 and 640: at exactly 990px both the max-width and
+   * the min-width rules applied, and 640 left the band from 641 to 749 on a
+   * desktop layout the rest of the theme had already dropped.
+   *
+   * Scoped to this section on purpose. Stock Horizon files (main-cart,
+   * product-information, bento-grid) carry their own finer boundaries, and a
+   * theme-wide rule would flag upstream code this repo does not own.
+   */
+  for (const [query, kind, px] of section.matchAll(/@media[^{]*?\(\s*(max|min)-width\s*:\s*(\d+)px/g)) {
+    const allowed = kind === 'max' ? [749, 989] : [750, 990];
+    assert.ok(
+      allowed.includes(Number(px)),
+      `"${query.trim()}" uses ${px}px; this theme's ${kind}-width boundaries are ${allowed.join(' and ')}`,
+    );
+  }
+});
