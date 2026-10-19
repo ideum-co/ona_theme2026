@@ -2,6 +2,19 @@ const HTMLElementBase = globalThis.HTMLElement ?? class {};
 const EARTH_RADIUS_KM = 6371;
 const MAPS_LOAD_TIMEOUT_MS = 15000;
 // Australia's centroid at country zoom -- the framing production opens on.
+/**
+ * Venue type and state are radio groups rather than selects, so reading and
+ * writing them goes through these two helpers instead of `.value`. An empty
+ * value is the "All ..." choice, which is always the first input in the group.
+ */
+const choiceValue = (group) => group?.querySelector('input:checked')?.value ?? '';
+
+const setChoiceValue = (group, value) => {
+  const inputs = [...(group?.querySelectorAll('input') ?? [])];
+  const match = inputs.find((input) => input.value === value) ?? inputs[0];
+  if (match) match.checked = true;
+};
+
 const NATIONAL_VIEW = { center: { lat: -25.2744, lng: 133.7751 }, zoom: 4 };
 let mapsPromise;
 let mapsCallbackSequence = 0;
@@ -386,38 +399,52 @@ export class LocationsStoreFinder extends HTMLElementBase {
     unsubscribeFromMapsAuthFailure(this);
   }
 
+  /**
+   * Rebuilds a radio group's choices, keeping the leading "All ..." input the
+   * server rendered. The caller restores the selection afterwards.
+   *
+   * @param {Element} group - The fieldset carrying data-choice-name.
+   * @param {{value: string, label: string}[]} choices - Choices after the first.
+   */
+  renderChoices(group, choices) {
+    const container = group.querySelector('[data-choice-options]');
+    if (!container) return;
+    const allChoice = container.firstElementChild;
+    const name = group.dataset?.choiceName ?? '';
+
+    container.replaceChildren(allChoice);
+    for (const { value, label } of choices) {
+      const wrapper = this.ownerDocument.createElement('label');
+      wrapper.className = 'locations-store-finder__choice';
+      const input = this.ownerDocument.createElement('input');
+      input.type = 'radio';
+      input.name = name;
+      input.value = value;
+      const text = this.ownerDocument.createElement('span');
+      text.textContent = label;
+      wrapper.append(input, text);
+      container.append(wrapper);
+    }
+  }
+
   populateStateFilter() {
     if (!this.stateFilter) return;
-    const firstOption = this.stateFilter.options[0];
-    const selectedState = this.stateFilter.value;
+    const selectedState = choiceValue(this.stateFilter);
     const states = [...new Set(this.locations.map(({ state }) => String(state ?? '').trim()).filter(Boolean))].sort(
       (first, second) => first.localeCompare(second),
     );
 
-    this.stateFilter.replaceChildren(firstOption);
-    for (const state of states) {
-      const option = this.ownerDocument.createElement('option');
-      option.value = state;
-      option.textContent = state;
-      this.stateFilter.append(option);
-    }
-    if (states.includes(selectedState)) this.stateFilter.value = selectedState;
+    this.renderChoices(this.stateFilter, states.map((state) => ({ value: state, label: state })));
+    setChoiceValue(this.stateFilter, states.includes(selectedState) ? selectedState : '');
   }
 
   populateTagFilter() {
     if (!this.tagFilter) return;
-    const firstOption = this.tagFilter.options[0];
-    const selectedTag = this.tagFilter.value;
+    const selectedTag = choiceValue(this.tagFilter);
     const options = locationTagOptions(this.locations, this.config.tags);
 
-    this.tagFilter.replaceChildren(firstOption);
-    for (const { label, slug } of options) {
-      const option = this.ownerDocument.createElement('option');
-      option.value = slug;
-      option.textContent = label;
-      this.tagFilter.append(option);
-    }
-    if (options.some(({ slug }) => slug === selectedTag)) this.tagFilter.value = selectedTag;
+    this.renderChoices(this.tagFilter, options.map(({ label, slug }) => ({ value: slug, label })));
+    setChoiceValue(this.tagFilter, options.some(({ slug }) => slug === selectedTag) ? selectedTag : '');
   }
 
   bindEvents() {
@@ -435,8 +462,8 @@ export class LocationsStoreFinder extends HTMLElementBase {
   currentCriteria() {
     return {
       query: this.searchInput?.value ?? '',
-      state: this.stateFilter?.value ?? '',
-      tag: this.tagFilter?.value ?? '',
+      state: choiceValue(this.stateFilter),
+      tag: choiceValue(this.tagFilter),
       origin: this.origin,
       radiusKm: radiusForFilter(this.origin, this.radiusFilter?.value ?? null),
     };
@@ -525,14 +552,14 @@ export class LocationsStoreFinder extends HTMLElementBase {
 
   hasActiveFilters() {
     return Boolean(
-      this.searchInput?.value || this.stateFilter?.value || this.tagFilter?.value || this.origin,
+      this.searchInput?.value || choiceValue(this.stateFilter) || choiceValue(this.tagFilter) || this.origin,
     );
   }
 
   resetFilters() {
     if (this.searchInput) this.searchInput.value = '';
-    if (this.stateFilter) this.stateFilter.value = '';
-    if (this.tagFilter) this.tagFilter.value = '';
+    setChoiceValue(this.stateFilter, '');
+    setChoiceValue(this.tagFilter, '');
     if (this.radiusFilter) this.radiusFilter.value = String(this.settings.defaultRadius ?? '50');
     this.origin = null;
     this.setStatus('');

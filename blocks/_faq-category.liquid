@@ -1,0 +1,50 @@
+{% assign block_settings = block.settings %}
+
+<div class="ona-faq-category" {{ block.shopify_attributes }}>
+  {%- if block_settings.title != blank -%}
+    <h2 class="ona-faq-category__heading h4">{{ block_settings.title | escape }}</h2>
+  {%- endif -%}
+
+  {%- comment -%}
+    accordion--caret and accordion--dividers are the same modifiers
+    blocks/accordion.liquid sets; snippets/accordion-styles.liquid keys the icon
+    choice and the row borders off them, so the FAQ rows match every other
+    disclosure in the theme rather than carrying a private copy of that CSS.
+  {%- endcomment -%}
+  <div class="accordion accordion--caret accordion--dividers">
+    {% content_for 'blocks' %}
+  </div>
+</div>
+
+{% render 'accordion-styles' %}
+
+{% stylesheet %}
+  .ona-faq-category + .ona-faq-category {
+    margin-block-start: var(--padding-3xl, 3rem);
+  }
+
+  /* Type comes from the theme's own .h4 utility in base.css, so the heading
+     tracks the h4 preset instead of pinning a private copy of its tokens. */
+  .ona-faq-category__heading {
+    margin-block: 0 var(--padding-md, 1rem);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "FAQ category",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Category title"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "_faq-item"
+    }
+  ]
+}
+{% endschema %}

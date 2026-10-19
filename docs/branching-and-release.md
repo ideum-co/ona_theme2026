@@ -174,32 +174,42 @@ small ones in two hours is how the first staging branch died (§1a).
 
 ## 5. The rule that matters most: shop-owned JSON
 
-Four files on the live theme are written by the **theme editor**, not by this
+Six files on the live theme are written by the **theme editor**, not by this
 repository:
 
 - `templates/index.json`
 - `templates/product.json`
 - `templates/page.location.json`
+- `templates/page.faq.json`
+- `templates/page.faq-subscriptions.json`
 - `config/settings_data.json`
 
-> **`templates/page.location.json` holds a credential.** The store finder's
-> Google Maps API key is a *section* setting, so the theme editor writes it into
-> this template. The spec that built the finder requires the key to stay out of
-> git (`docs/superpowers/specs/2026-08-28-locations-page-and-subscriber-modal-design.md`,
-> "no Google Maps key from the export is committed"), and
-> `tests/locations-store-finder.test.mjs` enforces that — so the repository's
-> copy of this file will always carry an **empty** `maps_api_key`. Merging it
-> without reconciling first therefore does not merely lose an editor tweak: it
-> wipes the key, the map goes dark, and nothing reports an error. The section
-> shows a warning in the theme editor when that has happened, which is the only
-> signal you get.
+> The two FAQ templates joined this list on 2026-10-19, when they were ported
+> from the live theme. Every question and answer lives in them, so an
+> unreconciled merge does not cost a layout tweak — it costs the FAQ content
+> itself. They carry the editor's auto-generated banner for the same reason the
+> other four do.
+
+> **`templates/page.location.json` no longer holds the Maps key.** It used to.
+> The store finder's key was a *section* setting, so the theme editor wrote it
+> into this template, and the GitHub integration overwrote the file on every
+> merge that touched it. That cost the map twice on 2026-10-19 — silently, since
+> `assets/locations-store-finder.js` falls back to the list and posts copy that
+> reads like ordinary page text.
 >
-> **So the procedure for this file has one extra step, and it is not optional:
-> after merging any change to `templates/page.location.json`, re-enter the key
-> in the theme editor and confirm it took.** Reconciling the theme's copy into
-> the repo first — the rule for the other three files — cannot work here,
-> because the repo is forbidden from carrying the key. Merge, then re-paste,
-> then verify:
+> The key now lives in the shop metafield **`custom.google_maps_api_key`**
+> (Settings → Custom data → Shop → Google Maps API key). A shop metafield is
+> store data: no merge, theme push or publish touches it, and nothing has to be
+> re-pasted after a release. `sections/locations-store-finder.liquid` reads the
+> metafield first and falls back to the section setting, so an older theme still
+> works; `tests/locations-store-finder.test.mjs` holds every consumer to the
+> resolved value, so one of them cannot drift back onto the wipeable setting.
+>
+> The section setting is kept only as that fallback and should stay empty. If
+> someone does fill it, this file carries a credential again and the old hazard
+> returns.
+>
+> Either way, the check after a release is the same:
 >
 > ```
 > curl -sL "https://onacoffee.com.au/pages/locations?preview_theme_id=154676789439" \

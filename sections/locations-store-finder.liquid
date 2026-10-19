@@ -36,9 +36,18 @@
     The map is still only opened when a Maps JavaScript API key is configured.
     Without one the script falls back to the list and posts `no_map_key_status`,
     so serving an open map panel would be an empty box either way.
+
+    The key itself comes from the shop metafield custom.google_maps_api_key,
+    falling back to the section setting. It used to live only in the section
+    setting, which the theme editor writes into templates/page.location.json --
+    a file the GitHub integration overwrites on merge. That wiped the key twice
+    on 2026-10-19 and the map went dark both times with nothing reporting it. A
+    shop metafield is store data: no merge, theme push or publish touches it.
   endcomment
+  assign maps_api_key = shop.metafields.custom.google_maps_api_key.value | default: section.settings.maps_api_key | strip
+
   assign initial_view = 'list'
-  if section.settings.default_view == 'map' and section.settings.maps_api_key != blank
+  if section.settings.default_view == 'map' and maps_api_key != blank
     assign initial_view = 'map'
   endif
 -%}
@@ -61,13 +70,15 @@
   deliberate configuration, not a mistake. `request.design_mode` keeps this out
   of the storefront entirely.
 {%- endcomment -%}
-{%- if request.design_mode and section.settings.default_view == 'map' and section.settings.maps_api_key == blank -%}
+{%- if request.design_mode and section.settings.default_view == 'map' and maps_api_key == blank -%}
   <div class="locations-store-finder__editor-notice" role="status">
     <strong>The map is switched off.</strong>
-    “Default view” is set to Map, but “Google Maps API key” is empty, so this page
-    serves the location list instead. Paste the browser key into that field to turn
-    the map on. The key is stored in this page’s template file — see
-    <code>docs/branching-and-release.md</code> §5 before merging a change to it.
+    “Default view” is set to Map, but no Google Maps API key is set, so this page
+    serves the location list instead. Set it in
+    <strong>Settings → Custom data → Shop → Google Maps API key</strong>, where a
+    theme merge cannot wipe it. The field below this one still works, but the
+    theme editor writes it into this page’s template file, which the GitHub
+    integration overwrites — see <code>docs/branching-and-release.md</code> §5.
   </div>
 {%- endif -%}
 
@@ -110,34 +121,7 @@
           >
         </div>
 
-        {%- if section.settings.enable_state_filter -%}
-          <div class="locations-store-finder__field">
-            <label for="LocationsFinder-state-{{ section.id }}">
-              {{- section.settings.state_label | default: 'State or territory' | escape -}}
-            </label>
-            <select id="LocationsFinder-state-{{ section.id }}" data-state-filter>
-              <option value="">{{ section.settings.all_states_label | default: 'All states' | escape }}</option>
-            </select>
-          </div>
-        {%- endif -%}
 
-        {%- if section.settings.enable_tag_filter -%}
-          <div class="locations-store-finder__field">
-            <label for="LocationsFinder-tag-{{ section.id }}">
-              {{- section.settings.tag_label | default: 'Venue type' | escape -}}
-            </label>
-            <select id="LocationsFinder-tag-{{ section.id }}" data-tag-filter>
-              <option value="">{{ section.settings.all_tags_label | default: 'All venues' | escape }}</option>
-              {%- for tag in shop.metaobjects.store_tag.values -%}
-                {%- liquid
-                  assign tag_label = tag.label.value | default: tag.label
-                  assign tag_slug = tag.slug.value | default: tag.slug | default: tag_label | handleize
-                -%}
-                <option value="{{ tag_slug | escape }}">{{ tag_label | escape }}</option>
-              {%- endfor -%}
-            </select>
-          </div>
-        {%- endif -%}
 
         {%- if section.settings.enable_radius_filter -%}
           <div class="locations-store-finder__field">
@@ -162,6 +146,55 @@
           {{- section.settings.reset_label | default: 'Clear filters' | escape -}}
         </button>
       </div>
+
+      {%- comment -%}
+        Venue type and state are single-choice filters, so they are radio
+        groups: one tap instead of a select's open-scan-tap, keyboard arrows
+        for free, and every option visible at once. Production renders the same
+        two filters this way. The radios are real inputs -- the pill and tab
+        styling is on the label -- so this needs no JavaScript to be operable.
+      {%- endcomment -%}
+      {%- if section.settings.enable_tag_filter -%}
+        <fieldset
+          class="locations-store-finder__choice-group"
+          data-tag-filter
+          data-choice-name="LocationsFinder-tag-{{ section.id }}"
+        >
+          <legend>{{ section.settings.tag_label | default: 'Venue type' | escape }}</legend>
+          <div class="locations-store-finder__choices locations-store-finder__choices--pills" data-choice-options>
+            <label class="locations-store-finder__choice">
+              <input type="radio" name="LocationsFinder-tag-{{ section.id }}" value="" checked>
+              <span>{{ section.settings.all_tags_label | default: 'All venues' | escape }}</span>
+            </label>
+            {%- for tag in shop.metaobjects.store_tag.values -%}
+              {%- liquid
+                assign tag_label = tag.label.value | default: tag.label
+                assign tag_slug = tag.slug.value | default: tag.slug | default: tag_label | handleize
+              -%}
+              <label class="locations-store-finder__choice">
+                <input type="radio" name="LocationsFinder-tag-{{ section.id }}" value="{{ tag_slug | escape }}">
+                <span>{{ tag_label | escape }}</span>
+              </label>
+            {%- endfor -%}
+          </div>
+        </fieldset>
+      {%- endif -%}
+
+      {%- if section.settings.enable_state_filter -%}
+        <fieldset
+          class="locations-store-finder__choice-group"
+          data-state-filter
+          data-choice-name="LocationsFinder-state-{{ section.id }}"
+        >
+          <legend>{{ section.settings.state_label | default: 'State or territory' | escape }}</legend>
+          <div class="locations-store-finder__choices locations-store-finder__choices--tabs" data-choice-options>
+            <label class="locations-store-finder__choice">
+              <input type="radio" name="LocationsFinder-state-{{ section.id }}" value="" checked>
+              <span>{{ section.settings.all_states_label | default: 'All states' | escape }}</span>
+            </label>
+          </div>
+        </fieldset>
+      {%- endif -%}
 
       <p class="locations-store-finder__status" data-location-status role="status" aria-live="polite"></p>
 
@@ -229,15 +262,21 @@
                   <div class="locations-store-finder__card-content">
                     <h3>{{ location_title | escape }}</h3>
                     {%- if location_address != blank or location_suburb != blank or location_state != blank -%}
-                      <address>
-                        {{ location_address | escape }}
-                        {%- if location_suburb != blank or location_state != blank -%}
-                          <br>{{ location_suburb | escape }}{% if location_suburb != blank and location_state != blank %}, {% endif %}{{ location_state | escape }}
-                        {%- endif -%}
-                      </address>
+                      <div class="locations-store-finder__card-row">
+                        {%- render 'icon-or-image', icon: 'map_pin', width: 16, class_name: 'locations-store-finder__card-icon' -%}
+                        <address>
+                          {{ location_address | escape }}
+                          {%- if location_suburb != blank or location_state != blank -%}
+                            <br>{{ location_suburb | escape }}{% if location_suburb != blank and location_state != blank %}, {% endif %}{{ location_state | escape }}
+                          {%- endif -%}
+                        </address>
+                      </div>
                     {%- endif -%}
                     {%- if location.time.value != blank -%}
-                      <div class="locations-store-finder__hours rte">{{ location.time | metafield_tag }}</div>
+                      <div class="locations-store-finder__card-row">
+                        {%- render 'icon-or-image', icon: 'stopwatch', width: 16, class_name: 'locations-store-finder__card-icon' -%}
+                        <div class="locations-store-finder__hours rte">{{ location.time | metafield_tag }}</div>
+                      </div>
                     {%- endif -%}
                     {%- if location.overview.value != blank -%}
                       <div class="locations-store-finder__overview rte">{{ location.overview | metafield_tag }}</div>
@@ -252,6 +291,7 @@
                     <div class="locations-store-finder__card-actions">
                       {%- if directions_destination != blank -%}
                         <a
+                          class="button"
                           data-directions-link
                           href="https://www.google.com/maps/dir/?api=1&amp;destination={{ directions_destination }}"
                           target="_blank"
@@ -261,7 +301,7 @@
                         </a>
                       {%- endif -%}
                       {%- if location_website != blank -%}
-                        <a data-website-link href="{{ location_website | escape }}" target="_blank" rel="noopener noreferrer">
+                        <a class="button-secondary" data-website-link href="{{ location_website | escape }}" target="_blank" rel="noopener noreferrer">
                           {{- section.settings.website_label | default: 'Visit website' | escape -}}
                         </a>
                       {%- endif -%}
@@ -356,7 +396,7 @@
             {%- endfor -%}
           ],
           "settings": {
-            "mapsApiKey": {{ section.settings.maps_api_key | strip | json }},
+            "mapsApiKey": {{ maps_api_key | json }},
             "defaultView": {{ section.settings.default_view | default: 'list' | json }},
             "defaultRadius": {{ section.settings.default_radius | default: '50' | json }},
             "paginationErrorStatus": {{ section.settings.pagination_error_status | default: 'Additional locations could not be loaded. Use the result page links to continue browsing.' | json }},
@@ -517,6 +557,91 @@
     color: #fff;
   }
 
+  /*
+   * Venue type renders as pills and state as a tab row, matching production.
+   * The radio itself is visually hidden but still focused and operated as
+   * normal -- which is why the focus ring is drawn on the label's span, not
+   * the input. A fieldset defaults to min-content width, so min-inline-size
+   * keeps a long pill row from pushing the page sideways.
+   */
+  .locations-store-finder__choice-group {
+    margin: 0 0 1rem;
+    padding: 0;
+    border: 0;
+    min-inline-size: 0;
+  }
+
+  .locations-store-finder__choice-group legend {
+    padding: 0;
+    margin-block-end: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .locations-store-finder__choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .locations-store-finder__choice {
+    cursor: pointer;
+  }
+
+  .locations-store-finder__choice input {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .locations-store-finder__choice span {
+    display: inline-block;
+    transition: background-color var(--animation-speed) var(--animation-easing),
+      color var(--animation-speed) var(--animation-easing),
+      border-color var(--animation-speed) var(--animation-easing);
+  }
+
+  .locations-store-finder__choice input:focus-visible + span {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .locations-store-finder__choices--pills .locations-store-finder__choice span {
+    padding: 0.45rem 0.95rem;
+    border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+    border-radius: 999px;
+    font-size: 0.85rem;
+  }
+
+  .locations-store-finder__choices--pills .locations-store-finder__choice input:checked + span {
+    background: var(--locations-finder-accent-color);
+    border-color: var(--locations-finder-accent-color);
+    color: #fff;
+  }
+
+  .locations-store-finder__choices--tabs {
+    gap: 0.25rem 1.25rem;
+    border-block-end: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  }
+
+  .locations-store-finder__choices--tabs .locations-store-finder__choice span {
+    padding-block: 0.4rem;
+    border-block-end: 2px solid transparent;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .locations-store-finder__choices--tabs .locations-store-finder__choice input:checked + span {
+    border-block-end-color: var(--locations-finder-accent-color);
+    color: var(--locations-finder-accent-color);
+  }
+
   .locations-store-finder__results {
     display: grid;
     gap: 1.25rem;
@@ -598,10 +723,36 @@
     align-items: center;
   }
 
-  .locations-store-finder__card-actions a {
+  /*
+   * Address and hours each sit beside their own icon, the way production does
+   * it. The icon is decorative -- icon-or-image marks it aria-hidden -- so the
+   * address still reads as one string to a screen reader.
+   */
+  .locations-store-finder__card-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.5rem;
+    align-items: start;
+  }
+
+  .locations-store-finder__card-icon {
+    /* Optical alignment with the first line of text rather than its box. */
+    margin-block-start: 0.15em;
     color: var(--locations-finder-accent-color);
-    font-weight: 700;
-    text-underline-offset: 0.2em;
+    flex: none;
+  }
+
+  /*
+   * The two actions are real buttons. They were plain inline links, which read
+   * as body copy beside the tag pills; production gives the card a filled
+   * primary and an outlined secondary. .button and .button-secondary resolve
+   * to the theme's own primary/secondary tokens, so these follow the store's
+   * button settings instead of carrying their own colours.
+   */
+  .locations-store-finder__card-actions a {
+    font-size: 0.85rem;
+    padding-block: 0.55rem;
+    padding-inline: 0.9rem;
   }
 
   .locations-store-finder__card-actions [data-location-distance] {
@@ -614,9 +765,46 @@
     border: 1px solid currentColor;
   }
 
+  /*
+   * Map and list share one height, and the list scrolls inside itself rather
+   * than extending the page.
+   *
+   * Before this, the list rendered all 300 locations in a single uncapped
+   * column. Measured on 2026-10-19: the list panel was 96,216px tall, the page
+   * 100,203px, which put the flagship section 96,985px down and the footer past
+   * 100,000px -- roughly 158 screens of scrolling to reach either. Production
+   * caps the same list at 540px with its own scrollbar
+   * (sections/ona-store-finder.liquid, .ona-sf__list, scroll height 74,121px
+   * inside it) and its whole page measures 3,376px.
+   */
+  .locations-store-finder {
+    --locations-finder-panel-size: 34rem;
+    /* List view has no map beside it, so the results get more of the window. */
+    --locations-finder-list-size: min(80vh, 56rem);
+  }
+
   .locations-store-finder__map-panel,
   .locations-store-finder__map {
-    min-block-size: 34rem;
+    min-block-size: var(--locations-finder-panel-size);
+  }
+
+  /*
+   * The results are always a fixed-height scroll region, in both views. List
+   * view measured 56,258px before this -- 300 cards in two columns, 89 screens
+   * of page -- which also pushed the filters out of reach the moment anyone
+   * started scrolling. Map view is capped to the map's height just below.
+   */
+  .locations-store-finder__list-panel {
+    max-block-size: var(--locations-finder-list-size);
+    overflow-y: auto;
+    /* Reaching the end of the list must not start scrolling the page behind it. */
+    overscroll-behavior: contain;
+    /* Keeps card borders clear of the scrollbar. */
+    padding-inline-end: 0.5rem;
+  }
+
+  .locations-store-finder[data-active-view='map'] .locations-store-finder__list-panel {
+    max-block-size: var(--locations-finder-panel-size);
   }
 
   .locations-store-finder__map-panel {
@@ -643,7 +831,7 @@
     margin: 0.2rem;
   }
 
-  @media (max-width: 990px) {
+  @media (max-width: 989px) {
     .locations-store-finder__controls {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -654,7 +842,7 @@
     }
 
     /*
-     * Map view below 990px: the map goes ABOVE the list, and the list stays on
+     * Map view below 989px: the map goes ABOVE the list, and the list stays on
      * the page. It used to be `display: none`, which meant a visitor whose
      * script had not run -- or had failed -- was left with an empty grey box
      * and no way to reach 250 locations. Production stacks them the same way
@@ -682,7 +870,7 @@
     }
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: 749px) {
     .locations-store-finder__controls,
     .locations-store-finder__list {
       grid-template-columns: 1fr;
@@ -742,7 +930,7 @@
     { "type": "text", "id": "geolocation_success_status", "label": "Location success message", "default": "Showing locations near you." },
     { "type": "text", "id": "geolocation_error_status", "label": "Location error message", "default": "Your location is unavailable. Search and other filters still work." },
     { "type": "header", "content": "Map and filters" },
-    { "type": "text", "id": "maps_api_key", "label": "Google Maps API key", "info": "Browser key, restricted to the onacoffee.com.au referrer. The list works without one; the map does not. This value is stored in templates\/page.location.json, which the GitHub integration overwrites -- reconcile that file before merging a change to it or the key is silently lost. See docs\/branching-and-release.md section 5." },
+    { "type": "text", "id": "maps_api_key", "label": "Google Maps API key (fallback)", "info": "Leave this empty. The key now lives in Settings > Custom data > Shop > Google Maps API key, which no theme merge or publish can wipe. This field is only a fallback: the theme editor writes it into templates\/page.location.json, which the GitHub integration overwrites, and that silently cost the map twice on 2026-10-19. See docs\/branching-and-release.md section 5." },
     {
       "type": "select",
       "id": "default_view",

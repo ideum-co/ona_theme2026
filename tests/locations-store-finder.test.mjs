@@ -82,11 +82,36 @@ test('rejects javascript and data website schemes while retaining absolute HTTP 
 });
 
 test('renders explicitly labelled filters, live status, and selected view controls', () => {
-  for (const control of ['search', 'state', 'tag', 'radius']) {
+  // Search and distance are single inputs, so they take a label[for].
+  for (const control of ['search', 'radius']) {
     assert.match(
       section,
       new RegExp(`<label[^>]*for="LocationsFinder-${control}-\\{\\{ section\\.id \\}\\}"[\\s\\S]*?<[^>]+id="LocationsFinder-${control}-\\{\\{ section\\.id \\}\\}"`),
       `${control} must have an explicit label`,
+    );
+  }
+
+  /*
+   * Venue type and state are radio groups, so a label[for] is the wrong
+   * mechanism -- the group is named by its <legend> and each choice by its own
+   * label. Asserting the parts that make it operable: a fieldset, a legend,
+   * and radios sharing one name so arrow keys move between them.
+   */
+  for (const [control, attribute] of [['tag', 'data-tag-filter'], ['state', 'data-state-filter']]) {
+    const group = section.match(
+      new RegExp(`<fieldset\\b[^>]*${attribute}[\\s\\S]*?</fieldset>`),
+    );
+    assert.ok(group, `${control} must be a fieldset`);
+    assert.match(group[0], /<legend>/, `${control} must be named by a legend`);
+    assert.match(
+      group[0],
+      new RegExp(`<input type="radio" name="LocationsFinder-${control}-\\{\\{ section\\.id \\}\\}" value="" checked>`),
+      `${control} must open on its "all" choice`,
+    );
+    assert.match(
+      group[0],
+      new RegExp(`data-choice-name="LocationsFinder-${control}-\\{\\{ section\\.id \\}\\}"`),
+      `${control} must tell the script which name to give choices it adds`,
     );
   }
 
@@ -219,31 +244,61 @@ test('builds venue options from every location so a related tag beyond the first
 test('places a related venue tag beyond fifty into the actual filter control', async () => {
   const { LocationsStoreFinder } = await import(`${javascriptPath}?tag-control-51=${Date.now()}`);
   const finder = new LocationsStoreFinder();
-  const allVenues = { value: '', textContent: 'All venues' };
-  const tagFilter = {
-    options: [allVenues],
-    value: '',
-    replaceChildren(option) {
-      this.options = [option];
+
+  // The server renders the leading "All venues" radio; renderChoices keeps it
+  // and rebuilds everything after it.
+  const allInput = { type: 'radio', name: 'tag', value: '', checked: true };
+  const allChoice = { children: [allInput] };
+  const container = {
+    children: [allChoice],
+    get firstElementChild() {
+      return this.children[0];
     },
-    append(option) {
-      this.options.push(option);
+    replaceChildren(first) {
+      this.children = [first];
+    },
+    append(child) {
+      this.children.push(child);
     },
   };
+  const inputsOf = () => container.children.flatMap((child) => child.children ?? []);
+  const tagFilter = {
+    dataset: { choiceName: 'tag' },
+    querySelector(selector) {
+      if (selector === '[data-choice-options]') return container;
+      if (selector === 'input:checked') return inputsOf().find((input) => input.checked) ?? null;
+      return null;
+    },
+    querySelectorAll: () => inputsOf(),
+  };
+
   finder.tagFilter = tagFilter;
   finder.config = {
     tags: Array.from({ length: 50 }, (_, index) => ({ label: `Venue ${index + 1}`, slug: `venue-${index + 1}` })),
   };
   finder.locations = [{ tagOptions: [{ label: 'Venue 51', slug: 'venue-51' }] }];
-  finder.ownerDocument = { createElement: () => ({ value: '', textContent: '' }) };
+  finder.ownerDocument = {
+    createElement: (tag) => ({
+      tagName: tag.toUpperCase(),
+      children: [],
+      append(...kids) {
+        this.children.push(...kids);
+      },
+    }),
+  };
 
   finder.populateTagFilter();
 
-  assert.equal(tagFilter.options.length, 52);
-  assert.deepEqual(
-    tagFilter.options.find(({ value }) => value === 'venue-51'),
-    { value: 'venue-51', textContent: 'Venue 51' },
+  assert.equal(container.children.length, 52, 'the fifty-first venue must reach the control');
+  const choice = container.children.find((child) =>
+    (child.children ?? []).some(({ value }) => value === 'venue-51'),
   );
+  assert.ok(choice, 'venue-51 must be rendered as a choice');
+  const [input, text] = choice.children;
+  assert.equal(input.type, 'radio');
+  assert.equal(input.name, 'tag', 'a added choice must join the existing radio group');
+  assert.equal(input.value, 'venue-51');
+  assert.equal(text.textContent, 'Venue 51');
 });
 
 test('uses coordinates only for distance filtering and map markers', async () => {
@@ -1082,7 +1137,7 @@ test('the map is the served view, and the list is never hidden to get it', () =>
   assert.match(section, /assign initial_view = 'list'/);
   assert.match(
     section,
-    /if section\.settings\.default_view == 'map' and section\.settings\.maps_api_key != blank\s*\n\s*assign initial_view = 'map'/,
+    /if section\.settings\.default_view == 'map' and maps_api_key != blank\s*\n\s*assign initial_view = 'map'/,
     'the map may only be served when a Maps API key is configured',
   );
   assert.match(section, /data-active-view="\{\{ initial_view \}\}"/);
@@ -1142,7 +1197,7 @@ test('the editor is warned when the map is configured but keyless', () => {
   // step (docs/locations-metaobject-migration.md) that had no owner.
   assert.match(
     section,
-    /\{%-\s*if request\.design_mode and section\.settings\.default_view == 'map' and section\.settings\.maps_api_key == blank\s*-%\}/,
+    /\{%-\s*if request\.design_mode and section\.settings\.default_view == 'map' and maps_api_key == blank\s*-%\}/,
     'the notice must fire on exactly the contradiction, and only in the editor',
   );
   assert.match(section, /locations-store-finder__editor-notice/);
@@ -1232,4 +1287,173 @@ test('the map opens on the country, and only re-frames once results are narrowed
     /\} else \{[\s\S]{0,700}?this\.map\.setCenter\(NATIONAL_VIEW\.center\);\s*\n\s*this\.map\.setZoom\(NATIONAL_VIEW\.zoom\);/,
     'the un-narrowed branch must restore the national framing, not leave the camera where it was',
   );
+});
+
+test('the result list scrolls inside itself instead of extending the page', () => {
+  /*
+   * Map view puts the list beside the map, and the list holds every location
+   * the loader has aggregated -- 300 of them. Measured on the deployed theme on
+   * 2026-10-19, with no cap on the panel: the list was 96,216px tall and the
+   * page 100,203px, which left the flagship section 96,985px down and the
+   * footer past 100,000px. Production caps the same list at 540px with its own
+   * scrollbar (sections/ona-store-finder.liquid, .ona-sf__list) and its whole
+   * page measures 3,376px.
+   *
+   * Both panels read the one custom property, so the map cannot grow past the
+   * list or the list past the map.
+   */
+  const stylesheet = section.match(/{%\s*stylesheet\s*%}([\s\S]*?){%\s*endstylesheet\s*%}/);
+  assert.ok(stylesheet, 'the store finder must carry a scoped stylesheet');
+  const css = stylesheet[1];
+
+  const basePanel = css.match(/\n  \.locations-store-finder__list-panel\s*\{([^}]*)\}/);
+  assert.ok(basePanel, 'the list panel must be styled in both views');
+  assert.match(basePanel[1], /max-block-size:\s*var\(--locations-finder-list-size\)/,
+    'the list panel must be capped in list view too');
+  assert.match(basePanel[1], /overflow-y:\s*auto/,
+    'the list panel must scroll inside itself');
+  assert.match(basePanel[1], /overscroll-behavior:\s*contain/,
+    'reaching the end of the list must not scroll the page behind it');
+
+  const listPanel = css.match(
+    /\.locations-store-finder\[data-active-view='map'\]\s+\.locations-store-finder__list-panel\s*\{([^}]*)\}/,
+  );
+  assert.ok(listPanel, 'map view must style the list panel');
+  assert.match(listPanel[1], /max-block-size:\s*var\(--locations-finder-panel-size\)/,
+    'map view must cap the list to the map height');
+
+  const mapPanel = css.match(
+    /\.locations-store-finder__map-panel,\s*\n\s*\.locations-store-finder__map\s*\{([^}]*)\}/,
+  );
+  assert.ok(mapPanel, 'the map panel must declare its height');
+  assert.match(mapPanel[1], /min-block-size:\s*var\(--locations-finder-panel-size\)/,
+    'the map must read the same custom property as the list');
+
+  assert.match(css, /--locations-finder-panel-size:\s*[\d.]+rem/,
+    'the shared panel height must be defined once');
+  assert.match(css, /--locations-finder-list-size:\s*min\(/,
+    'list view must have its own cap');
+});
+
+test('the finder stays on Horizon\'s two breakpoints', () => {
+  /*
+   * Horizon has 749/750 and 989/990 and the whole theme is built on them. This
+   * section had invented 990 and 640: at exactly 990px both the max-width and
+   * the min-width rules applied, and 640 left the band from 641 to 749 on a
+   * desktop layout the rest of the theme had already dropped.
+   *
+   * Scoped to this section on purpose. Stock Horizon files (main-cart,
+   * product-information, bento-grid) carry their own finer boundaries, and a
+   * theme-wide rule would flag upstream code this repo does not own.
+   */
+  for (const [query, kind, px] of section.matchAll(/@media[^{]*?\(\s*(max|min)-width\s*:\s*(\d+)px/g)) {
+    const allowed = kind === 'max' ? [749, 989] : [750, 990];
+    assert.ok(
+      allowed.includes(Number(px)),
+      `"${query.trim()}" uses ${px}px; this theme's ${kind}-width boundaries are ${allowed.join(' and ')}`,
+    );
+  }
+});
+
+test('each card offers two real buttons and labelled address and hours', () => {
+  /*
+   * The two actions were plain inline links, so they read as body copy sitting
+   * under the tag pills. Production gives every card a filled primary action
+   * and an outlined secondary one, and puts an icon beside the address and the
+   * opening hours.
+   *
+   * .button and .button-secondary resolve to the theme's own primary and
+   * secondary button tokens (assets/base.css), so the card follows the store's
+   * button settings rather than carrying a private copy of the colours.
+   */
+  const actions = section.match(
+    /<div class="locations-store-finder__card-actions">([\s\S]*?)<\/div>/,
+  );
+  assert.ok(actions, 'the card must render an actions row');
+  assert.match(actions[1], /<a\s[^>]*class="button"[^>]*data-directions-link|class="button"[\s\S]{0,120}data-directions-link/,
+    'directions must be the primary button');
+  assert.match(actions[1], /class="button-secondary"[^>]*data-website-link/,
+    'website must be the secondary button');
+
+  // Both icons are decorative; icon-or-image marks them aria-hidden, so the
+  // address still reads as a single string to a screen reader.
+  for (const [icon, label] of [['map_pin', 'address'], ['stopwatch', 'opening hours']]) {
+    assert.match(
+      section,
+      new RegExp(`render 'icon-or-image', icon: '${icon}'`),
+      `the ${label} must carry its icon`,
+    );
+  }
+
+  const stylesheet = section.match(/{%\s*stylesheet\s*%}([\s\S]*?){%\s*endstylesheet\s*%}/)[1];
+  assert.match(stylesheet, /\.locations-store-finder__card-row\s*\{[^}]*grid-template-columns:\s*auto\s+minmax\(0,\s*1fr\)/,
+    'an icon row must not let the icon squash the text');
+});
+
+test('the hidden radios stay operable by keyboard', () => {
+  /*
+   * The pill and tab styling hangs off `input:checked + span`, so the radio has
+   * to stay in the accessibility tree and the tab order. The tempting tidy-up
+   * is `display: none` or `visibility: hidden` on the input -- either removes
+   * it from the tab order outright and the filters become mouse-only, with
+   * nothing on screen to show it. Clipping keeps it focusable.
+   *
+   * Because the input itself is invisible, its focus ring has to be drawn on
+   * the label's span instead, or a keyboard visitor cannot see where they are.
+   */
+  const stylesheet = section.match(/{%\s*stylesheet\s*%}([\s\S]*?){%\s*endstylesheet\s*%}/)[1];
+
+  const hidden = stylesheet.match(/\.locations-store-finder__choice input\s*\{([^}]*)\}/);
+  assert.ok(hidden, 'the radio must be visually hidden');
+  assert.doesNotMatch(hidden[1], /display:\s*none/, 'display: none removes the radio from the tab order');
+  assert.doesNotMatch(hidden[1], /visibility:\s*hidden/, 'visibility: hidden removes the radio from the tab order');
+  assert.match(hidden[1], /clip-path:\s*inset\(50%\)/, 'the radio must be clipped, not removed');
+
+  assert.match(
+    stylesheet,
+    /\.locations-store-finder__choice input:focus-visible \+ span\s*\{[^}]*outline:/,
+    'focus must be visible on the span, since the input itself is not',
+  );
+
+  for (const variant of ['pills', 'tabs']) {
+    assert.match(
+      stylesheet,
+      new RegExp(`\\.locations-store-finder__choices--${variant} \\.locations-store-finder__choice input:checked \\+ span`),
+      `${variant} must show which choice is selected`,
+    );
+  }
+});
+
+test('the Maps key is read from the shop, not from the theme', () => {
+  /*
+   * The key used to live only in the section setting, which the theme editor
+   * writes into templates/page.location.json -- a file the GitHub integration
+   * overwrites on merge. It was wiped twice on 2026-10-19 and the map went dark
+   * both times with nothing reporting it, because the script falls back to the
+   * list and posts copy that reads as ordinary page text.
+   *
+   * A shop metafield is store data. No merge, theme push or publish touches it.
+   * The section setting stays as a fallback so an existing theme keeps working,
+   * but the metafield wins.
+   */
+  assert.match(
+    section,
+    /assign maps_api_key = shop\.metafields\.custom\.google_maps_api_key\.value \| default: section\.settings\.maps_api_key/,
+    'the metafield must be read first, with the section setting as fallback',
+  );
+
+  // Every consumer must go through the resolved variable, or one of them keeps
+  // reading the wipeable setting and the three disagree about whether there is
+  // a key at all.
+  const settingReads = section.match(/section\.settings\.maps_api_key/g) ?? [];
+  assert.equal(
+    settingReads.length,
+    1,
+    'section.settings.maps_api_key may appear only in the fallback assignment',
+  );
+  assert.match(section, /"mapsApiKey": \{\{ maps_api_key \| json \}\}/,
+    'the payload must carry the resolved key');
+
+  // Still never committed.
+  assert.doesNotMatch(section, /AIza[0-9A-Za-z_-]{20,}/, 'a Google Maps key must not be committed');
 });
