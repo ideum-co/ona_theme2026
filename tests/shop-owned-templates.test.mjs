@@ -227,3 +227,29 @@ test('the coffee spotlight card keeps the price Victor added in #185', () => {
     'the price must sit directly above the variant picker and buy button',
   );
 });
+
+test('the release procedure never sends anyone to the retired staging branch', () => {
+  // `staging` died on 2026-10-16 (docs/branching-and-release.md §1a) and
+  // `staging-v2` replaced it. The rename missed the numbered release steps, so
+  // §4 still told maintainers to open the release PR from the dead branch --
+  // which would ship nothing, because every change now lands on `staging-v2`.
+  // Codex caught it on PR #191.
+  //
+  // This checks the two places that actually route somebody, not every mention
+  // of the word: §1a and §2 name `staging` on purpose, step 3 says "the staging
+  // theme" as a common noun, and step 4 now names it in a warning NOT to use it.
+  // A word-level lint flagged all three and would have to be weakened until it
+  // caught nothing.
+  const doc = readFileSync(resolve(root, 'docs/branching-and-release.md'), 'utf8');
+  const flow = doc.slice(doc.indexOf('## 4. The flow'), doc.indexOf('## 5.'));
+  assert.ok(flow.length > 200, 'could not locate the flow section');
+
+  // a. the release PR's source branch
+  assert.match(flow, /release PR from `staging-v2` into\n\s*`main`/, 'step 4 must ship from staging-v2');
+  assert.doesNotMatch(flow, /from `staging` into/, 'step 4 must not ship from the retired branch');
+
+  // b. the branch the diagram shows feeding the preview theme
+  const diagram = flow.slice(flow.indexOf('```'), flow.indexOf('```', flow.indexOf('```') + 3));
+  assert.match(diagram, /ona_theme2026\/staging-v2/, 'the diagram must point the preview theme at staging-v2');
+  assert.doesNotMatch(diagram, /ona_theme2026\/staging\b(?!-v2)/, 'the diagram still shows the retired branch');
+});

@@ -115,8 +115,8 @@ empty or partial first sync looks identical to a healthy one in the admin.
 > delete — it is unpublished, is not anyone's rollback, and its content is in
 > this repository.
 
-Until the staging theme exists, `staging` is still useful — it keeps unreleased
-work off production — but you will not get a preview from it.
+Until the staging theme exists, `staging-v2` is still useful — it keeps
+unreleased work off production — but you will not get a preview from it.
 
 ---
 
@@ -125,15 +125,16 @@ work off production — but you will not get a preview from it.
 ```
 feat/thing ──PR──▶ staging-v2 ──release PR──▶ main ──▶ LIVE
                       │
-                      └─▶ ona_theme2026/staging (preview, unpublished)
+                      └─▶ ona_theme2026/staging-v2 (preview, unpublished)
 ```
 
 1. Branch from **`staging-v2`**, not from `main`.
 2. Open the PR **into `staging-v2`**. Review it, get Codex on it, merge it.
 3. Check it on the staging theme's preview URL.
-4. When a batch is ready to ship, open **one release PR from `staging` into
+4. When a batch is ready to ship, open **one release PR from `staging-v2` into
    `main`**, titled `release: <date> — <summary>`, with the §6 checklist in the
-   body. Merging that PR is the deploy.
+   body. Merging that PR is the deploy. Never open it from `staging`; that
+   branch is retired (§1a) and a release PR from it would ship nothing.
 5. Keep `staging-v2` in sync afterwards — `main` must never be ahead of
    `staging-v2`. This is the step that killed the first staging branch (§1a);
    do it in the same sitting as the merge, not later.
@@ -218,8 +219,8 @@ Paste into the body of every `staging-v2` → `main` PR:
   defence is the reconcile-first rule in §5 and agreeing who edits the live
   theme and when.
 - **CI runs, but nothing requires it.** `.github/workflows/tests.yml` now runs
-  the suite on pushes and pull requests to both `main` and `staging` — the
-  repository had none before 2026-10-15. It is **not** a required status check,
+  the suite on pushes and pull requests to `main`, `staging-v2` and `staging`
+  — the repository had none before 2026-10-15. It is **not** a required status check,
   so `main`'s "strict status checks" setting still has no contexts to enforce
   and a red run does not block a merge. One settings change finishes it:
   Settings → Branches → `main` → Require status checks → add **`unit`**, and
