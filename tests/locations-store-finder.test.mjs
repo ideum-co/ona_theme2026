@@ -92,8 +92,10 @@ test('renders explicitly labelled filters, live status, and selected view contro
 
   assert.match(section, /data-location-status[^>]*role="status"[^>]*aria-live="polite"/);
   assert.match(section, /data-result-count[^>]*role="status"[^>]*aria-live="polite"/);
-  assert.match(section, /<button[^>]*data-view="list"[^>]*aria-pressed="true"/);
-  assert.match(section, /<button[^>]*data-view="map"[^>]*aria-pressed="false"/);
+  // Both toggles reflect the served view rather than hardcoding it -- see the
+  // "map is the served view" test below for why.
+  assert.match(section, /<button[^>]*data-view="list"[^>]*aria-pressed="\{% if initial_view == 'list' %\}true\{% else %\}false\{% endif %\}"/);
+  assert.match(section, /<button[^>]*data-view="map"[^>]*aria-pressed="\{% if initial_view == 'map' %\}true\{% else %\}false\{% endif %\}"/);
   assert.match(section, /<button[^>]*data-use-location/);
   assert.match(section, /<a[^>]*data-directions-link[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
   assert.match(section, /<a[^>]*data-website-link[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
@@ -1064,41 +1066,61 @@ test('rejects a repeated pagination cursor instead of appending a page twice', a
   );
 });
 
-test('the server always renders the list, so the page survives without JavaScript', () => {
-  // Codex, PR #191. Rendering the map panel open when `default_view` is map
-  // looked like the obvious way to stop the list-then-map flip. It is wrong
-  // twice over:
+test('the map is the served view, and the list is never hidden to get it', () => {
+  // Production (sections/ona-store-finder.liquid on theme 160815546559) serves
+  // data-view="map" with the Map toggle already active. This section must do
+  // the same, because letting the script switch after boot is a visible flip.
   //
-  //   1. setView('map') calls showListView() BEFORE it awaits the Maps API
-  //      (assets/locations-store-finder.js), so an SSR map state is reset to
-  //      list and then back -- map, list, map, with aria-pressed flipping each
-  //      time. Serving the list makes that first call a no-op and removes the
-  //      flicker entirely.
-  //   2. If the module never runs, an SSR map panel is an empty grey box, and
-  //      the max-width:990px rule hides .locations-store-finder__list-panel in
-  //      map view -- so every phone would get no locations at all.
+  // Codex raised two objections on PR #191 and both were correct about this
+  // section as it stood. They are fixed at the source, not by abandoning the
+  // setting, and these assertions pin the fixes together -- the served map
+  // view is only safe BECAUSE of them:
   //
-  // The list is the baseline that degrades safely. The script owns the switch.
-  assert.match(section, /data-active-view="list"/, 'the served markup must open on the list');
-  assert.match(section, /data-map-panel hidden>/, 'the map panel must be hidden in the served markup');
-  assert.doesNotMatch(section, /initial_view/, 'the server must not derive a view; the script owns it');
-  assert.doesNotMatch(
+  //   1. the script must not reset a view the server already rendered;
+  //   2. the list must survive at every width, so a page whose script never
+  //      ran still reaches all 250 locations instead of showing a grey box.
+  assert.match(section, /assign initial_view = 'list'/);
+  assert.match(
     section,
-    /data-active-view="\{\{/,
-    'data-active-view must be a literal, not driven by a setting',
+    /if section\.settings\.default_view == 'map' and section\.settings\.maps_api_key != blank\s*\n\s*assign initial_view = 'map'/,
+    'the map may only be served when a Maps API key is configured',
+  );
+  assert.match(section, /data-active-view="\{\{ initial_view \}\}"/);
+  assert.doesNotMatch(section, /data-active-view="(list|map)"/, 'the served view must not be hardcoded');
+  assert.match(
+    section,
+    /data-map-panel\{% unless initial_view == 'map' %\} hidden\{% endunless %\}>/,
+    'the map panel must start open exactly when initial_view is map',
   );
 
-  // ...and the script must still be the thing that honours the setting.
+  // (2) nothing may hide the list panel, at any width. This is the assertion
+  // that makes a served map view safe without JavaScript.
+  const stylesheet = section.slice(section.indexOf('{% stylesheet %}'), section.indexOf('{% endstylesheet %}'));
+  const hidesList = stylesheet
+    .split('}')
+    .filter((rule) => /list-panel/.test(rule) && /display:\s*none/.test(rule));
+  assert.deepEqual(hidesList, [], `the list panel must never be hidden:\n${hidesList.join('\n')}`);
+  assert.match(
+    stylesheet,
+    /\[data-active-view='map'\] \.locations-store-finder__map-panel \{\s*\n\s*order: 1;/,
+    'on narrow screens the map stacks above the list, as production does',
+  );
+
+  // (1) the script keeps the served state instead of tearing it down.
   assert.match(
     javascript,
-    /if \(this\.settings\.defaultView === 'map'\) \{\s*\n\s*this\.setView\('map'\);/,
-    'the boot path must act on defaultView, or the setting is inert',
+    /this\.activeView = this\.dataset\.activeView === 'map' \? 'map' : 'list';/,
+    'the script must seed activeView from what the server rendered',
   );
   assert.match(
     javascript,
-    /const apiKey = String\(this\.settings\.mapsApiKey \?\? ''\)\.trim\(\);\s*\n\s*if \(!apiKey\) \{/,
-    'setView must fall back to the list when no Maps key is configured',
+    /if \(this\.activeView !== 'map'\) this\.showListView\(\);/,
+    'setView must not reset a view that is already the map',
   );
+
+  // ...and the setting must still reach the script, or none of this fires.
+  assert.match(javascript, /if \(this\.settings\.defaultView === 'map'\) \{\s*\n\s*this\.setView\('map'\);/);
+  assert.match(javascript, /const apiKey = String\(this\.settings\.mapsApiKey \?\? ''\)\.trim\(\);\s*\n\s*if \(!apiKey\) \{/);
 });
 
 test('/pages/locations opens on the map', () => {

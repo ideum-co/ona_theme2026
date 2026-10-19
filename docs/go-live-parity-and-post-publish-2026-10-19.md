@@ -61,41 +61,64 @@ and Shopify Inbox are two chat widgets on one site.
 The page uses template suffix **`location`** (singular → `templates/page.location.json`).
 `templates/page.locations.json` is **not used by any page** and is dead weight.
 
-Two separate problems, one of which this repo cannot fix:
+**Nothing about Google changed. The key was never carried across.** The live
+store finder is a different section — `sections/ona-store-finder.liquid`, class
+prefix `.ona-sf__`, driven by `assets/ona-store-finder.js` — and its first line
+is:
 
-**a. No Maps JavaScript API key.** The rendered config on `154676789439` reads
-`"mapsApiKey": ""`. `assets/locations-store-finder.js:355` detects this, posts
-`no_map_key_status` and falls back to the list — so the map never renders. The
-live theme does not need a key because it uses Google Maps **iframe embeds**
-(3 of them on that page); the 2026 rebuild uses the **Maps JavaScript API**,
-which does. That is a new external dependency introduced by the rebuild.
+```liquid
+assign google_key = section.settings.google_api_key | default: 'AIzaSy…pmJ7k'
+```
 
-> **This is Felipe's to do, and only Felipe's.** A Maps API key is a credential.
-> Set it in Admin → Customise → the store finder section → **Maps API key**.
-> Restrict the key to the `onacoffee.com.au` HTTP referrer in Google Cloud.
+A hardcoded fallback key. That is why the map has always worked on the live
+theme even with the section setting empty. The 2026 rebuild
+(`sections/locations-store-finder.liquid`, `.locations-store-finder__*`) reads
+`section.settings.maps_api_key` with **no default**, and nobody has filled it
+in, so the rendered config is `"mapsApiKey": ""` and the script posts
+`no_map_key_status` instead of drawing a map. Same Google product, same account,
+same API — just an empty setting.
 
-**b. The map was not the first thing shown.** Fixed in this PR, by setting
-`default_view: "map"` in `templates/page.location.json`. The script reads that
-from the section's JSON payload and calls `setView('map')` on boot.
+> **Felipe sets the key; nobody else can.** Customise → the store finder section
+> → **Maps API key**. The current value is visible in the page source of
+> `/pages/locations` on the live theme, in the `window.__onaSf` script block.
+> Restrict it to the `onacoffee.com.au` referrer in Google Cloud if it is not
+> already.
+>
+> ⚠️ **Where that value lands is a trap.** `maps_api_key` is a *section setting*,
+> so the editor writes it into `templates/page.location.json` — a file this
+> repository tracks. The moment it is set in the admin, the theme's copy and the
+> repo's copy diverge, and the next merge that touches that file wipes the key
+> and the map goes dark again with no error. Two ways out, and it needs a
+> decision: either commit the key to the repo as the live section does (it is
+> already public in every page's source, so this leaks nothing new), or treat
+> `templates/page.location.json` as reconcile-before-you-touch like the other
+> shop-owned JSON in §5 of `docs/branching-and-release.md`.
 
-The section deliberately keeps serving the **list** whatever the setting says.
-Rendering the map panel open server-side looks like the tidier fix and was tried
-first; Codex caught two problems with it on PR #191:
+**Map as the primary view — restored.** Production serves `data-view="map"` with
+the Map toggle already active; the 2026 section was serving the list and leaving
+the switch to the script. `templates/page.location.json` now sets
+`default_view: "map"` and the section renders that view server-side.
 
-- `setView('map')` calls `showListView()` *before* it awaits the Maps API, so an
-  SSR map state is reset to list and then back — map, list, map — a worse
-  flicker than the one it was meant to remove. With the list served first that
-  call is a no-op and there is no flicker at all.
-- If the module never runs, an SSR map panel is an empty grey box forever, and
-  the `max-width: 990px` rule hides `.locations-store-finder__list-panel` in map
-  view — so every phone would get no locations at all instead of a usable list.
+Two defects had to be fixed first, both found by Codex on PR #191, because
+without them a served map view is worse than no map view:
 
-**(b) has no visible effect until (a) is done**: without a key the script falls
-back to the list and posts `no_map_key_status`.
+1. `setView('map')` reset to the list before awaiting the Maps API, so a served
+   map view flipped map → list → map. The script now seeds `activeView` from the
+   rendered `data-active-view` and only resets when it is not already the map.
+2. The `max-width: 990px` rule hid `.locations-store-finder__list-panel` in map
+   view. A visitor whose script never ran would have seen an empty grey box and
+   no way to reach 250 locations. The list is no longer hidden at any width — on
+   narrow screens the map stacks above it, which is what production does.
+
+A test pins all of it together, because the served map view is only safe while
+both fixes hold.
 
 The data side is ready: 250 store locations, **all 250 with coordinates**.
 
----
+> **Do not copy production's attribution CSS.** `sections/ona-store-finder.liquid`
+> hides the Google logo and the "Report errors" link, with a comment in the file
+> admitting `NOTE: violates Google Maps TOS`. Whatever is decided about that on
+> the live theme, it should not be carried into the new one by default.
 
 ## 3. Blocking: the three enquiry forms (fixed here, must be verified)
 

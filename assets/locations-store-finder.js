@@ -340,6 +340,10 @@ export class LocationsStoreFinder extends HTMLElementBase {
     this.origin = null;
     this.map = null;
     this.markers = [];
+    // Seed from what the server actually rendered. Without this the boot path
+    // cannot tell "already showing the map" from "not initialised", and resets
+    // a correctly served map view to the list before the Maps API resolves.
+    this.activeView = this.dataset.activeView === 'map' ? 'map' : 'list';
     this.visibleLocations = [...this.locations];
 
     if (this.locations.length !== this.cards.length) {
@@ -582,7 +586,10 @@ export class LocationsStoreFinder extends HTMLElementBase {
       return;
     }
 
-    this.showListView();
+    // Only fall back to the list while the map loads if the list is what the
+    // visitor is currently looking at. Resetting a served map view produces a
+    // map -> list -> map flip and, on narrow screens, a layout jump.
+    if (this.activeView !== 'map') this.showListView();
     try {
       await this.initializeMap(apiKey);
       if (this.requestedView !== 'map' || this.finderConnected === false) return;

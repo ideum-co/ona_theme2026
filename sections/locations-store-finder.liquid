@@ -14,27 +14,33 @@
   endif
 
   comment
-    The server always renders the LIST, whatever `default_view` says, and the
-    script owns the switch to the map. An earlier version of this section
-    rendered the map panel open when the setting asked for it; Codex caught two
-    problems with that on PR #191, both real:
+    Which panel the server renders open.
 
-    1. assets/locations-store-finder.js `setView('map')` calls `showListView()`
-       before it awaits the Maps API, so an SSR map state is reset to list and
-       then back again -- map, list, map, with aria-pressed flipping each time.
-       That is a worse flicker than the one it was meant to remove, and with the
-       list rendered first there is no flicker at all: the no-op showListView()
-       leaves the page as served until the map is genuinely ready.
-    2. If the module never runs -- blocked, cached stale, a JS error anywhere
-       earlier on the page -- an SSR map panel is an empty grey box forever, and
-       the `max-width: 990px` rule below sets
-       `[data-active-view='map'] .locations-store-finder__list-panel { display: none }`,
-       so every phone would get no locations at all rather than a usable list.
+    The production store finder (`sections/ona-store-finder.liquid` on theme
+    160815546559) serves `data-view="map"` with the Map toggle already active,
+    and that is the behaviour ONA expects. Rendering the list and letting the
+    script switch is a visible flip on the one setting that exists to avoid it.
 
-    `default_view: map` is still honoured: the script reads it from the JSON
-    payload and calls setView('map') on boot once a Maps key is present. The
-    list is simply the baseline that survives without JavaScript.
+    Codex raised two objections to doing this on PR #191. Both were right about
+    THIS section as it stood, and both are now fixed at the source rather than
+    by giving up the setting:
+
+      1. setView('map') reset to list before awaiting the Maps API. The script
+         now seeds activeView from this attribute and only resets when it is
+         not already showing the map, so the served state is left alone.
+      2. The max-width:990px rule hid the list panel in map view, so a page
+         whose script never ran would show an empty grey box and no locations.
+         The list is no longer hidden at any width -- on narrow screens the map
+         sits above it, which is what production does too.
+
+    The map is still only opened when a Maps JavaScript API key is configured.
+    Without one the script falls back to the list and posts `no_map_key_status`,
+    so serving an open map panel would be an empty box either way.
   endcomment
+  assign initial_view = 'list'
+  if section.settings.default_view == 'map' and section.settings.maps_api_key != blank
+    assign initial_view = 'map'
+  endif
 -%}
 
 <script src="{{ 'locations-store-finder.js' | asset_url }}" type="module"></script>
@@ -57,7 +63,7 @@
     data-current-page="{{ paginate.current_page }}"
     data-next-page-url="{{ paginate.next.url | escape }}"
     data-marker-icon="{{ 'map-active.svg' | asset_url }}"
-    data-active-view="list"
+    data-active-view="{{ initial_view }}"
     {{ section.shopify_attributes }}
   >
     <div class="locations-store-finder__inner">
@@ -146,7 +152,7 @@
             type="button"
             data-view="list"
             aria-controls="LocationsFinder-list-{{ section.id }}"
-            aria-pressed="true"
+            aria-pressed="{% if initial_view == 'list' %}true{% else %}false{% endif %}"
           >
             {{- section.settings.list_view_label | default: 'List' | escape -}}
           </button>
@@ -154,7 +160,7 @@
             type="button"
             data-view="map"
             aria-controls="LocationsFinder-map-{{ section.id }}"
-            aria-pressed="false"
+            aria-pressed="{% if initial_view == 'map' %}true{% else %}false{% endif %}"
           >
             {{- section.settings.map_view_label | default: 'Map' | escape -}}
           </button>
@@ -246,7 +252,7 @@
           </ul>
         </div>
 
-        <div id="LocationsFinder-map-{{ section.id }}" class="locations-store-finder__map-panel" data-map-panel hidden>
+        <div id="LocationsFinder-map-{{ section.id }}" class="locations-store-finder__map-panel" data-map-panel{% unless initial_view == 'map' %} hidden{% endunless %}>
           <div
             class="locations-store-finder__map"
             data-location-map
@@ -608,12 +614,27 @@
       grid-column: 1 / -1;
     }
 
+    /*
+     * Map view below 990px: the map goes ABOVE the list, and the list stays on
+     * the page. It used to be `display: none`, which meant a visitor whose
+     * script had not run -- or had failed -- was left with an empty grey box
+     * and no way to reach 250 locations. Production stacks them the same way
+     * (sections/ona-store-finder.liquid, max-width:999px). Codex, PR #191.
+     */
     .locations-store-finder[data-active-view='map'] .locations-store-finder__results {
+      display: flex;
+      flex-direction: column;
       grid-template-columns: 1fr;
     }
 
+    .locations-store-finder[data-active-view='map'] .locations-store-finder__map-panel {
+      order: 1;
+      block-size: min(50vh, 26rem);
+    }
+
     .locations-store-finder[data-active-view='map'] .locations-store-finder__list-panel {
-      display: none;
+      order: 2;
+      margin-block-start: 1rem;
     }
 
     .locations-store-finder__map-panel,
