@@ -12,6 +12,21 @@
   if section.settings.background_color != blank
     render 'contrast-override', background_color: section.settings.background_color, text_color: section.settings.text_color, section_id: section.id
   endif
+
+  comment
+    Which panel the server renders open. The script re-asserts this on boot, so
+    rendering 'list' and letting it switch produced a visible list-then-map flip
+    on the one setting that exists to avoid it. Honour the setting here instead.
+
+    The map is only opened when a Maps JavaScript API key is configured: without
+    one, assets/locations-store-finder.js falls back to the list and sets
+    `no_map_key_status`, so an SSR map panel would be an empty grey box the
+    script then closes again.
+  endcomment
+  assign initial_view = 'list'
+  if section.settings.default_view == 'map' and section.settings.maps_api_key != blank
+    assign initial_view = 'map'
+  endif
 -%}
 
 <script src="{{ 'locations-store-finder.js' | asset_url }}" type="module"></script>
@@ -34,7 +49,7 @@
     data-current-page="{{ paginate.current_page }}"
     data-next-page-url="{{ paginate.next.url | escape }}"
     data-marker-icon="{{ 'map-active.svg' | asset_url }}"
-    data-active-view="list"
+    data-active-view="{{ initial_view }}"
     {{ section.shopify_attributes }}
   >
     <div class="locations-store-finder__inner">
@@ -123,7 +138,7 @@
             type="button"
             data-view="list"
             aria-controls="LocationsFinder-list-{{ section.id }}"
-            aria-pressed="true"
+            aria-pressed="{% if initial_view == 'list' %}true{% else %}false{% endif %}"
           >
             {{- section.settings.list_view_label | default: 'List' | escape -}}
           </button>
@@ -131,7 +146,7 @@
             type="button"
             data-view="map"
             aria-controls="LocationsFinder-map-{{ section.id }}"
-            aria-pressed="false"
+            aria-pressed="{% if initial_view == 'map' %}true{% else %}false{% endif %}"
           >
             {{- section.settings.map_view_label | default: 'Map' | escape -}}
           </button>
@@ -223,7 +238,7 @@
           </ul>
         </div>
 
-        <div id="LocationsFinder-map-{{ section.id }}" class="locations-store-finder__map-panel" data-map-panel hidden>
+        <div id="LocationsFinder-map-{{ section.id }}" class="locations-store-finder__map-panel" data-map-panel{% unless initial_view == 'map' %} hidden{% endunless %}>
           <div
             class="locations-store-finder__map"
             data-location-map

@@ -9,9 +9,9 @@ name: tests
 
 on:
   pull_request:
-    branches: [main, staging]
+    branches: [main, staging-v2, staging]
   push:
-    branches: [main, staging]
+    branches: [main, staging-v2, staging]
 
 jobs:
   unit:

@@ -75,6 +75,30 @@ test('every JSON template is inside Shopify\'s section and block limits', () => 
   }
 });
 
+/**
+ * Every node the theme editor has switched off, at ANY depth, as sorted dotted
+ * paths -- `section`, or `section.block`, or `section.block.nested`.
+ *
+ * It recurses because a first version looked only at top-level sections, and
+ * the empty Brew Guide tab is a BLOCK: `product_tabs_fW4maV.product_tab_4tzPxX`.
+ * Re-enabling it put that tab back on all 92 PDPs with the suite still green.
+ */
+const disabledPaths = (sections) => {
+  const found = [];
+  const walk = (node, path) => {
+    for (const [id, child] of Object.entries(node.blocks ?? {})) {
+      const childPath = `${path}.${id}`;
+      if (child.disabled === true) found.push(childPath);
+      walk(child, childPath);
+    }
+  };
+  for (const [id, section] of Object.entries(sections)) {
+    if (section.disabled === true) found.push(id);
+    walk(section, id);
+  }
+  return found.sort();
+};
+
 test('index.json keeps the editor-made homepage sections', () => {
   const { sections, order } = readTemplate('index.json');
 
@@ -96,9 +120,35 @@ test('index.json keeps the editor-made homepage sections', () => {
   assert.equal(Object.keys(sections.hero_ona.blocks).length, 4);
 
   // Sections the editor had switched off. They came back enabled once.
-  for (const id of ['club_invite_TGPaF8', 'club_benefits_QGRDdd', 'product_intro_k9p6yn']) {
-    assert.equal(sections[id].disabled, true, `${id} must stay disabled`);
-  }
+  //
+  // This asserts the WHOLE disabled set at every depth, not a chosen few. Two
+  // earlier versions were incomplete: one listed six of thirteen sections while
+  // claiming to list all, and the next still missed every nested block. Both
+  // times a stale snapshot could re-enable something with the suite green --
+  // the exact overwrite this file exists to catch. Comparing the complete set
+  // also fails when something is newly disabled, which is the point: that is a
+  // real change to the storefront and should take a deliberate edit to record.
+  //
+  // Measured 2026-10-16. find_your_coffee and product_highlight_KkUAVM were in
+  // this list on 2026-10-14 and have since been switched back on in the editor;
+  // product_highlight is now the home of the In Sequence campaign. The list
+  // failing on that change is the mechanism working, not a stale test.
+  assert.deepEqual(disabledPaths(sections), [
+    'club_benefits',
+    'club_benefits_QGRDdd',
+    'club_invite_QLL4T3',
+    'club_invite_TGPaF8',
+    'collection_carousel_GRkRhJ.collection_f8jkdP',
+    'discover_by_category',
+    'floating_badge_r89NRP',
+    'hero_ona.icon_9aLnRm',
+    'press_band',
+    'product_intro_k9p6yn',
+    'raspberry_candy',
+    'slideshow_nBcaMx.slide_8Ar7Nq',
+    'special_release',
+    'story_video_LN6zzn',
+  ], 'the set of disabled homepage sections and blocks changed');
 
   // The WFG counter is the one deliberate addition, second on the page.
   assert.equal(order[1], 'wfg_donation_counter');
@@ -119,11 +169,26 @@ test('product.json keeps the editor-wired PDP', () => {
     assert.ok(order.includes(id), `editor-made section ${id} is not in order`);
   }
 
-  // Superseded by the bespoke sections above; enabling them double-renders the
-  // brew guide, story and FAQs. The repo copy had all three on.
-  for (const id of ['story', 'brew_guide', 'faqs']) {
-    assert.equal(sections[id].disabled, true, `${id} must stay disabled`);
-  }
+  // The whole disabled set, for the reason given in the index.json test above.
+  // `story`, `brew_guide` and `faqs` are superseded by the bespoke sections and
+  // enabling them double-renders. `product_dna_trxBBN` re-enabled puts
+  // "Maple DNA" back on all 92 products; `product_tabs_XnTEpK` duplicates the
+  // product tabs.
+  assert.deepEqual(disabledPaths(sections), [
+    'brew_guide',
+    'faqs',
+    // Superseded by blocks/pdp-product-summary.liquid; re-enabling these
+    // double-renders the summary. See the 2026-theme notes on group_icgrde.
+    'main.product-details.best_for_pdp',
+    'main.product-details.divider_VJhene',
+    'main.product-details.group_icgrde',
+    'main.product-details.tastes_like_pdp',
+    'product_dna_trxBBN',
+    'product_tabs_XnTEpK',
+    // The empty Brew Guide tab. Re-enabling it shows an empty tab on all 92 PDPs.
+    'product_tabs_fW4maV.product_tab_4tzPxX',
+    'story',
+  ], 'the set of disabled PDP sections and blocks changed');
 });
 
 test('the promo badge stays on both card surfaces, after the gallery', () => {
@@ -141,4 +206,24 @@ test('the promo badge stays on both card surfaces, after the gallery', () => {
       `${file}: badge must sit immediately after the gallery`,
     );
   }
+});
+
+test('the coffee spotlight card keeps the price Victor added in #185', () => {
+  // The homepage card showed no price until PR #185 added a `price` block to
+  // `coffee_spotlight > static-product-card`. That block lives only in this
+  // shop-owned JSON, so it is exactly the kind of thing a reconciliation from a
+  // stale snapshot drops without a word -- `staging-v2` was missing it within a
+  // day of the merge. Pin the block, its type and its place in the order.
+  const card = readTemplate('index.json').sections.coffee_spotlight.blocks['static-product-card'];
+
+  assert.equal(card.blocks.card_price?.type, 'price', 'the card price block is gone');
+  assert.ok(
+    card.block_order.includes('card_price'),
+    'card_price exists but is not in block_order, so it does not render',
+  );
+  assert.deepEqual(
+    card.block_order.slice(-3),
+    ['card_price', 'variant_picker', 'buy_group'],
+    'the price must sit directly above the variant picker and buy button',
+  );
 });

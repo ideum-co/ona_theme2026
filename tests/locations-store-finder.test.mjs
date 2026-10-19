@@ -92,8 +92,13 @@ test('renders explicitly labelled filters, live status, and selected view contro
 
   assert.match(section, /data-location-status[^>]*role="status"[^>]*aria-live="polite"/);
   assert.match(section, /data-result-count[^>]*role="status"[^>]*aria-live="polite"/);
-  assert.match(section, /<button[^>]*data-view="list"[^>]*aria-pressed="true"/);
-  assert.match(section, /<button[^>]*data-view="map"[^>]*aria-pressed="false"/);
+  // Both toggles used to hardcode their pressed state, which made the
+  // `default_view` setting a lie on the server: the page always rendered the
+  // list and the script flipped it after boot. Each button now reflects
+  // `initial_view`, so the two must stay in step -- a hardcoded value here is
+  // the bug this replaced.
+  assert.match(section, /<button[^>]*data-view="list"[^>]*aria-pressed="\{% if initial_view == 'list' %\}true\{% else %\}false\{% endif %\}"/);
+  assert.match(section, /<button[^>]*data-view="map"[^>]*aria-pressed="\{% if initial_view == 'map' %\}true\{% else %\}false\{% endif %\}"/);
   assert.match(section, /<button[^>]*data-use-location/);
   assert.match(section, /<a[^>]*data-directions-link[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
   assert.match(section, /<a[^>]*data-website-link[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
@@ -1062,4 +1067,35 @@ test('rejects a repeated pagination cursor instead of appending a page twice', a
     ),
     /repeated pagination URL/,
   );
+});
+
+test('the server renders the view the setting asks for, but never a keyless map', () => {
+  // `default_view` exists so the map can be the first thing a visitor sees on
+  // /pages/locations. It was inert: the container hardcoded data-active-view
+  // and the panel was always `hidden`, so the setting only reached the script,
+  // which flipped the view after boot -- a visible list-then-map flip.
+  assert.match(section, /assign initial_view = 'list'/);
+  assert.match(
+    section,
+    /if section\.settings\.default_view == 'map' and section\.settings\.maps_api_key != blank\s*\n\s*assign initial_view = 'map'/,
+    'the map may only be opened server-side when a Maps API key is configured',
+  );
+  assert.match(section, /data-active-view="\{\{ initial_view \}\}"/);
+  assert.match(
+    section,
+    /data-map-panel\{% unless initial_view == 'map' %\} hidden\{% endunless %\}>/,
+    'the map panel must start open only when initial_view is map',
+  );
+  assert.doesNotMatch(section, /data-active-view="(list|map)"/, 'the initial view must not be hardcoded');
+});
+
+test('/pages/locations opens on the map', () => {
+  // The store finder carries 250 located cafes; the list is the less useful
+  // first impression. ONA asked for the map to lead.
+  const template = JSON.parse(
+    readFileSync(resolve(themeRoot, 'templates/page.location.json'), 'utf8').replace(/^\s*\/\*[\s\S]*?\*\/\s*/, ''),
+  );
+  assert.equal(template.sections.store_finder.settings?.default_view, 'map');
+  assert.equal(template.order[0], 'header');
+  assert.equal(template.order[1], 'store_finder');
 });

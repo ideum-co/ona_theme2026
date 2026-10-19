@@ -27,9 +27,28 @@ test('carries its own styles, because this theme has no legacy main.css', () => 
     /\.donation-counter__card\s*{/,
     /\.donation-counter__card::after\s*{/,
     /\.donation-counter__subtitle\s*{/,
-    /\.donation-counter__cta\s*{/,
+    // PR #190 re-pointed the CTA at Horizon's global button and now scopes the
+    // rule as `.donation-counter__cta.button`, so an exact `__cta {` match went
+    // red on main for a day. The class may pick up further qualifiers; what this
+    // file exists to prove is that a rule for the CTA is present at all, because
+    // this theme has no legacy main.css to fall back on.
+    /\.donation-counter__cta[.\w-]*\s*{/,
   ]) {
     assert.match(source, rule);
+  }
+
+  // #190 drives the button colours through two custom properties fed by new
+  // schema settings. If either side is dropped the CTA silently inherits
+  // Horizon's default button colours instead of the ones the editor set.
+  for (const wiring of [
+    /--donation-button-background: \{\{ section\.settings\.button_bg_color \}\}/,
+    /--donation-button-text: \{\{ section\.settings\.button_text_color \}\}/,
+    /--button-background-color: var\(--donation-button-background\)/,
+    /--button-color: var\(--donation-button-text\)/,
+    /"id": "button_bg_color"/,
+    /"id": "button_text_color"/,
+  ]) {
+    assert.match(source, wiring, 'the #190 button-colour wiring must stay intact end to end');
   }
 });
 
