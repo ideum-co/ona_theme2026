@@ -184,3 +184,32 @@ test('the FAQ page has a real heading outline', () => {
     '.ona-faq-item__question must reset font to inherit',
   );
 });
+
+test('a printed FAQ carries its answers', () => {
+  /*
+   * Every row starts closed, and a closed <details> does not open itself for
+   * print the way current browsers open it for find-in-page. With no other
+   * @media print rule anywhere in this repo, /pages/faq printed as fourteen
+   * questions with nothing under them. Codex, PR #192.
+   *
+   * Three mechanisms hide the content, so all three are asserted: the theme's
+   * own .details-content rule, the ::details-content pseudo-element, and the
+   * older UA rule that hides a closed details' non-summary children.
+   */
+  const item = read('blocks/_faq-item.liquid');
+  const print = item.match(/@media print \{([\s\S]*?)\n  \}/);
+  assert.ok(print, '_faq-item must carry print styles');
+
+  assert.match(print[1], /\.ona-faq-item__details \.details-content/,
+    "the theme's own .details-content rule must be answered");
+  assert.match(print[1], /\.ona-faq-item__details::details-content/,
+    'the ::details-content pseudo-element must be answered');
+  assert.match(print[1], /content-visibility:\s*visible/,
+    'content-visibility must be restored');
+  assert.match(print[1], /:not\(\[open\]\) > \*:not\(summary\)/,
+    "the older UA rule hiding a closed details' children must be answered");
+
+  // The rules key off this class, so the details element has to carry it.
+  assert.match(item, /<details class="details ona-faq-item__details"/,
+    'the details element must carry the class the print rules target');
+});
