@@ -174,13 +174,21 @@ small ones in two hours is how the first staging branch died (§1a).
 
 ## 5. The rule that matters most: shop-owned JSON
 
-Four files on the live theme are written by the **theme editor**, not by this
+Six files on the live theme are written by the **theme editor**, not by this
 repository:
 
 - `templates/index.json`
 - `templates/product.json`
 - `templates/page.location.json`
+- `templates/page.faq.json`
+- `templates/page.faq-subscriptions.json`
 - `config/settings_data.json`
+
+> The two FAQ templates joined this list on 2026-10-19, when they were ported
+> from the live theme. Every question and answer lives in them, so an
+> unreconciled merge does not cost a layout tweak — it costs the FAQ content
+> itself. They carry the editor's auto-generated banner for the same reason the
+> other four do.
 
 > **`templates/page.location.json` holds a credential.** The store finder's
 > Google Maps API key is a *section* setting, so the theme editor writes it into

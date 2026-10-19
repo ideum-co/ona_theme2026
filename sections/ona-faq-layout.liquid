@@ -1,0 +1,135 @@
+{%- liquid
+  assign section_settings = section.settings
+
+  assign intro = section_settings.body
+  if intro == blank
+    assign intro = page.content
+  endif
+
+  if section_settings.background_color != blank
+    render 'contrast-override', background_color: section_settings.background_color, text_color: section_settings.text_color, section_id: section.id
+  endif
+-%}
+
+<div
+  class="section-background{% if section_settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+></div>
+
+<section
+  class="ona-faq-layout section section--page-width spacing-style{% if section_settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+  style="{% render 'spacing-style', settings: section_settings %}"
+  {{ section.shopify_attributes }}
+>
+  <div class="ona-faq-layout__inner">
+    {%- if intro != blank -%}
+      <div class="ona-faq-layout__intro rte">{{ intro }}</div>
+    {%- endif -%}
+
+    <div class="ona-faq-layout__categories">
+      {% content_for 'blocks' %}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .ona-faq-layout__inner {
+    display: grid;
+    gap: var(--padding-xl, 2rem);
+  }
+
+  .ona-faq-layout__intro {
+    /* The intro is prose, so it keeps the theme's reading measure even when the
+       grid below it runs the full content width. */
+    max-inline-size: var(--max-width--body-narrow);
+  }
+
+  /*
+   * Two columns from the tablet band up, matching the previous theme's
+   * left-box / right-box split. 750px is one of Horizon's two boundaries --
+   * tests/responsive-breakpoint-pairing.test.mjs holds the whole theme to
+   * 749/750 and 989/990, and an invented boundary only misbehaves in the band
+   * between them.
+   */
+  @media screen and (min-width: 750px) {
+    .ona-faq-layout__inner {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+      gap: var(--padding-3xl, 3rem);
+      align-items: start;
+    }
+
+    .ona-faq-layout__intro {
+      position: sticky;
+      top: var(--padding-xl, 2rem);
+    }
+  }
+
+  /* An FAQ page with no intro copy must not leave an empty first column. */
+  .ona-faq-layout__inner:not(:has(.ona-faq-layout__intro)) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "FAQ layout",
+  "settings": [
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Left column body",
+      "info": "Leave blank to fall back to page content"
+    },
+    {
+      "type": "header",
+      "content": "t:content.appearance"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "placeholder": "t:settings.default"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "placeholder": "t:settings.default"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "blocks": [
+    {
+      "type": "_faq-category"
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ layout",
+      "category": "t:categories.text"
+    }
+  ]
+}
+{% endschema %}

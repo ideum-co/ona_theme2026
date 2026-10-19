@@ -1,0 +1,47 @@
+{% assign block_settings = block.settings %}
+
+{%- comment -%}
+  One question. The markup mirrors blocks/_accordion-row.liquid so the FAQ page
+  gets the theme's own disclosure behaviour -- a native <details>, keyboard
+  operable, open on print and on in-page search -- instead of the legacy
+  .accordion-title / .icon-close markup the previous theme used, whose CSS and
+  click handler were never carried into this repo.
+{%- endcomment -%}
+
+{% capture faq_item_children %}
+  <details class="details" data-testid="accordion-details" {{ block.shopify_attributes }}>
+    <summary class="details__header">
+      {{ block_settings.title | escape }}
+      <span class="svg-wrapper icon-caret icon-animated">
+        {{- 'icon-caret.svg' | inline_asset_content -}}
+      </span>
+      <span class="svg-wrapper icon-plus">
+        {{- 'icon-plus.svg' | inline_asset_content -}}
+      </span>
+    </summary>
+
+    <div class="details-content rte">
+      {{ block_settings.content }}
+    </div>
+  </details>
+{% endcapture %}
+{% render 'accordion-custom-component', children: faq_item_children %}
+
+{% schema %}
+{
+  "name": "FAQ item",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Question"
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": "Answer"
+    }
+  ]
+}
+{% endschema %}

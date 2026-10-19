@@ -196,19 +196,37 @@ to re-pull.
 
 ## 5. Page templates that do not exist on the 2026 theme
 
-Nine pages fall through to the generic `page.json`:
+Updated 2026-10-19 after walking every page in the preview. "Words" is the
+rendered main-content word count, live theme against ours — the measurement
+that says whether the fallback actually costs anything.
 
-| suffix | pages | verdict |
-|---|---|---|
-| `faq` | FAQ | needs rebuilding |
-| `faq-subscriptions` | Coffee Subscription FAQ | needs rebuilding |
-| `sustainability` | Solar, A whole new coffee world, Women In Coffee | needs rebuilding (3 pages) |
-| `llms` | llms | needs rebuilding |
-| `privacy` | Privacy | acceptable on the fallback — it is body copy |
-| `text-template` | Shipping & Returns | acceptable on the fallback |
-| `maintenance` | Maintenance | never exercised |
+| suffix | pages | live | ours | verdict |
+|---|---|---|---|---|
+| `faq` | FAQ | 1209 | 1209 | **ported 2026-10-19** |
+| `faq-subscriptions` | Coffee Subscription FAQ | 1206 | 1206 | **ported 2026-10-19** |
+| `privacy` | Privacy | 1438 | 1427 | fallback is fine — body copy |
+| `text-template` | Shipping & Returns | 568 | 568 | fallback is fine |
+| `sustainability` | Solar, A whole new coffee world, Women In Coffee | 174 / 141 | 174 / 141 | fallback keeps every word; layout only |
+| `llms` | llms | 2 | 1 | not customer-facing |
+| `maintenance` | Maintenance | 2 | 1 | never exercised |
 
-Archived source for the migrated six is in `docs/legacy-page-templates/`.
+The two FAQ pages were the only real loss: their questions and answers live
+entirely in the template, so the fallback served a title and two lines. The
+port brought `templates/page.faq.json`, `templates/page.faq-subscriptions.json`,
+`sections/ona-faq-layout.liquid`, `blocks/_faq-category.liquid` and
+`blocks/_faq-item.liquid`.
+
+The section and blocks were **rebuilt on the theme's own accordion** rather than
+copied. The live markup (`.accordion-title`, `.accordion-content`,
+`.icon-close`) depends on CSS and a click handler that were never carried into
+this repo, so a verbatim copy would have rendered every answer expanded and
+unstyled. They now use `<details>` through `accordion-custom-component` and
+`accordion-styles`, the same path as `blocks/_accordion-row.liquid`.
+
+The content was verified twice: against the questions and answers the live page
+actually serves, and against `docs/legacy-page-templates/`. All 28 questions and
+28 answers match on both.
+
 `templates/page.locations.json` is present but unused — no page carries that
 suffix.
 
