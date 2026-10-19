@@ -1251,16 +1251,21 @@ test('the result list scrolls inside itself instead of extending the page', () =
   assert.ok(stylesheet, 'the store finder must carry a scoped stylesheet');
   const css = stylesheet[1];
 
+  const basePanel = css.match(/\n  \.locations-store-finder__list-panel\s*\{([^}]*)\}/);
+  assert.ok(basePanel, 'the list panel must be styled in both views');
+  assert.match(basePanel[1], /max-block-size:\s*var\(--locations-finder-list-size\)/,
+    'the list panel must be capped in list view too');
+  assert.match(basePanel[1], /overflow-y:\s*auto/,
+    'the list panel must scroll inside itself');
+  assert.match(basePanel[1], /overscroll-behavior:\s*contain/,
+    'reaching the end of the list must not scroll the page behind it');
+
   const listPanel = css.match(
     /\.locations-store-finder\[data-active-view='map'\]\s+\.locations-store-finder__list-panel\s*\{([^}]*)\}/,
   );
   assert.ok(listPanel, 'map view must style the list panel');
   assert.match(listPanel[1], /max-block-size:\s*var\(--locations-finder-panel-size\)/,
-    'the list panel must be capped to the shared panel height');
-  assert.match(listPanel[1], /overflow-y:\s*auto/,
-    'the list panel must scroll inside itself');
-  assert.match(listPanel[1], /overscroll-behavior:\s*contain/,
-    'reaching the end of the list must not scroll the page behind it');
+    'map view must cap the list to the map height');
 
   const mapPanel = css.match(
     /\.locations-store-finder__map-panel,\s*\n\s*\.locations-store-finder__map\s*\{([^}]*)\}/,
@@ -1271,6 +1276,8 @@ test('the result list scrolls inside itself instead of extending the page', () =
 
   assert.match(css, /--locations-finder-panel-size:\s*[\d.]+rem/,
     'the shared panel height must be defined once');
+  assert.match(css, /--locations-finder-list-size:\s*min\(/,
+    'list view must have its own cap');
 });
 
 test('the finder stays on Horizon\'s two breakpoints', () => {
@@ -1291,4 +1298,39 @@ test('the finder stays on Horizon\'s two breakpoints', () => {
       `"${query.trim()}" uses ${px}px; this theme's ${kind}-width boundaries are ${allowed.join(' and ')}`,
     );
   }
+});
+
+test('each card offers two real buttons and labelled address and hours', () => {
+  /*
+   * The two actions were plain inline links, so they read as body copy sitting
+   * under the tag pills. Production gives every card a filled primary action
+   * and an outlined secondary one, and puts an icon beside the address and the
+   * opening hours.
+   *
+   * .button and .button-secondary resolve to the theme's own primary and
+   * secondary button tokens (assets/base.css), so the card follows the store's
+   * button settings rather than carrying a private copy of the colours.
+   */
+  const actions = section.match(
+    /<div class="locations-store-finder__card-actions">([\s\S]*?)<\/div>/,
+  );
+  assert.ok(actions, 'the card must render an actions row');
+  assert.match(actions[1], /<a\s[^>]*class="button"[^>]*data-directions-link|class="button"[\s\S]{0,120}data-directions-link/,
+    'directions must be the primary button');
+  assert.match(actions[1], /class="button-secondary"[^>]*data-website-link/,
+    'website must be the secondary button');
+
+  // Both icons are decorative; icon-or-image marks them aria-hidden, so the
+  // address still reads as a single string to a screen reader.
+  for (const [icon, label] of [['map_pin', 'address'], ['stopwatch', 'opening hours']]) {
+    assert.match(
+      section,
+      new RegExp(`render 'icon-or-image', icon: '${icon}'`),
+      `the ${label} must carry its icon`,
+    );
+  }
+
+  const stylesheet = section.match(/{%\s*stylesheet\s*%}([\s\S]*?){%\s*endstylesheet\s*%}/)[1];
+  assert.match(stylesheet, /\.locations-store-finder__card-row\s*\{[^}]*grid-template-columns:\s*auto\s+minmax\(0,\s*1fr\)/,
+    'an icon row must not let the icon squash the text');
 });

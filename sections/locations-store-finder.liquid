@@ -229,15 +229,21 @@
                   <div class="locations-store-finder__card-content">
                     <h3>{{ location_title | escape }}</h3>
                     {%- if location_address != blank or location_suburb != blank or location_state != blank -%}
-                      <address>
-                        {{ location_address | escape }}
-                        {%- if location_suburb != blank or location_state != blank -%}
-                          <br>{{ location_suburb | escape }}{% if location_suburb != blank and location_state != blank %}, {% endif %}{{ location_state | escape }}
-                        {%- endif -%}
-                      </address>
+                      <div class="locations-store-finder__card-row">
+                        {%- render 'icon-or-image', icon: 'map_pin', width: 16, class_name: 'locations-store-finder__card-icon' -%}
+                        <address>
+                          {{ location_address | escape }}
+                          {%- if location_suburb != blank or location_state != blank -%}
+                            <br>{{ location_suburb | escape }}{% if location_suburb != blank and location_state != blank %}, {% endif %}{{ location_state | escape }}
+                          {%- endif -%}
+                        </address>
+                      </div>
                     {%- endif -%}
                     {%- if location.time.value != blank -%}
-                      <div class="locations-store-finder__hours rte">{{ location.time | metafield_tag }}</div>
+                      <div class="locations-store-finder__card-row">
+                        {%- render 'icon-or-image', icon: 'stopwatch', width: 16, class_name: 'locations-store-finder__card-icon' -%}
+                        <div class="locations-store-finder__hours rte">{{ location.time | metafield_tag }}</div>
+                      </div>
                     {%- endif -%}
                     {%- if location.overview.value != blank -%}
                       <div class="locations-store-finder__overview rte">{{ location.overview | metafield_tag }}</div>
@@ -252,6 +258,7 @@
                     <div class="locations-store-finder__card-actions">
                       {%- if directions_destination != blank -%}
                         <a
+                          class="button"
                           data-directions-link
                           href="https://www.google.com/maps/dir/?api=1&amp;destination={{ directions_destination }}"
                           target="_blank"
@@ -261,7 +268,7 @@
                         </a>
                       {%- endif -%}
                       {%- if location_website != blank -%}
-                        <a data-website-link href="{{ location_website | escape }}" target="_blank" rel="noopener noreferrer">
+                        <a class="button-secondary" data-website-link href="{{ location_website | escape }}" target="_blank" rel="noopener noreferrer">
                           {{- section.settings.website_label | default: 'Visit website' | escape -}}
                         </a>
                       {%- endif -%}
@@ -598,10 +605,36 @@
     align-items: center;
   }
 
-  .locations-store-finder__card-actions a {
+  /*
+   * Address and hours each sit beside their own icon, the way production does
+   * it. The icon is decorative -- icon-or-image marks it aria-hidden -- so the
+   * address still reads as one string to a screen reader.
+   */
+  .locations-store-finder__card-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.5rem;
+    align-items: start;
+  }
+
+  .locations-store-finder__card-icon {
+    /* Optical alignment with the first line of text rather than its box. */
+    margin-block-start: 0.15em;
     color: var(--locations-finder-accent-color);
-    font-weight: 700;
-    text-underline-offset: 0.2em;
+    flex: none;
+  }
+
+  /*
+   * The two actions are real buttons. They were plain inline links, which read
+   * as body copy beside the tag pills; production gives the card a filled
+   * primary and an outlined secondary. .button and .button-secondary resolve
+   * to the theme's own primary/secondary tokens, so these follow the store's
+   * button settings instead of carrying their own colours.
+   */
+  .locations-store-finder__card-actions a {
+    font-size: 0.85rem;
+    padding-block: 0.55rem;
+    padding-inline: 0.9rem;
   }
 
   .locations-store-finder__card-actions [data-location-distance] {
@@ -628,6 +661,8 @@
    */
   .locations-store-finder {
     --locations-finder-panel-size: 34rem;
+    /* List view has no map beside it, so the results get more of the window. */
+    --locations-finder-list-size: min(80vh, 56rem);
   }
 
   .locations-store-finder__map-panel,
@@ -635,13 +670,23 @@
     min-block-size: var(--locations-finder-panel-size);
   }
 
-  .locations-store-finder[data-active-view='map'] .locations-store-finder__list-panel {
-    max-block-size: var(--locations-finder-panel-size);
+  /*
+   * The results are always a fixed-height scroll region, in both views. List
+   * view measured 56,258px before this -- 300 cards in two columns, 89 screens
+   * of page -- which also pushed the filters out of reach the moment anyone
+   * started scrolling. Map view is capped to the map's height just below.
+   */
+  .locations-store-finder__list-panel {
+    max-block-size: var(--locations-finder-list-size);
     overflow-y: auto;
     /* Reaching the end of the list must not start scrolling the page behind it. */
     overscroll-behavior: contain;
     /* Keeps card borders clear of the scrollbar. */
     padding-inline-end: 0.5rem;
+  }
+
+  .locations-store-finder[data-active-view='map'] .locations-store-finder__list-panel {
+    max-block-size: var(--locations-finder-panel-size);
   }
 
   .locations-store-finder__map-panel {
