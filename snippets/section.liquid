@@ -54,11 +54,24 @@
         %}
       </div>
       <div class="ona-responsive-background ona-responsive-background--mobile">
-        {% render 'background-media',
-          background_media: 'video',
-          background_video: section.settings.mobile_video | default: section.settings.video,
-          background_video_position: section.settings.mobile_video_position | default: 'contain'
-        %}
+        {%- comment -%}
+          `!= blank`, not `| default:`: the default filter does not recognise a populated video drop
+          as present, so it always fell through to the desktop clip - the mobile layer played the
+          desktop video even when a mobile one was set. story-video uses this same check for this.
+        {%- endcomment -%}
+        {% if section.settings.mobile_video != blank %}
+          {% render 'background-media',
+            background_media: 'video',
+            background_video: section.settings.mobile_video,
+            background_video_position: section.settings.mobile_video_position | default: 'contain'
+          %}
+        {% else %}
+          {% render 'background-media',
+            background_media: 'video',
+            background_video: section.settings.video,
+            background_video_position: section.settings.mobile_video_position | default: 'contain'
+          %}
+        {% endif %}
       </div>
     {% else %}
       {% render 'background-media',
