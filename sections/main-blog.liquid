@@ -27,6 +27,20 @@
   >
     {% content_for 'blocks' %}
 
+    {%- comment -%}
+      Without {% paginate %}, Liquid hands back only the first 50 articles and
+      ignores ?page= entirely. Measured on the deployed theme on 2026-10-20:
+      /blogs/brewguides has 747 articles, served 50, and page=2, 5, 15 and 16
+      each returned the identical 50 -- 697 guides reachable only by direct URL
+      or the sitemap, with no way to browse to them. /blogs/news is under the
+      cap today and would have broken silently at its 51st article.
+
+      main-blog is the only listing section in Horizon that shipped without
+      pagination; main-collection, search-results, product-list and
+      featured-blog-posts all have it. This follows main-collection's pattern
+      and renders the theme's own pagination-controls.
+    {%- endcomment -%}
+    {% paginate blog.articles by section.settings.articles_per_page %}
     <div
       ref="grid"
       class="blog-posts-container"
@@ -112,6 +126,9 @@
         </div>
       {% endfor %}
     </div>
+
+    {% render 'pagination-controls', paginate: paginate %}
+    {% endpaginate %}
   </div>
 </blog-posts-list>
 
@@ -198,6 +215,16 @@
     "groups": ["header"]
   },
   "settings": [
+    {
+      "type": "range",
+      "id": "articles_per_page",
+      "label": "Articles per page",
+      "min": 6,
+      "max": 48,
+      "step": 6,
+      "default": 24,
+      "info": "Liquid caps an unpaginated blog at 50 articles and ignores the page parameter, so this must stay set."
+    },
     {
       "type": "color",
       "id": "background_color",
