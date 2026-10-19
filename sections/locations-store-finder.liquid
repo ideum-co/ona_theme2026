@@ -121,8 +121,6 @@
           >
         </div>
 
-
-
         {%- if section.settings.enable_radius_filter -%}
           <div class="locations-store-finder__field">
             <label for="LocationsFinder-radius-{{ section.id }}">
@@ -151,8 +149,15 @@
         Venue type and state are single-choice filters, so they are radio
         groups: one tap instead of a select's open-scan-tap, keyboard arrows
         for free, and every option visible at once. Production renders the same
-        two filters this way. The radios are real inputs -- the pill and tab
-        styling is on the label -- so this needs no JavaScript to be operable.
+        two filters this way. The radios are real inputs, with the pill and tab
+        styling on the label, so the controls themselves need no JavaScript.
+
+        The venue choices are server-rendered from shop.metaobjects.store_tag,
+        so that filter is fully operable without script. The state group ships
+        only its "All states" radio and is filled by populateStateFilter from
+        the loaded records, so without script it stays a single pill. That is
+        no worse than the empty <select> it replaced, and the status line says
+        so, but do not mistake it for a no-JavaScript filter.
       {%- endcomment -%}
       {%- if section.settings.enable_tag_filter -%}
         <fieldset
@@ -546,6 +551,14 @@
   .locations-store-finder__view-toggle button {
     min-block-size: 2.75rem;
     min-inline-size: 5rem;
+    /*
+     * A <button> takes the browser's UA font, not its parent's. Without these
+     * the List/Map toggle rendered in Arial 13.333px beside a page set in
+     * Karla -- measured on the deployed theme, 2026-10-19. Same cause as
+     * .variant-select__trigger in snippets/variant-select-styles.liquid.
+     */
+    font-family: inherit;
+    font-size: inherit;
     border: 0;
     background: transparent;
     color: inherit;
