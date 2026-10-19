@@ -63,7 +63,20 @@
    * rule that hides a closed details' non-summary children outright.
    */
   @media print {
-    .ona-faq-item__details .details-content,
+    /*
+     * These two must stay in SEPARATE rules. A selector list is invalid as a
+     * whole if any one selector in it is, so pairing the class with
+     * ::details-content means a browser that does not implement that
+     * pseudo-element throws the rule away -- taking the legacy override with
+     * it, in exactly the browsers that need it. Codex caught this in the first
+     * version of this fix, where the two shared one selector list.
+     */
+    .ona-faq-item__details .details-content {
+      block-size: auto;
+      opacity: 1;
+      overflow-y: visible;
+    }
+
     .ona-faq-item__details::details-content {
       block-size: auto;
       opacity: 1;

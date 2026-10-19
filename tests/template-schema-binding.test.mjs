@@ -206,6 +206,18 @@ test('a printed FAQ carries its answers', () => {
     'the ::details-content pseudo-element must be answered');
   assert.match(print[1], /content-visibility:\s*visible/,
     'content-visibility must be restored');
+
+  /*
+   * The two must not share a selector list. A selector list is invalid as a
+   * whole if any one selector in it is, so a browser without ::details-content
+   * would discard the rule and the legacy override with it -- in exactly the
+   * browsers that need it. Codex, PR #192, against the first version of this fix.
+   */
+  assert.doesNotMatch(
+    print[1],
+    /\.details-content\s*,\s*[^{]*::details-content|::details-content\s*,/,
+    '::details-content must not share a selector list with anything else',
+  );
   assert.match(print[1], /:not\(\[open\]\) > \*:not\(summary\)/,
     "the older UA rule hiding a closed details' children must be answered");
 
