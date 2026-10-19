@@ -198,6 +198,31 @@ test('every Liquid block tag in the theme is closed', () => {
         const end = close.exec(source);
         if (!end) { offenders.push(`${path}: {% ${name} %} is never closed`); break; }
         tag.lastIndex = end.index + end[0].length;
+      } else if (name === 'liquid') {
+        /*
+         * A {% liquid %} tag is one match to the regex above, so its inner
+         * statements never reached the stack: dropping an `endif` from inside
+         * one passed both tests while Shopify received unbalanced Liquid.
+         * Codex, PR #193. Its body feeds the same stack now.
+         */
+        let inComment = false;
+        for (const raw of match[2].split('\n')) {
+          const line = raw.trim();
+          if (!line || line.startsWith('#')) continue;
+          const word = line.split(/[\s(]/)[0];
+          if (inComment) {
+            if (word === 'endcomment') inComment = false;
+            continue;
+          }
+          if (word === 'comment') { inComment = true; continue; }
+          if (BLOCK.has(word)) stack.push(word);
+          else if (word.startsWith('end')) {
+            const opened = stack.pop();
+            if (!opened) offenders.push(`${path}: ${word} closes nothing`);
+            else if (`end${opened}` !== word) offenders.push(`${path}: ${word} closes ${opened}`);
+          }
+        }
+        if (inComment) offenders.push(`${path}: a comment inside {% liquid %} is never closed`);
       } else if (BLOCK.has(name)) {
         stack.push(name);
       } else if (name.startsWith('end')) {
