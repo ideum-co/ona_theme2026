@@ -75,6 +75,30 @@ test('every JSON template is inside Shopify\'s section and block limits', () => 
   }
 });
 
+/**
+ * Every node the theme editor has switched off, at ANY depth, as sorted dotted
+ * paths -- `section`, or `section.block`, or `section.block.nested`.
+ *
+ * It recurses because a first version looked only at top-level sections, and
+ * the empty Brew Guide tab is a BLOCK: `product_tabs_fW4maV.product_tab_4tzPxX`.
+ * Re-enabling it put that tab back on all 92 PDPs with the suite still green.
+ */
+const disabledPaths = (sections) => {
+  const found = [];
+  const walk = (node, path) => {
+    for (const [id, child] of Object.entries(node.blocks ?? {})) {
+      const childPath = `${path}.${id}`;
+      if (child.disabled === true) found.push(childPath);
+      walk(child, childPath);
+    }
+  };
+  for (const [id, section] of Object.entries(sections)) {
+    if (section.disabled === true) found.push(id);
+    walk(section, id);
+  }
+  return found.sort();
+};
+
 test('index.json keeps the editor-made homepage sections', () => {
   const { sections, order } = readTemplate('index.json');
 
@@ -96,9 +120,35 @@ test('index.json keeps the editor-made homepage sections', () => {
   assert.equal(Object.keys(sections.hero_ona.blocks).length, 4);
 
   // Sections the editor had switched off. They came back enabled once.
-  for (const id of ['club_invite_TGPaF8', 'club_benefits_QGRDdd', 'product_intro_k9p6yn']) {
-    assert.equal(sections[id].disabled, true, `${id} must stay disabled`);
-  }
+  //
+  // This asserts the WHOLE disabled set at every depth, not a chosen few. Two
+  // earlier versions were incomplete: one listed six of thirteen sections while
+  // claiming to list all, and the next still missed every nested block. Both
+  // times a stale snapshot could re-enable something with the suite green --
+  // the exact overwrite this file exists to catch. Comparing the complete set
+  // also fails when something is newly disabled, which is the point: that is a
+  // real change to the storefront and should take a deliberate edit to record.
+  //
+  // Measured 2026-10-16. find_your_coffee and product_highlight_KkUAVM were in
+  // this list on 2026-10-14 and have since been switched back on in the editor;
+  // product_highlight is now the home of the In Sequence campaign. The list
+  // failing on that change is the mechanism working, not a stale test.
+  assert.deepEqual(disabledPaths(sections), [
+    'club_benefits',
+    'club_benefits_QGRDdd',
+    'club_invite_QLL4T3',
+    'club_invite_TGPaF8',
+    'collection_carousel_GRkRhJ.collection_f8jkdP',
+    'discover_by_category',
+    'floating_badge_r89NRP',
+    'hero_ona.icon_9aLnRm',
+    'press_band',
+    'product_intro_k9p6yn',
+    'raspberry_candy',
+    'slideshow_nBcaMx.slide_8Ar7Nq',
+    'special_release',
+    'story_video_LN6zzn',
+  ], 'the set of disabled homepage sections and blocks changed');
 
   // The WFG counter is the one deliberate addition, second on the page.
   assert.equal(order[1], 'wfg_donation_counter');
@@ -119,11 +169,26 @@ test('product.json keeps the editor-wired PDP', () => {
     assert.ok(order.includes(id), `editor-made section ${id} is not in order`);
   }
 
-  // Superseded by the bespoke sections above; enabling them double-renders the
-  // brew guide, story and FAQs. The repo copy had all three on.
-  for (const id of ['story', 'brew_guide', 'faqs']) {
-    assert.equal(sections[id].disabled, true, `${id} must stay disabled`);
-  }
+  // The whole disabled set, for the reason given in the index.json test above.
+  // `story`, `brew_guide` and `faqs` are superseded by the bespoke sections and
+  // enabling them double-renders. `product_dna_trxBBN` re-enabled puts
+  // "Maple DNA" back on all 92 products; `product_tabs_XnTEpK` duplicates the
+  // product tabs.
+  assert.deepEqual(disabledPaths(sections), [
+    'brew_guide',
+    'faqs',
+    // Superseded by blocks/pdp-product-summary.liquid; re-enabling these
+    // double-renders the summary. See the 2026-theme notes on group_icgrde.
+    'main.product-details.best_for_pdp',
+    'main.product-details.divider_VJhene',
+    'main.product-details.group_icgrde',
+    'main.product-details.tastes_like_pdp',
+    'product_dna_trxBBN',
+    'product_tabs_XnTEpK',
+    // The empty Brew Guide tab. Re-enabling it shows an empty tab on all 92 PDPs.
+    'product_tabs_fW4maV.product_tab_4tzPxX',
+    'story',
+  ], 'the set of disabled PDP sections and blocks changed');
 });
 
 test('the promo badge stays on both card surfaces, after the gallery', () => {
@@ -141,4 +206,125 @@ test('the promo badge stays on both card surfaces, after the gallery', () => {
       `${file}: badge must sit immediately after the gallery`,
     );
   }
+});
+
+test('the coffee spotlight card keeps the price Victor added in #185', () => {
+  // The homepage card showed no price until PR #185 added a `price` block to
+  // `coffee_spotlight > static-product-card`. That block lives only in this
+  // shop-owned JSON, so it is exactly the kind of thing a reconciliation from a
+  // stale snapshot drops without a word -- `staging-v2` was missing it within a
+  // day of the merge. Pin the block, its type and its place in the order.
+  const card = readTemplate('index.json').sections.coffee_spotlight.blocks['static-product-card'];
+
+  assert.equal(card.blocks.card_price?.type, 'price', 'the card price block is gone');
+  assert.ok(
+    card.block_order.includes('card_price'),
+    'card_price exists but is not in block_order, so it does not render',
+  );
+  assert.deepEqual(
+    card.block_order.slice(-3),
+    ['card_price', 'variant_picker', 'buy_group'],
+    'the price must sit directly above the variant picker and buy button',
+  );
+});
+
+test('the release procedure never sends anyone to the retired staging branch', () => {
+  // `staging` died on 2026-10-16 (docs/branching-and-release.md §1a) and
+  // `staging-v2` replaced it. The rename missed the numbered release steps, so
+  // §4 still told maintainers to open the release PR from the dead branch --
+  // which would ship nothing, because every change now lands on `staging-v2`.
+  // Codex caught it on PR #191.
+  //
+  // This checks the two places that actually route somebody, not every mention
+  // of the word: §1a and §2 name `staging` on purpose, step 3 says "the staging
+  // theme" as a common noun, and step 4 now names it in a warning NOT to use it.
+  // A word-level lint flagged all three and would have to be weakened until it
+  // caught nothing.
+  const doc = readFileSync(resolve(root, 'docs/branching-and-release.md'), 'utf8');
+  const flow = doc.slice(doc.indexOf('## 4. The flow'), doc.indexOf('## 5.'));
+  assert.ok(flow.length > 200, 'could not locate the flow section');
+
+  // a. the release PR's source branch
+  assert.match(flow, /release PR from `staging-v2` into\n\s*`main`/, 'step 4 must ship from staging-v2');
+  assert.doesNotMatch(flow, /from `staging` into/, 'step 4 must not ship from the retired branch');
+
+  // b. the branch the diagram shows feeding the preview theme
+  const diagram = flow.slice(flow.indexOf('```'), flow.indexOf('```', flow.indexOf('```') + 3));
+  assert.match(diagram, /ona_theme2026\/staging-v2/, 'the diagram must point the preview theme at staging-v2');
+  assert.doesNotMatch(diagram, /ona_theme2026\/staging\b(?!-v2)/, 'the diagram still shows the retired branch');
+});
+
+test('page.location.json is declared shop-owned, and never carries the Maps key', () => {
+  // This template holds a credential: the store finder's Google Maps API key is
+  // a SECTION setting, so the theme editor writes it in here. The spec that
+  // built the finder forbids committing the key, and
+  // tests/locations-store-finder.test.mjs enforces that -- so the repository's
+  // copy of this file is permanently one merge away from wiping the live value,
+  // with no error anywhere. Decision (Felipe, 2026-10-19): the key stays in the
+  // theme editor, and this file joins index.json, product.json and
+  // settings_data.json under the reconcile-first rule.
+  //
+  // The two halves have to be asserted together. A reconcile rule nobody wrote
+  // down is not a rule, and a file listed in a document the code does not check
+  // drifts the first time someone edits one and not the other.
+  const doc = readFileSync(resolve(root, 'docs/branching-and-release.md'), 'utf8');
+  const shopOwned = doc.slice(doc.indexOf('## 5.'), doc.indexOf('## 6.'));
+
+  for (const file of [
+    'templates/index.json',
+    'templates/product.json',
+    'templates/page.location.json',
+    'config/settings_data.json',
+  ]) {
+    assert.ok(
+      shopOwned.includes(`\`${file}\``),
+      `${file} must be listed as shop-owned in docs/branching-and-release.md §5`,
+    );
+  }
+  assert.match(shopOwned, /page\.location\.json.*credential/is, '§5 must say why this one is different');
+
+  // The rule in §5 is only followed if it reaches the list people actually
+  // tick. Codex, PR #191: §5 gained the re-enter step while §6's checklist
+  // still asked only for the ordinary pre-merge reconcile.
+  const checklist = doc.slice(doc.indexOf('## 6.'), doc.indexOf('## 7.'));
+  assert.match(checklist, /page\.location\.json/, 'the release checklist must call out this template');
+  assert.match(checklist, /re-enter the Google\n\s*Maps API key/i, 'and must say to re-enter the key after merging');
+  assert.match(checklist, /mapsApiKey/, 'and must give the check that proves it took');
+
+  const template = readTemplate('page.location.json');
+  const key = template.sections.store_finder.settings?.maps_api_key;
+  assert.ok(
+    key === undefined || key === '',
+    `the repository copy must never carry a Maps key; found ${JSON.stringify(key)}`,
+  );
+  assert.equal(
+    template.sections.store_finder.settings?.default_view,
+    'map',
+    'the map leads on this page, as it does on the production theme',
+  );
+});
+
+test('the promotion procedure prescribes a command that can actually run', () => {
+  // Codex, PR #191. `main` requires linear history, so release PRs are
+  // squashed, and the squashed commit is not a descendant of the branch it came
+  // from -- the "fast-forward staging-v2 to main" the document prescribed is
+  // refused every time. The document also claimed staging-v2 forbids
+  // force-pushes, which would have left no way to resync at all. It carries no
+  // protection whatsoever (GET .../protection → 404), so a reset is available;
+  // the claim was simply wrong.
+  const doc = readFileSync(resolve(root, 'docs/branching-and-release.md'), 'utf8');
+  const flow = doc.slice(doc.indexOf('## 4. The flow'), doc.indexOf('## 5.'));
+
+  assert.match(flow, /git branch -f staging-v2 origin\/main/, 'step 5 needs the reset command');
+  assert.match(flow, /--force-with-lease/, 'and the lease that catches an unexpected divergence');
+  assert.doesNotMatch(
+    flow,
+    /fast-forward `staging-v2`/,
+    'fast-forwarding cannot work after a squash merge; the document must not ask for it',
+  );
+
+  // And the protection section must not re-assert the claim that made the
+  // broken procedure look workable.
+  const branches = doc.slice(doc.indexOf('## 2. The branches'), doc.indexOf('## 3.'));
+  assert.match(branches, /no protection rules at all/, '§2 must state staging-v2 is unprotected');
 });

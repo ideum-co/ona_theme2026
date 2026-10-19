@@ -5,6 +5,22 @@
       <div class="title"></div>
       <h2>Get in touch</h2>
       {%- assign form_id = 'ona-wholesale-' | append: section.id -%}
+      {%- comment -%}
+        SYNC HAZARD -- read before editing.
+
+        This is one of three files the Shopify GitHub integration has twice failed to
+        deliver to theme 154676789439. PR #175's copy was genuinely invalid (a filter
+        pipeline inside the form tag's argument list). PR #183's copy is valid: on
+        2026-10-19 these exact bytes were upserted to a scratch theme through the Admin
+        API and accepted, with a checksum matching the repository file. The integration
+        is not objecting to the content -- it skipped these three files and does not
+        revisit a file until its content changes again, which is what this comment is
+        for.
+
+        AFTER MERGING, COMPARE THE THEME'S checksumMd5 AGAINST md5sum OF THIS FILE. A
+        clean merge is not evidence the storefront received it; until those match, the
+        page still renders the literal app shortcode to customers.
+      {%- endcomment -%}
       {% form 'contact', id: form_id, class: 'ona-legacy-contact-form' %}
         <input type="hidden" name="contact[id]" value="{{ form_id }}">
         {%- liquid

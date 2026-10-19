@@ -12,6 +12,35 @@
   if section.settings.background_color != blank
     render 'contrast-override', background_color: section.settings.background_color, text_color: section.settings.text_color, section_id: section.id
   endif
+
+  comment
+    Which panel the server renders open.
+
+    The production store finder (`sections/ona-store-finder.liquid` on theme
+    160815546559) serves `data-view="map"` with the Map toggle already active,
+    and that is the behaviour ONA expects. Rendering the list and letting the
+    script switch is a visible flip on the one setting that exists to avoid it.
+
+    Codex raised two objections to doing this on PR #191. Both were right about
+    THIS section as it stood, and both are now fixed at the source rather than
+    by giving up the setting:
+
+      1. setView('map') reset to list before awaiting the Maps API. The script
+         now seeds activeView from this attribute and only resets when it is
+         not already showing the map, so the served state is left alone.
+      2. The max-width:990px rule hid the list panel in map view, so a page
+         whose script never ran would show an empty grey box and no locations.
+         The list is no longer hidden at any width -- on narrow screens the map
+         sits above it, which is what production does too.
+
+    The map is still only opened when a Maps JavaScript API key is configured.
+    Without one the script falls back to the list and posts `no_map_key_status`,
+    so serving an open map panel would be an empty box either way.
+  endcomment
+  assign initial_view = 'list'
+  if section.settings.default_view == 'map' and section.settings.maps_api_key != blank
+    assign initial_view = 'map'
+  endif
 -%}
 
 <script src="{{ 'locations-store-finder.js' | asset_url }}" type="module"></script>
@@ -19,6 +48,28 @@
 <div
   class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
 ></div>
+
+{%- comment -%}
+  Editor-only. The failure this catches is silent by construction: with
+  `default_view: map` and no key, assets/locations-store-finder.js falls back to
+  the list and posts `no_map_key_status`, which reads like ordinary copy. The
+  page looks finished. It looked finished for six weeks after PR #120, because
+  supplying the key was a documented handover step with no owner
+  (docs/locations-metaobject-migration.md).
+
+  Only the contradiction is flagged -- `default_view: list` with no key is a
+  deliberate configuration, not a mistake. `request.design_mode` keeps this out
+  of the storefront entirely.
+{%- endcomment -%}
+{%- if request.design_mode and section.settings.default_view == 'map' and section.settings.maps_api_key == blank -%}
+  <div class="locations-store-finder__editor-notice" role="status">
+    <strong>The map is switched off.</strong>
+    “Default view” is set to Map, but “Google Maps API key” is empty, so this page
+    serves the location list instead. Paste the browser key into that field to turn
+    the map on. The key is stored in this page’s template file — see
+    <code>docs/branching-and-release.md</code> §5 before merging a change to it.
+  </div>
+{%- endif -%}
 
 {%- paginate all_locations by 250 -%}
   <locations-store-finder
@@ -34,7 +85,7 @@
     data-current-page="{{ paginate.current_page }}"
     data-next-page-url="{{ paginate.next.url | escape }}"
     data-marker-icon="{{ 'map-active.svg' | asset_url }}"
-    data-active-view="list"
+    data-active-view="{{ initial_view }}"
     {{ section.shopify_attributes }}
   >
     <div class="locations-store-finder__inner">
@@ -123,7 +174,7 @@
             type="button"
             data-view="list"
             aria-controls="LocationsFinder-list-{{ section.id }}"
-            aria-pressed="true"
+            aria-pressed="{% if initial_view == 'list' %}true{% else %}false{% endif %}"
           >
             {{- section.settings.list_view_label | default: 'List' | escape -}}
           </button>
@@ -131,7 +182,7 @@
             type="button"
             data-view="map"
             aria-controls="LocationsFinder-map-{{ section.id }}"
-            aria-pressed="false"
+            aria-pressed="{% if initial_view == 'map' %}true{% else %}false{% endif %}"
           >
             {{- section.settings.map_view_label | default: 'Map' | escape -}}
           </button>
@@ -223,7 +274,7 @@
           </ul>
         </div>
 
-        <div id="LocationsFinder-map-{{ section.id }}" class="locations-store-finder__map-panel" data-map-panel hidden>
+        <div id="LocationsFinder-map-{{ section.id }}" class="locations-store-finder__map-panel" data-map-panel{% unless initial_view == 'map' %} hidden{% endunless %}>
           <div
             class="locations-store-finder__map"
             data-location-map
@@ -323,6 +374,23 @@
 {%- endpaginate -%}
 
 {% stylesheet %}
+  .locations-store-finder__editor-notice {
+    margin: 0 auto 1rem;
+    max-inline-size: min(100% - 2rem, 60rem);
+    padding: 0.875rem 1rem;
+    border: 1px solid #b4551f;
+    border-inline-start-width: 4px;
+    background: #fdf4ec;
+    color: #5c2c0b;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .locations-store-finder__editor-notice code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.8125rem;
+  }
+
   .locations-store-finder {
     --color: var(--locations-finder-text-color);
     color: var(--locations-finder-text-color);
@@ -585,12 +653,27 @@
       grid-column: 1 / -1;
     }
 
+    /*
+     * Map view below 990px: the map goes ABOVE the list, and the list stays on
+     * the page. It used to be `display: none`, which meant a visitor whose
+     * script had not run -- or had failed -- was left with an empty grey box
+     * and no way to reach 250 locations. Production stacks them the same way
+     * (sections/ona-store-finder.liquid, max-width:999px). Codex, PR #191.
+     */
     .locations-store-finder[data-active-view='map'] .locations-store-finder__results {
+      display: flex;
+      flex-direction: column;
       grid-template-columns: 1fr;
     }
 
+    .locations-store-finder[data-active-view='map'] .locations-store-finder__map-panel {
+      order: 1;
+      block-size: min(50vh, 26rem);
+    }
+
     .locations-store-finder[data-active-view='map'] .locations-store-finder__list-panel {
-      display: none;
+      order: 2;
+      margin-block-start: 1rem;
     }
 
     .locations-store-finder__map-panel,
@@ -659,11 +742,12 @@
     { "type": "text", "id": "geolocation_success_status", "label": "Location success message", "default": "Showing locations near you." },
     { "type": "text", "id": "geolocation_error_status", "label": "Location error message", "default": "Your location is unavailable. Search and other filters still work." },
     { "type": "header", "content": "Map and filters" },
-    { "type": "text", "id": "maps_api_key", "label": "Google Maps API key", "info": "The location list works without a key." },
+    { "type": "text", "id": "maps_api_key", "label": "Google Maps API key", "info": "Browser key, restricted to the onacoffee.com.au referrer. The list works without one; the map does not. This value is stored in templates\/page.location.json, which the GitHub integration overwrites -- reconcile that file before merging a change to it or the key is silently lost. See docs\/branching-and-release.md section 5." },
     {
       "type": "select",
       "id": "default_view",
       "label": "Default view",
+      "info": "Map requires a Google Maps API key. Without one the page serves the list.",
       "options": [
         { "value": "list", "label": "List" },
         { "value": "map", "label": "Map" }

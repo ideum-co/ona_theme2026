@@ -220,8 +220,19 @@
         "padding-block-end": 64
       }
     },
+    "wfg_donation_counter": {
+      "type": "ona-donation-counter",
+      "settings": {
+        "bg_color": "#441925",
+        "title": "DOLLARS CONTRIBUTED SO FAR",
+        "subtitle": "Enjoy great coffee while helping fund clean water access.",
+        "learn_more_text": "Shop Coffees",
+        "learn_more_url": "shopify://collections/donation-products"
+      }
+    },
     "floating_badge_r89NRP": {
       "type": "floating-badge",
+      "disabled": true,
       "name": "Floating badge",
       "settings": {
         "image": "shopify://shop_images/badge_sale.svg",
@@ -239,8 +250,8 @@
         "animate": true,
         "duration": 12,
         "direction": "normal",
-        "fallback_background": "#8A1538",
-        "fallback_text_color": "#F5F4EA"
+        "fallback_background": "#8a1538",
+        "fallback_text_color": "#f5f4ea"
       }
     },
     "find_your_coffee": {
@@ -594,6 +605,14 @@
               },
               "blocks": {}
             },
+            "ona_promo_tags": {
+              "type": "ona-product-tags",
+              "settings": {
+                "padding-block-start": 0,
+                "padding-block-end": 0
+              },
+              "blocks": {}
+            },
             "product_title": {
               "type": "product-title",
               "name": "t:names.product_title",
@@ -663,6 +682,28 @@
               },
               "blocks": {}
             },
+            "card_price": {
+              "type": "price",
+              "settings": {
+                "show_sale_price_first": true,
+                "show_installments": false,
+                "show_tax_info": false,
+                "type_preset": "h6",
+                "width": "100%",
+                "alignment": "center",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "text_color": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
             "variant_picker": {
               "type": "variant-picker",
               "name": "t:names.variant_picker",
@@ -679,6 +720,9 @@
                 "custom_selected_variant_text": "{{ settings.color_palette.background }}",
                 "custom_selected_variant_border": "{{ settings.color_palette.foreground }}",
                 "alignment": "center",
+                "option_gap": 16,
+                "value_gap": 11,
+                "label_gap": 8,
                 "padding-block-start": 0,
                 "padding-block-end": 8,
                 "padding-inline-start": 0,
@@ -801,35 +845,6 @@
                 "buy_buttons",
                 "subscribe"
               ]
-            },
-            "ona_promo_tags": {
-              "type": "ona-product-tags",
-              "settings": {
-                "padding-block-start": 0,
-                "padding-block-end": 0
-              }
-            },
-            "card_price": {
-              "type": "price",
-              "settings": {
-                "show_sale_price_first": true,
-                "show_installments": false,
-                "show_tax_info": false,
-                "type_preset": "h6",
-                "width": "100%",
-                "alignment": "center",
-                "font": "var(--font-body--family)",
-                "font_size": "1rem",
-                "line_height": "normal",
-                "letter_spacing": "normal",
-                "case": "none",
-                "text_color": "",
-                "padding-block-start": 0,
-                "padding-block-end": 0,
-                "padding-inline-start": 0,
-                "padding-inline-end": 0
-              },
-              "blocks": {}
             }
           },
           "block_order": [
@@ -1075,7 +1090,7 @@
           "type": "spec",
           "settings": {
             "label": "Tastes like",
-            "value": "Winey, dark chocolate and dark fruit"
+            "value": "Expressive fruit, florals and layered sweetness"
           }
         }
       },
@@ -1085,7 +1100,7 @@
       "name": "t:names.featured_product",
       "settings": {
         "heading_tag": "h3",
-        "product": "raspberry-candy-filter",
+        "product": "in-sequence",
         "heading": "Special <em>release</em>",
         "heading_size": 50,
         "heading_gap": 200,
@@ -1132,9 +1147,9 @@
         "spec_value_case": "none",
         "spec_value_wrap": "pretty",
         "content_distribution": "together",
-        "eyebrow": "MILK-BASED",
+        "eyebrow": "FILTER",
         "show_product_title": true,
-        "description": "<p>Ugly Sweater draws from winter's more questionable traditions: a little bold and loud, but full of nostalgia.</p><p>The kind of thing you wouldn't usually choose, but end up appreciating anyway.</p>",
+        "description": "<p>A limited-edition tasting experience exploring Ethiopian coffee through four processing methods. Each box includes four 80g bags, from Supernatural and Carbonic Maceration to Nitrogen Maceration and Koji. Taste them in sequence to explore how processing shapes fruit, sweetness and texture in the cup.</p>",
         "eyebrow_size": 0,
         "title_size": 0,
         "description_size": 0,
@@ -1142,7 +1157,7 @@
         "spec_value_size": 0,
         "heading_size_mobile": 0,
         "heading_gap_mobile": 60,
-        "image": "shopify://shop_images/ugly.webp",
+        "image": "shopify://shop_images/Inseq3nce_top.png",
         "media_position": "right",
         "media_width": 55,
         "image_fit": "contain",
@@ -1927,9 +1942,12 @@
         "max_width": 1360,
         "section_height": "large",
         "section_height_custom": 50,
+        "mobile_min_height": 600,
+        "mobile_content_top": 0,
         "background_media": "video",
         "background_color": "",
         "video": "shopify://files/videos/26_09_29 ONA bag animation SMALL.mp4",
+        "mobile_video_position": "contain",
         "video_position": "cover",
         "background_image_position": "cover",
         "toggle_overlay": false,
@@ -2370,8 +2388,11 @@
         "max_width": 1280,
         "section_height": "",
         "section_height_custom": 50,
+        "mobile_min_height": 600,
+        "mobile_content_top": 0,
         "background_media": "none",
         "background_color": "#4d4748",
+        "mobile_video_position": "contain",
         "video_position": "cover",
         "background_image_position": "cover",
         "toggle_overlay": false,
@@ -2706,8 +2727,11 @@
         "max_width": 1280,
         "section_height": "",
         "section_height_custom": 50,
+        "mobile_min_height": 600,
+        "mobile_content_top": 0,
         "background_media": "none",
         "background_color": "{{ settings.color_palette.color2 }}",
+        "mobile_video_position": "contain",
         "video_position": "cover",
         "background_image_position": "cover",
         "toggle_overlay": false,
@@ -2765,6 +2789,8 @@
         "video_loop": true,
         "alt": "",
         "aspect_ratio": "16/9",
+        "hide_video_mobile": false,
+        "video_overhang_mobile": 0,
         "video_max_width": 1280,
         "video_overhang": 0,
         "play_background": "#751132",
@@ -2830,6 +2856,8 @@
         "video_loop": true,
         "alt": "",
         "aspect_ratio": "16/9",
+        "hide_video_mobile": false,
+        "video_overhang_mobile": 0,
         "video_max_width": 1280,
         "video_overhang": 160,
         "play_background": "{{ settings.color_palette.color1 }}",
@@ -3083,7 +3111,7 @@
                   "type": "image",
                   "settings": {
                     "image": "shopify://shop_images/imag-2.webp",
-                    "link": "/pages/brewing-guides",
+                    "link": "/blogs/brewguides",
                     "image_ratio": "adapt",
                     "width": "fill",
                     "custom_width": 100,
@@ -3254,8 +3282,11 @@
         "max_width": 1080,
         "section_height": "",
         "section_height_custom": 50,
+        "mobile_min_height": 600,
+        "mobile_content_top": 0,
         "background_media": "none",
         "background_color": "{{ settings.color_palette.background }}",
+        "mobile_video_position": "contain",
         "video_position": "cover",
         "background_image_position": "cover",
         "toggle_overlay": false,
@@ -3313,7 +3344,7 @@
         "icons_style": "arrow",
         "background_color": "{{ settings.color_palette.background }}",
         "text_color": "{{ settings.color_palette.color1 }}",
-        "padding-block-start": 64,
+        "padding-block-start": 0,
         "padding-block-end": 64
       }
     },
@@ -3627,8 +3658,11 @@
         "max_width": 1280,
         "section_height": "",
         "section_height_custom": 50,
+        "mobile_min_height": 600,
+        "mobile_content_top": 0,
         "background_media": "none",
         "background_color": "{{ settings.color_palette.color1 }}",
+        "mobile_video_position": "contain",
         "video_position": "cover",
         "background_image_position": "cover",
         "toggle_overlay": false,
@@ -4457,8 +4491,11 @@
         "max_width": 1280,
         "section_height": "",
         "section_height_custom": 50,
+        "mobile_min_height": 600,
+        "mobile_content_top": 0,
         "background_media": "none",
         "background_color": "{{ settings.color_palette.background }}",
+        "mobile_video_position": "contain",
         "video_position": "cover",
         "background_image_position": "cover",
         "toggle_overlay": false,
@@ -4690,16 +4727,6 @@
         "padding-block-end": 80,
         "padding_inline": 0,
         "padding_inline_mobile": 0
-      }
-    },
-    "wfg_donation_counter": {
-      "type": "ona-donation-counter",
-      "settings": {
-        "bg_color": "#441925",
-        "title": "DOLLARS CONTRIBUTED SO FAR",
-        "subtitle": "Enjoy great coffee while helping fund clean water access.",
-        "learn_more_text": "Shop Coffees",
-        "learn_more_url": "shopify://collections/donation-products"
       }
     }
   },

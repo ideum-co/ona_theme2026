@@ -49,7 +49,7 @@
             "media_fit": "contain",
             "media_radius": 0,
             "extend_media": false,
-            "zoom": true,
+            "zoom": false,
             "video_loop": false,
             "hide_variants": true,
             "padding-block-start": 0,
@@ -450,6 +450,63 @@
         "padding-block-end": 0
       }
     },
+    "product_tabs_XnTEpK": {
+      "type": "product-tabs",
+      "blocks": {
+        "product_tab_JPytxq": {
+          "type": "product-tab",
+          "settings": {
+            "label": "Profile"
+          },
+          "blocks": {}
+        },
+        "product_tab_4TXdiM": {
+          "type": "product-tab",
+          "settings": {
+            "label": "Brew Guide"
+          },
+          "blocks": {}
+        },
+        "product_tab_J8gJPt": {
+          "type": "product-tab",
+          "settings": {
+            "label": "Reviews"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "product_tab_JPytxq",
+        "product_tab_4TXdiM",
+        "product_tab_J8gJPt"
+      ],
+      "disabled": true,
+      "name": "Product tabs",
+      "settings": {
+        "label_font": "heading",
+        "label_size": 44,
+        "label_size_mobile": 24,
+        "label_case": "none",
+        "distribution": "space-between",
+        "rule_thickness": 1,
+        "rule_color": "",
+        "indicator_thickness": 6,
+        "indicator_color": "",
+        "section_width": "page-width",
+        "max_width": 1360,
+        "panel_gap": 48,
+        "panel_gap_mobile": 0,
+        "color_source": "product",
+        "color_namespace": "custom",
+        "background_color_key": "pdp_background_color",
+        "text_color_key": "pdp_text_color",
+        "background_color": "{{ product.metafields.custom.product_color.value }}",
+        "text_color": "#f5f4e9",
+        "active_label_color": "",
+        "padding-block-start": 64,
+        "padding-block-end": 64
+      }
+    },
     "product_tabs_fW4maV": {
       "type": "product-tabs",
       "blocks": {
@@ -625,6 +682,7 @@
         },
         "product_tab_4tzPxX": {
           "type": "product-tab",
+          "disabled": true,
           "settings": {
             "label": "Brew Guide"
           },
@@ -635,7 +693,20 @@
           "settings": {
             "label": "Reviews"
           },
-          "blocks": {}
+          "blocks": {
+            "judge_me_reviews_review_widget_LLV6L8": {
+              "type": "shopify://apps/judge-me-reviews/blocks/review_widget/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
+              "settings": {
+                "review_data": "sample_data",
+                "max_width": 1200,
+                "show_shop_reviews": false,
+                "empty_state": "empty_widget"
+              }
+            }
+          },
+          "block_order": [
+            "judge_me_reviews_review_widget_LLV6L8"
+          ]
         }
       },
       "block_order": [
@@ -705,6 +776,7 @@
         "button_wrap": "pretty",
         "source": "uploaded",
         "video": "shopify://files/videos/ona-hero-coffee-cherries-picking.mp4",
+        "video_url": "",
         "video_autoplay": false,
         "video_loop": true,
         "alt": "",
@@ -771,6 +843,7 @@
         "item_BPQBRi",
         "item_ywiKXN"
       ],
+      "disabled": true,
       "name": "Product DNA",
       "settings": {
         "content_source": "metaobject",
@@ -1257,6 +1330,14 @@
               },
               "blocks": {}
             },
+            "ona_promo_tags": {
+              "type": "ona-product-tags",
+              "settings": {
+                "padding-block-start": 0,
+                "padding-block-end": 0
+              },
+              "blocks": {}
+            },
             "product_title_M7MJkb": {
               "type": "product-title",
               "name": "t:names.product_title",
@@ -1489,13 +1570,6 @@
                 "buy_buttons",
                 "subscribe"
               ]
-            },
-            "ona_promo_tags": {
-              "type": "ona-product-tags",
-              "settings": {
-                "padding-block-start": 0,
-                "padding-block-end": 0
-              }
             }
           },
           "block_order": [
@@ -1568,63 +1642,6 @@
         "padding_bottom": 96,
         "padding_inline": 40,
         "padding_inline_mobile": 20
-      }
-    },
-    "product_tabs_XnTEpK": {
-      "type": "product-tabs",
-      "blocks": {
-        "product_tab_JPytxq": {
-          "type": "product-tab",
-          "settings": {
-            "label": "Profile"
-          },
-          "blocks": {}
-        },
-        "product_tab_4TXdiM": {
-          "type": "product-tab",
-          "settings": {
-            "label": "Brew Guide"
-          },
-          "blocks": {}
-        },
-        "product_tab_J8gJPt": {
-          "type": "product-tab",
-          "settings": {
-            "label": "Reviews"
-          },
-          "blocks": {}
-        }
-      },
-      "block_order": [
-        "product_tab_JPytxq",
-        "product_tab_4TXdiM",
-        "product_tab_J8gJPt"
-      ],
-      "disabled": true,
-      "name": "Product tabs",
-      "settings": {
-        "label_font": "heading",
-        "label_size": 44,
-        "label_size_mobile": 24,
-        "label_case": "none",
-        "distribution": "space-between",
-        "rule_thickness": 1,
-        "rule_color": "",
-        "indicator_thickness": 6,
-        "indicator_color": "",
-        "section_width": "page-width",
-        "max_width": 1360,
-        "panel_gap": 48,
-        "panel_gap_mobile": 0,
-        "color_source": "product",
-        "color_namespace": "custom",
-        "background_color_key": "pdp_background_color",
-        "text_color_key": "pdp_text_color",
-        "background_color": "{{ product.metafields.custom.product_color.value }}",
-        "text_color": "#F5F4E9",
-        "active_label_color": "",
-        "padding-block-start": 64,
-        "padding-block-end": 64
       }
     }
   },

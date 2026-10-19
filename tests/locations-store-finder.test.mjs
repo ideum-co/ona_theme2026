@@ -92,8 +92,10 @@ test('renders explicitly labelled filters, live status, and selected view contro
 
   assert.match(section, /data-location-status[^>]*role="status"[^>]*aria-live="polite"/);
   assert.match(section, /data-result-count[^>]*role="status"[^>]*aria-live="polite"/);
-  assert.match(section, /<button[^>]*data-view="list"[^>]*aria-pressed="true"/);
-  assert.match(section, /<button[^>]*data-view="map"[^>]*aria-pressed="false"/);
+  // Both toggles reflect the served view rather than hardcoding it -- see the
+  // "map is the served view" test below for why.
+  assert.match(section, /<button[^>]*data-view="list"[^>]*aria-pressed="\{% if initial_view == 'list' %\}true\{% else %\}false\{% endif %\}"/);
+  assert.match(section, /<button[^>]*data-view="map"[^>]*aria-pressed="\{% if initial_view == 'map' %\}true\{% else %\}false\{% endif %\}"/);
   assert.match(section, /<button[^>]*data-use-location/);
   assert.match(section, /<a[^>]*data-directions-link[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
   assert.match(section, /<a[^>]*data-website-link[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
@@ -1061,5 +1063,173 @@ test('rejects a repeated pagination cursor instead of appending a page twice', a
       async (url) => ({ locations: [], cards: [], nextPageUrl: url }),
     ),
     /repeated pagination URL/,
+  );
+});
+
+test('the map is the served view, and the list is never hidden to get it', () => {
+  // Production (sections/ona-store-finder.liquid on theme 160815546559) serves
+  // data-view="map" with the Map toggle already active. This section must do
+  // the same, because letting the script switch after boot is a visible flip.
+  //
+  // Codex raised two objections on PR #191 and both were correct about this
+  // section as it stood. They are fixed at the source, not by abandoning the
+  // setting, and these assertions pin the fixes together -- the served map
+  // view is only safe BECAUSE of them:
+  //
+  //   1. the script must not reset a view the server already rendered;
+  //   2. the list must survive at every width, so a page whose script never
+  //      ran still reaches all 250 locations instead of showing a grey box.
+  assert.match(section, /assign initial_view = 'list'/);
+  assert.match(
+    section,
+    /if section\.settings\.default_view == 'map' and section\.settings\.maps_api_key != blank\s*\n\s*assign initial_view = 'map'/,
+    'the map may only be served when a Maps API key is configured',
+  );
+  assert.match(section, /data-active-view="\{\{ initial_view \}\}"/);
+  assert.doesNotMatch(section, /data-active-view="(list|map)"/, 'the served view must not be hardcoded');
+  assert.match(
+    section,
+    /data-map-panel\{% unless initial_view == 'map' %\} hidden\{% endunless %\}>/,
+    'the map panel must start open exactly when initial_view is map',
+  );
+
+  // (2) nothing may hide the list panel, at any width. This is the assertion
+  // that makes a served map view safe without JavaScript.
+  const stylesheet = section.slice(section.indexOf('{% stylesheet %}'), section.indexOf('{% endstylesheet %}'));
+  const hidesList = stylesheet
+    .split('}')
+    .filter((rule) => /list-panel/.test(rule) && /display:\s*none/.test(rule));
+  assert.deepEqual(hidesList, [], `the list panel must never be hidden:\n${hidesList.join('\n')}`);
+  assert.match(
+    stylesheet,
+    /\[data-active-view='map'\] \.locations-store-finder__map-panel \{\s*\n\s*order: 1;/,
+    'on narrow screens the map stacks above the list, as production does',
+  );
+
+  // (1) the script keeps the served state instead of tearing it down.
+  assert.match(
+    javascript,
+    /this\.activeView = this\.dataset\.activeView === 'map' \? 'map' : 'list';/,
+    'the script must seed activeView from what the server rendered',
+  );
+  assert.match(
+    javascript,
+    /if \(this\.activeView !== 'map'\) this\.showListView\(\);/,
+    'setView must not reset a view that is already the map',
+  );
+
+  // ...and the setting must still reach the script, or none of this fires.
+  assert.match(javascript, /if \(this\.settings\.defaultView === 'map'\) \{\s*\n\s*this\.setView\('map'\);/);
+  assert.match(javascript, /const apiKey = String\(this\.settings\.mapsApiKey \?\? ''\)\.trim\(\);\s*\n\s*if \(!apiKey\) \{/);
+});
+
+test('/pages/locations opens on the map', () => {
+  // The store finder carries 250 located cafes; the list is the less useful
+  // first impression. ONA asked for the map to lead.
+  const template = JSON.parse(
+    readFileSync(resolve(themeRoot, 'templates/page.location.json'), 'utf8').replace(/^\s*\/\*[\s\S]*?\*\/\s*/, ''),
+  );
+  assert.equal(template.sections.store_finder.settings?.default_view, 'map');
+  assert.equal(template.order[0], 'header');
+  assert.equal(template.order[1], 'store_finder');
+});
+
+test('the editor is warned when the map is configured but keyless', () => {
+  // The failure is silent by construction: with default_view: map and no key,
+  // the script falls back to the list and posts `no_map_key_status`, which
+  // reads like ordinary page copy. Nothing looks wrong. It looked fine for six
+  // weeks after PR #120, because supplying the key was a documented handover
+  // step (docs/locations-metaobject-migration.md) that had no owner.
+  assert.match(
+    section,
+    /\{%-\s*if request\.design_mode and section\.settings\.default_view == 'map' and section\.settings\.maps_api_key == blank\s*-%\}/,
+    'the notice must fire on exactly the contradiction, and only in the editor',
+  );
+  assert.match(section, /locations-store-finder__editor-notice/);
+
+  // It must never reach a customer, so every occurrence in the MARKUP (the
+  // stylesheet may carry as many rules as it likes) has to sit inside the
+  // design-mode guard. Counting occurrences across the whole file instead was
+  // the first version of this check and it was simply wrong -- it broke on a
+  // second CSS rule, which proves nothing about customer exposure.
+  const markup = section.slice(0, section.indexOf('{% stylesheet %}'));
+  const guarded = markup.slice(
+    markup.indexOf('{%- if request.design_mode'),
+    markup.indexOf('{%- endif -%}', markup.indexOf('{%- if request.design_mode')),
+  );
+  const inMarkup = markup.match(/locations-store-finder__editor-notice/g) ?? [];
+  const inGuard = guarded.match(/locations-store-finder__editor-notice/g) ?? [];
+  assert.equal(inMarkup.length, 1, 'the notice must be rendered in exactly one place');
+  assert.equal(inGuard.length, 1, 'that one place must be inside the request.design_mode guard');
+
+  // default_view: list with no key is a deliberate configuration, not a fault.
+  assert.doesNotMatch(
+    section,
+    /if request\.design_mode and section\.settings\.maps_api_key == blank\s*-%\}/,
+    'a missing key is only a problem when the map is the requested view',
+  );
+});
+
+test('both settings explain the dependency and the hazard in the editor', () => {
+  const schema = JSON.parse(section.slice(section.indexOf('{% schema %}') + 12, section.indexOf('{% endschema %}')));
+  const byId = Object.fromEntries(schema.settings.filter((s) => s.id).map((s) => [s.id, s]));
+
+  // Whoever is about to paste the key is standing in front of this field. The
+  // warning belongs here, not only in a document they have no reason to open.
+  assert.match(byId.maps_api_key.info, /page\.location\.json/, 'the key field must say where the value is stored');
+  assert.match(byId.maps_api_key.info, /reconcile|overwrit/i, 'the key field must warn that a merge can wipe it');
+  assert.match(byId.default_view.info, /key/i, 'the view field must say the map needs a key');
+});
+
+test('the map opens on the country, and only re-frames once results are narrowed', () => {
+  // Felipe, 2026-10-19, on first seeing the map with a key in: "the map changed
+  // and is not opening centered". Two causes, both in this file:
+  //
+  //   1. the map was created centred on locationsWithCoordinates(...)[0] -- the
+  //      first record in metaobject order -- at zoom 12, so it opened inside an
+  //      arbitrary suburb;
+  //   2. syncMapMarkers then fitBounds()'d the whole visible set on first paint.
+  //      ONA has a Dubai location, so the fit spanned Canberra to the UAE and
+  //      the opening view was the Indian Ocean.
+  //
+  // Production opens on Australia's centroid at zoom 4 and that is what these
+  // constants mirror (sections/ona-store-finder.liquid on theme 160815546559).
+  assert.match(
+    javascript,
+    /const NATIONAL_VIEW = \{ center: \{ lat: -25\.2744, lng: 133\.7751 \}, zoom: 4 \};/,
+    'the national framing must match production',
+  );
+  assert.match(javascript, /center: NATIONAL_VIEW\.center,\s*\n\s*zoom: NATIONAL_VIEW\.zoom,/);
+  assert.doesNotMatch(
+    javascript,
+    /const firstMappedLocation = locationsWithCoordinates/,
+    'the opening view must not depend on metaobject ordering',
+  );
+
+  // The guard that stops the unfiltered set being fitted on first paint.
+  assert.match(
+    javascript,
+    /const isNarrowed = Boolean\(this\.origin\) \|\| mappedLocations\.length < mappedTotal;/,
+    'narrowing must be derived from an origin or a reduced result set',
+  );
+  assert.match(
+    javascript,
+    /\} else if \(isNarrowed\) \{\s*\n\s*this\.map\.fitBounds\(bounds, 48\);/,
+    'fitBounds must be gated on isNarrowed, or the opening view spans two continents',
+  );
+
+  // A single result still zooms to it -- narrowing all the way down is the one
+  // case where moving the map is unambiguously what the visitor asked for.
+  assert.match(javascript, /if \(mappedLocations\.length === 1\) \{\s*\n\s*this\.map\.setCenter\(bounds\.getCenter\(\)\);\s*\n\s*this\.map\.setZoom\(14\);/);
+
+  // ...and CLEARING a filter must put the camera back. Gating fitBounds on
+  // isNarrowed fixed the opening view but stranded the cleared one: every
+  // marker returns while the map is still framed on the filtered region, so
+  // most sit off-screen with nothing explaining why. Codex, PR #191. The
+  // branch is also what first paint takes, where it is a no-op.
+  assert.match(
+    javascript,
+    /\} else \{[\s\S]{0,700}?this\.map\.setCenter\(NATIONAL_VIEW\.center\);\s*\n\s*this\.map\.setZoom\(NATIONAL_VIEW\.zoom\);/,
+    'the un-narrowed branch must restore the national framing, not leave the camera where it was',
   );
 });

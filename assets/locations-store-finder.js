@@ -1,6 +1,8 @@
 const HTMLElementBase = globalThis.HTMLElement ?? class {};
 const EARTH_RADIUS_KM = 6371;
 const MAPS_LOAD_TIMEOUT_MS = 15000;
+// Australia's centroid at country zoom -- the framing production opens on.
+const NATIONAL_VIEW = { center: { lat: -25.2744, lng: 133.7751 }, zoom: 4 };
 let mapsPromise;
 let mapsCallbackSequence = 0;
 const mapsAuthSubscribers = new Set();
@@ -340,6 +342,10 @@ export class LocationsStoreFinder extends HTMLElementBase {
     this.origin = null;
     this.map = null;
     this.markers = [];
+    // Seed from what the server actually rendered. Without this the boot path
+    // cannot tell "already showing the map" from "not initialised", and resets
+    // a correctly served map view to the list before the Maps API resolves.
+    this.activeView = this.dataset.activeView === 'map' ? 'map' : 'list';
     this.visibleLocations = [...this.locations];
 
     if (this.locations.length !== this.cards.length) {
@@ -582,7 +588,10 @@ export class LocationsStoreFinder extends HTMLElementBase {
       return;
     }
 
-    this.showListView();
+    // Only fall back to the list while the map loads if the list is what the
+    // visitor is currently looking at. Resetting a served map view produces a
+    // map -> list -> map flip and, on narrow screens, a layout jump.
+    if (this.activeView !== 'map') this.showListView();
     try {
       await this.initializeMap(apiKey);
       if (this.requestedView !== 'map' || this.finderConnected === false) return;
@@ -643,13 +652,16 @@ export class LocationsStoreFinder extends HTMLElementBase {
         throw new Error('The location finder disconnected before Maps became ready.');
       }
       if (!maps || !this.mapElement) throw new Error('Google Maps is unavailable.');
-      const firstMappedLocation = locationsWithCoordinates(this.visibleLocations)[0];
-      const center = firstMappedLocation
-        ? { lat: Number(firstMappedLocation.latitude), lng: Number(firstMappedLocation.longitude) }
-        : { lat: -25.2744, lng: 133.7751 };
+      // Open on the whole country, which is what production does
+      // (sections/ona-store-finder.liquid: center {-25.2744, 133.7751}, zoom 4).
+      // This used to centre on whichever location happened to be first in the
+      // metaobject order, at zoom 12 -- so the map opened deep inside one
+      // suburb, and fitBounds then yanked it out to take in Dubai.
       this.map = new maps.Map(this.mapElement, {
-        center,
-        zoom: firstMappedLocation ? 12 : 4,
+        center: NATIONAL_VIEW.center,
+        zoom: NATIONAL_VIEW.zoom,
+        minZoom: 3,
+        maxZoom: 18,
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: true,
@@ -698,11 +710,27 @@ export class LocationsStoreFinder extends HTMLElementBase {
       this.markers.push(marker);
     }
 
+    // Re-frame only once the visitor has narrowed things down. Fitting the
+    // unfiltered set spans Canberra to Dubai, so the opening view was the
+    // Indian Ocean with Australia in a corner. Until there is a reason to move,
+    // the national view the map was created with is the better answer.
+    const mappedTotal = locationsWithCoordinates(this.locations).length;
+    const isNarrowed = Boolean(this.origin) || mappedLocations.length < mappedTotal;
+
     if (mappedLocations.length === 1) {
       this.map.setCenter(bounds.getCenter());
       this.map.setZoom(14);
-    } else {
+    } else if (isNarrowed) {
       this.map.fitBounds(bounds, 48);
+    } else {
+      // Back to the full set with no origin -- which happens on first paint and
+      // again whenever a filter is CLEARED. Clearing has to put the camera back:
+      // the markers all return, but without this the map is still framed on
+      // whatever suburb the filter had zoomed into, so most of them sit
+      // off-screen with nothing explaining why. On first paint this re-asserts
+      // the framing the map was created with and nothing moves. Codex, PR #191.
+      this.map.setCenter(NATIONAL_VIEW.center);
+      this.map.setZoom(NATIONAL_VIEW.zoom);
     }
   }
 
