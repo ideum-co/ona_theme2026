@@ -272,7 +272,11 @@
     border: 1px solid var(--coffee-quiz-color);
     background: var(--coffee-quiz-background);
     color: var(--coffee-quiz-color);
-    overflow-y: auto;
+
+    /* The modal no longer scrolls as a whole - the body does. When it scrolled, a tall option list
+       overflowed its `1fr` row and painted over the footer, dropping the Next button behind the
+       answers. Clipping here and scrolling the body keeps the header and footer pinned everywhere. */
+    overflow: hidden;
   }
 
   .coffee-quiz__header {
@@ -280,6 +284,13 @@
     align-items: start;
     justify-content: space-between;
     gap: var(--gap-xl, 1.25rem);
+  }
+
+  /* The only scroll region: header and footer stay put, the answers scroll between them. */
+  .coffee-quiz__body {
+    min-block-size: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .coffee-quiz__title {
@@ -486,8 +497,53 @@
   }
 
   @media screen and (max-width: 749px) {
+    /* Full-bleed on a phone: the quiz is the whole screen, so the centred padded card gives way to
+       a sheet that fills it. `dvh` tracks the real viewport as the browser chrome comes and goes. */
+    .coffee-quiz {
+      padding: 0;
+      place-items: stretch;
+    }
+
     .coffee-quiz__modal {
-      padding: var(--padding-2xl, 1.5rem);
+      inline-size: 100%;
+      max-block-size: none;
+      block-size: 100dvh;
+      padding: 0;
+      border: 0;
+
+      /* Zero here so each zone owns its own padding; the hairline rules do the separating. */
+      gap: 0;
+    }
+
+    /* Header and footer are solid bars that hold their place while the answers scroll between them,
+       each carrying a hairline in the same cream as the option borders. Safe-area insets keep the
+       close button clear of the notch and the Next button clear of the home indicator. */
+    .coffee-quiz__header {
+      padding: max(var(--padding-xl, 1.25rem), env(safe-area-inset-top)) var(--padding-2xl, 1.5rem)
+        var(--padding-lg, 1rem);
+      border-block-end: 1px solid var(--coffee-quiz-color);
+    }
+
+    .coffee-quiz__body {
+      padding: var(--padding-xl, 1.25rem) var(--padding-2xl, 1.5rem);
+    }
+
+    /* The desktop 3rem gap above the answers is too much of the screen on a phone. */
+    .coffee-quiz__options {
+      margin-block-start: var(--gap-2xl, 1.5rem);
+    }
+
+    .coffee-quiz__footer {
+      padding: var(--padding-lg, 1rem) var(--padding-2xl, 1.5rem)
+        max(var(--padding-lg, 1rem), env(safe-area-inset-bottom));
+      border-block-start: 1px solid var(--coffee-quiz-color);
+      background: var(--coffee-quiz-background);
+    }
+
+    /* A full-width target is far easier to hit with a thumb than a right-aligned pill. */
+    .coffee-quiz__next {
+      inline-size: 100%;
+      justify-content: center;
     }
 
     .coffee-quiz__footer > .coffee-quiz__bag {
