@@ -68,13 +68,13 @@
           {% render 'background-media',
             background_media: 'video',
             background_video: section.settings.mobile_video,
-            background_video_position: section.settings.mobile_video_position | default: 'contain'
+            background_video_position: section.settings.mobile_video_position
           %}
         {% else %}
           {% render 'background-media',
             background_media: 'video',
             background_video: section.settings.video,
-            background_video_position: section.settings.mobile_video_position | default: 'contain'
+            background_video_position: section.settings.mobile_video_position
           %}
         {% endif %}
       </div>
