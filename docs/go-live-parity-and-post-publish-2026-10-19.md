@@ -74,15 +74,24 @@ which does. That is a new external dependency introduced by the rebuild.
 > Set it in Admin → Customise → the store finder section → **Maps API key**.
 > Restrict the key to the `onacoffee.com.au` HTTP referrer in Google Cloud.
 
-**b. The map was not the first thing shown.** Fixed in this PR. The section had
-`data-active-view="list"` hardcoded and the map panel permanently `hidden`, so
-the `default_view` setting only ever reached the script, which flipped the view
-after boot. The initial view is now rendered server-side from the setting, and
-`templates/page.location.json` sets `default_view: "map"`.
+**b. The map was not the first thing shown.** Fixed in this PR, by setting
+`default_view: "map"` in `templates/page.location.json`. The script reads that
+from the section's JSON payload and calls `setView('map')` on boot.
 
-The server only opens the map when a key is configured — without one the script
-would close it again immediately, so an SSR map panel would flash an empty grey
-box. **So (b) has no visible effect until (a) is done.**
+The section deliberately keeps serving the **list** whatever the setting says.
+Rendering the map panel open server-side looks like the tidier fix and was tried
+first; Codex caught two problems with it on PR #191:
+
+- `setView('map')` calls `showListView()` *before* it awaits the Maps API, so an
+  SSR map state is reset to list and then back — map, list, map — a worse
+  flicker than the one it was meant to remove. With the list served first that
+  call is a no-op and there is no flicker at all.
+- If the module never runs, an SSR map panel is an empty grey box forever, and
+  the `max-width: 990px` rule hides `.locations-store-finder__list-panel` in map
+  view — so every phone would get no locations at all instead of a usable list.
+
+**(b) has no visible effect until (a) is done**: without a key the script falls
+back to the list and posts `no_map_key_status`.
 
 The data side is ready: 250 store locations, **all 250 with coordinates**.
 

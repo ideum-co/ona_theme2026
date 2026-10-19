@@ -92,13 +92,8 @@ test('renders explicitly labelled filters, live status, and selected view contro
 
   assert.match(section, /data-location-status[^>]*role="status"[^>]*aria-live="polite"/);
   assert.match(section, /data-result-count[^>]*role="status"[^>]*aria-live="polite"/);
-  // Both toggles used to hardcode their pressed state, which made the
-  // `default_view` setting a lie on the server: the page always rendered the
-  // list and the script flipped it after boot. Each button now reflects
-  // `initial_view`, so the two must stay in step -- a hardcoded value here is
-  // the bug this replaced.
-  assert.match(section, /<button[^>]*data-view="list"[^>]*aria-pressed="\{% if initial_view == 'list' %\}true\{% else %\}false\{% endif %\}"/);
-  assert.match(section, /<button[^>]*data-view="map"[^>]*aria-pressed="\{% if initial_view == 'map' %\}true\{% else %\}false\{% endif %\}"/);
+  assert.match(section, /<button[^>]*data-view="list"[^>]*aria-pressed="true"/);
+  assert.match(section, /<button[^>]*data-view="map"[^>]*aria-pressed="false"/);
   assert.match(section, /<button[^>]*data-use-location/);
   assert.match(section, /<a[^>]*data-directions-link[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
   assert.match(section, /<a[^>]*data-website-link[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
@@ -1069,24 +1064,41 @@ test('rejects a repeated pagination cursor instead of appending a page twice', a
   );
 });
 
-test('the server renders the view the setting asks for, but never a keyless map', () => {
-  // `default_view` exists so the map can be the first thing a visitor sees on
-  // /pages/locations. It was inert: the container hardcoded data-active-view
-  // and the panel was always `hidden`, so the setting only reached the script,
-  // which flipped the view after boot -- a visible list-then-map flip.
-  assert.match(section, /assign initial_view = 'list'/);
-  assert.match(
+test('the server always renders the list, so the page survives without JavaScript', () => {
+  // Codex, PR #191. Rendering the map panel open when `default_view` is map
+  // looked like the obvious way to stop the list-then-map flip. It is wrong
+  // twice over:
+  //
+  //   1. setView('map') calls showListView() BEFORE it awaits the Maps API
+  //      (assets/locations-store-finder.js), so an SSR map state is reset to
+  //      list and then back -- map, list, map, with aria-pressed flipping each
+  //      time. Serving the list makes that first call a no-op and removes the
+  //      flicker entirely.
+  //   2. If the module never runs, an SSR map panel is an empty grey box, and
+  //      the max-width:990px rule hides .locations-store-finder__list-panel in
+  //      map view -- so every phone would get no locations at all.
+  //
+  // The list is the baseline that degrades safely. The script owns the switch.
+  assert.match(section, /data-active-view="list"/, 'the served markup must open on the list');
+  assert.match(section, /data-map-panel hidden>/, 'the map panel must be hidden in the served markup');
+  assert.doesNotMatch(section, /initial_view/, 'the server must not derive a view; the script owns it');
+  assert.doesNotMatch(
     section,
-    /if section\.settings\.default_view == 'map' and section\.settings\.maps_api_key != blank\s*\n\s*assign initial_view = 'map'/,
-    'the map may only be opened server-side when a Maps API key is configured',
+    /data-active-view="\{\{/,
+    'data-active-view must be a literal, not driven by a setting',
   );
-  assert.match(section, /data-active-view="\{\{ initial_view \}\}"/);
+
+  // ...and the script must still be the thing that honours the setting.
   assert.match(
-    section,
-    /data-map-panel\{% unless initial_view == 'map' %\} hidden\{% endunless %\}>/,
-    'the map panel must start open only when initial_view is map',
+    javascript,
+    /if \(this\.settings\.defaultView === 'map'\) \{\s*\n\s*this\.setView\('map'\);/,
+    'the boot path must act on defaultView, or the setting is inert',
   );
-  assert.doesNotMatch(section, /data-active-view="(list|map)"/, 'the initial view must not be hardcoded');
+  assert.match(
+    javascript,
+    /const apiKey = String\(this\.settings\.mapsApiKey \?\? ''\)\.trim\(\);\s*\n\s*if \(!apiKey\) \{/,
+    'setView must fall back to the list when no Maps key is configured',
+  );
 });
 
 test('/pages/locations opens on the map', () => {

@@ -14,19 +14,27 @@
   endif
 
   comment
-    Which panel the server renders open. The script re-asserts this on boot, so
-    rendering 'list' and letting it switch produced a visible list-then-map flip
-    on the one setting that exists to avoid it. Honour the setting here instead.
+    The server always renders the LIST, whatever `default_view` says, and the
+    script owns the switch to the map. An earlier version of this section
+    rendered the map panel open when the setting asked for it; Codex caught two
+    problems with that on PR #191, both real:
 
-    The map is only opened when a Maps JavaScript API key is configured: without
-    one, assets/locations-store-finder.js falls back to the list and sets
-    `no_map_key_status`, so an SSR map panel would be an empty grey box the
-    script then closes again.
+    1. assets/locations-store-finder.js `setView('map')` calls `showListView()`
+       before it awaits the Maps API, so an SSR map state is reset to list and
+       then back again -- map, list, map, with aria-pressed flipping each time.
+       That is a worse flicker than the one it was meant to remove, and with the
+       list rendered first there is no flicker at all: the no-op showListView()
+       leaves the page as served until the map is genuinely ready.
+    2. If the module never runs -- blocked, cached stale, a JS error anywhere
+       earlier on the page -- an SSR map panel is an empty grey box forever, and
+       the `max-width: 990px` rule below sets
+       `[data-active-view='map'] .locations-store-finder__list-panel { display: none }`,
+       so every phone would get no locations at all rather than a usable list.
+
+    `default_view: map` is still honoured: the script reads it from the JSON
+    payload and calls setView('map') on boot once a Maps key is present. The
+    list is simply the baseline that survives without JavaScript.
   endcomment
-  assign initial_view = 'list'
-  if section.settings.default_view == 'map' and section.settings.maps_api_key != blank
-    assign initial_view = 'map'
-  endif
 -%}
 
 <script src="{{ 'locations-store-finder.js' | asset_url }}" type="module"></script>
@@ -49,7 +57,7 @@
     data-current-page="{{ paginate.current_page }}"
     data-next-page-url="{{ paginate.next.url | escape }}"
     data-marker-icon="{{ 'map-active.svg' | asset_url }}"
-    data-active-view="{{ initial_view }}"
+    data-active-view="list"
     {{ section.shopify_attributes }}
   >
     <div class="locations-store-finder__inner">
@@ -138,7 +146,7 @@
             type="button"
             data-view="list"
             aria-controls="LocationsFinder-list-{{ section.id }}"
-            aria-pressed="{% if initial_view == 'list' %}true{% else %}false{% endif %}"
+            aria-pressed="true"
           >
             {{- section.settings.list_view_label | default: 'List' | escape -}}
           </button>
@@ -146,7 +154,7 @@
             type="button"
             data-view="map"
             aria-controls="LocationsFinder-map-{{ section.id }}"
-            aria-pressed="{% if initial_view == 'map' %}true{% else %}false{% endif %}"
+            aria-pressed="false"
           >
             {{- section.settings.map_view_label | default: 'Map' | escape -}}
           </button>
@@ -238,7 +246,7 @@
           </ul>
         </div>
 
-        <div id="LocationsFinder-map-{{ section.id }}" class="locations-store-finder__map-panel" data-map-panel{% unless initial_view == 'map' %} hidden{% endunless %}>
+        <div id="LocationsFinder-map-{{ section.id }}" class="locations-store-finder__map-panel" data-map-panel hidden>
           <div
             class="locations-store-finder__map"
             data-location-map
