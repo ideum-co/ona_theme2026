@@ -56,9 +56,14 @@ point is that no one *chose* to deploy it.
 > The replacement is **`staging-v2`**, created at `77174e8` — byte-identical to
 > `main` on the day it was made. The names below all refer to it. The rule in §4
 > step 5 is the one that failed, so treat it as the load-bearing one:
-> **fast-forward `staging-v2` to `main` after every merge to `main`, including
-> the hotfixes that bypass it.** A staging branch that is allowed to drift is
-> worse than none, because it looks like a safety net until the day you need it.
+> **re-point `staging-v2` at `main` after every merge to `main`, including the
+> hotfixes that bypass it.** A staging branch that is allowed to drift is worse
+> than none, because it looks like a safety net until the day you need it.
+>
+> Earlier drafts said *fast-forward*, which cannot work: `main` requires linear
+> history, so release PRs are squashed, and the squash gives `main` a commit
+> that is not a descendant of anything on `staging-v2`. See §4 step 5 for the
+> command that does work.
 
 ---
 
@@ -72,10 +77,18 @@ point is that no one *chose* to deploy it.
 
 Protection as configured:
 
-- **`main`** — PR required, linear history, conversation resolution required,
-  strict status checks, admins included, no force-push, no deletion.
-- **`staging-v2`** — linear history, no force-push, no deletion. Deliberately
-  lighter: staging should be easy to land on.
+- **`main`** — PR required, **0 approving reviews**, conversation resolution
+  required, linear history, strict status checks with **no contexts attached**,
+  admins included, no force-push, no deletion. Read against the API on
+  2026-10-19. Two of those are weaker than they sound: a PR merges with no
+  approval at all, and "strict status checks" with zero contexts enforces
+  nothing — see §7. What actually blocks a merge today is **conversation
+  resolution**.
+- **`staging-v2`** — **no protection rules at all** (`GET …/protection` returns
+  404). An earlier version of this section claimed linear history and no
+  force-push; that was never true. The lack of protection is what makes the
+  §4 step 5 reset possible, so do not add force-push protection here without
+  replacing that step.
 - **`staging`** (retired) — left in place as evidence. Do not branch from it,
   do not merge into it. See §1a.
 
@@ -135,13 +148,26 @@ feat/thing ──PR──▶ staging-v2 ──release PR──▶ main ──▶
    `main`**, titled `release: <date> — <summary>`, with the §6 checklist in the
    body. Merging that PR is the deploy. Never open it from `staging`; that
    branch is retired (§1a) and a release PR from it would ship nothing.
-5. Keep `staging-v2` in sync afterwards — `main` must never be ahead of
+5. Re-point `staging-v2` at `main` afterwards — `main` must never be ahead of
    `staging-v2`. This is the step that killed the first staging branch (§1a);
    do it in the same sitting as the merge, not later.
 
+   ```sh
+   git fetch origin
+   git branch -f staging-v2 origin/main
+   git push --force-with-lease origin staging-v2
+   ```
+
+   It has to be a reset, not a fast-forward. `main` requires linear history, so
+   the release PR is squashed, and the squashed commit is not a descendant of
+   the branch it came from — a fast-forward is refused every time. The force
+   push is safe here only because `staging-v2` carries no protection (§2) and
+   holds nothing that is not already on `main` by this point; `--force-with-lease`
+   is what catches the case where that stopped being true.
+
 **Hotfixes.** A genuine production emergency may branch from `main` and PR
-straight into `main`. Immediately afterwards, fast-forward `staging-v2` to
-`main` so the two do not drift. "This is small" is not an emergency, and nine
+straight into `main`. Immediately afterwards, re-point `staging-v2` at `main`
+with the step 5 command so the two do not drift. "This is small" is not an emergency, and nine
 small ones in two hours is how the first staging branch died (§1a).
 
 ---
@@ -227,6 +253,13 @@ Paste into the body of every `staging-v2` → `main` PR:
       changed twice without notice. `160335790271` is the pre-cutover theme;
       `160815546559` is what is live as of 2026-10-14 22:00:42Z
 - [ ] Deploying at a sensible hour (AEDT), not into a promo window
+- [ ] If `templates/page.location.json` is in the diff: **re-enter the Google
+      Maps API key in the theme editor immediately after merging**, then confirm
+      with
+      `curl -sL "https://onacoffee.com.au/pages/locations?preview_theme_id=<theme>" | grep -o '"mapsApiKey": "[^"]*"'`.
+      The repo copy carries an empty key by design (§5), so the merge wipes the
+      live one and nothing reports an error
+- [ ] `staging-v2` re-pointed at `main` with the §4 step 5 command
 
 **Checksums read before merge:**
 | file | repo md5 | live md5 | equal? |

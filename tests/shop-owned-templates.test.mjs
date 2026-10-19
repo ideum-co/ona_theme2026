@@ -283,6 +283,14 @@ test('page.location.json is declared shop-owned, and never carries the Maps key'
   }
   assert.match(shopOwned, /page\.location\.json.*credential/is, '§5 must say why this one is different');
 
+  // The rule in §5 is only followed if it reaches the list people actually
+  // tick. Codex, PR #191: §5 gained the re-enter step while §6's checklist
+  // still asked only for the ordinary pre-merge reconcile.
+  const checklist = doc.slice(doc.indexOf('## 6.'), doc.indexOf('## 7.'));
+  assert.match(checklist, /page\.location\.json/, 'the release checklist must call out this template');
+  assert.match(checklist, /re-enter the Google\n\s*Maps API key/i, 'and must say to re-enter the key after merging');
+  assert.match(checklist, /mapsApiKey/, 'and must give the check that proves it took');
+
   const template = readTemplate('page.location.json');
   const key = template.sections.store_finder.settings?.maps_api_key;
   assert.ok(
@@ -294,4 +302,29 @@ test('page.location.json is declared shop-owned, and never carries the Maps key'
     'map',
     'the map leads on this page, as it does on the production theme',
   );
+});
+
+test('the promotion procedure prescribes a command that can actually run', () => {
+  // Codex, PR #191. `main` requires linear history, so release PRs are
+  // squashed, and the squashed commit is not a descendant of the branch it came
+  // from -- the "fast-forward staging-v2 to main" the document prescribed is
+  // refused every time. The document also claimed staging-v2 forbids
+  // force-pushes, which would have left no way to resync at all. It carries no
+  // protection whatsoever (GET .../protection → 404), so a reset is available;
+  // the claim was simply wrong.
+  const doc = readFileSync(resolve(root, 'docs/branching-and-release.md'), 'utf8');
+  const flow = doc.slice(doc.indexOf('## 4. The flow'), doc.indexOf('## 5.'));
+
+  assert.match(flow, /git branch -f staging-v2 origin\/main/, 'step 5 needs the reset command');
+  assert.match(flow, /--force-with-lease/, 'and the lease that catches an unexpected divergence');
+  assert.doesNotMatch(
+    flow,
+    /fast-forward `staging-v2`/,
+    'fast-forwarding cannot work after a squash merge; the document must not ask for it',
+  );
+
+  // And the protection section must not re-assert the claim that made the
+  // broken procedure look workable.
+  const branches = doc.slice(doc.indexOf('## 2. The branches'), doc.indexOf('## 3.'));
+  assert.match(branches, /no protection rules at all/, '§2 must state staging-v2 is unprotected');
 });
