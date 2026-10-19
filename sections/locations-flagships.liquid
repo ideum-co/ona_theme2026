@@ -32,6 +32,19 @@
   data-alignment="{{ section.settings.alignment | default: 'left' }}"
   data-media-ratio="{{ section.settings.media_aspect_ratio | default: '4 / 3' }}"
   data-section-id="{{ section.id }}"
+  {%- comment -%}
+    The main menu's "Locations > ONA Flagships" item points at
+    /pages/locations#flagships_content. That menu is shop data, shared with the
+    live theme, so the anchor cannot be changed without breaking live -- the id
+    has to exist here instead.
+
+    Confirmed on 2026-10-20: the id resolves on the live theme (it sits on its
+    flagship_intro section) and did not exist anywhere on this one, so the menu
+    item silently dropped visitors at the top of the store finder instead of
+    the flagship cafes. The link still returned 200, which is why nothing
+    flagged it.
+  {%- endcomment -%}
+  id="flagships_content"
   aria-labelledby="LocationsFlagships-heading-{{ section.id }}"
   {{ section.shopify_attributes }}
 >
