@@ -96,3 +96,50 @@ test('each restored form only shows feedback for its own submission', () => {
     );
   }
 });
+
+test('no prose sits loose inside a {% liquid %} block', () => {
+  /*
+   * Inside {% liquid %} every line is a tag, so prose only survives between
+   * `comment` and `endcomment`. On 2026-10-19 a paragraph was added to the
+   * store finder's opening block one line BELOW its `endcomment`, leaving six
+   * lines of English where Liquid expected tags, plus a second stray
+   * `endcomment`. Every regex-based test still passed, because they match
+   * source text and never render. Codex caught it; this is the check that
+   * should have.
+   */
+  const KEYWORDS = new Set([
+    'assign', 'break', 'capture', 'endcapture', 'case', 'when', 'endcase', 'comment', 'endcomment',
+    'content_for', 'continue', 'cycle', 'decrement', 'echo', 'else', 'elsif', 'endfor', 'endform',
+    'endif', 'endpaginate', 'endraw', 'endtablerow', 'endunless', 'for', 'form', 'if', 'include',
+    'increment', 'layout', 'liquid', 'paginate', 'raw', 'render', 'section', 'sections', 'style',
+    'tablerow', 'unless',
+  ]);
+
+  const offenders = [];
+  for (const path of liquidFiles) {
+    const source = read(path);
+    for (const block of source.matchAll(/\{%-?\s*liquid\b([\s\S]*?)-?%\}/g)) {
+      let inComment = false;
+      block[1].split('\n').forEach((raw, index) => {
+        const line = raw.trim();
+        if (!line) return;
+        // `# ...` is Liquid's inline comment inside a {% liquid %} block.
+        if (line.startsWith('#')) return;
+        const keyword = line.split(/[\s(]/)[0];
+        if (inComment) {
+          if (keyword === 'endcomment') inComment = false;
+          return;
+        }
+        if (keyword === 'comment') {
+          inComment = true;
+          return;
+        }
+        if (!KEYWORDS.has(keyword)) {
+          offenders.push(`${path}: "${line.slice(0, 60)}"`);
+        }
+      });
+      if (inComment) offenders.push(`${path}: a comment is never closed inside {% liquid %}`);
+    }
+  }
+  assert.deepEqual(offenders, [], `loose text inside {% liquid %}:\n${offenders.join('\n')}`);
+});
