@@ -37,8 +37,17 @@
     Without one the script falls back to the list and posts `no_map_key_status`,
     so serving an open map panel would be an empty box either way.
   endcomment
+    The key itself comes from the shop metafield custom.google_maps_api_key,
+    falling back to the section setting. It used to live only in the section
+    setting, which the theme editor writes into templates/page.location.json --
+    a file the GitHub integration overwrites on merge. That wiped the key twice
+    on 2026-10-19 and the map went dark both times with nothing reporting it. A
+    shop metafield is store data: no merge, theme push or publish touches it.
+  endcomment
+  assign maps_api_key = shop.metafields.custom.google_maps_api_key.value | default: section.settings.maps_api_key | strip
+
   assign initial_view = 'list'
-  if section.settings.default_view == 'map' and section.settings.maps_api_key != blank
+  if section.settings.default_view == 'map' and maps_api_key != blank
     assign initial_view = 'map'
   endif
 -%}
@@ -61,13 +70,15 @@
   deliberate configuration, not a mistake. `request.design_mode` keeps this out
   of the storefront entirely.
 {%- endcomment -%}
-{%- if request.design_mode and section.settings.default_view == 'map' and section.settings.maps_api_key == blank -%}
+{%- if request.design_mode and section.settings.default_view == 'map' and maps_api_key == blank -%}
   <div class="locations-store-finder__editor-notice" role="status">
     <strong>The map is switched off.</strong>
-    “Default view” is set to Map, but “Google Maps API key” is empty, so this page
-    serves the location list instead. Paste the browser key into that field to turn
-    the map on. The key is stored in this page’s template file — see
-    <code>docs/branching-and-release.md</code> §5 before merging a change to it.
+    “Default view” is set to Map, but no Google Maps API key is set, so this page
+    serves the location list instead. Set it in
+    <strong>Settings → Custom data → Shop → Google Maps API key</strong>, where a
+    theme merge cannot wipe it. The field below this one still works, but the
+    theme editor writes it into this page’s template file, which the GitHub
+    integration overwrites — see <code>docs/branching-and-release.md</code> §5.
   </div>
 {%- endif -%}
 
@@ -385,7 +396,7 @@
             {%- endfor -%}
           ],
           "settings": {
-            "mapsApiKey": {{ section.settings.maps_api_key | strip | json }},
+            "mapsApiKey": {{ maps_api_key | json }},
             "defaultView": {{ section.settings.default_view | default: 'list' | json }},
             "defaultRadius": {{ section.settings.default_radius | default: '50' | json }},
             "paginationErrorStatus": {{ section.settings.pagination_error_status | default: 'Additional locations could not be loaded. Use the result page links to continue browsing.' | json }},
@@ -919,7 +930,7 @@
     { "type": "text", "id": "geolocation_success_status", "label": "Location success message", "default": "Showing locations near you." },
     { "type": "text", "id": "geolocation_error_status", "label": "Location error message", "default": "Your location is unavailable. Search and other filters still work." },
     { "type": "header", "content": "Map and filters" },
-    { "type": "text", "id": "maps_api_key", "label": "Google Maps API key", "info": "Browser key, restricted to the onacoffee.com.au referrer. The list works without one; the map does not. This value is stored in templates\/page.location.json, which the GitHub integration overwrites -- reconcile that file before merging a change to it or the key is silently lost. See docs\/branching-and-release.md section 5." },
+    { "type": "text", "id": "maps_api_key", "label": "Google Maps API key (fallback)", "info": "Leave this empty. The key now lives in Settings > Custom data > Shop > Google Maps API key, which no theme merge or publish can wipe. This field is only a fallback: the theme editor writes it into templates\/page.location.json, which the GitHub integration overwrites, and that silently cost the map twice on 2026-10-19. See docs\/branching-and-release.md section 5." },
     {
       "type": "select",
       "id": "default_view",

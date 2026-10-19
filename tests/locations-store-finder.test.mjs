@@ -1137,7 +1137,7 @@ test('the map is the served view, and the list is never hidden to get it', () =>
   assert.match(section, /assign initial_view = 'list'/);
   assert.match(
     section,
-    /if section\.settings\.default_view == 'map' and section\.settings\.maps_api_key != blank\s*\n\s*assign initial_view = 'map'/,
+    /if section\.settings\.default_view == 'map' and maps_api_key != blank\s*\n\s*assign initial_view = 'map'/,
     'the map may only be served when a Maps API key is configured',
   );
   assert.match(section, /data-active-view="\{\{ initial_view \}\}"/);
@@ -1197,7 +1197,7 @@ test('the editor is warned when the map is configured but keyless', () => {
   // step (docs/locations-metaobject-migration.md) that had no owner.
   assert.match(
     section,
-    /\{%-\s*if request\.design_mode and section\.settings\.default_view == 'map' and section\.settings\.maps_api_key == blank\s*-%\}/,
+    /\{%-\s*if request\.design_mode and section\.settings\.default_view == 'map' and maps_api_key == blank\s*-%\}/,
     'the notice must fire on exactly the contradiction, and only in the editor',
   );
   assert.match(section, /locations-store-finder__editor-notice/);
@@ -1422,4 +1422,38 @@ test('the hidden radios stay operable by keyboard', () => {
       `${variant} must show which choice is selected`,
     );
   }
+});
+
+test('the Maps key is read from the shop, not from the theme', () => {
+  /*
+   * The key used to live only in the section setting, which the theme editor
+   * writes into templates/page.location.json -- a file the GitHub integration
+   * overwrites on merge. It was wiped twice on 2026-10-19 and the map went dark
+   * both times with nothing reporting it, because the script falls back to the
+   * list and posts copy that reads as ordinary page text.
+   *
+   * A shop metafield is store data. No merge, theme push or publish touches it.
+   * The section setting stays as a fallback so an existing theme keeps working,
+   * but the metafield wins.
+   */
+  assert.match(
+    section,
+    /assign maps_api_key = shop\.metafields\.custom\.google_maps_api_key\.value \| default: section\.settings\.maps_api_key/,
+    'the metafield must be read first, with the section setting as fallback',
+  );
+
+  // Every consumer must go through the resolved variable, or one of them keeps
+  // reading the wipeable setting and the three disagree about whether there is
+  // a key at all.
+  const settingReads = section.match(/section\.settings\.maps_api_key/g) ?? [];
+  assert.equal(
+    settingReads.length,
+    1,
+    'section.settings.maps_api_key may appear only in the fallback assignment',
+  );
+  assert.match(section, /"mapsApiKey": \{\{ maps_api_key \| json \}\}/,
+    'the payload must carry the resolved key');
+
+  // Still never committed.
+  assert.doesNotMatch(section, /AIza[0-9A-Za-z_-]{20,}/, 'a Google Maps key must not be committed');
 });
