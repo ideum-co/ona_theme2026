@@ -1221,4 +1221,15 @@ test('the map opens on the country, and only re-frames once results are narrowed
   // A single result still zooms to it -- narrowing all the way down is the one
   // case where moving the map is unambiguously what the visitor asked for.
   assert.match(javascript, /if \(mappedLocations\.length === 1\) \{\s*\n\s*this\.map\.setCenter\(bounds\.getCenter\(\)\);\s*\n\s*this\.map\.setZoom\(14\);/);
+
+  // ...and CLEARING a filter must put the camera back. Gating fitBounds on
+  // isNarrowed fixed the opening view but stranded the cleared one: every
+  // marker returns while the map is still framed on the filtered region, so
+  // most sit off-screen with nothing explaining why. Codex, PR #191. The
+  // branch is also what first paint takes, where it is a no-op.
+  assert.match(
+    javascript,
+    /\} else \{[\s\S]{0,700}?this\.map\.setCenter\(NATIONAL_VIEW\.center\);\s*\n\s*this\.map\.setZoom\(NATIONAL_VIEW\.zoom\);/,
+    'the un-narrowed branch must restore the national framing, not leave the camera where it was',
+  );
 });

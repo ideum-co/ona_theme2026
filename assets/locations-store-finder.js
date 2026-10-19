@@ -722,6 +722,15 @@ export class LocationsStoreFinder extends HTMLElementBase {
       this.map.setZoom(14);
     } else if (isNarrowed) {
       this.map.fitBounds(bounds, 48);
+    } else {
+      // Back to the full set with no origin -- which happens on first paint and
+      // again whenever a filter is CLEARED. Clearing has to put the camera back:
+      // the markers all return, but without this the map is still framed on
+      // whatever suburb the filter had zoomed into, so most of them sit
+      // off-screen with nothing explaining why. On first paint this re-asserts
+      // the framing the map was created with and nothing moves. Codex, PR #191.
+      this.map.setCenter(NATIONAL_VIEW.center);
+      this.map.setZoom(NATIONAL_VIEW.zoom);
     }
   }
 
