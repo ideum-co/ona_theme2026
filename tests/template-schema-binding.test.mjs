@@ -159,3 +159,28 @@ test('the two FAQ pages still carry their questions', () => {
     }
   }
 });
+
+test('the FAQ page has a real heading outline', () => {
+  /*
+   * h1 (ona-page-title) > h2 (category) > h3 (question). The live theme put
+   * questions in <div class="accordion-title">, so /pages/faq and
+   * /pages/subscription-faq have never had an outline -- 1209 words of
+   * question-and-answer copy with nothing for a search engine or a screen
+   * reader rotor to navigate by. A bare <summary> would not fix that either.
+   */
+  const category = read('blocks/_faq-category.liquid');
+  assert.match(category, /<h2 class="ona-faq-category__heading/, 'category title must be an h2');
+
+  const item = read('blocks/_faq-item.liquid');
+  const summary = item.match(/<summary[^>]*>([\s\S]*?)<\/summary>/);
+  assert.ok(summary, '_faq-item must render a <summary>');
+  assert.match(summary[1], /<h3 class="ona-faq-item__question"/, 'question must be an h3 inside the summary');
+
+  // The h3 must hand typography back to the accordion, or it renders at h3 size
+  // and the semantic change becomes a visual regression.
+  assert.match(
+    item,
+    /\.ona-faq-item__question\s*\{[^}]*\bfont:\s*inherit\b/,
+    '.ona-faq-item__question must reset font to inherit',
+  );
+});

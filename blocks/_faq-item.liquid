@@ -11,7 +11,7 @@
 {% capture faq_item_children %}
   <details class="details" data-testid="accordion-details" {{ block.shopify_attributes }}>
     <summary class="details__header">
-      {{ block_settings.title | escape }}
+      <h3 class="ona-faq-item__question">{{ block_settings.title | escape }}</h3>
       <span class="svg-wrapper icon-caret icon-animated">
         {{- 'icon-caret.svg' | inline_asset_content -}}
       </span>
@@ -26,6 +26,27 @@
   </details>
 {% endcapture %}
 {% render 'accordion-custom-component', children: faq_item_children %}
+
+{% stylesheet %}
+  /*
+   * The question is a heading so the FAQ page has a real document outline --
+   * h1 page title > h2 category > h3 question. Neither the live theme's
+   * <div class="accordion-title"> nor a bare <summary> gives one, and an
+   * outline is what both search engines and screen reader rotors navigate by.
+   *
+   * `font: inherit` hands typography back to .accordion .details__header, so
+   * this is purely semantic: the rendered result is identical to the plain
+   * text it replaced. min-inline-size lets a long question wrap instead of
+   * pushing the caret off the row -- a flex item defaults to min-width: auto.
+   */
+  .ona-faq-item__question {
+    margin: 0;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    min-inline-size: 0;
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
