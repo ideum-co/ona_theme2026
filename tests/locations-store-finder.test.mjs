@@ -1180,3 +1180,45 @@ test('both settings explain the dependency and the hazard in the editor', () => 
   assert.match(byId.maps_api_key.info, /reconcile|overwrit/i, 'the key field must warn that a merge can wipe it');
   assert.match(byId.default_view.info, /key/i, 'the view field must say the map needs a key');
 });
+
+test('the map opens on the country, and only re-frames once results are narrowed', () => {
+  // Felipe, 2026-10-19, on first seeing the map with a key in: "the map changed
+  // and is not opening centered". Two causes, both in this file:
+  //
+  //   1. the map was created centred on locationsWithCoordinates(...)[0] -- the
+  //      first record in metaobject order -- at zoom 12, so it opened inside an
+  //      arbitrary suburb;
+  //   2. syncMapMarkers then fitBounds()'d the whole visible set on first paint.
+  //      ONA has a Dubai location, so the fit spanned Canberra to the UAE and
+  //      the opening view was the Indian Ocean.
+  //
+  // Production opens on Australia's centroid at zoom 4 and that is what these
+  // constants mirror (sections/ona-store-finder.liquid on theme 160815546559).
+  assert.match(
+    javascript,
+    /const NATIONAL_VIEW = \{ center: \{ lat: -25\.2744, lng: 133\.7751 \}, zoom: 4 \};/,
+    'the national framing must match production',
+  );
+  assert.match(javascript, /center: NATIONAL_VIEW\.center,\s*\n\s*zoom: NATIONAL_VIEW\.zoom,/);
+  assert.doesNotMatch(
+    javascript,
+    /const firstMappedLocation = locationsWithCoordinates/,
+    'the opening view must not depend on metaobject ordering',
+  );
+
+  // The guard that stops the unfiltered set being fitted on first paint.
+  assert.match(
+    javascript,
+    /const isNarrowed = Boolean\(this\.origin\) \|\| mappedLocations\.length < mappedTotal;/,
+    'narrowing must be derived from an origin or a reduced result set',
+  );
+  assert.match(
+    javascript,
+    /\} else if \(isNarrowed\) \{\s*\n\s*this\.map\.fitBounds\(bounds, 48\);/,
+    'fitBounds must be gated on isNarrowed, or the opening view spans two continents',
+  );
+
+  // A single result still zooms to it -- narrowing all the way down is the one
+  // case where moving the map is unambiguously what the visitor asked for.
+  assert.match(javascript, /if \(mappedLocations\.length === 1\) \{\s*\n\s*this\.map\.setCenter\(bounds\.getCenter\(\)\);\s*\n\s*this\.map\.setZoom\(14\);/);
+});
