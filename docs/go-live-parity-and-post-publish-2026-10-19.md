@@ -216,8 +216,13 @@ suffix.
 
 ## 6. Order of operations
 
-1. **Merge this PR**, then verify the three form files by checksum (§3). Nothing
-   else should start until that is confirmed.
+1. **Merge this PR**, then immediately:
+   - verify the three form files by checksum (§3) — nothing else starts until
+     that is confirmed;
+   - **re-enter the Maps API key** (§2). The merge ships
+     `templates/page.location.json`, whose repo copy carries an empty key by
+     design, so the key set on 2026-10-19 is wiped by the merge itself. Confirm
+     with `grep -o '"mapsApiKey": "[^"]*"'` on the previewed page.
 2. **Enable the app embeds** on the unpublished theme (§1), auditing each.
 3. **Add the Maps API key** (§2a) — Felipe only.
 4. **Set the favicon** (§4).

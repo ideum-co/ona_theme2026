@@ -167,6 +167,20 @@ repository:
 > wipes the key, the map goes dark, and nothing reports an error. The section
 > shows a warning in the theme editor when that has happened, which is the only
 > signal you get.
+>
+> **So the procedure for this file has one extra step, and it is not optional:
+> after merging any change to `templates/page.location.json`, re-enter the key
+> in the theme editor and confirm it took.** Reconciling the theme's copy into
+> the repo first — the rule for the other three files — cannot work here,
+> because the repo is forbidden from carrying the key. Merge, then re-paste,
+> then verify:
+>
+> ```
+> curl -sL "https://onacoffee.com.au/pages/locations?preview_theme_id=154676789439" \
+>   | grep -o '"mapsApiKey": "[^"]*"'
+> ```
+>
+> An empty value there means the map is off, whatever the admin looks like.
 
 Staging does not protect these. A release PR that touches one of them
 **overwrites whatever the editor has done on the live store since the repo last
