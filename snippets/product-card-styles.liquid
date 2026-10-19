@@ -252,4 +252,56 @@
       display: none;
     }
   }
+
+  /* ==========================================================================
+     Consistent cards: the purchase block is anchored to the bottom.
+
+     Across a row, every "Add to cart" lands on the same line whatever sits
+     above it. A row of coffees shows all of its copy, aligned; a merch item
+     with less to say stays compact and simply leaves one clean gap down to its
+     button, rather than reserving the roast/tasting-note slots it never uses.
+     Keep rows to one product type (coffees together, merch together) and the
+     gap disappears entirely, because the cards in a row then match.
+     ========================================================================== */
+
+  /* Both the collection grid and the Featured-collection carousel are one
+     flexible column. The carousel's fixed-track grid is what forced coffee-only
+     rows onto merch and left bundles out of step, so it gives way here. */
+  .ui-test-product-list .resource-list__carousel .product-card__content {
+    display: flex;
+    flex-direction: column;
+    grid-template-rows: none;
+  }
+
+  /* Anchor price -> variant -> buttons to the bottom. `margin-block-start: auto`
+     on the price absorbs the free space above it, so the three drop together
+     and the buttons line up across the row. */
+  :is(.product-grid__item, .resource-list__item) .product-card__content > product-price,
+  .ui-test-product-list .resource-list__carousel .product-card__content > product-price {
+    margin-block-start: auto;
+  }
+
+  /* Don't hold space for editorial slots a product doesn't have - that empty
+     reservation is the white space merch was carrying. Present roast/tasting
+     notes still reserve their lines (above), so a row of coffees stays aligned. */
+  .product-card .product-metafield-text--empty,
+  .ui-test-product-list .product-card .product-metafield-text--empty {
+    display: none;
+    min-block-size: 0;
+  }
+
+  .ui-test-product-list .product-card .ona-pdp-tags {
+    min-block-size: 0;
+  }
+
+  .ui-test-product-list .product-card .ona-pdp-tags:empty {
+    display: none;
+  }
+
+  /* With the buttons anchored, a single-variant product needs no reserved
+     selector slot; the empty placeholder collapses instead of adding a gap. */
+  .product-card .product-card__variant-placeholder {
+    block-size: 0;
+    min-block-size: 0;
+  }
 {% endstylesheet %}
