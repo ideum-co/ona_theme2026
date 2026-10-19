@@ -25,6 +25,11 @@ There is no warning and no conflict; the editor's version is simply gone.
 | `templates/page.faq.json` | 2026-10-19 12:08 UTC | matches the repo |
 | `templates/page.faq-subscriptions.json` | 2026-10-19 12:08 UTC | matches the repo |
 
+Victor merged five PRs after the 2026-10-19 12:08 release — #194 to #198,
+mobile video, coffee-quiz layout, image-with-text scrim and a `section.liquid`
+sync fix. Those are code and carry no risk to the files above. The two
+unreconciled files came from the **theme editor**, not from git.
+
 If that 17:00 homepage edit is yours, **it exists only on the theme**. Before any
 PR touching `templates/index.json` or `config/settings_data.json` is merged,
 reconcile the theme's copy into the repo first, in its own commit. The procedure
@@ -74,6 +79,8 @@ level and size are editor settings in this theme, so a 40px h3 is a choice.
 | `/pages/canberra-bookings` | 8 | clear |
 | `/pages/learn` | 7 | clear |
 | blog article | 6 | clear |
+| `/blogs/brewguides` | 1 | **697 of 747 articles unreachable** — fixed in #199 |
+| `/blogs/news` (Journal) | 1 | under the 50 cap today; same fix applies |
 | `/cart` | 7 | fixed in #193 |
 | `/search` | 7 | fixed in #193 |
 | 404 | 7 | fixed in #193 |
@@ -106,6 +113,17 @@ sections.
 - Locations cards gained real buttons and icons; venue and state filter as pills
   and tabs rather than selects; FAQ questions are headings and print correctly.
 
+### PR #199 (open)
+
+- **`/blogs/brewguides` served 50 of 747 articles.** `sections/main-blog.liquid`
+  looped `blog.articles` with no `{% paginate %}`, and Liquid caps that at 50
+  and ignores `?page=`. Pages 2, 5, 15 and 16 each returned the identical 50.
+  697 brew guides were reachable only by direct URL or the sitemap. Not a
+  regression here — `main-blog` is the only listing section Horizon shipped
+  without pagination, and the file was untouched since the base import.
+  `/blogs/news` was under the cap and would have broken at its 51st article.
+  Full write-up and the remaining stages: `docs/brew-guides-2026-10-20.md`.
+
 ### PR #193 (open)
 
 - **Two form controls rendered in Arial.** A `<button>` does not inherit
@@ -129,13 +147,25 @@ theme gives Add-to-cart the full card width (247px) and it does not wrap.
 Options: stack the two buttons, drop the cart icon, shorten the label, or accept
 it. This is a layout decision, not a defect, so it was left alone.
 
-### 4.2 Flagship cafes content
+### 4.2 Brew Guides filtering and the sections below the list
+
+Pagination (#199) makes all 747 guides reachable. It does not make them easy to
+find. Live has a tag tab row and a faceted drawer over Brew Method, Coffee Type,
+Origin and Taste Notes, plus two sections under the list — `ona-read-more-content`
+(expandable SEO copy, not in this repo) and `ona-faq-lists` (which is).
+
+Proposal is to reuse the radio-pill pattern from the locations finder rather than
+port the legacy drawer, whose CSS and JS never came across. Taste Notes has 21
+values and needs a decision of its own. Live's "Roast Type" facet is dead — no
+such tag exists on the blog. See `docs/brew-guides-2026-10-20.md` §2–§4.
+
+### 4.3 Flagship cafes content
 
 `locations-flagships` renders 16 images and leads with ONA Dubai. The live theme
 shows the five Australian flagships across 43 images. The section works; the
 difference is which stores and photos are configured.
 
-### 4.3 Fallback page templates
+### 4.4 Fallback page templates
 
 Seven pages fall through to the bare `page.json`. Measured by rendered word
 count, only the two FAQ pages lost anything, and those are now ported. Shipping,
@@ -162,6 +192,13 @@ These cannot be done from the repo.
    is unset, and `sections/search-results.liquid:42` falls back to the whole
    catalogue. Suggest Special Release (9 products). Note this writes to
    `config/settings_data.json`, which is on the shop-owned list in §0.
+
+---
+
+5. **Brew Guides tag data.** `Origin.Centeral America` is a typo, and three
+   Taste Notes carry a leading space (`Taste Notes. Jasmine`, `. Tea-like`,
+   `. Yellow Peach`) so they would split from their siblings in any facet built
+   on them. Worth fixing before stage 2 of `docs/brew-guides-2026-10-20.md`.
 
 ---
 
