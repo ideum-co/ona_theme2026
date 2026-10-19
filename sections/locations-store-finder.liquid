@@ -49,6 +49,28 @@
   class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
 ></div>
 
+{%- comment -%}
+  Editor-only. The failure this catches is silent by construction: with
+  `default_view: map` and no key, assets/locations-store-finder.js falls back to
+  the list and posts `no_map_key_status`, which reads like ordinary copy. The
+  page looks finished. It looked finished for six weeks after PR #120, because
+  supplying the key was a documented handover step with no owner
+  (docs/locations-metaobject-migration.md).
+
+  Only the contradiction is flagged -- `default_view: list` with no key is a
+  deliberate configuration, not a mistake. `request.design_mode` keeps this out
+  of the storefront entirely.
+{%- endcomment -%}
+{%- if request.design_mode and section.settings.default_view == 'map' and section.settings.maps_api_key == blank -%}
+  <div class="locations-store-finder__editor-notice" role="status">
+    <strong>The map is switched off.</strong>
+    “Default view” is set to Map, but “Google Maps API key” is empty, so this page
+    serves the location list instead. Paste the browser key into that field to turn
+    the map on. The key is stored in this page’s template file — see
+    <code>docs/branching-and-release.md</code> §5 before merging a change to it.
+  </div>
+{%- endif -%}
+
 {%- paginate all_locations by 250 -%}
   <locations-store-finder
     class="locations-store-finder section section--page-width spacing-style{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
@@ -352,6 +374,23 @@
 {%- endpaginate -%}
 
 {% stylesheet %}
+  .locations-store-finder__editor-notice {
+    margin: 0 auto 1rem;
+    max-inline-size: min(100% - 2rem, 60rem);
+    padding: 0.875rem 1rem;
+    border: 1px solid #b4551f;
+    border-inline-start-width: 4px;
+    background: #fdf4ec;
+    color: #5c2c0b;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .locations-store-finder__editor-notice code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.8125rem;
+  }
+
   .locations-store-finder {
     --color: var(--locations-finder-text-color);
     color: var(--locations-finder-text-color);
@@ -703,11 +742,12 @@
     { "type": "text", "id": "geolocation_success_status", "label": "Location success message", "default": "Showing locations near you." },
     { "type": "text", "id": "geolocation_error_status", "label": "Location error message", "default": "Your location is unavailable. Search and other filters still work." },
     { "type": "header", "content": "Map and filters" },
-    { "type": "text", "id": "maps_api_key", "label": "Google Maps API key", "info": "The location list works without a key." },
+    { "type": "text", "id": "maps_api_key", "label": "Google Maps API key", "info": "Browser key, restricted to the onacoffee.com.au referrer. The list works without one; the map does not. This value is stored in templates\/page.location.json, which the GitHub integration overwrites -- reconcile that file before merging a change to it or the key is silently lost. See docs\/branching-and-release.md section 5." },
     {
       "type": "select",
       "id": "default_view",
       "label": "Default view",
+      "info": "Map requires a Google Maps API key. Without one the page serves the list.",
       "options": [
         { "value": "list", "label": "List" },
         { "value": "map", "label": "Map" }

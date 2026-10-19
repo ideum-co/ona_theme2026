@@ -253,3 +253,45 @@ test('the release procedure never sends anyone to the retired staging branch', (
   assert.match(diagram, /ona_theme2026\/staging-v2/, 'the diagram must point the preview theme at staging-v2');
   assert.doesNotMatch(diagram, /ona_theme2026\/staging\b(?!-v2)/, 'the diagram still shows the retired branch');
 });
+
+test('page.location.json is declared shop-owned, and never carries the Maps key', () => {
+  // This template holds a credential: the store finder's Google Maps API key is
+  // a SECTION setting, so the theme editor writes it in here. The spec that
+  // built the finder forbids committing the key, and
+  // tests/locations-store-finder.test.mjs enforces that -- so the repository's
+  // copy of this file is permanently one merge away from wiping the live value,
+  // with no error anywhere. Decision (Felipe, 2026-10-19): the key stays in the
+  // theme editor, and this file joins index.json, product.json and
+  // settings_data.json under the reconcile-first rule.
+  //
+  // The two halves have to be asserted together. A reconcile rule nobody wrote
+  // down is not a rule, and a file listed in a document the code does not check
+  // drifts the first time someone edits one and not the other.
+  const doc = readFileSync(resolve(root, 'docs/branching-and-release.md'), 'utf8');
+  const shopOwned = doc.slice(doc.indexOf('## 5.'), doc.indexOf('## 6.'));
+
+  for (const file of [
+    'templates/index.json',
+    'templates/product.json',
+    'templates/page.location.json',
+    'config/settings_data.json',
+  ]) {
+    assert.ok(
+      shopOwned.includes(`\`${file}\``),
+      `${file} must be listed as shop-owned in docs/branching-and-release.md §5`,
+    );
+  }
+  assert.match(shopOwned, /page\.location\.json.*credential/is, '§5 must say why this one is different');
+
+  const template = readTemplate('page.location.json');
+  const key = template.sections.store_finder.settings?.maps_api_key;
+  assert.ok(
+    key === undefined || key === '',
+    `the repository copy must never carry a Maps key; found ${JSON.stringify(key)}`,
+  );
+  assert.equal(
+    template.sections.store_finder.settings?.default_view,
+    'map',
+    'the map leads on this page, as it does on the production theme',
+  );
+});

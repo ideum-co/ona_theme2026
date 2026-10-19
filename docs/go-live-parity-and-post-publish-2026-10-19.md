@@ -79,20 +79,39 @@ in, so the rendered config is `"mapsApiKey": ""` and the script posts
 same API — just an empty setting.
 
 > **Felipe sets the key; nobody else can.** Customise → the store finder section
-> → **Maps API key**. The current value is visible in the page source of
-> `/pages/locations` on the live theme, in the `window.__onaSf` script block.
-> Restrict it to the `onacoffee.com.au` referrer in Google Cloud if it is not
-> already.
->
-> ⚠️ **Where that value lands is a trap.** `maps_api_key` is a *section setting*,
-> so the editor writes it into `templates/page.location.json` — a file this
-> repository tracks. The moment it is set in the admin, the theme's copy and the
-> repo's copy diverge, and the next merge that touches that file wipes the key
-> and the map goes dark again with no error. Two ways out, and it needs a
-> decision: either commit the key to the repo as the live section does (it is
-> already public in every page's source, so this leaks nothing new), or treat
-> `templates/page.location.json` as reconcile-before-you-touch like the other
-> shop-owned JSON in §5 of `docs/branching-and-release.md`.
+> → **Maps API key**. The value is the hardcoded fallback on **line 2 of
+> `sections/ona-store-finder.liquid`** on theme `160815546559` (Edit code — the
+> *setting* on that theme is `""`, which is why it cannot be found in Customise).
+> It is also in the page source of `/pages/locations` in the `window.__onaSf`
+> block. Restrict it to the `onacoffee.com.au` referrer in Google Cloud.
+
+**Decision, 2026-10-19 (Felipe): the key stays in the theme editor, not in git.**
+That follows the spec the finder was built to —
+`docs/superpowers/specs/2026-08-28-locations-page-and-subscriber-modal-design.md`,
+*"no Google Maps key from the export is committed"* — which
+`tests/locations-store-finder.test.mjs` enforces.
+
+The consequence has to be managed rather than just noted. `maps_api_key` is a
+*section* setting, so the editor writes it into `templates/page.location.json`,
+which this repository tracks and the integration overwrites. The repo's copy
+will always carry an empty key, so **any merge touching that file wipes the live
+value and the map goes dark with no error anywhere**. Three things now stand
+between that and a silent outage:
+
+1. **The template is formally shop-owned.** It joins `index.json`,
+   `product.json` and `config/settings_data.json` in §5 of
+   `docs/branching-and-release.md`, so the reconcile-before-you-merge rule and
+   the release checklist already cover it. A test asserts the file is listed
+   there *and* that the repo copy never carries a key — the rule and the code
+   cannot drift apart.
+2. **The editor says so at the point of action.** The `maps_api_key` field's
+   help text names the file the value lands in and warns that a merge can wipe
+   it. `default_view` says the map needs a key.
+3. **The silent failure is no longer silent.** When `default_view` is `map` and
+   the key is empty, the section renders a warning *in the theme editor only*
+   (`request.design_mode`). Without it the page just serves the list and posts
+   `no_map_key_status`, which reads like ordinary copy — which is how this went
+   unnoticed from 2026-09-07 to 2026-10-19.
 
 **Map as the primary view — restored.** Production serves `data-view="map"` with
 the Map toggle already active; the 2026 section was serving the list and leaving

@@ -1133,3 +1133,50 @@ test('/pages/locations opens on the map', () => {
   assert.equal(template.order[0], 'header');
   assert.equal(template.order[1], 'store_finder');
 });
+
+test('the editor is warned when the map is configured but keyless', () => {
+  // The failure is silent by construction: with default_view: map and no key,
+  // the script falls back to the list and posts `no_map_key_status`, which
+  // reads like ordinary page copy. Nothing looks wrong. It looked fine for six
+  // weeks after PR #120, because supplying the key was a documented handover
+  // step (docs/locations-metaobject-migration.md) that had no owner.
+  assert.match(
+    section,
+    /\{%-\s*if request\.design_mode and section\.settings\.default_view == 'map' and section\.settings\.maps_api_key == blank\s*-%\}/,
+    'the notice must fire on exactly the contradiction, and only in the editor',
+  );
+  assert.match(section, /locations-store-finder__editor-notice/);
+
+  // It must never reach a customer, so every occurrence in the MARKUP (the
+  // stylesheet may carry as many rules as it likes) has to sit inside the
+  // design-mode guard. Counting occurrences across the whole file instead was
+  // the first version of this check and it was simply wrong -- it broke on a
+  // second CSS rule, which proves nothing about customer exposure.
+  const markup = section.slice(0, section.indexOf('{% stylesheet %}'));
+  const guarded = markup.slice(
+    markup.indexOf('{%- if request.design_mode'),
+    markup.indexOf('{%- endif -%}', markup.indexOf('{%- if request.design_mode')),
+  );
+  const inMarkup = markup.match(/locations-store-finder__editor-notice/g) ?? [];
+  const inGuard = guarded.match(/locations-store-finder__editor-notice/g) ?? [];
+  assert.equal(inMarkup.length, 1, 'the notice must be rendered in exactly one place');
+  assert.equal(inGuard.length, 1, 'that one place must be inside the request.design_mode guard');
+
+  // default_view: list with no key is a deliberate configuration, not a fault.
+  assert.doesNotMatch(
+    section,
+    /if request\.design_mode and section\.settings\.maps_api_key == blank\s*-%\}/,
+    'a missing key is only a problem when the map is the requested view',
+  );
+});
+
+test('both settings explain the dependency and the hazard in the editor', () => {
+  const schema = JSON.parse(section.slice(section.indexOf('{% schema %}') + 12, section.indexOf('{% endschema %}')));
+  const byId = Object.fromEntries(schema.settings.filter((s) => s.id).map((s) => [s.id, s]));
+
+  // Whoever is about to paste the key is standing in front of this field. The
+  // warning belongs here, not only in a document they have no reason to open.
+  assert.match(byId.maps_api_key.info, /page\.location\.json/, 'the key field must say where the value is stored');
+  assert.match(byId.maps_api_key.info, /reconcile|overwrit/i, 'the key field must warn that a merge can wipe it');
+  assert.match(byId.default_view.info, /key/i, 'the view field must say the map needs a key');
+});

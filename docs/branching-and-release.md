@@ -148,12 +148,25 @@ small ones in two hours is how the first staging branch died (§1a).
 
 ## 5. The rule that matters most: shop-owned JSON
 
-Three files on the live theme are written by the **theme editor**, not by this
+Four files on the live theme are written by the **theme editor**, not by this
 repository:
 
 - `templates/index.json`
 - `templates/product.json`
+- `templates/page.location.json`
 - `config/settings_data.json`
+
+> **`templates/page.location.json` holds a credential.** The store finder's
+> Google Maps API key is a *section* setting, so the theme editor writes it into
+> this template. The spec that built the finder requires the key to stay out of
+> git (`docs/superpowers/specs/2026-08-28-locations-page-and-subscriber-modal-design.md`,
+> "no Google Maps key from the export is committed"), and
+> `tests/locations-store-finder.test.mjs` enforces that — so the repository's
+> copy of this file will always carry an **empty** `maps_api_key`. Merging it
+> without reconciling first therefore does not merely lose an editor tweak: it
+> wipes the key, the map goes dark, and nothing reports an error. The section
+> shows a warning in the theme editor when that has happened, which is the only
+> signal you get.
 
 Staging does not protect these. A release PR that touches one of them
 **overwrites whatever the editor has done on the live store since the repo last
