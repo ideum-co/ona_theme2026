@@ -616,7 +616,7 @@
                       "type": "text",
                       "name": "t:names.text",
                       "settings": {
-                        "text": "{{ closest.product.description }}",
+                        "text": "{{ closest.product.metafields.custom.profile_intro | metafield_tag }}",
                         "width": "fit-content",
                         "max_width": "normal",
                         "alignment": "left",
@@ -682,11 +682,20 @@
         },
         "product_tab_4tzPxX": {
           "type": "product-tab",
-          "disabled": true,
           "settings": {
             "label": "Brew Guide"
           },
-          "blocks": {}
+          "blocks": {
+            "brew_guide_Qm4rTp": {
+              "type": "product-brew-guide",
+              "settings": {
+                "link_label": "Full brewing guide"
+              }
+            }
+          },
+          "block_order": [
+            "brew_guide_Qm4rTp"
+          ]
         },
         "product_tab_dFwTTp": {
           "type": "product-tab",

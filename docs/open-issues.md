@@ -157,6 +157,38 @@ Gargari Gutity G1 Red, Ethiopia, Natural has the legacy handle `milk-w-som1`
 from a renamed product. Changing it needs a redirect; worth doing for a coffee
 the quiz routes to.
 
+### 5b. The PDP coffee quiz cannot recommend anything
+
+Found by Codex on #239, confirmed by reading the section and the template.
+
+`coffee_quiz_VLVDpw` was built in the theme editor and is live on every product
+page, but it is a half-finished copy of the homepage quiz:
+
+| | PDP quiz | Homepage quiz |
+| --- | --- | --- |
+| Match blocks carrying a product | **0 of 3** | 7 of 7 |
+| Options carrying a scoring tag | 14 of 32 | 21 of 32 |
+| `explore_link` | **blank** | `/collections/all-coffee` |
+
+`sections/coffee-quiz.liquid:78-80` serializes a match with no product as
+`"url": null, "variantId": 0, "available": false`. So a shopper who finishes the
+quiz gets a disabled Add to cart, no Subscribe, no product link — and with
+`explore_link` blank, no way onward at all. Three of the six questions (brew,
+drink style, shopping purpose) score nothing, so half the flow is for show.
+
+The fix is configuration, not code, and the homepage section is the template for
+it: assign the sellable product to each match, tag the remaining options, set
+`explore_link`. Two of the three match titles (Raspberry Candy, Maple) map to
+products the homepage quiz already points at; **Ugly Sweater needs confirming** —
+it is not among the homepage matches.
+
+### 5c. One coffee has no `custom.profile_intro`
+
+`filter-el-angel-el-salvador-natural` is the only coffee of 23 without it, so its
+Profile tab now shows the tasting note and no body copy. Every other coffee has
+one; the 37 products without are merch, equipment and matcha, which have no
+Profile tab worth filling. Content gap for the ONA team, not a theme bug.
+
 ## Theme and pages
 
 ### 6b. `ona-unique-coffees` keeps its collapse in the shared sheet

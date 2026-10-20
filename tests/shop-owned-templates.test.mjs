@@ -185,8 +185,11 @@ test('product.json keeps the editor-wired PDP', () => {
     'main.product-details.tastes_like_pdp',
     'product_dna_trxBBN',
     'product_tabs_XnTEpK',
-    // The empty Brew Guide tab. Re-enabling it shows an empty tab on all 92 PDPs.
-    'product_tabs_fW4maV.product_tab_4tzPxX',
+    // `product_tabs_fW4maV.product_tab_4tzPxX`, the Brew Guide tab, is no longer
+    // in this list. It was disabled because it was empty and would otherwise
+    // have shown on all 92 PDPs; it now holds `product-brew-guide`, which emits
+    // nothing on a product with no recipe, and #236's pruning then removes the
+    // tab. The 37 merch and equipment products still never see it.
     'story',
     // Disabled in the theme editor after the repo's copy was taken, and picked
     // up when the live template was reconciled back into git. The editor's
