@@ -1,0 +1,174 @@
+{%- doc -%}
+  The brewing recipe for a coffee, read from the product's own metafields.
+
+  Built for a product tab, where #236's pruning removes a tab whose panel renders nothing. That is
+  what makes the "only show this on coffees that have a recipe" behaviour work without a per-product
+  switch: this block emits no markup at all when the product has neither an intro nor a spec pair,
+  the panel is then empty, and the tab removes itself. A product with brew data keeps its tab, a mug
+  never shows one, and nobody has to remember to tick a box.
+
+  Consequently the CSS lives in {% stylesheet %} and NOT in an inline <style>. The pruning test is
+  `panel.textContent.trim() === ''`, and a <style> element's text counts towards that, so an inline
+  sheet would keep every empty panel alive and bring the tab back on all 37 non-coffee products.
+
+  Metafield types matter here, see reference_shopify_json_string_metafield_no_value:
+    - custom.brew_guide_intro  rich_text_field            -> render the metafield, no .value
+    - custom.brew_spec_labels  list.single_line_text_field -> .value is the array
+    - custom.brew_spec_values  list.single_line_text_field -> .value is the array
+    - accentuate.select_artlice  string (DEPRECATED)        -> .value is nil, read it directly
+{%- enddoc -%}
+
+{%- liquid
+  assign product = closest.product
+  assign intro = product.metafields.custom.brew_guide_intro
+  assign labels = product.metafields.custom.brew_spec_labels.value
+  assign values = product.metafields.custom.brew_spec_values.value
+
+  # The two lists are maintained by hand and have drifted before, so pair only as far as both go
+  # rather than indexing past the end of the shorter one and printing empty rows.
+  assign spec_count = 0
+  if labels.size > 0 and values.size > 0
+    assign spec_count = labels.size
+    if values.size < spec_count
+      assign spec_count = values.size
+    endif
+  endif
+
+  # `select_artlice` (sic) already holds a full "blog-handle/article-handle" path, so the article is
+  # a direct lookup. The previous attempt paginated blogs.brewguides.articles by 250 and compared
+  # a.handle against it, which could never match: "brewguides/aspen" != "aspen".
+  assign guide_path = product.metafields.accentuate.select_artlice | strip
+  assign guide = nil
+  if guide_path != blank
+    assign guide = articles[guide_path]
+  endif
+-%}
+
+{%- if intro != blank or spec_count > 0 -%}
+  <div class="brew-guide">
+    {%- if intro != blank or guide != blank -%}
+      <div class="brew-guide__intro">
+        {%- if intro != blank -%}
+          <div class="brew-guide__copy rte">{{ intro }}</div>
+        {%- endif -%}
+        {%- if guide != blank and block.settings.link_label != blank -%}
+          <a class="brew-guide__link" href="{{ guide.url }}">{{ block.settings.link_label }}</a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if spec_count > 0 -%}
+      {%- assign last_index = spec_count | minus: 1 -%}
+      <dl class="brew-guide__recipe">
+        {%- for index in (0..last_index) -%}
+          {%- assign label = labels[index] | strip -%}
+          {%- assign value = values[index] | strip -%}
+          {%- if label != blank and value != blank -%}
+            <div class="brew-guide__row">
+              <dt class="brew-guide__label">{{ label }}</dt>
+              <dd class="brew-guide__value">{{ value }}</dd>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </dl>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .brew-guide {
+    display: grid;
+    gap: var(--gap-2xl);
+    width: 100%;
+  }
+
+  /* Horizon's own breakpoint, so the recipe moves beside the intro when the tab strip does. */
+  @media screen and (min-width: 750px) {
+    .brew-guide {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .brew-guide__intro {
+    display: grid;
+    gap: var(--gap-lg);
+    justify-items: start;
+  }
+
+  .brew-guide__copy {
+    font-size: var(--font-paragraph--size);
+    line-height: 1.6;
+  }
+
+  .brew-guide__copy > :first-child {
+    margin-block-start: 0;
+  }
+
+  .brew-guide__copy > :last-child {
+    margin-block-end: 0;
+  }
+
+  .brew-guide__link {
+    font-size: var(--font-paragraph--size);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .brew-guide__recipe {
+    margin: 0;
+    display: grid;
+  }
+
+  /*
+   * currentColor throughout. The panel paints itself from the product's own
+   * pdp_background_color and sets the foreground to match, so a hard-coded rule or label colour
+   * would be invisible on at least one of the eleven product colours.
+   */
+  .brew-guide__row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--gap-sm);
+    padding-block: var(--gap-md);
+    border-block-end: 1px solid currentColor;
+  }
+
+  .brew-guide__row:first-child {
+    border-block-start: 1px solid currentColor;
+  }
+
+  .brew-guide__label {
+    font-size: var(--font-h6--size);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .brew-guide__value {
+    margin: 0;
+    font-size: var(--font-paragraph--size);
+    text-align: end;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Brew guide",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Link label",
+      "default": "Full brewing guide",
+      "info": "Shown only on products whose brew guide article exists. Leave empty to hide the link."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Brew guide"
+    }
+  ]
+}
+{% endschema %}
