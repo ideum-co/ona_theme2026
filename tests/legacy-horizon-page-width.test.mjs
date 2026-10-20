@@ -6,6 +6,7 @@ import test from 'node:test';
 const root = resolve(import.meta.dirname, '..');
 const sheet = readFileSync(resolve(root, 'assets/legacy-page-layout.css'), 'utf8');
 const base = readFileSync(resolve(root, 'assets/base.css'), 'utf8');
+const variables = readFileSync(resolve(root, 'snippets/theme-styles-variables.liquid'), 'utf8');
 const code = sheet.replace(/\/\*[\s\S]*?\*\//g, ''); // rules only, not the commentary
 
 test('the legacy gutter is Horizon\'s --page-margin, at Horizon\'s breakpoint', () => {
@@ -43,6 +44,27 @@ test('the legacy pages have exactly one measure', () => {
   assert.deepEqual(literals, [], `these cap the width with a literal instead of --legacy-page-measure: ${literals.join(', ')}`);
 });
 
+test('the measure references Horizon\'s token rather than copying its value', () => {
+  /*
+   * --page-margin is only declared on .page-width-* elements, so legacy markup
+   * cannot inherit it and its values have to be restated. --narrow-page-width
+   * is different: it is on :root in snippets/theme-styles-variables.liquid, so
+   * it is in scope everywhere and must be referenced. Copying `90rem` would
+   * leave these pages on the old measure the first time a theme update moved
+   * the token -- silently, and defeating the alignment this sheet exists for.
+   */
+  assert.match(
+    variables,
+    /:root\s*\{[\s\S]*?--narrow-page-width:/,
+    'the token is no longer global; if it moved, the measure cannot reference it',
+  );
+  assert.match(
+    code,
+    /--legacy-page-measure:\s*var\(--narrow-page-width/,
+    'reference the Horizon token, do not copy its value',
+  );
+});
+
 test('the sheet uses Horizon\'s breakpoints and no bootstrap ones', () => {
   /*
    * Only the media query preludes. The first draft of this test scanned the
@@ -54,5 +76,12 @@ test('the sheet uses Horizon\'s breakpoints and no bootstrap ones', () => {
   const bad = preludes
     .flatMap((q) => [...q.matchAll(/(?:max|min)-width:\s*(\d+(?:\.\d+)?)px/g)].map((m) => Number(m[1])))
     .filter((px) => ![749, 750, 989, 990].includes(px));
-  assert.deepEqual([...new Set(bad)], [], 'Horizon has two breakpoints: 749/750 and 989/990');
+  /*
+   * Scoped to THIS sheet on purpose. Horizon's own base.css does use other
+   * widths -- `max-width: 1200px` eight times and one `min-width: 1400px` --
+   * so this is not a theme-wide law. It is a rule for the legacy page layout,
+   * where an invented boundary only misbehaves in the band between Horizon's
+   * two real breakpoints.
+   */
+  assert.deepEqual([...new Set(bad)], [], 'the legacy sheet sticks to 749/750 and 989/990');
 });

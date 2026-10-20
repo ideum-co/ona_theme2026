@@ -28,10 +28,18 @@ Everything below was measured, not assumed.
 ### Horizon (`assets/base.css`, `snippets/theme-styles-variables.liquid`)
 
 - `--page-margin`: **16px**, **40px** from 750px up.
-- Breakpoints: **749/750** and **989/990**. There are no others in this theme.
-- Width tokens: `--narrow-page-width` 90rem (1440px), `--normal-page-width`
-  120rem (1920px), `--wide-page-width` 150rem (2400px),
-  `--normal-content-width` 42rem (672px).
+- Breakpoints: the theme is built on **749/750** and **989/990** — a few hundred
+  queries against those two. They are not the only widths in Horizon, though:
+  `assets/base.css` also carries eight `max-width: 1200px` queries and one
+  `min-width: 1400px`, and `snippets/theme-styles-variables.liquid` uses `40em`
+  and `60em`. Those are Horizon's own and are left alone.
+- Width tokens, declared on `:root` in
+  `snippets/theme-styles-variables.liquid` so they are in scope everywhere and
+  should be **referenced, never copied**: `--narrow-page-width` 90rem (1440px),
+  `--normal-page-width` 120rem (1920px), `--wide-page-width` 150rem (2400px),
+  `--normal-content-width` 42rem (672px). `--page-margin` is the exception — it
+  is declared on `.page-width-*` elements only, so legacy markup cannot inherit
+  it and its values have to be restated.
 - Prose measures: `--max-width--body-normal` 32.5em,
   `--max-width--body-narrow` 22.75em.
 - Sections are a grid, not `max-width: X; margin: auto` — see the comment in
@@ -162,8 +170,10 @@ design surfaces; the spurit pages should be unpublished rather than styled.
    and `{% stylesheet %}`. Porting another `ona-*` section needs a reason.
 2. **One measure per page.** Width comes from `--legacy-page-measure` or a
    Horizon `.page-width-*` class, never a literal.
-3. **Two breakpoints.** 749/750 and 989/990. Anything else only misbehaves in
-   the band between them.
+3. **Two breakpoints in our own CSS.** New and legacy page styles use 749/750
+   and 989/990; an invented boundary only misbehaves in the band between them.
+   This is a rule for the code we write, not a licence to remove Horizon's own
+   `1200px`/`1400px`/`40em`/`60em` queries, which are deliberate and stay.
 4. **Extend the shared sheet, do not add per-section blocks** — unless the
    section is Horizon-native and styles itself completely, in which case it
    should not touch the shared sheet at all.

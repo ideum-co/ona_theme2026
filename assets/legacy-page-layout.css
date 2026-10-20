@@ -26,15 +26,20 @@
  * Measured before: /pages/faq's <h1> at left=0 (no rule at all), then left=70
  * once the sheet loaded, against left=40 for the Horizon section beneath it.
  *
- * The cap is --narrow-page-width (90rem/1440px), the Horizon token nearest the
- * 1280px the ported design used. That keeps the legacy measure close to its
+ * The cap references --narrow-page-width, the Horizon token nearest the 1280px
+ * the ported design used. Unlike --page-margin that token IS global -- it is
+ * declared on :root in snippets/theme-styles-variables.liquid -- so it is
+ * referenced rather than copied, and a theme update that changes it carries
+ * these pages with it. The literal is only a fallback for the case where that
+ * snippet has not rendered; without one the width would compute to invalid and
+ * the rule would drop out entirely, which is worse than a stale measure. That keeps the legacy measure close to its
  * intent while making the two systems agree exactly up to a 1520px viewport,
  * where both become viewport-bound. Above that Horizon keeps widening toward
  * --normal-page-width (120rem) and these pages hold at 1440. Closing that last
  * gap means choosing the final measure against the XD, which is a design call
  * for a later stage, not a token swap.
  */
-#MainContent { --legacy-page-gutter: 16px; --legacy-page-measure: 90rem; --legacy-page-gap: clamp(48px, 7vw, 110px); }
+#MainContent { --legacy-page-gutter: 16px; --legacy-page-measure: var(--narrow-page-width, 90rem); --legacy-page-gap: clamp(48px, 7vw, 110px); }
 @media screen and (min-width: 750px) {
   #MainContent { --legacy-page-gutter: 40px; }
 }
