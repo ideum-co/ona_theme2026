@@ -18,9 +18,12 @@
   elsif block.settings.media_type == 'video' and block.settings.video != blank
     assign has_media = true
   endif
-  # The theme editor always renders (placeholder included) so the block stays selectable.
+  # When a parent asked to hide empty media, hide it in the theme editor too: once the image is
+  # bound to a dynamic source, a placeholder on a product that has none reads as broken rather than
+  # unset, and the block is still reachable from the layers panel to edit. The standard Media with
+  # text never passes the flag, so it keeps showing a placeholder as before.
   assign show_media = true
-  if hide_empty and has_media == false and request.design_mode == false
+  if hide_empty and has_media == false
     assign show_media = false
   endif
 %}
