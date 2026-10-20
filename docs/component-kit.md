@@ -140,8 +140,11 @@ not rendered structure. All of these are invisible to it:
 - every `*-sourcing-v*` clone renders a trailing `.add-images-slider` of
   image/blockquote/citation blocks after the two-column row;
 - `ona-wholesale-testimonial` renders the persistent panel and selector above;
-- `ona-wholesale-brands` is a static grid, and the component that looked like
-  its match animates.
+- `ona-wholesale-brands` is no longer a static grid. #253 made it an animated
+  marquee: a duplicated `aria-hidden inert` track so the loop is seamless and
+  the logos are announced once, a pause on hover and focus, and a
+  reduced-motion fallback that degrades to a swipeable strip. Its schema did
+  not change, so the mapping is blind to every bit of that.
 
 The sourcing one resolves in the mapping's favour, but only by measurement:
 across `page.wholesale.json` and `page.training.json` the ten clones have
@@ -178,7 +181,7 @@ has to be written.
 
 | # | Component | What it is | Replaces |
 | --- | --- | --- | --- |
-| 1 | `section` + `group`/`text`/`image`/`video`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×78, `group` ×34, `button` ×14, `image` ×11. A `group` has `content_direction`, so a row of two blocks is a media/text layout; `image` carries a `link` and `video` carries a YouTube/Vimeo URL. | anything that is just stacked copy, `ona-wholesale-brands`, and the four media/text variants `media-with-content` cannot hold (below) |
+| 1 | `section` + `group`/`text`/`image`/`video`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×78, `group` ×34, `button` ×14, `image` ×11. A `group` has `content_direction`, so a row of two blocks is a media/text layout; `image` carries a `link` and `video` carries a YouTube/Vimeo URL. | anything that is just stacked copy, and the four media/text variants `media-with-content` cannot hold (below) |
 | 2 | `media-with-content` | one fixed media slot + a content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones, and `ona-training-image-text` |
 | 3 | `hero` | full-bleed media with blocks over it: desktop and custom mobile media, overlay, `section_height`, `fetchpriority` on the image itself. Already on the homepage. | `ona-training-banner`, `ona-inner-banner` |
 | 4 | `carousel` | a static `group` header **above** a row of `_card`s. Both are direct children of `.section`, which puts them in the same grid column on separate rows — it is a header-over-cards layout, not a side-by-side one. | card rows. **Not** the five panel-plus-slider sections: their panel sits beside the slider |
@@ -189,9 +192,16 @@ has to be written.
 
 Two components that looked like matches are deliberately absent. **`slideshow`**
 takes only `_slide` blocks, so it has no legacy target left once the composites
-go to `carousel`. **`marquee`** animates unless the viewer asks for reduced
-motion and its schema has no off switch, so it cannot stand in for a static
-logo wall.
+go to `carousel`. **`marquee`** was rejected for animating where the logo wall
+was static; #253 animated the logo wall, so that objection is gone. It stays
+out for a different reason, measured on the files rather than assumed:
+`sections/marquee.liquid` takes `logo` blocks, but `blocks/logo.liquid` renders
+the *shop's* logo and has neither an image picker nor a link, so ten linked
+partner logos would have to go in `icon` blocks instead — those do fit
+(`image_upload` + `link`) — and neither `sections/marquee.liquid` nor
+`blocks/_marquee.liquid` pauses on hover or focus, which #253's marquee does.
+Promoting it means closing that gap and making the argument, not adding a row
+here.
 
 Nothing else should be added. A ninth component needs an argument, not a page.
 
@@ -270,10 +280,11 @@ needs a decision before the page it is on can reach stage 2.
 | `ona-expericences-content` | the live form posts `contact[subject]` = "Private courses and experiences enquiry" (`sections/ona-expericences-content.liquid:50`). Horizon's `contact-form` block has no subject setting — its schema is width, colour, input style, border and padding — so the swap would silently merge these enquiries into the untagged pile. The same loss is already treated as blocking for `ona-gust-r`; it is blocking here too. |
 | `ona-training-form` | same loss again, third instance: `sections/ona-training-form.liquid:51` posts `contact[subject]` = "Barista training enquiry". All three `{% form 'contact' %}` sections in the theme post a fixed subject that `contact-form` cannot carry, so "move the forms to `contact-form`" is not a mapping any of them can take as it stands — the block needs a subject setting first. |
 | `ona-training` (wholesale) | the text column is not ordinary text. `templates/page.wholesale.json` gives the live instance three enabled blocks, and `sections/ona-training.liquid:40-56` renders each as a `faqs-toggle` button with `aria-expanded`, followed by a "Get In Touch" link to a Monday form. A `media-with-content` text slot drops both the interaction and the CTA; the blocks need an `accordion` and the link needs to survive. |
-| `ona-faq-lists` (wholesale) | all six FAQ blocks on the live instance are **disabled**, but `title2` ("Need help?") and `tips` (the admin mailto) are populated, so what the page actually renders is the tips, not a FAQ list. `ona-faq-layout` has a left-column `body` and `_faq-category` blocks and no slot for trailing copy, so the replacement cannot be invisible here. The bookings instance has to be checked separately before the section is retired. |
-| `ona-icon-and-content` (wholesale) | live and enabled, with five blocks of icon + title + `url`, and the urls are **in-page anchors** — `#complete-training`, `#unique-coffees`, `#supported`, `#exclusive-access` — so the section is the wholesale page's own contents list, not decoration. Horizon's `icon` block inside a `group` per cell is the obvious candidate, but nothing here has been checked against the rendered grid or the anchor behaviour, so it stays a gap rather than a row in the kit. |
+| `ona-wholesale-brands` | #253 replaced the static logo grid with a marquee: a duplicated `aria-hidden inert` track, a `-webkit-mask-image` fade at both edges, a pause on hover and `:focus-within`, and a `prefers-reduced-motion` branch that turns the row into a plain `overflow-x: auto` strip. `section` + linked `image` blocks render none of that, and Horizon's `marquee` has no hover or focus pause (see the two absent components above). The mapping this row replaces — "`section` + linked `image` blocks, kept static" — was written against the pre-#253 section and would now be a visible regression. |
+| `ona-faq-lists` (wholesale) | all six FAQ blocks on the live instance are **disabled**, but `title2` ("Need help?") and `tips` (the admin mailto) are populated, so what the page actually renders is the tips, not a FAQ list. `ona-faq-layout` has a left-column `body` and `_faq-category` blocks and no slot for trailing copy, so the replacement cannot be invisible here. #253 confirms the reading from the other side: it styles the call-out behind `:not(:has(.faqs-toggle))`, "a page with no FAQ rows (e.g. /pages/wholesale)", and centres the heading, constrains the paragraph to `48ch` and underlines the mailto. Whatever replaces the section has to carry that treatment, not just the text. The bookings instance has to be checked separately before the section is retired. |
+| `ona-icon-and-content` (wholesale) | live and enabled, with five blocks of icon + title + `url`, and the urls are **in-page anchors** — `#complete-training`, `#unique-coffees`, `#supported`, `#exclusive-access` — so the section is the wholesale page's own contents list, not decoration. Horizon's `icon` block inside a `group` per cell is still the obvious candidate, and `blocks/icon.liquid` does carry `image_upload` and `link`. What has changed is the bar: #253 wraps each cell in `a.box.icon-box-anchor` and styles it as an equal-height outlined button with a hover and `:focus-visible` inversion, so a swap now has to reproduce a styled nav, not five plain anchors. Still a gap rather than a row, but for a sharper reason than before. |
 | `ona-bread-crumbs` | live on `/pages/private-courses-and-experiences`, rendering linked ancestors and a dynamic `page.title`. The only other breadcrumb in the theme is the product-specific one, so there is no generic target: keep the section, or write a page-breadcrumb component. |
-| `ona-cafe-testimonial` — **until #246 merges** | all four live blocks have both an `image` and a `title`, and the legacy section renders the title as a citation. On `main` today, `sections/press-quotes.liquid:30` shows `source` only in an `elsif` after both logo fields, so a block with a logo cannot also show a name — migrating the four cafés would hide every café name. #246 replaces that branch with a trailing `<figcaption>`, which is what makes this mapping work; it is a dependency, not an assumption. |
+| `ona-cafe-testimonial` — **until #246 merges** | all four live blocks have both an `image` and a `title`, and the legacy section renders the title as a citation. On `main` today, `sections/press-quotes.liquid:30` shows `source` only in an `elsif` after both logo fields, so a block with a logo cannot also show a name — migrating the four cafés would hide every café name. #246 replaces that branch with a trailing `<figcaption>`, which is what makes this mapping work; it is a dependency, not an assumption. #253 did not touch the markup — the `<cite>` carrying `title` and `subtitle` is unchanged, so that dependency reads exactly as written — but it added a second one: `.cafe-reviews` now lays the blocks out as a three-up `scroll-snap` carousel that falls to two columns at 989px and one at 749px. `press-quotes` has to match that, and Victor's `.cafe-reviews` rules go dead the day the section does. |
 
 ## Page by page
 
@@ -283,7 +294,7 @@ the verification rule at the top and to the gaps above.
 
 | Page | Sections now | After | The work |
 | --- | --- | --- | --- |
-| `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; `ona-cafe-testimonial` → `press-quotes`; the four panel-plus-slider composites and `ona-unique-coffees` have no verified target (see Known gaps); `ona-wholesale-brands` → `section` + linked `image` blocks, kept static; `ona-faq-lists`, `ona-training` and `ona-icon-and-content` have no verified target (see Known gaps); `ona-gust-r` stays until its subject and business fields have a home |
+| `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; `ona-cafe-testimonial` → `press-quotes`; the four panel-plus-slider composites and `ona-unique-coffees` have no verified target (see Known gaps); `ona-wholesale-brands` lost its target to #253 (see Known gaps); `ona-faq-lists`, `ona-training` and `ona-icon-and-content` have no verified target (see Known gaps); `ona-gust-r` stays until its subject and business fields have a home |
 | `/pages/barista-courses` | 10 (all legacy) | ~6 | four `traning-sourcing-v*` → `media-with-content`; `ona-traning-supported` has no verified target (see Known gaps); `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
 | `/pages/about` | 7 (all legacy) | ~5 | media/text variants → `media-with-content`; `ona-awards` has no verified target (see Known gaps) |
 | `/pages/learn` | 2 | 2 | `ona-page-title` → page-header; `ona-brewguides-and-training` → `section` + `_product-card`-style tiles |
