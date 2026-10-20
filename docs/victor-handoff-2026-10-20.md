@@ -79,8 +79,7 @@ cut from 41.2 MB to 4.33 MB. Pick them in the editor. The CDN serves WebP
 automatically — including for the three transparent bag cut-outs, which keep
 their alpha.
 
-**10 vector marks** arrive in `assets/` with **PR #202** — they are not on
-`main` until that merges, so if the files are not there yet, that is why. Logo, wordmark, the New Harvest
+**10 vector marks** are in `assets/` — merged in #202. Logo, wordmark, the New Harvest
 and Brew Club badges, the three Subscribe & Save benefit icons, and press logos
 for Broadsheet, Espresso Room and Urban List. Inline them with
 `{{ 'name.svg' | inline_asset_content }}` — the eight single-colour ones use
