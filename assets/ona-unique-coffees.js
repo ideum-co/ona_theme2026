@@ -47,7 +47,18 @@ class OnaUniqueCoffees extends HTMLElement {
       // Only the selected tab stays in the tab order, per the tablist pattern.
       handle.tabIndex = active ? 0 : -1;
     });
-    this.blocks.forEach((block, i) => block.classList.toggle('is-active', i === index));
+    this.blocks.forEach((block, i) => {
+      const active = i === index;
+      block.classList.toggle('is-active', active);
+      /*
+       * Liquid marks every block but the first `aria-hidden="true"` so the
+       * no-JS render is honest. Toggling only the class left the selected
+       * panel visible but still hidden from the accessibility tree -- a tab
+       * pointing at something a screen reader cannot reach. Codex, #216.
+       */
+      if (active) block.removeAttribute('aria-hidden');
+      else block.setAttribute('aria-hidden', 'true');
+    });
     this.panels.forEach((panel, i) => panel.classList.toggle('is-active', i === index));
   }
 }

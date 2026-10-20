@@ -75,3 +75,20 @@ test('the slider degrades to one visible group without JavaScript', () => {
     assert.match(section, pattern, `the first ${what} must be active before the script runs`);
   }
 });
+
+test('the selected panel is exposed to the accessibility tree', () => {
+  /*
+   * Liquid marks every block but the first `aria-hidden="true"` so the no-JS
+   * render is honest. If select() only toggles the class, choosing tab 2
+   * leaves its panel visible but still hidden from screen readers -- a tab
+   * controlling something nobody can reach. Codex, #216.
+   */
+  assert.match(script, /removeAttribute\('aria-hidden'\)/, 'the active panel must stop being hidden');
+  assert.match(script, /setAttribute\('aria-hidden', 'true'\)/, 'and the inactive ones must become hidden');
+
+  // Both have to live in the same pass as the class toggle, not a separate one
+  // that could drift out of step.
+  const select = script.match(/select\(index\)\s*\{([\s\S]*?)\n  \}/);
+  assert.ok(select, 'select() must exist');
+  assert.match(select[1], /aria-hidden/, 'aria-hidden must be updated inside select()');
+});
