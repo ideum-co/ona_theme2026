@@ -47,13 +47,24 @@ layout variant became another section file, and the port carried all of them
 across. Parse the schemas and ten of them are **byte-for-byte the same
 component**:
 
+Grouped by the **whole** schema — settings, nested block settings and
+constraints like `max_blocks` — with only the human-facing `name` ignored.
+Every member is listed in full: the guard asserts membership, not just counts,
+so an abbreviated cell would be a hole in it.
+
 | Identical schema | Copies | Which |
 | --- | --- | --- |
-| `id, image, title, subtitle, content, button_text, button_url` + one `block` | **10** | `ona-sourcing`, `ona-wholesale-sourcing-v2…v6`, `ona-traning-sourcing`, `-v2`, `-v3`, `-v4` |
+| `id, image, title, subtitle, content, button_text, button_url` + one `block` | **10** | `ona-sourcing`, `ona-traning-sourcing`, `ona-traning-sourcing-v2`, `ona-traning-sourcing-v3`, `ona-traning-sourcing-v4`, `ona-wholesale-sourcing-v2`, `ona-wholesale-sourcing-v3`, `ona-wholesale-sourcing-v4`, `ona-wholesale-sourcing-v5`, `ona-wholesale-sourcing-v6` |
 | `id, title, content, slider_autoplay` + `slider`,`block` | 2 | `ona-supported`, `ona-traning-supported` |
 | `image, title2` | 2 | `ona-inner-banner`, `ona-training-banner` |
 | no schema at all | 2 | `ona-bookings-top`, `ona-training-iframe` |
-| no settings + one `block` | 2 | `ona-brewguides-and-training`, `ona-sustainability-list` |
+
+`ona-brewguides-and-training` and `ona-sustainability-list` were listed here as
+a fifth pair and are **not** one. Both have no section settings and one `block`,
+which is as far as the first version of the guard looked; their block settings
+differ (`ona-sustainability-list` has `content`, the other does not) and so do
+their `max_blocks`, 3 against 2. Found by review, not by the guard — which is
+why the guard now keys on the full schema and checks membership.
 
 Beyond the exact matches are families that do one job through near-identical
 settings — `ona-training-image-text`, `-text-two-images`, `-text-image-bg`,
@@ -260,6 +271,7 @@ needs a decision before the page it is on can reach stage 2.
 | `ona-training-form` | same loss again, third instance: `sections/ona-training-form.liquid:51` posts `contact[subject]` = "Barista training enquiry". All three `{% form 'contact' %}` sections in the theme post a fixed subject that `contact-form` cannot carry, so "move the forms to `contact-form`" is not a mapping any of them can take as it stands — the block needs a subject setting first. |
 | `ona-training` (wholesale) | the text column is not ordinary text. `templates/page.wholesale.json` gives the live instance three enabled blocks, and `sections/ona-training.liquid:40-56` renders each as a `faqs-toggle` button with `aria-expanded`, followed by a "Get In Touch" link to a Monday form. A `media-with-content` text slot drops both the interaction and the CTA; the blocks need an `accordion` and the link needs to survive. |
 | `ona-faq-lists` (wholesale) | all six FAQ blocks on the live instance are **disabled**, but `title2` ("Need help?") and `tips` (the admin mailto) are populated, so what the page actually renders is the tips, not a FAQ list. `ona-faq-layout` has a left-column `body` and `_faq-category` blocks and no slot for trailing copy, so the replacement cannot be invisible here. The bookings instance has to be checked separately before the section is retired. |
+| `ona-icon-and-content` (wholesale) | live and enabled, with five blocks of icon + title + `url`, and the urls are **in-page anchors** — `#complete-training`, `#unique-coffees`, `#supported`, `#exclusive-access` — so the section is the wholesale page's own contents list, not decoration. Horizon's `icon` block inside a `group` per cell is the obvious candidate, but nothing here has been checked against the rendered grid or the anchor behaviour, so it stays a gap rather than a row in the kit. |
 | `ona-bread-crumbs` | live on `/pages/private-courses-and-experiences`, rendering linked ancestors and a dynamic `page.title`. The only other breadcrumb in the theme is the product-specific one, so there is no generic target: keep the section, or write a page-breadcrumb component. |
 | `ona-cafe-testimonial` — **until #246 merges** | all four live blocks have both an `image` and a `title`, and the legacy section renders the title as a citation. On `main` today, `sections/press-quotes.liquid:30` shows `source` only in an `elsif` after both logo fields, so a block with a logo cannot also show a name — migrating the four cafés would hide every café name. #246 replaces that branch with a trailing `<figcaption>`, which is what makes this mapping work; it is a dependency, not an assumption. |
 
@@ -271,7 +283,7 @@ the verification rule at the top and to the gaps above.
 
 | Page | Sections now | After | The work |
 | --- | --- | --- | --- |
-| `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; `ona-cafe-testimonial` → `press-quotes`; the four panel-plus-slider composites and `ona-unique-coffees` have no verified target (see Known gaps); `ona-wholesale-brands` → `section` + linked `image` blocks, kept static; `ona-faq-lists` and `ona-training` have no verified target (see Known gaps); `ona-gust-r` stays until its subject and business fields have a home |
+| `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; `ona-cafe-testimonial` → `press-quotes`; the four panel-plus-slider composites and `ona-unique-coffees` have no verified target (see Known gaps); `ona-wholesale-brands` → `section` + linked `image` blocks, kept static; `ona-faq-lists`, `ona-training` and `ona-icon-and-content` have no verified target (see Known gaps); `ona-gust-r` stays until its subject and business fields have a home |
 | `/pages/barista-courses` | 10 (all legacy) | ~6 | four `traning-sourcing-v*` → `media-with-content`; `ona-traning-supported` has no verified target (see Known gaps); `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
 | `/pages/about` | 7 (all legacy) | ~5 | media/text variants → `media-with-content`; `ona-awards` has no verified target (see Known gaps) |
 | `/pages/learn` | 2 | 2 | `ona-page-title` → page-header; `ona-brewguides-and-training` → `section` + `_product-card`-style tiles |

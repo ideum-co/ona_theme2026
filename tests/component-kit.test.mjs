@@ -221,10 +221,25 @@ test('every section carrying a form or a metafield is accounted for', () => {
 
 /*
  * The verification status at the top of the kit claims the duplication groups are parsed from
- * schemas and guarded. They were parsed; they were not guarded, so a clone could drift and the
- * document would keep calling it an identical copy. This derives the groups and compares their
- * sizes to the counts the table states.
+ * schemas and guarded. The first version of this guard keyed each section on its section-setting
+ * ids and its top-level block *types* only, and compared group sizes. That is too coarse twice
+ * over: it collided `ona-brewguides-and-training` with `ona-sustainability-list`, which share
+ * "no settings, one block named block" but differ in their block's settings and in max_blocks,
+ * and comparing sizes alone would not have noticed even if the membership were wrong. So this
+ * keys on the whole schema bar its human-facing name, and asserts the membership the table
+ * states -- which is why the table spells every member out instead of abbreviating a range.
  */
+/* JSON.stringify's second argument is a property allowlist, not a key sort, and it applies at
+   every depth -- passing the top-level keys there silently empties every nested object and makes
+   the key depend on which top-level keys the section happens to have. Sort recursively instead,
+   so two schemas that differ only in key order produce the same string and nothing else does. */
+const canonical = (value) =>
+  Array.isArray(value)
+    ? value.map(canonical)
+    : value && typeof value === 'object'
+      ? Object.keys(value).sort().reduce((out, key) => ({ ...out, [key]: canonical(value[key]) }), {})
+      : value;
+
 test('the duplication table still matches the schemas', () => {
   const groups = new Map();
 
@@ -235,20 +250,33 @@ test('the duplication table still matches the schemas', () => {
 
     let key = 'no-schema';
     if (schema) {
-      const parsed = JSON.parse(schema[1]);
-      const settings = (parsed.settings ?? []).map((setting) => setting.id).filter(Boolean).sort();
-      const blocks = (parsed.blocks ?? []).map((block) => block.type).sort();
-      key = JSON.stringify([settings, blocks]);
+      const { name, ...rest } = JSON.parse(schema[1]);
+      key = JSON.stringify(canonical(rest));
     }
-    groups.set(key, (groups.get(key) ?? 0) + 1);
+    groups.set(key, [...(groups.get(key) ?? []), file.replace(/\.liquid$/, '')]);
   }
 
-  const derived = [...groups.values()].filter((size) => size > 1).sort((a, b) => b - a);
+  const derived = [...groups.values()]
+    .filter((members) => members.length > 1)
+    .map((members) => members.sort().join(', '))
+    .sort();
 
   const table = doc.slice(doc.indexOf('| Identical schema | Copies | Which |'));
-  const stated = [...table.slice(0, table.indexOf('\n\n')).matchAll(/\|\s*\**(\d+)\**\s*\|/g)]
-    .map((match) => Number(match[1]))
-    .sort((a, b) => b - a);
+  const rows = table.slice(0, table.indexOf('\n\n')).split('\n').filter((line) => /^\| /.test(line)).slice(2);
+
+  const stated = rows
+    .map((row) => {
+      const cells = row.split('|').map((cell) => cell.trim());
+      const members = backticked(cells[3]).sort();
+      const copies = Number(cells[2].replace(/\*/g, ''));
+      assert.equal(
+        members.length,
+        copies,
+        `the table says ${copies} copies but lists ${members.length}: ${members.join(', ')}`
+      );
+      return members.join(', ');
+    })
+    .sort();
 
   assert.deepEqual(
     stated,
