@@ -77,6 +77,9 @@ test('the tablist is built from the slides and survives changes', () => {
   const guard = script.match(/if \(this\.slides\.length < 2\) \{([\s\S]*?)\n    \}/);
   assert.ok(guard, 'one slide needs no controls');
   assert.match(guard[1], /classList\.remove\('is-enhanced'\)/, 'and nothing may stay hidden');
+  // A surviving slide must not keep a role pointing at a deleted tab.
+  assert.match(guard[1], /removeAttribute\('role'\)/, 'stale tabpanel semantics must go');
+  assert.match(guard[1], /removeAttribute\('aria-labelledby'\)/, 'including the dangling label');
 });
 
 test('selection moves the slide and the accessibility tree together', () => {
@@ -86,4 +89,21 @@ test('selection moves the slide and the accessibility tree together', () => {
   assert.match(select[1], /tabIndex/, 'a roving tabindex keeps one stop in the tablist');
   assert.match(select[1], /slide\.classList\.toggle\('is-active'/, 'the slide must follow');
   assert.match(script, /ArrowRight|ArrowLeft/, 'a tablist is arrow-key navigable');
+});
+
+test('hiding a slide stops whatever was playing in it', () => {
+  /*
+   * These slides carry Vimeo and YouTube iframes and uploaded <video>. CSS only
+   * makes a slide invisible, so without this the audio keeps playing from a
+   * slide the visitor cannot see and whose controls they cannot reach --
+   * measured against the wholesale testimonials, which are the page's main
+   * content. Codex, #233.
+   */
+  assert.match(script, /static stopMedia\(slide\)/, 'there must be one place that stops media');
+  assert.match(script, /if \(!isActive\) OnaSlider\.stopMedia\(slide\)/, 'and selection must call it');
+
+  const stop = script.match(/static stopMedia\(slide\)\s*\{([\s\S]*?)\n  \}/);
+  assert.ok(stop, 'stopMedia must have a body');
+  assert.match(stop[1], /querySelectorAll\('video, audio'\)[\s\S]*?\.pause\(\)/, 'HTML media is paused');
+  assert.match(stop[1], /querySelectorAll\('iframe'\)[\s\S]*?setAttribute\('src', src\)/, 'embedded players are reset');
 });

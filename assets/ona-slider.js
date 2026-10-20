@@ -53,6 +53,17 @@ class OnaSlider extends HTMLElementBase {
     if (this.slides.length < 2) {
       this.classList.remove('is-enhanced');
       this.nav.replaceChildren();
+      /*
+       * Strip the generated semantics too. A surviving slide left with
+       * role="tabpanel" and an aria-labelledby pointing at a button that no
+       * longer exists is a panel with no tab and no name -- worse for a screen
+       * reader than the plain div it started as.
+       */
+      this.slides.forEach((slide) => {
+        slide.removeAttribute('role');
+        slide.removeAttribute('aria-labelledby');
+        slide.classList.remove('is-active');
+      });
       this.tabs = [];
       return;
     }
@@ -117,7 +128,34 @@ class OnaSlider extends HTMLElementBase {
       tab.tabIndex = isActive ? 0 : -1;
     });
     this.slides.forEach((slide, i) => {
-      slide.classList.toggle('is-active', i === index);
+      const isActive = i === index;
+      slide.classList.toggle('is-active', isActive);
+      if (!isActive) OnaSlider.stopMedia(slide);
+    });
+  }
+
+  /**
+   * Stops anything playing in a slide that is about to be hidden.
+   *
+   * These slides carry Vimeo and YouTube iframes and uploaded <video>. CSS only
+   * makes the slide invisible, so without this the audio keeps going from a
+   * slide the visitor cannot see and whose controls they cannot reach.
+   *
+   * The iframe is reset by reassigning its own src: postMessage would need the
+   * player API loaded and the origin known, and reloading is enough to stop
+   * playback for every provider the sections allow.
+   */
+  static stopMedia(slide) {
+    slide.querySelectorAll('video, audio').forEach((media) => {
+      try {
+        media.pause();
+      } catch {
+        /* a detached or not-yet-ready element cannot be playing */
+      }
+    });
+    slide.querySelectorAll('iframe').forEach((frame) => {
+      const src = frame.getAttribute('src');
+      if (src) frame.setAttribute('src', src);
     });
   }
 }
