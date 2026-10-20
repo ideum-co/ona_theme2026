@@ -137,11 +137,17 @@
             endif
           -%}
 
+          {%- comment -%}
+            No role="tabpanel" here. Without JavaScript, or with fewer than two
+            venues, no tabs are created and the component stays unenhanced -- a
+            card carrying tabpanel semantics would then be a panel with no
+            controlling tab and no accessible name. The element adds the role
+            when it builds the tablist, and strips it again when it stands down.
+          {%- endcomment -%}
           <article
             class="locations-flagships__card"
             data-flagship-card
             data-location-id="{{ location.system.id | escape }}"
-            role="tabpanel"
           >
             {%- if media_count > 0 -%}
               <locations-flagship-gallery

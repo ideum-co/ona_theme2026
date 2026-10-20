@@ -341,6 +341,17 @@ class LocationsFlagshipsTabs extends HTMLElementBase {
     if (this.panels.length < 2) {
       this.classList.remove('is-enhanced');
       this.nav.replaceChildren();
+      /*
+       * Strip the semantics too. Leaving role="tabpanel" and an
+       * aria-labelledby pointing at a button that no longer exists gives a
+       * screen reader a panel with no tab and no name -- worse than the plain
+       * <article> this started as.
+       */
+      this.panels.forEach((panel) => {
+        panel.removeAttribute('role');
+        panel.removeAttribute('aria-labelledby');
+        panel.classList.remove('is-active');
+      });
       this.tabs = [];
       return;
     }

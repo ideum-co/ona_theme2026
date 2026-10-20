@@ -5,7 +5,15 @@ import test from 'node:test';
 
 const root = resolve(import.meta.dirname, '..');
 const read = (p) => readFileSync(resolve(root, p), 'utf8');
-const section = read('sections/locations-flagships.liquid');
+const sectionSource = read('sections/locations-flagships.liquid');
+/*
+ * Markup only. The source explains in a {% comment %} why it does NOT render
+ * role="tabpanel", and a guard that reads prose as markup fails on correct
+ * code -- which is exactly what happened first time. It could equally be
+ * fooled into passing by a comment, so stripping them is the fix in both
+ * directions.
+ */
+const section = sectionSource.replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, '');
 const script = read('assets/locations-flagships.js');
 const tabs = script.slice(script.indexOf('class LocationsFlagshipsTabs'));
 
@@ -19,7 +27,14 @@ const tabs = script.slice(script.indexOf('class LocationsFlagshipsTabs'));
 test('the section provides the tablist container and the panels', () => {
   assert.match(section, /role="tablist"/, 'the venue names need a tablist container');
   assert.match(section, /data-flagship-nav/, 'the element needs to find the nav');
-  assert.match(section, /role="tabpanel"/, 'each card is the panel a name controls');
+  /*
+   * role="tabpanel" is NOT rendered here. Unenhanced -- no JavaScript, or fewer
+   * than two venues -- a card with tabpanel semantics is a panel with no
+   * controlling tab and no accessible name. The element adds the role when it
+   * builds the tablist and strips it when it stands down. Codex, #231.
+   */
+  assert.doesNotMatch(section, /role="tabpanel"/, 'tabpanel semantics are added only once enhanced');
+  assert.match(tabs, /panel\.setAttribute\('role', 'tabpanel'\)/, 'the element adds the role');
 
   /*
    * The buttons are deliberately NOT rendered here. LocationsFlagshipsLoader
@@ -61,6 +76,8 @@ test('fewer than two venues means no tablist and nothing hidden', () => {
   assert.ok(guard, 'there must be a guard for fewer than two venues');
   assert.match(guard[1], /classList\.remove\('is-enhanced'\)/, 'the collapsed layout must come off');
   assert.match(guard[1], /this\.nav\.replaceChildren\(\)/, 'and the stale buttons must go');
+  assert.match(guard[1], /removeAttribute\('role'\)/, 'and the orphaned tabpanel role with them');
+  assert.match(guard[1], /removeAttribute\('aria-labelledby'\)/, 'including a label pointing at a deleted tab');
 });
 
 test('without JavaScript every venue is still readable', () => {
