@@ -133,6 +133,32 @@
       const label = panels[index]?.getAttribute('data-tab-label')?.trim();
       if (label) tab.textContent = label;
     });
+
+    /*
+     * Drop any tab whose panel rendered nothing -- a Brew Guide on a coffee
+     * with no brew data, say -- taking the button and the panel together.
+     *
+     * Order matters. This runs before the deferred module connects, so the
+     * component builds its refs from the pruned DOM and still sees one button
+     * per panel. Removing only one of the pair would leave the counts
+     * mismatched, which is the exact condition the component treats as "cannot
+     * pair these" and bails on, stacking every panel visible.
+     *
+     * Last pair standing is left alone: a tab strip of one is still a heading
+     * for the content under it, and removing it would leave an unlabelled
+     * panel.
+     */
+    const empties = [...panels].reduce((acc, panel, index) => {
+      if (panel.hasAttribute('data-tab-empty')) acc.push(index);
+      return acc;
+    }, []);
+
+    if (empties.length && empties.length < panels.length) {
+      for (const index of empties.reverse()) {
+        panels[index].remove();
+        tabs[index]?.remove();
+      }
+    }
   })();
 </script>
 
