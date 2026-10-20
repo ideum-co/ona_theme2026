@@ -26,7 +26,7 @@ please share it.
 
 ---
 
-## 1. The mega menu is designed but not built
+## 1. The mega menu is built — compare its contents against the comps
 
 Screens 2 and 3 show a full-width maroon panel: a nav column (Shop, Learn,
 Locations, About, Wholesale, Subscriptions), social icons, and three featured
@@ -89,6 +89,29 @@ for Broadsheet, Espresso Room and Urban List. Inline them with
 Full inventory and the format reasoning: `~/ona-home-assets-2026-10-20/`.
 
 ---
+
+## 5. Two findings in your video code (#195)
+
+Codex raised these while reviewing a branch of mine that happened to carry your
+`#195` in its diff. They are in your code, not mine, and both look real — so
+rather than touch them I am passing them over.
+
+**`assets/autoplay-video.js`** — when a hero has separate desktop and mobile
+videos, both elements stay in the DOM and CSS hides one of them
+(`.hero__media-wrapper--desktop` / `--mobile`). The `play()` nudge is
+unconditional, so it also starts the hidden one: two background videos decoding
+at once, on exactly the iOS devices the nudge exists for. Gating it on the
+active wrapper would fix it — `VideoBackgroundComponent` already does this.
+
+**`assets/video-background.js`** — if the viewport crosses 749px while an active
+background video is still loading, `syncPlayback` pauses the now-hidden layer,
+but its pending `canplay` listener survives. When loading finishes the callback
+calls `play()` without rechecking `shouldPlay()`, so the hidden layer restarts
+alongside the visible one. Either guard the retry with the layer predicate or
+drop the listener when the layer goes inactive.
+
+Neither is visible on screen — both cost battery and decode budget on mobile,
+which is where the autoplay work was aimed in the first place.
 
 ## One coordination note
 
