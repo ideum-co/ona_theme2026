@@ -8,6 +8,29 @@ this one names the parts and maps every legacy section onto one.
 Written 2026-10-20 from the page reviews, measured against the live theme
 (`ona_theme2026/main`, id 154676789439, Horizon 4.1.4).
 
+## Verification status
+
+Read this before using the mapping. This document has two halves and they are
+not equally trustworthy.
+
+**Measured and guarded by `tests/component-kit.test.mjs`:** the section
+inventory (45 sections, all referenced), the duplication groups (parsed from
+schemas), which components exist, which legacy sections style themselves,
+which carry a form or a metafield, and that the sourcing clones have no
+enabled blocks.
+
+**Not verified:** *which component replaces which section*. Those rows were
+derived from schemas and block trees, and a schema says nothing about what a
+page draws or how it is laid out. Review of this document found the same
+mistake fourteen times, including in fixes written to correct earlier
+instances of it. Three live counterexamples are recorded in
+[Known gaps](#known-gaps) below.
+
+So: treat every "Replaces" cell and every row of the page-by-page table as a
+**candidate**, not a decision. Each conversion PR has to open the legacy
+section's Liquid *and* the target's rendered output and confirm the swap is
+invisible, before it changes anything.
+
 ## What the reviews actually found
 
 The theme ships **45 `ona-*` sections**, and the first thing to say about them is
@@ -64,18 +87,15 @@ as well. A bare `slideshow` is the wrong target for all five: it takes only
 `_slide` blocks and offers arrows and dots, so the panel would have to go
 inside a slide, where it would repeat or disappear as the slides change.
 
-`sections/carousel.liquid` is the right one, and it is built for exactly this:
-a static `group` header block — which accepts `@theme`, so `text`, `button`
-and `accordion` all go in it — followed by a `_carousel-content` block of
-`_card`s, each of which takes `image`, `video`, `text` or any theme block. The
-panel, the accordion and the slides each land where they already are.
+`sections/carousel.liquid` looked like the answer — it has a static `group`
+header that accepts `@theme` blocks and a `_carousel-content` of `_card`s — and
+it is not. Both are direct children of `.section`, which places them in the
+same grid column on separate rows, so the header renders *above* the cards.
+The legacy layout puts the panel *beside* the slider. The block tree fits; the
+layout does not, and checking the block tree without checking the layout is
+how this document got the mapping wrong twice in a row.
 
-One residual, and it is the only thing in this document still undecided:
-`ona-wholesale-testimonial`'s selector names its episodes ("Ep 2. Café support
-through excellence program"), and `carousel`'s own controls are arrows and
-dots. The videos, the copy and the Get In Touch button all map; the named
-selector does not. **Decide that one with ONA** before converting wholesale —
-accept dots, or keep the selector as a small block of its own.
+These five therefore have **no verified target**. See [Known gaps](#known-gaps).
 
 ### The media slot holds less than the sections do
 
@@ -149,7 +169,7 @@ has to be written.
 | 1 | `section` + `group`/`text`/`image`/`video`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×78, `group` ×34, `button` ×14, `image` ×11. A `group` has `content_direction`, so a row of two blocks is a media/text layout; `image` carries a `link` and `video` carries a YouTube/Vimeo URL. | anything that is just stacked copy, `ona-wholesale-brands`, and the four media/text variants `media-with-content` cannot hold (below) |
 | 2 | `media-with-content` | one fixed media slot + a content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones, and `ona-training-image-text` |
 | 3 | `hero` | full-bleed media with blocks over it: desktop and custom mobile media, overlay, `section_height`, `fetchpriority` on the image itself. Already on the homepage. | `ona-training-banner`, `ona-inner-banner` |
-| 4 | `carousel` | the composite: a static `group` header taking `@theme` blocks, then `_carousel-content` holding `_card`s that take `image`, `video`, `text` or any theme block | the **5** panel-plus-slider sections in the table above |
+| 4 | `carousel` | a static `group` header **above** a row of `_card`s. Both are direct children of `.section`, which puts them in the same grid column on separate rows — it is a header-over-cards layout, not a side-by-side one. | card rows. **Not** the five panel-plus-slider sections: their panel sits beside the slider |
 | 5 | `press-quotes` | quote carousel: logo, quote, attribution, arrows when blocks outnumber columns | `ona-cafe-testimonial` (and already carrying its four quotes on the homepage, #246) |
 | 6 | `ona-faq-layout` | already Horizon-native, styles itself, takes `_faq-category` blocks | `ona-faq-lists`, the FAQ half of `ona-expressions` |
 | 7 | `ona-page-media-gallery` | already Horizon-native, styles itself | ad-hoc image grids |
@@ -210,7 +230,7 @@ loads its own script is doing something a `text` block cannot:
 
 | Section | Behaviour | Target |
 | --- | --- | --- |
-| `ona-gust-r` (wholesale) | `{% form 'contact' %}`, 8 inputs | `section` + Horizon's `contact-form` block |
+| `ona-gust-r` (wholesale) | `{% form 'contact' %}` with a fixed subject and a business field | **not** `contact-form` as it stands — see [Known gaps](#known-gaps) |
 | `ona-training-form` (training) | `{% form 'contact' %}` | same |
 | `ona-expericences-content` (private courses) | two columns: heading/image/lead/copy on the left, a working contact form on the right | `section` + two `group`s, the right one holding `contact-form` — **not** `media-with-content`, which has one media slot and one content slot |
 | `ona-unique-coffees` (wholesale) | three named tabs that switch a three-image panel and its copy together, with `role="tabpanel"` and `aria-hidden` wiring | **nothing in Horizon does this.** `carousel` gives cards and dots, an `accordion` does not drive a separate panel. Keep the section, or write a tabs component — a decision, not a mapping |
@@ -223,16 +243,29 @@ components. Six sections carry behaviour — three of them onto Horizon's
 is the one section on the wholesale page that stage 2 cannot convert without a
 decision first.
 
+## Known gaps
+
+Cases where the obvious target has been checked and does not work. Each one
+needs a decision before the page it is on can reach stage 2.
+
+| Section | Why no target fits |
+| --- | --- |
+| the five panel-plus-slider composites | `carousel` renders its header **above** the cards — `sections/carousel.liquid` emits the static group and `_carousel-content` as consecutive children, and `assets/base.css` puts every direct child of `.section` in grid column 2. The legacy layout is panel *beside* slider. No component in the theme does that; it needs a two-column wrapper or an extended component. |
+| `ona-gust-r` | Horizon's `contact-form` block has name, email, phone and body. The live form also posts `contact[subject]` = "Wholesale partnership enquiry" and a `contact[business]` field, which is how enquiries are identified and routed. Swapping it would silently change what ONA receives. |
+| `ona-awards` | `templates/page.about.json` gives it five slider images (`block1`) and twelve award-table rows (`block2`). `ona-page-media-gallery` reads `page.metafields.accentuate.image` and takes neither; `media-with-content` has one media slot. Nothing holds both. |
+| `ona-unique-coffees` | three named tabs switching a three-image panel and its copy together. `carousel` gives cards and dots; an accordion does not drive a separate panel. |
+
 ## Page by page
 
 Stage per page stays as [page-design-structure.md](page-design-structure.md)
-sets it. This is what stage 2 means for each.
+sets it. This is what stage 2 *might* mean for each — candidates, subject to
+the verification rule at the top and to the gaps above.
 
 | Page | Sections now | After | The work |
 | --- | --- | --- | --- |
-| `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; `ona-cafe-testimonial` → `press-quotes`; `ona-supported`, `ona-exclusive-access`, `ona-expressions` → `carousel`; `ona-wholesale-testimonial` → `carousel` once the episode selector is decided; `ona-wholesale-brands` → `section` + linked `image` blocks, kept static; `ona-faq-lists` → `ona-faq-layout`; `ona-gust-r`'s native `/contact` form stays as is |
-| `/pages/barista-courses` | 10 (all legacy) | ~6 | four `traning-sourcing-v*` → `media-with-content`; `ona-traning-supported` → `carousel`, panel and accordion in the header group; `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
-| `/pages/about` | 7 (all legacy) | ~5 | media/text variants → `media-with-content`; gallery → `ona-page-media-gallery` |
+| `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; `ona-cafe-testimonial` → `press-quotes`; the four panel-plus-slider composites and `ona-unique-coffees` have no verified target (see Known gaps); `ona-wholesale-brands` → `section` + linked `image` blocks, kept static; `ona-faq-lists` → `ona-faq-layout`; `ona-gust-r` stays until its subject and business fields have a home |
+| `/pages/barista-courses` | 10 (all legacy) | ~6 | four `traning-sourcing-v*` → `media-with-content`; `ona-traning-supported` has no verified target (see Known gaps); `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
+| `/pages/about` | 7 (all legacy) | ~5 | media/text variants → `media-with-content`; `ona-awards` has no verified target (see Known gaps) |
 | `/pages/learn` | 2 | 2 | `ona-page-title` → page-header; `ona-brewguides-and-training` → `section` + `_product-card`-style tiles |
 | `/pages/faq`, `/pages/subscription-faq` | 2 each | 2 each | `ona-page-title` → page-header. `ona-faq-layout` already Horizon-native — leave it |
 | `/pages/private-courses-and-experiences` | 3 | 3 | thin on content; layout swap only after the copy lands |
