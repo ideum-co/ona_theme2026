@@ -13,9 +13,16 @@ test('organizes PDP summary content before variants with manual and metafield fa
   const schema = JSON.parse(schemaMatch[1]);
   const setting = (id) => schema.settings.find((item) => item.id === id);
 
-  for (const id of ['badge_1', 'badge_2', 'description', 'rating_value', 'rating_count', 'namespace', 'description_key']) {
+  for (const id of ['description', 'rating_value', 'rating_count', 'badge_namespace', 'badge_key', 'namespace', 'description_key']) {
     assert.ok(setting(id), `missing setting ${id}`);
   }
+
+  // Badges are driven by a product metafield (default filters.brew_method): every
+  // value renders as its own badge, and an unset metafield renders none.
+  assert.equal(setting('badge_namespace').default, 'filters');
+  assert.equal(setting('badge_key').default, 'brew_method');
+  assert.match(blockSource, /metafields\[badge_namespace\]\[badge_key\]/);
+  assert.match(blockSource, /badges_mf\.value/);
 
   assert.match(blockSource, /<product-price[\s\S]*?data-product-id=/);
   assert.match(blockSource, /metafields\[namespace\]/);

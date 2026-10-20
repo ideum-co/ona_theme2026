@@ -89,15 +89,13 @@
             "pdp_product_summary": {
               "type": "pdp-product-summary",
               "settings": {
-                "badge_1": "Staple Range",
-                "badge_2": "Best with Milk",
                 "description": "<p>Caramel, biscuits, nuts and spices</p>",
                 "show_rating": true,
                 "rating_value": 5,
                 "rating_count": 0,
+                "badge_namespace": "filters",
+                "badge_key": "brew_method",
                 "namespace": "accentuate",
-                "badge_1_key": "range",
-                "badge_2_key": "roast",
                 "description_key": "tastes_like",
                 "badge_size": 18,
                 "title_size": 64,

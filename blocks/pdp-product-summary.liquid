@@ -1,31 +1,25 @@
 {%- liquid
   assign block_settings = block.settings
   assign product_resource = closest.product
-  assign namespace = block_settings.namespace | strip
 
-  assign badge_1 = block_settings.badge_1
-  assign badge_2 = block_settings.badge_2
+  # Badges come from a product metafield (default filters.brew_method, a list of
+  # metaobject references). Every value renders as its own badge, in order, with
+  # no cap; an unset metafield renders no badges and takes no space.
+  assign badge_namespace = block_settings.badge_namespace | strip
+  if badge_namespace == blank
+    assign badge_namespace = 'filters'
+  endif
+  assign badge_key = block_settings.badge_key | strip
+  if badge_key == blank
+    assign badge_key = 'brew_method'
+  endif
+  assign badge_field = block_settings.badge_field | strip
+  assign badges_mf = product_resource.metafields[badge_namespace][badge_key]
+
   assign summary_description = block_settings.description
-
+  assign namespace = block_settings.namespace | strip
   if namespace != blank
-    assign badge_1_key = block_settings.badge_1_key | strip
-    assign badge_2_key = block_settings.badge_2_key | strip
     assign description_key = block_settings.description_key | strip
-
-    if badge_1_key != blank
-      assign badge_1_metafield = product_resource.metafields[namespace][badge_1_key].value
-      if badge_1_metafield != blank
-        assign badge_1 = badge_1_metafield
-      endif
-    endif
-
-    if badge_2_key != blank
-      assign badge_2_metafield = product_resource.metafields[namespace][badge_2_key].value
-      if badge_2_metafield != blank
-        assign badge_2 = badge_2_metafield
-      endif
-    endif
-
     if description_key != blank
       assign description_metafield = product_resource.metafields[namespace][description_key].value
       if description_metafield != blank
@@ -60,10 +54,19 @@
   "
   {{ block.shopify_attributes }}
 >
-  {%- if badge_1 != blank or badge_2 != blank -%}
+  {%- if badges_mf != blank and badges_mf.value != blank -%}
     <div class="product-summary__badges">
-      {%- if badge_1 != blank -%}<span class="product-summary__badge">{{ badge_1 | escape }}</span>{%- endif -%}
-      {%- if badge_2 != blank -%}<span class="product-summary__badge">{{ badge_2 | escape }}</span>{%- endif -%}
+      {%- if badges_mf.type contains 'list' -%}
+        {%- for item in badges_mf.value -%}
+          {%- capture badge_label -%}{%- render 'metaobject-label', item: item, field: badge_field -%}{%- endcapture -%}
+          {%- assign badge_label = badge_label | strip -%}
+          {%- if badge_label != blank -%}<span class="product-summary__badge">{{ badge_label | escape }}</span>{%- endif -%}
+        {%- endfor -%}
+      {%- else -%}
+        {%- capture badge_label -%}{%- render 'metaobject-label', item: badges_mf.value, field: badge_field -%}{%- endcapture -%}
+        {%- assign badge_label = badge_label | strip -%}
+        {%- if badge_label != blank -%}<span class="product-summary__badge">{{ badge_label | escape }}</span>{%- endif -%}
+      {%- endif -%}
     </div>
   {%- endif -%}
 
@@ -187,18 +190,20 @@
   "tag": null,
   "settings": [
     { "type": "header", "content": "Content" },
-    { "type": "text", "id": "badge_1", "label": "First badge", "default": "Staple Range" },
-    { "type": "text", "id": "badge_2", "label": "Second badge", "default": "Best with Milk" },
     { "type": "richtext", "id": "description", "label": "Description", "default": "<p>Caramel, biscuits, nuts and spices</p>" },
     { "type": "checkbox", "id": "show_rating", "label": "Show rating", "default": true },
     { "type": "range", "id": "rating_value", "label": "Fallback rating", "min": 0, "max": 5, "step": 0.1, "default": 5 },
     { "type": "number", "id": "rating_count", "label": "Fallback review count", "default": 0 },
 
-    { "type": "header", "content": "Optional product metafields" },
-    { "type": "paragraph", "content": "When a metafield has a value it replaces the corresponding manual input above." },
-    { "type": "text", "id": "namespace", "label": "Namespace", "default": "accentuate" },
-    { "type": "text", "id": "badge_1_key", "label": "First badge key", "default": "range" },
-    { "type": "text", "id": "badge_2_key", "label": "Second badge key", "default": "roast" },
+    { "type": "header", "content": "Badges" },
+    { "type": "paragraph", "content": "Badges list every value of the product metafield below, in order. A product with no value shows no badges." },
+    { "type": "text", "id": "badge_namespace", "label": "Badge metafield namespace", "default": "filters" },
+    { "type": "text", "id": "badge_key", "label": "Badge metafield key", "default": "brew_method" },
+    { "type": "text", "id": "badge_field", "label": "Metaobject label field", "info": "Only when the metafield references metaobjects. Leave blank to use the metaobject's display name." },
+
+    { "type": "header", "content": "Optional description metafield" },
+    { "type": "paragraph", "content": "When this metafield has a value it replaces the description above." },
+    { "type": "text", "id": "namespace", "label": "Description namespace", "default": "accentuate" },
     { "type": "text", "id": "description_key", "label": "Description key", "default": "tastes_like" },
 
     { "type": "header", "content": "Typography" },
