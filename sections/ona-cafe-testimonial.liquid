@@ -1,4 +1,4 @@
-<section class="add-image-and-text-slider section-full-large" id="{{ section.settings.id }}">
+<section class="add-image-and-text-slider section-full-large cafe-reviews" id="{{ section.settings.id }}">
     <div class="add-images-slider wowo fadeInUp">
         {% for block in section.blocks %}
         <div class="slider-block">
@@ -20,6 +20,46 @@
         {% endfor %}
     </div>
 </section>
+
+{% stylesheet %}
+  /* Partner reviews as a three-up carousel. The legacy grid for .add-images-slider
+     lives in legacy-page-layout.css and is shared with other sections, so this
+     overrides it only under .cafe-reviews (same #MainContent prefix to match
+     specificity). Three cards show at a time; scroll-snap pages through the rest. */
+  #MainContent .cafe-reviews .add-images-slider {
+    display: flex;
+    grid-template-columns: none;
+    flex-wrap: nowrap;
+    gap: clamp(24px, 4vw, 56px);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--legacy-page-gutter, 16px);
+    padding-block-end: 14px;
+    scrollbar-width: thin;
+    overscroll-behavior-inline: contain;
+  }
+
+  #MainContent .cafe-reviews .add-images-slider > .slider-block {
+    flex: 0 0 calc((100% - 2 * clamp(24px, 4vw, 56px)) / 3);
+    min-width: 0;
+    scroll-snap-align: start;
+    text-align: center;
+  }
+
+  #MainContent .cafe-reviews .slider-block blockquote { margin-inline: 0; }
+  #MainContent .cafe-reviews .slider-block cite { display: block; margin-block-start: 14px; }
+
+  @media (max-width: 989px) {
+    #MainContent .cafe-reviews .add-images-slider > .slider-block {
+      flex-basis: calc((100% - clamp(24px, 4vw, 56px)) / 2);
+    }
+  }
+
+  @media (max-width: 749px) {
+    #MainContent .cafe-reviews .add-images-slider > .slider-block { flex-basis: 84%; }
+  }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": {
