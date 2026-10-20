@@ -13,35 +13,32 @@
 /* Legacy ONA page templates: responsive layout while retaining original editorial blocks.
    Loaded only for the six migrated page suffixes. */
 /*
- * Gutter and measure come from Horizon's own page-width system, so a legacy
- * section lines up with a Horizon one on the same page instead of sitting a few
- * dozen pixels inside or outside it.
+ * Gutter and measure are Horizon's own, by inheritance.
  *
- * Horizon (assets/base.css, "Set up page widths & margins") uses --page-margin
- * 16px, 40px from 750px up, and caps content at a width token from
- * snippets/theme-styles-variables.liquid. Those variables are only declared on
- * .page-width-* elements, which legacy markup is not inside, so the values are
- * restated here against Horizon's own breakpoint rather than referenced.
+ * layout/theme.liquid renders <body class="page-width-{{ settings.page_width }}">,
+ * and assets/base.css declares --page-margin and --page-content-width on those
+ * classes. Custom properties inherit, so every element on the page -- legacy
+ * markup included -- already has Horizon's live values. Measured on
+ * /pages/faq: #MainContent and the legacy .container both resolve
+ * --page-margin to 40px and --page-content-width to 90rem.
  *
- * Measured before: /pages/faq's <h1> at left=0 (no rule at all), then left=70
- * once the sheet loaded, against left=40 for the Horizon section beneath it.
+ * The first pass at this restated 16px/40px and pinned the measure to
+ * --narrow-page-width, on the belief that legacy markup sits outside the
+ * .page-width-* element and cannot inherit. It does not -- the class is on
+ * <body>. Restating meant duplicating Horizon's 750px breakpoint, and pinning
+ * to `narrow` meant these pages would silently stop matching the moment
+ * settings.page_width moved to normal or wide.
  *
- * The cap references --narrow-page-width, the Horizon token nearest the 1280px
- * the ported design used. Unlike --page-margin that token IS global -- it is
- * declared on :root in snippets/theme-styles-variables.liquid -- so it is
- * referenced rather than copied, and a theme update that changes it carries
- * these pages with it. The literal is only a fallback for the case where that
- * snippet has not rendered; without one the width would compute to invalid and
- * the rule would drop out entirely, which is worse than a stale measure. That keeps the legacy measure close to its
- * intent while making the two systems agree exactly up to a 1520px viewport,
- * where both become viewport-bound. Above that Horizon keeps widening toward
- * --normal-page-width (120rem) and these pages hold at 1440. Closing that last
- * gap means choosing the final measure against the XD, which is a design call
- * for a later stage, not a token swap.
+ * Referencing instead: the gutter steps when Horizon's steps, and the measure
+ * follows whichever page width the theme is set to. The literals are fallbacks
+ * for the case where the body class resolves to something with no rule behind
+ * it -- without them a missing variable makes min() invalid and drops the rule,
+ * giving a full-bleed page, which is worse than a stale measure.
  */
-#MainContent { --legacy-page-gutter: 16px; --legacy-page-measure: var(--narrow-page-width, 90rem); --legacy-page-gap: clamp(48px, 7vw, 110px); }
-@media screen and (min-width: 750px) {
-  #MainContent { --legacy-page-gutter: 40px; }
+#MainContent {
+  --legacy-page-gutter: var(--page-margin, 16px);
+  --legacy-page-measure: var(--page-content-width, var(--narrow-page-width, 90rem));
+  --legacy-page-gap: clamp(48px, 7vw, 110px);
 }
 #MainContent > .shopify-section { min-width:0; }
 #MainContent :is(.medium-container,.container) { width:min(100% - 2 * var(--legacy-page-gutter), var(--legacy-page-measure)); margin-inline:auto; }
