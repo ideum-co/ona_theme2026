@@ -3,9 +3,25 @@
   if block.settings.image_position == 'contain'
     assign unset_image_tag = true
   endif
+
+  # Whether this block actually has media. Connected to a dynamic source (e.g. a product
+  # metaobject), the image or video comes back blank when the product has nothing assigned.
+  assign has_media = false
+  if block.settings.media_type == 'image' and block.settings.image != blank
+    assign has_media = true
+  elsif block.settings.media_type == 'video' and block.settings.video != blank
+    assign has_media = true
+  endif
 %}
 
-{% render 'media', unset_image_tag: unset_image_tag %}
+{%- comment -%}
+  On the storefront, render nothing when there is no media, so an unassigned (dynamic) image does
+  not fall back to a stock placeholder. In the theme editor we keep the placeholder so the block
+  stays selectable and a merchant can still assign media.
+{%- endcomment -%}
+{% if has_media or request.design_mode %}
+  {% render 'media', unset_image_tag: unset_image_tag %}
+{% endif %}
 
 {% schema %}
 {
