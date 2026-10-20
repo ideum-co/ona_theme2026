@@ -49,10 +49,19 @@ test('single-colour marks inherit the surrounding text colour', () => {
   for (const name of RECOLOURABLE) {
     const svg = read(`assets/${name}`);
     assert.match(svg, /fill="currentColor"/, `${name} must use currentColor`);
+    /*
+     * Both paint attributes, and any hex -- not a list of the brand colours we
+     * happened to think of. The first version of this check read `fill=` only,
+     * so icon-benefit-freshly-roasted.svg shipped 17 visible paths carrying
+     * fill="currentColor" next to stroke="#751132": the fills recoloured, the
+     * outlines stayed maroon, and cream-on-maroon drew the icon in outline.
+     * Codex caught it on PR #202; rendering the icon at color:#F5E9D7 over
+     * maroon moved 24,577 px from maroon to cream once the strokes followed.
+     */
     assert.doesNotMatch(
       svg,
-      /fill="#(751132|fff|ffffff|f5f4ea)"/i,
-      `${name} still hard-codes a brand colour`,
+      /(?:fill|stroke)="#[0-9a-f]{3,8}"/i,
+      `${name} still hard-codes a paint colour`,
     );
   }
 });
@@ -61,5 +70,23 @@ test('the two-tone badges keep the colours they were drawn with', () => {
   // Recolouring these would flatten the badge into one tone.
   for (const name of AS_DESIGNED) {
     assert.doesNotMatch(read(`assets/${name}`), /currentColor/, `${name} must stay as designed`);
+  }
+});
+
+test('no design SVG carries artwork that cannot render', () => {
+  /*
+   * badge-new-harvest-sale.svg was exported with the whole 1920px artboard
+   * nested inside it under opacity="0" -- 36 elements and half the file's
+   * bytes, including an <image xlink:href="stripped"> that would 404 on every
+   * inline. Invisible, so no test and no screenshot could see it. Codex, #202.
+   */
+  for (const name of [...RECOLOURABLE, ...AS_DESIGNED]) {
+    const svg = read(`assets/${name}`);
+    assert.doesNotMatch(svg, /opacity="0"/, `${name} hides a subtree nothing can render`);
+    // Every href must stay in-document; an inlined SVG cannot resolve a
+    // relative external reference, and the exporter leaves "stripped" behind.
+    for (const [, target] of svg.matchAll(/(?:xlink:)?href="([^"]*)"/g)) {
+      assert.ok(target.startsWith('#'), `${name} references "${target}" outside the document`);
+    }
   }
 });
