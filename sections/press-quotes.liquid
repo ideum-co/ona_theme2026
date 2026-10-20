@@ -169,6 +169,8 @@
    */
   .press-quotes__source {
     margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--font-h5--size, var(--font-size--xl));
   }
 
   /* Only pulls back against a preceding sibling's grid gap. A block with a source and neither a
@@ -176,8 +178,6 @@
      lift it out of the figure's content box and into whatever sits above. */
   .press-quotes__source:not(:first-child) {
     margin-block-start: calc(var(--gap-sm) - var(--gap-xl));
-    font-family: var(--font-heading--family);
-    font-size: var(--font-h5--size, var(--font-size--xl));
   }
 
   .press-quotes__quote {
