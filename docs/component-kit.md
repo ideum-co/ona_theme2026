@@ -10,25 +10,36 @@ Written 2026-10-20 from the page reviews, measured against the live theme
 
 ## What the reviews actually found
 
-The theme ships **44 `ona-*` sections**. Thirty-five are used; **every one of
-those is used exactly once**, on exactly one page. Nine are used nowhere at all.
+The theme ships **45 `ona-*` sections**, and the first thing to say about them is
+what is *not* true: none of them is dead. Every one is referenced by a template,
+so there is nothing to delete today — a section goes only when the page that
+uses it has been converted. Four are used by more than one template:
+`ona-page-title` (faq, faq-subscriptions, learn), `ona-sr-heading` (bookings,
+private-courses, wholesale), `ona-faq-lists` (bookings, wholesale) and
+`ona-faq-layout` (faq, faq-subscriptions).
 
-That is the whole diagnosis. They are not components — they are one-off page
-fragments. The old theme had no block model, so each layout variant became
-another section file, and the port carried all of them across.
-
-Read their schemas side by side and the duplication is literal:
+The problem is duplication, not disuse. The old theme had no block model, so each
+layout variant became another section file, and the port carried all of them
+across. Parse the schemas and ten of them are **byte-for-byte the same
+component**:
 
 | Identical schema | Copies | Which |
 | --- | --- | --- |
-| `id, image, title, subtitle, content, button_text` + one `block` | **10** | `ona-sourcing`, `ona-wholesale-sourcing-v2…v6`, `ona-traning-sourcing`, `-v2`, `-v3`, `-v4` |
+| `id, image, title, subtitle, content, button_text, button_url` + one `block` | **10** | `ona-sourcing`, `ona-wholesale-sourcing-v2…v6`, `ona-traning-sourcing`, `-v2`, `-v3`, `-v4` |
 | `id, title, content, slider_autoplay` + `slider`,`block` | 2 | `ona-supported`, `ona-traning-supported` |
-| `id, title, …, content` + one `block` (quote carousel) | 2 | `ona-wholesale-testimonial`, `ona-cafe-testimonial` |
-| `title2 / content / image` in some order | 6 | `ona-training-image-text`, `-text-two-images`, `-text-image-bg`, `ona-wholesale-partnership`, `ona-expericences-content`, `ona-training` |
-| a heading and nothing else | 3 | `ona-page-title`, `ona-sr-heading`, `ona-training-banner` |
+| `image, title2` | 2 | `ona-inner-banner`, `ona-training-banner` |
+| no schema at all | 2 | `ona-bookings-top`, `ona-training-iframe` |
+| no settings + one `block` | 2 | `ona-brewguides-and-training`, `ona-sustainability-list` |
 
-Ten copies of one component. Six of another. **Thirty-five sections collapse to
-about eight real ones**, and Horizon already ships seven of the eight.
+Beyond the exact matches are families that do one job through near-identical
+settings — `ona-wholesale-testimonial` and `ona-cafe-testimonial` are both quote
+carousels; `ona-training-image-text`, `-text-two-images`, `-text-image-bg`,
+`ona-wholesale-partnership`, `ona-expericences-content` and `ona-training` are
+all a heading, some copy and a piece of media, four of them with a video variant
+bolted on.
+
+**Forty-five sections collapse to about nine**, and Horizon already ships eight
+of the nine.
 
 Alongside that, three kinds of drift the reviews measured across all 116
 sections in `templates/*.json`:
@@ -47,21 +58,22 @@ sections in `templates/*.json`:
 
 ## The kit
 
-Eight components. Seven are Horizon's own or already Horizon-native here; one
+Nine components. Eight are Horizon's own or already Horizon-native here; one
 has to be written.
 
 | # | Component | What it is | Replaces |
 | --- | --- | --- | --- |
 | 1 | `section` + `group`/`text`/`image`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×78, `group` ×34, `button` ×14, `image` ×11. | anything that is just stacked copy |
-| 2 | `media-with-content` | media slot + content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones and the **6** media/text variants |
-| 3 | `press-quotes` | quote carousel: logo, quote, attribution, arrows when blocks outnumber columns | `ona-wholesale-testimonial`, `ona-cafe-testimonial` |
-| 4 | `ona-faq-layout` | already Horizon-native, styles itself, takes `_faq-category` blocks | `ona-faq-lists`, the FAQ half of `ona-expressions` |
-| 5 | `ona-page-media-gallery` | already Horizon-native, styles itself | ad-hoc image grids |
-| 6 | `slideshow` | Horizon's `_slide` carousel | the `slider` blocks in `ona-supported`, `ona-exclusive-access`, `ona-expressions` |
-| 7 | `marquee` | takes `text`, `icon`, `logo`, `_divider`; currently unused | `ona-wholesale-brands` (a logo wall) |
-| 8 | **a page-header section** — *to write* | eyebrow, heading, optional sub-copy, optional visually-hidden variant | `ona-page-title`, `ona-sr-heading`, `ona-training-banner` |
+| 2 | `media-with-content` | media slot + content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones and the 6 media/text variants |
+| 3 | `hero` | full-bleed media with blocks over it: desktop and custom mobile media, overlay, `section_height`, `fetchpriority` on the image itself. Already on the homepage. | `ona-training-banner`, `ona-inner-banner` |
+| 4 | `press-quotes` | quote carousel: logo, quote, attribution, arrows when blocks outnumber columns | `ona-wholesale-testimonial`, `ona-cafe-testimonial` |
+| 5 | `ona-faq-layout` | already Horizon-native, styles itself, takes `_faq-category` blocks | `ona-faq-lists`, the FAQ half of `ona-expressions` |
+| 6 | `ona-page-media-gallery` | already Horizon-native, styles itself | ad-hoc image grids |
+| 7 | `slideshow` | Horizon's `_slide` carousel | the `slider` blocks in `ona-supported`, `ona-exclusive-access`, `ona-expressions` |
+| 8 | `marquee` | takes `text`, `icon`, `logo`, `_divider`; currently unused | `ona-wholesale-brands` (a logo wall) |
+| 9 | **a page-header section** — *to write* | eyebrow, heading, optional sub-copy, optional visually-hidden variant | `ona-page-title`, `ona-sr-heading` |
 
-Nothing else should be added. A ninth component needs an argument, not a page.
+Nothing else should be added. A tenth component needs an argument, not a page.
 
 ### Why `media-with-content` carries the weight
 
@@ -87,10 +99,19 @@ of them in the theme editor — which is stage 2's own test, and which a ported
 ### The one to write
 
 `sections/page-header.liquid`. Not a port: Horizon has no page-title section,
-and three different legacy ones exist because the old theme needed three. One
-section with an `eyebrow`, a `heading`, optional `subheading`, and a
-`visually_hidden` toggle covers all three, including `ona-sr-heading`'s job of
-giving a page an H1 that does not show.
+and `ona-page-title` and `ona-sr-heading` exist separately only because the old
+theme needed both a visible page title and a visually-hidden H1. One section
+with an `eyebrow`, a `heading`, an optional `subheading` and a `visually_hidden`
+toggle covers both.
+
+It does **not** cover `ona-training-banner`, which looks like a third heading
+section and is not one: it is a full-bleed image hero with a back-link to
+`/pages/learn` and a hand-written `<link rel="preload">` pair that #171, #172
+and #180 spent three rounds getting right. Folding it into a text-only header
+would delete the hero. It maps to `hero`, which carries desktop and mobile
+media as settings and sets `fetchpriority` on the `<img>` itself — the preload
+pair exists to do by hand what Horizon does natively, and converting retires it
+rather than losing it. Same for `ona-inner-banner`, which has the same schema.
 
 ## Page by page
 
@@ -100,7 +121,7 @@ sets it. This is what stage 2 means for each.
 | Page | Sections now | After | The work |
 | --- | --- | --- | --- |
 | `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; testimonials → `press-quotes`; `ona-wholesale-brands` → `marquee`; `ona-faq-lists` → `ona-faq-layout`; `ona-gust-r`'s native `/contact` form stays as is |
-| `/pages/barista-courses` | 10 (all legacy) | ~6 | four `traning-sourcing-v*` → `media-with-content`; `ona-traning-supported` → `slideshow`; banner → page-header |
+| `/pages/barista-courses` | 10 (all legacy) | ~6 | four `traning-sourcing-v*` → `media-with-content`; `ona-traning-supported` → `slideshow`; `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
 | `/pages/about` | 7 (all legacy) | ~5 | media/text variants → `media-with-content`; gallery → `ona-page-media-gallery` |
 | `/pages/learn` | 2 | 2 | `ona-page-title` → page-header; `ona-brewguides-and-training` → `section` + `_product-card`-style tiles |
 | `/pages/faq`, `/pages/subscription-faq` | 2 each | 2 each | `ona-page-title` → page-header. `ona-faq-layout` already Horizon-native — leave it |
@@ -110,6 +131,12 @@ sets it. This is what stage 2 means for each.
 
 The homepage and the PDP are not in this table: both are already Horizon-native
 apart from the eight inline-`<style>` blocks listed above.
+
+Four sections are shared, so converting one page does not retire them:
+`ona-page-title` has to go from faq, faq-subscriptions *and* learn before it can
+be deleted, `ona-sr-heading` from bookings, private-courses and wholesale,
+`ona-faq-lists` from bookings and wholesale. Convert all uses in one PR, or the
+section stays and the page is the only thing that moved.
 
 **`templates/index.json` is at 25 of Shopify's 25 sections.** A 26th makes the
 GitHub integration refuse the whole file rather than drop the extra section —
@@ -143,15 +170,18 @@ component still diverge if each restates its own sizes.
 Each step is shippable and reversible on its own, and none of them needs the
 next one to have happened.
 
-1. **Write `page-header`** and move the three heading sections onto it. Smallest
-   possible proof of the pattern, touches five pages, no layout risk.
+1. **Write `page-header`** and move `ona-page-title` and `ona-sr-heading` onto
+   it. Smallest possible proof of the pattern, touches six pages, no layout
+   risk.
 2. **Wholesale** — the biggest page and the most duplication, so the
    `media-with-content` conversion is worth most there and the rest of the
    mapping is a repeat of it.
 3. **Barista courses**, which is the same five conversions again.
 4. **About**, then **learn**.
-5. **Delete what is then unused** — on current usage that is 9 sections
-   immediately, and around 26 more once 1–4 land.
+5. **Delete each section as its last use goes.** Nothing is unused today — all
+   45 are referenced — so there is no up-front sweep to do. The four shared
+   sections above are the only ones whose deletion needs more than one page
+   converted.
 6. **Tokens**: the 38 `custom` presets and the 19 padding values, once the
    sections they live in have stopped moving. Doing this first means doing it
    twice.

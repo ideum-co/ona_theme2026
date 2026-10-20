@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -19,8 +19,8 @@ const backticked = (text) => [...text.matchAll(/`([^`]+)`/g)].map((match) => mat
 const resolve = (name) =>
   ['sections', 'blocks'].map((dir) => join(root, dir, `${name}.liquid`)).find(existsSync);
 
-test('the kit names eight components', () => {
-  assert.equal(kitRows.length, 8);
+test('the kit names nine components', () => {
+  assert.equal(kitRows.length, 9);
 });
 
 test('every component the kit names exists, except the one it says to write', () => {
@@ -65,6 +65,38 @@ test('the sections the kit calls Horizon-native really do style themselves', () 
       !own.some((block) => /\.(?:medium-)?container\b/.test(block));
     assert.equal(borrowsContainer, false, `${name} takes its page width from the shared legacy sheet`);
   }
+});
+
+/*
+ * The kit's claim that nothing is dead yet is the one a conversion PR will break first, and
+ * it is the claim the first draft got wrong: it said nine sections were unused, when all of
+ * them are referenced. Rule 4 says a section goes in the same PR that removes its last use,
+ * so both directions of this are the rule, not a snapshot.
+ */
+test('every ona-* section is referenced, and every referenced one exists', () => {
+  const stripBanner = (text) => text.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '');
+  const referenced = new Set();
+
+  const templates = join(root, 'templates');
+  for (const file of readdirSync(templates)) {
+    if (!file.endsWith('.json')) continue;
+    const parsed = JSON.parse(stripBanner(readFileSync(join(templates, file), 'utf8')));
+    for (const section of Object.values(parsed.sections ?? {})) {
+      if (section.type?.startsWith('ona-')) referenced.add(section.type);
+    }
+  }
+
+  const onDisk = new Set(
+    readdirSync(join(root, 'sections'))
+      .filter((file) => file.startsWith('ona-') && file.endsWith('.liquid'))
+      .map((file) => file.slice(0, -'.liquid'.length))
+  );
+
+  const orphaned = [...referenced].filter((type) => !onDisk.has(type)).sort();
+  assert.deepEqual(orphaned, [], 'a template references an ona-* section that does not exist');
+
+  const unused = [...onDisk].filter((type) => !referenced.has(type)).sort();
+  assert.deepEqual(unused, [], 'an ona-* section has no remaining use and should go in the PR that removed it');
 });
 
 test('stage 2 points at the kit', () => {

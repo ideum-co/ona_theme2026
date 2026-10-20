@@ -109,10 +109,10 @@ editor afterwards; a ported `ona-*` section usually fails that, a Horizon
 `section`/`group`/`text` tree passes.
 
 **Which components, and what each legacy section maps onto, is
-[component-kit.md](component-kit.md).** Short version: all 35 used `ona-*`
-sections are used exactly once each, ten of them share one schema, and the
-whole set collapses to eight components — seven of which Horizon already
-ships.
+[component-kit.md](component-kit.md).** Short version: the theme ships 45
+`ona-*` sections, every one of them is still referenced by a template, ten of
+them share one byte-for-byte identical schema, and the whole set collapses to
+nine components — eight of which Horizon already ships.
 
 Precedent: `sections/ona-faq-layout.liquid` and
 `sections/ona-page-media-gallery.liquid` are Horizon-native and style themselves,
