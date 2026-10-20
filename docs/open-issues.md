@@ -8,6 +8,23 @@ been acted on. Started 2026-10-20.
 
 ## Storefront data
 
+ONA's actual sourcing footprint, from Cropster green-lot records
+(`gold.dim_green_lot.countries_of_origin_json`), for reference when judging any
+origin claim below:
+
+| Country | Green lots |
+| --- | --- |
+| Colombia | 6 |
+| Honduras, Panama, Kenya | 3 each |
+| Rwanda, El Salvador, Ethiopia | 2 each |
+| Brazil, Peru, Bolivia | 1 each |
+
+South America (Colombia, Brazil, Peru, Bolivia) is nine lots — yet **not one
+single-origin coffee on the storefront is correctly filed under South America**.
+Every `South America` value on a single origin is on a coffee from somewhere
+else. That asymmetry is what first suggested these are data-entry errors rather
+than an alternative taxonomy.
+
 ### 1. Fourteen coffees have the wrong origin, and one cannot be right
 
 `filters.origin` drives the storefront origin filter. Every coffee states its
@@ -23,31 +40,87 @@ country in its own title, so these are checkable, and fourteen contradict it.
 | Yula Regional Lot | Guatemala | South America | Central America |
 | Iris Estate (drip bags) | Panama | South America | Central America |
 | Irmãs Pereira Lot 153 (drip) | Brazil | Central America | South America |
-| Instant Coffee – Maple | blend | East Africa | Asia + C. America + S. America |
-| Instant Coffee – Aspen | blend | East Africa | C. America + S. America |
+| Instant Coffee – Maple | blend | East Africa | South America + East Africa (see 2b) |
+| Instant Coffee – Aspen | blend | East Africa | East Africa + Central America + Asia Pacific (see 2b) |
 | Regional Aurea | **Papua New Guinea** | East Africa | **no valid value exists** |
 
 Plus three Unwind products — see issue 2.
 
+The two Instant rows above are **derived**, not observed: an instant coffee has
+no country of its own, so its origins are whichever its parent blend currently
+has. They therefore follow issue 2b's six-month window and change with it. An
+earlier revision of this file gave them values taken from unfiltered roast
+history, which contradicted 2b — if 2b is re-run, these two rows move with it.
+
 Missing entirely: Guji Yabitu Koba G1 (Ethiopia), Raspberry Candy Filter,
 Instant Coffee – Raspberry Candy, Milk-Blend Bundle.
 
-**The vocabulary needs extending.** It is four values — Central America, South
-America, East Africa, Asia. Papua New Guinea cannot be filed correctly in any of
-them. Adding **Oceania** fixes it and would also cover Timor and Indonesia if
-`Asia` is ever split.
+**The vocabulary needs extending — researched 2026-10-20.** It is four values:
+Central America, South America, East Africa, Asia.
 
-### 2. Unwind is filed as Central America, but its own copy says Colombia
+Papua New Guinea is not an edge case. ONA's own roasting records carry
+`80kg PNG Kaw Kaw W` (558 roasts), `120kg PNG Kaw Kaw W` (308) and
+`ASPEN - 120kg PNG Arokora W` (153) — over a thousand roasts across PNG lots.
+It is a staple origin that the storefront cannot describe.
 
-Unwind's description reads *"a regional blend from Huila, Colombia"*, and
-Colombia is South America. The same applies to Instant Coffee – Unwind and
-Filter Drip Bags – Unwind, both currently East Africa.
+`Asia` is not the answer, and is itself suspect. Exactly one product uses it —
+Maple — and Maple's roast records are Ethiopian, Colombian, Brazilian and
+Honduran, with no Asian component at all. Aspen *does* contain PNG and is not
+tagged `Asia`. So `Asia` is unsupported by any current coffee.
 
-**Held deliberately.** Correcting it is only right if ONA's taxonomy treats
-Colombia as South America. If the business groups Colombian coffees with Central
-America on purpose, the parent is right and the two derivatives just need to
-match it. Needs one sentence from someone who knows the sourcing, not a guess —
-this is a flagship decaf.
+**Recommendation: rename `Asia` to `Asia Pacific`.** It matches how the trade
+groups PNG, gives it a home without adding a single-product facet, and the
+rename costs nothing because the only product using `Asia` should not be. A
+separate `Oceania` value would mean two sparse facets instead of one real one.
+
+### 2. Unwind is mis-filed — answered, Colombia is South America
+
+Researched 2026-10-20; no longer an open question.
+
+Two independent confirmations that ONA treats Colombia as South America:
+
+- **Colombia Monteverde, Dark Blue Honey** carries tag `Origin.South America`
+  *and* `filters.origin: ["South America"]`. The two agree, which they rarely do.
+- **Bruma, Colombia, Washed** carries the correct tag `Origin.South America`
+  while its metafield says `East Africa` — so even where the metafield is
+  corrupt, the tag records the same convention.
+
+And Unwind is confirmed Colombian from ONA's own roasting records, not just its
+marketing copy: the roast is named **`UNWIND - COL Decaf 20kg`**.
+
+So Unwind (`Central America`) and its two derivatives (`East Africa`) are all
+wrong and should be `South America`. Nothing here needs a business decision.
+
+### 2b. The blends' origins are wrong too, and only Cropster shows it
+
+A single origin can be checked against its own title. A blend cannot — its
+components are only in the roasting records.
+
+**Method.** `gold.fact_roast`, restricted to roasts since **2026-04-20** (the
+last six months). The window matters: these recipes change seasonally, so
+all-time history describes what a blend *has* contained, not what it contains.
+Reading it unfiltered puts Brazil in Aspen and Colombia and Honduras in Maple,
+none of which they have been roasted with this season.
+
+| Blend | Roasts in window | Countries now | Should be | Storefront says |
+| --- | --- | --- | --- | --- |
+| **Aspen** | 1,202 | ETH, NCA, HON, **PNG** | East Africa, Central America, Asia Pacific | Central America, South America |
+| **Maple** | 1,653 | **BRA**, ETH | South America, East Africa | **Asia**, Central America, South America |
+| **Gateway** | 1,211 | ETH, **COL**, KEN | East Africa, South America | Central America, East Africa |
+| **Raspberry Candy** | 212 | ETH | East Africa | East Africa ✅ |
+| **Unwind** | 405 | **COL** | South America | Central America |
+
+So Aspen is missing East Africa — its largest component — and Papua New Guinea,
+while still claiming a South America it no longer contains. Maple claims `Asia`
+and `Central America` with nothing behind either, and omits East Africa.
+Gateway claims Central America and omits South America. Raspberry Candy is the
+only one correct.
+
+**This is a moving target.** The window above is a snapshot; a recipe change
+next season invalidates it. Hand-correcting these in Shopify will drift again,
+which argues for deriving blend origins from the roast records rather than
+maintaining them by hand. Whoever picks this up should re-run the query rather
+than trust the table.
 
 ### 3. Two taste taxonomies that disagree with each other
 
