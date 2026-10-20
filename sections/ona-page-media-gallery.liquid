@@ -58,10 +58,20 @@
             assign w = 0
           endif
         -%}
+        {%- comment -%}
+          alt="" on purpose. The metafield carries URLs and nothing else, so
+          there is no per-image description to use; alt="{{ page.title }}"
+          would announce "Women In Coffee" five times in a row and tell a
+          screen-reader user nothing about any of them. Empty alt marks them
+          decorative and lets a screen reader skip to the prose beside them,
+          which is where the campaign is actually described. The section
+          serving these on theme 160815546559 does the same. Codex, #210.
+          If per-image text ever exists, this is where it belongs.
+        {%- endcomment -%}
         <li class="ona-page-gallery__item">
           <img
             src="{{ src }}"
-            alt="{{ page.title | escape }}"
+            alt=""
             loading="lazy"
             decoding="async"
             {% if w > 0 %}width="{{ w }}" height="{{ h }}"{% endif %}

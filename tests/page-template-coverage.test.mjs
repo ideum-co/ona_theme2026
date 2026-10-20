@@ -96,3 +96,19 @@ test('the gallery reads the deprecated metafield the way Liquid actually exposes
   // Horizon has two breakpoints; 575.98px is the bootstrap one the legacy sections use.
   assert.doesNotMatch(section, /575\.98|991\.98|767\.98/, 'use Horizon\'s 749/989 breakpoints');
 });
+
+test('the gallery images are marked decorative rather than repeating the page title', () => {
+  /*
+   * The metafield carries URLs and nothing else, so there is no per-image
+   * description. An earlier draft used alt="{{ page.title }}", which on
+   * /pages/womenincoffee announces "Women In Coffee" five times and says
+   * nothing about any image. Empty alt marks them decorative so a screen
+   * reader skips to the prose that actually describes the campaign -- which
+   * is also what the section serving these today does. Codex, #210.
+   */
+  const section = read('sections/ona-page-media-gallery.liquid');
+  const img = section.match(/<img\b[\s\S]*?>/);
+  assert.ok(img, 'the gallery must render an image');
+  assert.match(img[0], /\balt=""/, 'gallery images are decorative');
+  assert.doesNotMatch(img[0], /alt="\{\{\s*page\.title/, 'the page title is not alternative text for five different photographs');
+});
