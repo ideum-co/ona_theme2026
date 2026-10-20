@@ -423,6 +423,44 @@
       height: 100%;
     }
 
+    /*
+     * Keep Add to cart in view while the details column scrolls.
+     *
+     * The PDP is a deliberate one-screen layout: .product-information__viewport
+     * is `height: 100svh; overflow: hidden`, and the details column scrolls
+     * independently so the whole thing fits. That is load-bearing -- removing
+     * the column's overflow does not hand scrolling to the page, it just lets
+     * the viewport clip, which would put Add to cart out of reach entirely.
+     *
+     * But the column's scrollbar is deliberately hidden, so there is no
+     * affordance saying there is more below. Measured on the live theme,
+     * /products/raspberry-candy: the column's content is 985px and Add to cart
+     * sits at 682px inside it. A 1440x900 browser gives the column roughly
+     * 590-620px, so the button fell 60-90px below the fold of a region with no
+     * scrollbar and which the page's own scroll does not move. At 560px, 122px
+     * of it was cut off.
+     *
+     * Pinning the buy buttons to the bottom of the scroller keeps the one-screen
+     * design and the primary action visible at every height. The background
+     * comes from --color-background so it matches the per-product colour the
+     * PDP sets -- measured as #e3649d on Raspberry Candy -- rather than
+     * punching a light box into a coloured column.
+     *
+     * Desktop only: below 750px the column does not scroll, the page does, and
+     * a bottom-pinned bar there would cover content instead of revealing it.
+     */
+    @media screen and (min-width: 750px) {
+      .product-information__grid:not(.product-information--media-none)
+        > .product-details
+        .buy-buttons-block {
+        position: sticky;
+        inset-block-end: 0;
+        z-index: var(--layer-flat, 1);
+        padding-block-start: var(--padding-xs, 0.5rem);
+        background: var(--color-background, Canvas);
+      }
+    }
+
     .product-information__grid:not(.product-information--media-none) > .product-details {
       align-self: stretch;
       min-height: 0;
