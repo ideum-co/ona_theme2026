@@ -66,12 +66,20 @@ this document said they had "no matching rules in `assets/`" — that was wrong
 (Codex, PR #203), and it pointed the fix in a direction that would have
 duplicated or fought the shared sheet.
 
-What is true is that the coverage is **partial**: 95 distinct selectors used by
-these sections have no rule in that stylesheet. The ones that cost the most
-layout are `.slider-block` (27 uses), `.block` (18), `.section-full-large` (16),
-`.match-height` / `.equal-height` (12 / 11) and `.bg-img` (11); the rest are
-mostly animation hooks (`.fadeInUp`, 63 uses) that are inert anyway. So the work
-is to finish the shared sheet selector by selector, not to write forty new ones:
+What is true is that the coverage is **partial**. **85** distinct selectors
+used by these sections have no rule in that stylesheet — recounted against the
+current sheet after #204 and #209 shipped, which took it down from the 95 an
+earlier draft reported by covering `.block`, `.slider-block` and `.bg-img`
+(Codex, #203). Rerun the count rather than trusting this number after the next
+fix lands.
+
+Of the 85, the ones that still cost layout are `.section-full-large`
+(16 uses), `.match-height` / `.equal-height` (12 / 11), `.more-btn` (14) and
+the `.start` / `.medium` / `.end` trio (14 each). The largest by raw count are
+animation hooks — `.fadeInUp` at 63, `.fadeIn` and `.fadeInup` at 16 each — and
+those are inert in this theme, so they need deleting rather than styling. So
+the work is to finish the shared sheet selector by selector, not to write forty
+new ones:
 
 ```
 ona-awards            ona-bookings-top       ona-bread-crumbs
@@ -128,7 +136,8 @@ Two things fall out:
    6,491px -> 230px. The measurements above this line describe the pre-fix tree
    and are kept as the record of what was wrong, not as work to do. **Remeasure
    before picking up item 2.** (Codex, #203.)
-2. **Extend `assets/legacy-page-layout.css` to the 95 uncovered selectors**,
+2. **Extend `assets/legacy-page-layout.css` to the remaining uncovered
+   selectors** (85 at the last count, and recount before starting),
    rebuilt on the theme's own tokens rather than copied from the legacy sheet —
    the legacy CSS depends on a cascade this theme does not have. Extend the
    shared sheet rather than adding scoped `{% stylesheet %}` blocks: the sheet is

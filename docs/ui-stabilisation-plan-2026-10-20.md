@@ -54,8 +54,14 @@ Three things this tells us that a screenshot does not:
 - **`faq_lists` is the opposite problem.** It is *shorter* than live, so
   content is collapsed or missing rather than stretched. Different bug, do not
   lump it in.
-- **The top three account for most of it.** `icon_and_content` and
-  `unique_coffees` alone are 14,846px of the 30,486px excess.
+- **The top two are a bit under half of it.** 14,846px is what
+  `icon_and_content` and `unique_coffees` *measured*, not what they
+  contributed: the excess is each one's height minus live's. That is
+  (6,491 - 396) + (8,355 - 575) = **13,875px of the 30,486px excess, 45.5%**.
+  An earlier draft reported the raw sum and called it "most of it" — wrong
+  arithmetic in the direction that flattered the prioritisation, which is the
+  worst direction for it to be wrong in. The ordering still holds; the claim
+  behind it was overstated. (Codex, #203.)
 - **The shared fault behind the `sourcing` variants is the row layout, not
   `.bg-img`.** An earlier draft said otherwise; Codex checked the template and
   it was wrong (#203). `wholesale_sourcing_v2` through `_v6` carry **0 blocks**
