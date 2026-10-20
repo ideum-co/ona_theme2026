@@ -40,11 +40,17 @@ country in its own title, so these are checkable, and fourteen contradict it.
 | Yula Regional Lot | Guatemala | South America | Central America |
 | Iris Estate (drip bags) | Panama | South America | Central America |
 | Irmãs Pereira Lot 153 (drip) | Brazil | Central America | South America |
-| Instant Coffee – Maple | blend | East Africa | Asia + C. America + S. America |
-| Instant Coffee – Aspen | blend | East Africa | C. America + S. America |
+| Instant Coffee – Maple | blend | East Africa | South America + East Africa (see 2b) |
+| Instant Coffee – Aspen | blend | East Africa | East Africa + Central America + Asia Pacific (see 2b) |
 | Regional Aurea | **Papua New Guinea** | East Africa | **no valid value exists** |
 
 Plus three Unwind products — see issue 2.
+
+The two Instant rows above are **derived**, not observed: an instant coffee has
+no country of its own, so its origins are whichever its parent blend currently
+has. They therefore follow issue 2b's six-month window and change with it. An
+earlier revision of this file gave them values taken from unfiltered roast
+history, which contradicted 2b — if 2b is re-run, these two rows move with it.
 
 Missing entirely: Guji Yabitu Koba G1 (Ethiopia), Raspberry Candy Filter,
 Instant Coffee – Raspberry Candy, Milk-Blend Bundle.
