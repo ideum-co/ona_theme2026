@@ -48,3 +48,69 @@ test('the legacy icon row and brand wall constrain their images', () => {
     'the icon row keeps production\'s 88px height',
   );
 });
+
+test('the two-column rows match the single-element .content.container markup', () => {
+  /*
+   * The ported sections emit ONE element carrying both classes --
+   * `<div class="content container">` -- not `.container > .content`. An
+   * earlier rule targeted `> .container > .content` and therefore matched
+   * nothing, so every image-and-text row stacked full width: six sections on
+   * /pages/wholesale at 1,941-2,994px against production's 441-566px.
+   *
+   * Reproduced before writing this: deleting the `.content.container`
+   * selector takes the live page from 17,274px back to 27,033px.
+   */
+  const rule = layout.match(
+    /#MainContent :is\([^)]*\.add-image-and-text-slider[^)]*\) > \.content\.container\s*\{([^}]*)\}/,
+  );
+  assert.ok(rule, 'the two-column rule must target `.content.container` as one element');
+  assert.match(rule[1], /display:\s*grid/, 'it must lay the row out, not just set a width');
+  assert.match(rule[1], /grid-template-columns:\s*repeat\(2/, 'production renders these as two columns');
+
+  // A rule that only matched the nested shape would silently do nothing again.
+  assert.doesNotMatch(
+    layout,
+    /> \.container > \.content\.container/,
+    'that selector describes markup this theme does not emit',
+  );
+});
+
+test('the video play overlay is positioned and its icon is capped', () => {
+  /*
+   * `.play-video` wraps a real <img> here (production used a ::before), so
+   * base.css painted a 150px icon at 605px -- 4.0x, the worst upscale left on
+   * /pages/wholesale after #204. Production: absolute, inset 0, centred, icon
+   * capped at 100px.
+   */
+  const overlay = layout.match(/#MainContent \.play-video\s*\{([^}]*)\}/);
+  assert.ok(overlay, '.play-video must be positioned over its media');
+  assert.match(overlay[1], /position:\s*absolute/);
+  assert.match(overlay[1], /inset:\s*0/);
+
+  const icon = layout.match(/#MainContent \.play-video img\s*\{([^}]*)\}/);
+  assert.ok(icon, 'the play icon must be constrained');
+  // width:auto is what beats base.css's img{width:100%}; max-width alone loses.
+  assert.match(icon[1], /width:\s*auto/, 'max-width alone cannot beat img{width:100%}');
+  assert.match(icon[1], /max-width:\s*100px/, "production's icon is 100px");
+
+  // The overlay needs a positioned ancestor or it escapes to the page.
+  assert.match(
+    layout,
+    /#MainContent :has\(> \.play-video\)\s*\{[^}]*position:\s*relative/,
+    'the overlay needs a positioned parent, scoped so it does not reposition every .img',
+  );
+});
+
+test('the round avatars have an intrinsic size', () => {
+  /*
+   * `.bg-img` holds its image as an inline `background-image` and has no
+   * intrinsic size, so with no rule it rendered 411x0 -- invisible. The
+   * section still measured close to production, which is exactly why a
+   * height-only comparison called it a correct "control" section.
+   */
+  const avatar = layout.match(/#MainContent [^{]*\.img > \.bg-img\s*\{([^}]*)\}/);
+  assert.ok(avatar, '.bg-img must be given a size');
+  assert.match(avatar[1], /padding-top:\s*100%/, 'production squares it with padding-top');
+  assert.match(avatar[1], /background-size:\s*cover/);
+  assert.match(avatar[1], /border-radius:\s*50%/, 'production renders these round');
+});
