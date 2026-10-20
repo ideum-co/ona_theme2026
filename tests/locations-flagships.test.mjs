@@ -22,9 +22,15 @@ test('renders only store_location records related to the flagship store_tag', ()
   assert.match(section, /for location in all_locations/);
   assert.match(section, /for tag in location\.tags\.value/);
   assert.match(section, /tag\.slug\.value\s*==\s*'flagship'/);
+  /*
+   * The class attribute now carries an `is-active` modifier for the venue
+   * tablist, so this matches the class name rather than the whole attribute.
+   * The point of the assertion is unchanged: the <article> has to sit inside
+   * the is_flagship branch.
+   */
   assert.match(
     section,
-    /if is_flagship[\s\S]*?<article[^>]*class="locations-flagships__card"[\s\S]*?endif/,
+    /if is_flagship[\s\S]*?<article[^>]*class="locations-flagships__card[\s\S]*?endif/,
     'a location card must only render after the flagship relation is confirmed',
   );
 });
