@@ -147,3 +147,45 @@
 @media(max-width:749px){
  #MainContent .col-4-icons .content { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
+
+/*
+ * The two-column rows, the video play overlay, and the round avatars.
+ *
+ * `> .container > .content` above never matched these sections: the markup is
+ * a SINGLE element, `<div class="content container">`, carrying both classes.
+ * So every `add-image-and-text{,-slider}` row stacked its image above its text
+ * at full width. Measured on the live page 2026-10-20: six such sections on
+ * /pages/wholesale ran 1,941-2,994px each where production renders 441-566px,
+ * with the image painted 1280x1577 instead of 784x442.
+ *
+ * Production's values, read off theme 160815546559: `.content` is a two-column
+ * flex, `align-items:center`, image ~50% and text ~41% of a 1569px row; the
+ * play overlay is `position:absolute; inset:0; display:flex` centring an icon
+ * capped at 100px; and the avatar is `padding-top:100%` with `border-radius:50%`
+ * over `background-size:cover`, rendering 125x125.
+ */
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.two-columns-title-intro,.training-bookings) > .content.container { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(24px,5vw,70px); align-items:center; }
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider) > .content.container > * { min-width:0; }
+
+/*
+ * The play button is a real <img> in the ported markup, not production's
+ * ::before, so base.css's img{width:100%} painted a 150px source at 605px
+ * (4.0x) and pushed it out of the frame. `:has(> .play-video)` gives the
+ * overlay a positioned ancestor without blanket-positioning every `.img`.
+ */
+#MainContent :has(> .play-video) { position:relative; }
+#MainContent .play-video { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+#MainContent .play-video img { width:auto; height:auto; max-width:100px; }
+
+/*
+ * `.bg-img` carries its image as an inline background and has no intrinsic
+ * size, so with no rule it collapsed to height 0 -- the cafe testimonial's
+ * logos were invisible while the section still measured close to production,
+ * which is why a height comparison alone called it correct.
+ */
+#MainContent .add-image-and-text-slider .slider-block .block .img:has(> .bg-img) { inline-size:min(125px,100%); margin-inline:auto; }
+#MainContent .add-image-and-text-slider .slider-block .block .img > .bg-img { padding-top:100%; background-repeat:no-repeat; background-position:center; background-size:cover; border-radius:50%; overflow:hidden; }
+
+@media(max-width:749px){
+ #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.two-columns-title-intro,.training-bookings) > .content.container { grid-template-columns:minmax(0,1fr); gap:28px; }
+}
