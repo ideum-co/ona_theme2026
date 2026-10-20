@@ -140,4 +140,23 @@ test('the page body is not set to the tightest measure', () => {
     'narrow',
     'the page body carries the contact form, not just prose',
   );
+
+  /*
+   * ...and only that block. The detail labels and values are short strings
+   * sitting in a four-column row that already stacks below 750px, so they have
+   * no reason to change, and narrowing them caps the address at 22.75em and
+   * wraps it for nothing.
+   *
+   * This exists because a global `sed` meant as a one-line probe rewrote all
+   * nine sibling blocks and only one was restored. Codex caught it on #229.
+   */
+  const narrowed = [];
+  const walk = (node, path) => {
+    for (const [key, b] of Object.entries(node.blocks ?? {})) {
+      if (b.settings?.max_width === 'narrow') narrowed.push([...path, key].join('/'));
+      walk(b, [...path, key]);
+    }
+  };
+  for (const [key, section] of Object.entries(template.sections)) walk(section, [key]);
+  assert.deepEqual(narrowed, [], `only the page body's measure was meant to change: ${narrowed.join(', ')}`);
 });
