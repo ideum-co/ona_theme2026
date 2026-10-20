@@ -108,7 +108,7 @@ extraction.
 | `icon-benefit-flexible-delivery.svg` | 180x98 |
 | `press-broadsheet.svg` | 357x37 |
 | `press-espresso-room.svg` | 242x55 |
-| `press-logo-3.svg` | 166x59 |
+| `press-logo-3.svg` → shipped as **`press-urban-list.svg`** | 166x59 |
 | `icons-social.svg` | 131x24 |
 | `icons-header-utilities.svg` | 91x24 |
 
@@ -119,7 +119,12 @@ they still draw.
 ## Where each kind belongs
 
 - **SVG -> the theme's `assets/`**, where Liquid can inline it with
-  `{{ 'name.svg' | inline_asset_content }}`. That is how the theme already ships
+  `{{ 'name.svg' | inline_asset_content }}`. **Ten of the twelve** — the ones
+  #202 shipped. `icons-social.svg` and `icons-header-utilities.svg` are
+  **source-only**: the theme already has that artwork
+  (`blocks/_footer-social-icons.liquid` and the `icon-header-*.svg` set), so do
+  not add them or you duplicate it. Note also that `press-logo-3.svg` shipped
+  under its real name, `press-urban-list.svg`; inline that. (Codex, #203.) That is how the theme already ships
   `icon-caret.svg` and `icon-plus.svg`: no extra request, and the artwork inherits
   CSS colour. Uploading SVG to Content > Files is restricted on some stores —
   worth confirming before relying on it, whereas `assets/` always works.

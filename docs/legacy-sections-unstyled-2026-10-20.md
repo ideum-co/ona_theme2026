@@ -48,9 +48,13 @@ Two things compound:
 
 1. `img_url: '400x'` asks for 400px wide. Shopify **does not upscale**, so a
    100px source comes back at 100px.
-2. Nothing constrains the element. The markup targets `.col-4-icons`, `.icon-c`
-   and `.icon-box-anchor` — and **none of those selectors exist anywhere in this
-   theme**. With no width rule, the `<img>` fills its container: 1016px.
+2. Nothing constrained the element. The markup targets `.col-4-icons`,
+   `.icon-c` and `.icon-box-anchor`, and at the time of this measurement none
+   of those selectors existed anywhere in the theme, so with no width rule the
+   `<img>` filled its container: 1016px. **Past tense since #204** —
+   `assets/legacy-page-layout.css` now defines the `.col-4-icons` grid and caps
+   the icon at 120x88. This paragraph is the diagnosis of what was wrong, not a
+   description of the current checkout. (Codex, #203.)
 
 ## 3. It is not one section
 

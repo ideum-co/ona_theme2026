@@ -53,10 +53,17 @@ Three things this tells us that a screenshot does not:
   lump it in.
 - **The top three account for most of it.** `icon_and_content` and
   `unique_coffees` alone are 14,846px of the 30,486px excess.
-- **`.bg-img` is the shared fault behind the `sourcing` variants.** Eleven
-  legacy sections paint media onto that unstyled class — `ona-sourcing`,
-  `ona-cafe-testimonial` and all nine `*-sourcing-v*` variants. One rule fixes
-  the group.
+- **The shared fault behind the `sourcing` variants is the row layout, not
+  `.bg-img`.** An earlier draft said otherwise; Codex checked the template and
+  it was wrong (#203). `wholesale_sourcing_v2` through `_v6` carry **0 blocks**
+  in `templates/page.wholesale.json`, and each variant's only `.bg-img` sits
+  inside the block loop — so none of them renders one, and a `.bg-img` rule
+  cannot move their height at all. What they do render is one always-present
+  image in a `<div class="content container">` row, and the two-column rule
+  never matched that single-element markup, so image and text stacked full
+  width. Fixed in #209: those six sections went 1,941-2,994px to roughly half.
+  `.bg-img` still matters, but only for `ona-sourcing` (4 blocks) and
+  `ona-cafe-testimonial`, where it rendered 411x0 — invisible.
 
 ---
 
