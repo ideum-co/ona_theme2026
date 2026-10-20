@@ -10,6 +10,22 @@
  * none of #204's rules. Merged is not deployed -- check the file's updatedAt on
  * the theme, not just the merge.
  */
+/*
+ * Type comes from the theme's scale, not from this sheet.
+ *
+ * These sections were ported with their own invented clamps -- maxima of 80px,
+ * 76px, 60px, 58px, 43px, 36px and 18px, none of which exist in the theme.
+ * Measured on /pages/locations: a section heading rendered 72px against a page
+ * <h1> of 48px, so the hierarchy was inverted, and every legacy page sat at a
+ * different scale from the homepage.
+ *
+ * Horizon generates --font-h1--size .. --font-h6--size and
+ * --font-paragraph--size from the theme's typography settings, so referencing
+ * them means these pages follow the same scale as everything else and move with
+ * it. The fallbacks are each token's own maximum: if a variable were missing the
+ * declaration would otherwise be dropped and the heading would inherit body
+ * size.
+ */
 /* Legacy ONA page templates: responsive layout while retaining original editorial blocks.
    Loaded only for the six migrated page suffixes. */
 /*
@@ -44,12 +60,12 @@
 #MainContent :is(.medium-container,.container) { width:min(100% - 2 * var(--legacy-page-gutter), var(--legacy-page-measure)); margin-inline:auto; }
 #MainContent :is(.about,.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) { position:relative; padding-block:var(--legacy-page-gap); }
 #MainContent :is(.about,.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) :is(h1,h2,h3,p) { overflow-wrap:break-word; }
-#MainContent :is(.about,.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) h2 { font-family:var(--font-heading--family,serif); font-size:clamp(30px,4.5vw,60px); line-height:1.1; margin:0 0 20px; }
-#MainContent :is(.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) h3 { font-size:clamp(20px,2.2vw,32px); line-height:1.35; margin:0 0 16px; }
-#MainContent :is(.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) p { font-size:clamp(15px,1.1vw,18px); line-height:1.65; margin:0 0 18px; }
+#MainContent :is(.about,.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) h2 { font-family:var(--font-heading--family,serif); font-size:var(--font-h2--size, 3rem); line-height:1.1; margin:0 0 20px; }
+#MainContent :is(.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) h3 { font-size:var(--font-h3--size, 2rem); line-height:1.35; margin:0 0 16px; }
+#MainContent :is(.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) p { font-size:var(--font-paragraph--size, 0.875rem); line-height:1.65; margin:0 0 18px; }
 #MainContent :is(.our-philoshophy,.awards,.careers,.sustainability-top) :is(.content,.medium-container) { min-width:0; }
 #MainContent .about .medium-container { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.5fr); align-items:start; gap:clamp(24px,4vw,70px); }
-#MainContent .about .right-box h3 { font-family:var(--font-heading--family,serif); font-weight:400; font-size:clamp(24px,3vw,43px); line-height:1.3; margin:0; }
+#MainContent .about .right-box h3 { font-family:var(--font-heading--family,serif); font-weight:400; font-size:var(--font-h3--size, 2rem); line-height:1.3; margin:0; }
 #MainContent .about .animated-svg { position:absolute; z-index:0; width:min(50vw,450px); max-height:380px; inset-inline-start:5%; inset-block-start:0; pointer-events:none; opacity:.6; }
 #MainContent .about .medium-container { position:relative; z-index:1; }
 #MainContent .our-philoshophy .content,
@@ -68,7 +84,7 @@
 #MainContent .banner-top { position:relative; min-height:clamp(240px,35vw,520px); display:flex; align-items:center; isolation:isolate; padding-block:50px; overflow:hidden; }
 #MainContent .banner-top .img-bg { position:absolute; inset:0; background-position:center; background-size:cover; z-index:-1; }
 #MainContent .banner-top .medium-container { position:relative; }
-#MainContent .banner-top h1 { font-size:clamp(34px,5.5vw,76px); line-height:1.1; max-width:900px; margin:0; }
+#MainContent .banner-top h1 { font-size:var(--font-h1--size, 3.5rem); line-height:1.1; max-width:900px; margin:0; }
 #MainContent .animated-svg { max-width:100%; height:auto; }
 #MainContent img { max-width:100%; }
 @media(max-width:749px){
@@ -81,7 +97,7 @@
  #MainContent .careers .content,
  #MainContent .sustainability-list .list { grid-template-columns:minmax(0,1fr); gap:24px; }
  #MainContent .about .animated-svg { width:min(80vw,320px); opacity:.45; }
- #MainContent .about .right-box h3 { font-size:clamp(25px,6.5vw,36px); line-height:1.27; }
+ #MainContent .about .right-box h3 { line-height:1.27; }
  #MainContent .banner-top { min-height:250px; }
  #MainContent .sustainability-list .img-bg { min-height:220px; }
 }
@@ -93,14 +109,14 @@
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.two-columns-title-intro,.training-bookings) > .container > .content,
 #MainContent .training > .container { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(24px,5vw,70px); align-items:center; }
 #MainContent .training-bookings .content { align-items:start; }
-#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings,.learn-list) h2 { font-size:clamp(30px,4vw,58px); line-height:1.14; margin:0 0 20px; }
-#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings) h3 { font-size:clamp(20px,2.3vw,32px); line-height:1.4; margin:0 0 18px; }
-#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings) p { font-size:clamp(15px,1.2vw,18px); line-height:1.65; }
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings,.learn-list) h2 { font-size:var(--font-h2--size, 3rem); line-height:1.14; margin:0 0 20px; }
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings) h3 { font-size:var(--font-h3--size, 2rem); line-height:1.4; margin:0 0 18px; }
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings) p { font-size:var(--font-paragraph--size, 0.875rem); line-height:1.65; }
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.training-bookings) :is(img,video,iframe) { max-width:100%; }
 #MainContent .banner-detail-top { position:relative; isolation:isolate; display:flex; align-items:center; min-height:clamp(260px,38vw,540px); }
 #MainContent .banner-detail-top .img-bg { position:absolute; inset:0; z-index:-1; background-size:cover; background-position:center; }
 #MainContent .banner-detail-top .mobile-show { display:none; }
-#MainContent .banner-detail-top h1 { font-size:clamp(36px,6vw,80px); line-height:1.1; }
+#MainContent .banner-detail-top h1 { font-size:var(--font-h1--size, 3.5rem); line-height:1.1; }
 #MainContent .learn-list > .container > .content { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:32px; }
 #MainContent .learn-list .img-bg { background-size:cover; background-position:center; aspect-ratio:4/3; }
 #MainContent .learn-list .a-box { padding-block:20px; }
