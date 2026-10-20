@@ -39,9 +39,24 @@
     {% if request.page_type == 'index' %}
       {{ 'home-mobile-overflow.css' | asset_url | stylesheet_tag }}
     {% endif %}
-    {%- comment -%}Only migrated legacy page templates use these scoped layout rules.{%- endcomment -%}
+    {%- comment -%}
+      Only migrated legacy page templates use these scoped layout rules.
+
+      This list is load-bearing and hand-written, so it is cross-checked by
+      tests/legacy-stylesheet-gate.test.mjs: that test derives which page
+      suffixes render a legacy section whose page-width wrapper only this sheet
+      styles, and fails if the two disagree in either direction. `faq` and
+      `faq-subscriptions` were missing until 2026-10-20 -- both render
+      ona-page-title's `<div class="container">`, and the only `.container`
+      rule in the theme is in this sheet, so their <h1> was laid out with no
+      rule at all: measured live at left=0, width=1396 on a 1405px viewport
+      against left=40, width=1316 for the Horizon section just below it.
+
+      Add a suffix here when you add a legacy section to its template; do not
+      silently widen the test instead.
+    {%- endcomment -%}
     {% if template.name == 'page' %}
-      {% assign legacy_page_suffixes = 'about,wholesale,training,bookings,learn,private-courses-and-experiences' | split: ',' %}
+      {% assign legacy_page_suffixes = 'about,wholesale,training,bookings,learn,private-courses-and-experiences,faq,faq-subscriptions' | split: ',' %}
       {% if legacy_page_suffixes contains template.suffix %}
         {{ 'legacy-page-layout.css' | asset_url | stylesheet_tag }}
       {% endif %}
