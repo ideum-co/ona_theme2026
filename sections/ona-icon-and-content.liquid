@@ -26,38 +26,51 @@
 </section>
 
 {% stylesheet %}
-  /* These items are anchor links that jump to sections further down, but they
-     read as plain text. Give them an obvious link affordance -- underline, a
-     hover state and a pointer -- so people know they can act on them. Scoped to
-     this section (same #MainContent prefix as the legacy layout it sits on). */
+  /* These items are anchor links that jump to sections further down but read as
+     plain text. Lay them out as a nav of equal-height outlined buttons so they
+     clearly invite a click and sit in a tidy grid. Scoped to this section (same
+     #MainContent prefix as the legacy layout it sits on). */
+  #MainContent .col-4-icons { padding-block: var(--legacy-page-gap, 64px); }
+
+  #MainContent .col-4-icons .content {
+    align-items: stretch;
+    gap: clamp(14px, 1.5vw, 24px);
+  }
+
+  #MainContent .col-4-icons .content .block { display: flex; }
+
   #MainContent .col-4-icons .icon-box-anchor {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 14px;
+    justify-content: center;
+    gap: 12px;
+    padding: clamp(18px, 2vw, 28px) 18px;
+    border: 1px solid rgb(var(--color-foreground-rgb, 71 10 18) / 0.35);
     color: var(--color-foreground, #470a12);
+    text-align: center;
     text-decoration: none;
     cursor: pointer;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
   }
 
-  #MainContent .col-4-icons .icon-box-anchor .text p {
-    margin: 0;
-    text-decoration: underline;
-    text-underline-offset: 5px;
-    text-decoration-thickness: 1px;
-    text-decoration-color: rgb(var(--color-foreground-rgb, 71 10 18) / 0.45);
-    transition: text-decoration-color .15s ease, color .15s ease;
-  }
+  #MainContent .col-4-icons .icon-box-anchor .text p { margin: 0; line-height: 1.4; }
 
-  #MainContent .col-4-icons .icon-box-anchor:hover .text p,
-  #MainContent .col-4-icons .icon-box-anchor:focus-visible .text p {
-    text-decoration-color: currentColor;
+  #MainContent .col-4-icons .icon-box-anchor:hover,
+  #MainContent .col-4-icons .icon-box-anchor:focus-visible {
+    background-color: var(--color-primary-button-background, #470a12);
+    color: var(--color-primary-button-text, #f4f3e9);
+    border-color: transparent;
   }
 
   #MainContent .col-4-icons .icon-box-anchor:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 4px;
+    outline: 2px solid var(--color-primary-button-background, #470a12);
+    outline-offset: 3px;
   }
+
+  #MainContent .col-4-icons .icon-c { block-size: auto; }
+  #MainContent .col-4-icons .icon-c img { max-height: 48px; }
 {% endstylesheet %}
 
 {% schema %}

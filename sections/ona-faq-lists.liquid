@@ -59,6 +59,15 @@
     text-align: center;
   }
 
+  /* On a page with no FAQ rows (e.g. /pages/wholesale), this section is just the
+     "Need help?" heading and the contact line, so centre the whole thing as one
+     call-out. Pages that do have questions keep their left-aligned title. */
+  #MainContent .add-faqs-section:not(:has(.faqs-toggle)) .title { text-align: center; }
+  #MainContent .add-faqs-section:not(:has(.faqs-toggle)) .end-text {
+    margin-block-start: clamp(16px, 2vw, 28px);
+    padding-block-start: 0;
+  }
+
   #MainContent .add-faqs-section .end-text > :first-child { margin-block-start: 0; }
   #MainContent .add-faqs-section .end-text > :last-child { margin-block-end: 0; }
 
