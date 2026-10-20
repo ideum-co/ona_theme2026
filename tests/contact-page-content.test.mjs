@@ -117,3 +117,46 @@ test('the contact page offers one form, not two', () => {
   const forms = types.filter((t) => /contact-form|contact_form/.test(t));
   assert.deepEqual(forms, [], `the page body already carries the Globo form; the template must not add another: ${forms.join(', ')}`);
 });
+
+test('the page body is not set to the tightest measure', () => {
+  /*
+   * `main` renders page.content, and this page's content is not only prose --
+   * it carries the Globo form embed, 13 fields including the enquiry-type
+   * router. The block was set to `narrow`, the tightest of the three options
+   * (narrow / normal / none) and tighter than blocks/text.liquid's own default
+   * of `normal`. Measured live, the form rendered 319px wide.
+   *
+   * `normal` keeps the prose above it at a readable measure while giving the
+   * form room. This asserts only that the tightest option is not used, so the
+   * choice between `normal` and `none` stays open.
+   */
+  const raw = read('templates/page.contact.json').replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '');
+  const template = JSON.parse(raw);
+  const body = template.sections.main?.blocks?.content?.settings;
+
+  assert.ok(body, 'the page body block is gone; page.content would not render');
+  assert.notEqual(
+    body.max_width,
+    'narrow',
+    'the page body carries the contact form, not just prose',
+  );
+
+  /*
+   * ...and only that block. The detail labels and values are short strings
+   * sitting in a four-column row that already stacks below 750px, so they have
+   * no reason to change, and narrowing them caps the address at 22.75em and
+   * wraps it for nothing.
+   *
+   * This exists because a global `sed` meant as a one-line probe rewrote all
+   * nine sibling blocks and only one was restored. Codex caught it on #229.
+   */
+  const narrowed = [];
+  const walk = (node, path) => {
+    for (const [key, b] of Object.entries(node.blocks ?? {})) {
+      if (b.settings?.max_width === 'narrow') narrowed.push([...path, key].join('/'));
+      walk(b, [...path, key]);
+    }
+  };
+  for (const [key, section] of Object.entries(template.sections)) walk(section, [key]);
+  assert.deepEqual(narrowed, [], `only the page body's measure was meant to change: ${narrowed.join(', ')}`);
+});
