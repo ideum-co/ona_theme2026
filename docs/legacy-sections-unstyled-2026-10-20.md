@@ -54,8 +54,20 @@ Two things compound:
 
 ## 3. It is not one section
 
-**Twenty-plus legacy `ona-*` sections carry no CSS at all** — no
-`{% stylesheet %}`, no `{% style %}`, and no matching rules in `assets/`:
+**Forty legacy `ona-*` sections carry no scoped CSS of their own** — no
+`{% stylesheet %}` and no `{% style %}`. They are not bare, though: every one of
+them draws on the shared `assets/legacy-page-layout.css`, which
+`layout/theme.liquid` loads for the migrated page suffixes. An earlier draft of
+this document said they had "no matching rules in `assets/`" — that was wrong
+(Codex, PR #203), and it pointed the fix in a direction that would have
+duplicated or fought the shared sheet.
+
+What is true is that the coverage is **partial**: 95 distinct selectors used by
+these sections have no rule in that stylesheet. The ones that cost the most
+layout are `.slider-block` (27 uses), `.block` (18), `.section-full-large` (16),
+`.match-height` / `.equal-height` (12 / 11) and `.bg-img` (11); the rest are
+mostly animation hooks (`.fadeInUp`, 63 uses) that are inert anyway. So the work
+is to finish the shared sheet selector by selector, not to write forty new ones:
 
 ```
 ona-awards            ona-bookings-top       ona-bread-crumbs
@@ -108,11 +120,18 @@ Two things fall out:
 1. **Stop the stretching.** Constrain the icon in
    `ona-icon-and-content.liquid` with a scoped `{% stylesheet %}`, and request a
    width that matches how it is drawn. Smallest change, kills the worst 5.
-2. **Give each legacy section a scoped `{% stylesheet %}`**, section by section,
+2. **Extend `assets/legacy-page-layout.css` to the 95 uncovered selectors**,
    rebuilt on the theme's own tokens rather than copied from the legacy sheet —
-   the legacy CSS depends on a cascade this theme does not have.
+   the legacy CSS depends on a cascade this theme does not have. Extend the
+   shared sheet rather than adding scoped `{% stylesheet %}` blocks: the sheet is
+   already loaded for these page suffixes and already styles the other selectors
+   these same sections use, so a per-section block would fight it.
 3. **Move images onto `image_tag`** so they get `srcset` and intrinsic
-   dimensions. Nothing outside `/blogs` has a single `srcset` today.
+   dimensions. None of the five legacy page templates measured here emits a
+   single `srcset` — they all use raw `<img src="{{ ... | img_url }}">`. This is
+   a property of those templates, not of the theme: `sections/hero.liquid`,
+   `locations-flagships.liquid`, `product-dna.liquid` and the shared image
+   snippets already go through `image_tag`. (Scope corrected after Codex, #203.)
 4. Retire `wowo` / `animate__heartBeat`. The classes are on every one of these
    sections and the library behind them is not in this theme, so they are inert
    markup.

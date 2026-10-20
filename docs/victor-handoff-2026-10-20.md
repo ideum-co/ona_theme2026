@@ -32,10 +32,13 @@ Screens 2 and 3 show a full-width maroon panel: a nav column (Shop, Learn,
 Locations, About, Wholesale, Subscriptions), social icons, and three featured
 product tiles with price — Ugly Sweater, Raspberry Candy, Paragon Filter.
 
-The theme currently opens a **hamburger drawer at every width**, including
-desktop. The markup is already there (`header-megamenu__card-image` elements
-exist in the DOM, correctly `loading="lazy"` while closed), so this may be
-closer than it looks.
+The desktop mega menu is **already built**, and has been since #89 and #97 in
+August: `snippets/header-drawer.liquid` renders `header-megamenu` into the same
+`<details>` as the drawer, and `header-megamenu.liquid` swaps the two at
+`min-width: 750px` — drawer below it, full-width panel above. An earlier draft of
+this handoff said the drawer opened at every width; that was simply wrong, and
+Codex caught it on PR #203. So the question is not whether the panel exists but
+whether its **content** matches screens 2 and 3 — worth a look, not a rebuild.
 
 ## 2. The Coffee Quiz flow has 8 comps, the theme has one modal
 
@@ -76,7 +79,8 @@ cut from 41.2 MB to 4.33 MB. Pick them in the editor. The CDN serves WebP
 automatically — including for the three transparent bag cut-outs, which keep
 their alpha.
 
-**10 vector marks** are in `assets/` (PR #202): logo, wordmark, the New Harvest
+**10 vector marks** arrive in `assets/` with **PR #202** — they are not on
+`main` until that merges, so if the files are not there yet, that is why. Logo, wordmark, the New Harvest
 and Brew Club badges, the three Subscribe & Save benefit icons, and press logos
 for Broadsheet, Espresso Room and Urban List. Inline them with
 `{{ 'name.svg' | inline_asset_content }}` — the eight single-colour ones use
