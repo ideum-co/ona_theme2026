@@ -5,11 +5,22 @@
 {% liquid
   assign block_settings = block.settings
   assign image = closest.article.image
+
+  # The cap below belongs to the shape actually being rendered, not the source
+  # file. A `landscape` or `portrait` ratio crops the image to that box, so a
+  # portrait source still paints a landscape banner and must not be capped --
+  # templates/article.news.json picks `landscape` and the Journal's 'Amazonian
+  # Canephoras' is a 1536x2049 source. Only `adapt` keeps the source's own
+  # shape, so only `adapt` can produce a portrait box.
+  assign renders_portrait = false
+  if block_settings.image_ratio == 'adapt' and image.aspect_ratio and image.aspect_ratio < 1
+    assign renders_portrait = true
+  endif
 %}
 
 {%- if image != blank -%}
   <div
-    class="blog-post-featured-image blog-post-featured-image--{{ block.id }} blog-post-featured-image--height-{{ block_settings.height }}{% if image.aspect_ratio and image.aspect_ratio < 1 %} blog-post-featured-image--portrait{% endif %} spacing-style size-style"
+    class="blog-post-featured-image blog-post-featured-image--{{ block.id }} blog-post-featured-image--height-{{ block_settings.height }}{% if renders_portrait %} blog-post-featured-image--portrait{% endif %} spacing-style size-style"
     style="
       --ratio: {% case block_settings.image_ratio %}
         {% when 'landscape' %}16 / 9

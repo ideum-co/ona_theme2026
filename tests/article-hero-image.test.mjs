@@ -48,6 +48,25 @@ test('a portrait hero is capped so it cannot become a tower', () => {
     /image\.aspect_ratio and image\.aspect_ratio < 1/,
     'the portrait case has to be detected from the image itself',
   );
+
+  /*
+   * ...but only where that shape is what gets painted. `landscape` and
+   * `portrait` crop the source into their own box, so a portrait source under
+   * templates/article.news.json's `landscape` still renders a banner. Capping
+   * on the source alone shrank exactly the image this change set out to leave
+   * alone -- the Journal's 'Amazonian Canephoras', a 1536x2049 source -- to
+   * 420px.
+   */
+  assert.match(
+    block,
+    /block_settings\.image_ratio == 'adapt' and image\.aspect_ratio/,
+    'the cap must be gated on the ratio that is actually rendered',
+  );
+  assert.doesNotMatch(
+    block,
+    /\{% if image\.aspect_ratio and image\.aspect_ratio < 1 %\} blog-post-featured-image--portrait/,
+    'the modifier must not be emitted straight from the source ratio',
+  );
   const rule = block.match(/\.blog-post-featured-image--portrait\s*\{([^}]*)\}/);
   assert.ok(rule, 'a portrait hero needs a width cap');
 
