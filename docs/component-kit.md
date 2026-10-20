@@ -37,8 +37,8 @@ settings — `ona-training-image-text`, `-text-two-images`, `-text-image-bg`,
 all a heading, some copy and a piece of media, four of them with a video variant
 bolted on.
 
-**Forty-five sections collapse to about nine**, and Horizon already ships eight
-of the nine.
+**Forty-five sections collapse to about eight**, and Horizon already ships
+seven of the eight.
 
 One section is mis-named and would be mis-mapped because of it.
 `ona-wholesale-testimonial` reads like a sibling of `ona-cafe-testimonial` and
@@ -46,18 +46,35 @@ is not one: its four blocks are **YouTube episodes** — a thumbnail, a play
 icon, an episode title and an embed URL — while the written café quotes all
 live in `ona-cafe-testimonial`. Only the second is a `press-quotes`.
 
-The first does not map onto anything in the kit, and this is the one place the
-document says so rather than guessing. Beside the carousel it renders a
-persistent panel — an `<h2>`, an `<h3>`, body copy and a hard-coded
-"Get In Touch" link to a Monday form — plus an episode-select dropdown that
-lists every episode title and drives the slider through `data-tag`. Horizon's
-`slideshow` takes only `_slide` blocks and offers arrows and dots; it has no
-side panel and no named-item selector. The videos themselves would survive
-(a `_slide` takes a `video` child block, whose `video_url` accepts YouTube and
-whose `cover_image` is the thumbnail) but the panel and the selector would
-not. **Decide this one before converting the page**, with ONA: keep the
-section, or rebuild the panel as a `media-with-content` wrapper and accept a
-different selector.
+### The dominant shape is a composite, and it has a home
+
+Five sections turn out to be the same thing, and it is not a carousel:
+
+| Section | Persistent panel | Carousel | Other live blocks |
+| --- | --- | --- | --- |
+| `ona-supported` | title + copy | 3 slides | 4 accordion rows |
+| `ona-traning-supported` | title + copy | 1 slide | 4 accordion rows |
+| `ona-exclusive-access` | title + copy | 1 slide (1 disabled) | — |
+| `ona-expressions` | title | 1 slide | 4 FAQ rows |
+| `ona-wholesale-testimonial` | title, subtitle, copy, a Get In Touch link | 4 episodes | an episode selector |
+
+Each renders a titled panel *beside* a slider, and three of them an accordion
+as well. A bare `slideshow` is the wrong target for all five: it takes only
+`_slide` blocks and offers arrows and dots, so the panel would have to go
+inside a slide, where it would repeat or disappear as the slides change.
+
+`sections/carousel.liquid` is the right one, and it is built for exactly this:
+a static `group` header block — which accepts `@theme`, so `text`, `button`
+and `accordion` all go in it — followed by a `_carousel-content` block of
+`_card`s, each of which takes `image`, `video`, `text` or any theme block. The
+panel, the accordion and the slides each land where they already are.
+
+One residual, and it is the only thing in this document still undecided:
+`ona-wholesale-testimonial`'s selector names its episodes ("Ep 2. Café support
+through excellence program"), and `carousel`'s own controls are arrows and
+dots. The videos, the copy and the Get In Touch button all map; the named
+selector does not. **Decide that one with ONA** before converting wholesale —
+accept dots, or keep the selector as a small block of its own.
 
 ### Read the markup, not the schema
 
@@ -102,22 +119,27 @@ sections in `templates/*.json`:
 
 ## The kit
 
-Nine components. Eight are Horizon's own or already Horizon-native here; one
+Eight components. Seven are Horizon's own or already Horizon-native here; one
 has to be written.
 
 | # | Component | What it is | Replaces |
 | --- | --- | --- | --- |
-| 1 | `section` + `group`/`text`/`image`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×78, `group` ×34, `button` ×14, `image` ×11. | anything that is just stacked copy |
+| 1 | `section` + `group`/`text`/`image`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×78, `group` ×34, `button` ×14, `image` ×11. `image` carries a `link`, so a static wall of linked logos is this, not a marquee. | anything that is just stacked copy, and `ona-wholesale-brands` |
 | 2 | `media-with-content` | media slot + content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones and the 6 media/text variants |
 | 3 | `hero` | full-bleed media with blocks over it: desktop and custom mobile media, overlay, `section_height`, `fetchpriority` on the image itself. Already on the homepage. | `ona-training-banner`, `ona-inner-banner` |
-| 4 | `press-quotes` | quote carousel: logo, quote, attribution, arrows when blocks outnumber columns | `ona-cafe-testimonial` (and already carrying its four quotes on the homepage, #246) |
-| 5 | `ona-faq-layout` | already Horizon-native, styles itself, takes `_faq-category` blocks | `ona-faq-lists`, the FAQ half of `ona-expressions` |
-| 6 | `ona-page-media-gallery` | already Horizon-native, styles itself | ad-hoc image grids |
-| 7 | `slideshow` | Horizon's `_slide` carousel; a slide takes child blocks, including `video` with a YouTube/Vimeo URL and a cover image | the `slider` blocks in `ona-supported`, `ona-exclusive-access`, `ona-expressions` |
-| 8 | `section` + `image` blocks | `image` carries a `link`, so a static grid of linked logos needs no new component. **Not `marquee`** — it animates unless the viewer asks for reduced motion and its schema has no off switch, so swapping a static wall for it is a visible change, which stage 2 forbids. | `ona-wholesale-brands` (a static wall of five linked logos) |
-| 9 | **a page-header section** — *to write* | eyebrow, heading, optional sub-copy, optional visually-hidden variant | `ona-page-title`, `ona-sr-heading` |
+| 4 | `carousel` | the composite: a static `group` header taking `@theme` blocks, then `_carousel-content` holding `_card`s that take `image`, `video`, `text` or any theme block | the **5** panel-plus-slider sections in the table above |
+| 5 | `press-quotes` | quote carousel: logo, quote, attribution, arrows when blocks outnumber columns | `ona-cafe-testimonial` (and already carrying its four quotes on the homepage, #246) |
+| 6 | `ona-faq-layout` | already Horizon-native, styles itself, takes `_faq-category` blocks | `ona-faq-lists`, the FAQ half of `ona-expressions` |
+| 7 | `ona-page-media-gallery` | already Horizon-native, styles itself | ad-hoc image grids |
+| 8 | **a page-header section** — *to write* | eyebrow, heading, optional sub-copy, optional visually-hidden variant | `ona-page-title`, `ona-sr-heading` |
 
-Nothing else should be added. A tenth component needs an argument, not a page.
+Two components that looked like matches are deliberately absent. **`slideshow`**
+takes only `_slide` blocks, so it has no legacy target left once the composites
+go to `carousel`. **`marquee`** animates unless the viewer asks for reduced
+motion and its schema has no off switch, so it cannot stand in for a static
+logo wall.
+
+Nothing else should be added. A ninth component needs an argument, not a page.
 
 ### Why `media-with-content` carries the weight
 
@@ -164,8 +186,8 @@ sets it. This is what stage 2 means for each.
 
 | Page | Sections now | After | The work |
 | --- | --- | --- | --- |
-| `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; `ona-cafe-testimonial` → `press-quotes`; `ona-wholesale-testimonial` needs a decision first (see above); `ona-wholesale-brands` → `section` + linked `image` blocks, kept static; `ona-faq-lists` → `ona-faq-layout`; `ona-gust-r`'s native `/contact` form stays as is |
-| `/pages/barista-courses` | 10 (all legacy) | ~6 | four `traning-sourcing-v*` → `media-with-content`; `ona-traning-supported` → `slideshow`; `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
+| `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; `ona-cafe-testimonial` → `press-quotes`; `ona-supported`, `ona-exclusive-access`, `ona-expressions` → `carousel`; `ona-wholesale-testimonial` → `carousel` once the episode selector is decided; `ona-wholesale-brands` → `section` + linked `image` blocks, kept static; `ona-faq-lists` → `ona-faq-layout`; `ona-gust-r`'s native `/contact` form stays as is |
+| `/pages/barista-courses` | 10 (all legacy) | ~6 | four `traning-sourcing-v*` → `media-with-content`; `ona-traning-supported` → `carousel`, panel and accordion in the header group; `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
 | `/pages/about` | 7 (all legacy) | ~5 | media/text variants → `media-with-content`; gallery → `ona-page-media-gallery` |
 | `/pages/learn` | 2 | 2 | `ona-page-title` → page-header; `ona-brewguides-and-training` → `section` + `_product-card`-style tiles |
 | `/pages/faq`, `/pages/subscription-faq` | 2 each | 2 each | `ona-page-title` → page-header. `ona-faq-layout` already Horizon-native — leave it |

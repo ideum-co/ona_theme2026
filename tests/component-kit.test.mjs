@@ -19,8 +19,8 @@ const backticked = (text) => [...text.matchAll(/`([^`]+)`/g)].map((match) => mat
 const resolve = (name) =>
   ['sections', 'blocks'].map((dir) => join(root, dir, `${name}.liquid`)).find(existsSync);
 
-test('the kit names nine components', () => {
-  assert.equal(kitRows.length, 9);
+test('the kit names eight components', () => {
+  assert.equal(kitRows.length, 8);
 });
 
 test('every component the kit names exists, except the one it says to write', () => {
@@ -100,12 +100,25 @@ test('every ona-* section is referenced, and every referenced one exists', () =>
 });
 
 /*
- * The kit maps the wholesale episode carousel onto slideshow because a _slide takes a video
- * child block that accepts a YouTube URL -- not because the slide itself does, which it does
- * not: _slide's own `video_1` is Shopify-hosted only. Read the section settings alone and the
- * mapping looks impossible, so this asserts the route that makes it work.
+ * The kit sends five panel-plus-slider sections to `carousel`, and that only works because of
+ * the section's internal shape rather than its settings: a static `group` header that accepts
+ * theme blocks, and `_card`s that accept media. Read the schema alone and `carousel` looks
+ * like a bare row of cards with nowhere for the panel, which is the mistake this asserts
+ * against.
  */
-test('a slide can carry an externally hosted video', () => {
+test('carousel still composes a static header and media cards', () => {
+  const carousel = readFileSync(join(root, 'sections/carousel.liquid'), 'utf8');
+  assert.match(
+    carousel,
+    /content_for 'block', type: 'group', id: 'static-header'/,
+    'carousel no longer renders a static header block, so the persistent panel has nowhere to go'
+  );
+  assert.match(
+    carousel,
+    /content_for 'block', type: '_carousel-content'/,
+    'carousel no longer renders its carousel content block'
+  );
+
   const schemaOf = (file) => {
     const match = readFileSync(join(root, file), 'utf8')
       .match(/\{%-?\s*schema\s*-?%\}([\s\S]*?)\{%-?\s*endschema\s*-?%\}/);
@@ -113,55 +126,13 @@ test('a slide can carry an externally hosted video', () => {
     return JSON.parse(match[1]);
   };
 
-  const slide = schemaOf('blocks/_slide.liquid');
-  assert.ok(
-    (slide.blocks ?? []).some((block) => block.type === 'video'),
-    'a slide no longer accepts a video block, so the episode carousel needs another route'
-  );
+  const accepts = (file) => (schemaOf(file).blocks ?? []).map((block) => block.type);
+  assert.ok(accepts('blocks/group.liquid').includes('@theme'), 'the header group takes no theme blocks');
+  assert.ok(accepts('blocks/_carousel-content.liquid').includes('_card'), 'carousel content takes no cards');
 
-  const video = schemaOf('blocks/video.liquid');
-  const url = (video.settings ?? []).find((setting) => setting.id === 'video_url');
-  assert.ok(url, 'the video block no longer takes an external URL');
-  assert.deepEqual([...(url.accept ?? [])].sort(), ['vimeo', 'youtube']);
-  assert.ok(
-    (video.settings ?? []).some((setting) => setting.id === 'cover_image'),
-    'the video block has no cover image, so the episode thumbnails would be lost'
-  );
-});
-
-/*
- * The kit maps all ten *-sourcing-v* clones onto media-with-content on the strength of one
- * measurement: between them they have no enabled blocks, so the trailing quote slider their
- * markup carries draws nothing and the live render really is the two-column row. Enable one
- * block and that stops being true -- the conversion would then drop visible content -- so the
- * claim is rechecked here rather than trusted.
- */
-test('the sourcing clones still render nothing from their blocks', () => {
-  const stripBanner = (text) => text.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '');
-  const live = [];
-  const dormant = [];
-
-  const templates = join(root, 'templates');
-  for (const file of readdirSync(templates)) {
-    if (!file.endsWith('.json')) continue;
-    const parsed = JSON.parse(stripBanner(readFileSync(join(templates, file), 'utf8')));
-    for (const section of Object.values(parsed.sections ?? {})) {
-      if (!/sourcing/.test(section.type ?? '')) continue;
-      for (const block of Object.values(section.blocks ?? {})) {
-        (block.disabled ? dormant : live).push(`${file}:${section.type}`);
-      }
-    }
+  for (const type of ['image', 'video', 'text']) {
+    assert.ok(accepts('blocks/_card.liquid').includes(type), `a card no longer takes ${type}`);
   }
-
-  assert.deepEqual(
-    live,
-    [],
-    'a sourcing section has an enabled block, so its trailing quote slider is live and media-with-content would drop it'
-  );
-  assert.ok(
-    dormant.length === 0 || doc.includes('disabled'),
-    'the stored disabled blocks need to stay accounted for in the kit'
-  );
 });
 
 test('stage 2 points at the kit', () => {
