@@ -99,6 +99,36 @@ test('every ona-* section is referenced, and every referenced one exists', () =>
   assert.deepEqual(unused, [], 'an ona-* section has no remaining use and should go in the PR that removed it');
 });
 
+/*
+ * The kit maps the wholesale episode carousel onto slideshow because a _slide takes a video
+ * child block that accepts a YouTube URL -- not because the slide itself does, which it does
+ * not: _slide's own `video_1` is Shopify-hosted only. Read the section settings alone and the
+ * mapping looks impossible, so this asserts the route that makes it work.
+ */
+test('a slide can carry an externally hosted video', () => {
+  const schemaOf = (file) => {
+    const match = readFileSync(join(root, file), 'utf8')
+      .match(/\{%-?\s*schema\s*-?%\}([\s\S]*?)\{%-?\s*endschema\s*-?%\}/);
+    assert.ok(match, `${file} has no schema`);
+    return JSON.parse(match[1]);
+  };
+
+  const slide = schemaOf('blocks/_slide.liquid');
+  assert.ok(
+    (slide.blocks ?? []).some((block) => block.type === 'video'),
+    'a slide no longer accepts a video block, so the episode carousel needs another route'
+  );
+
+  const video = schemaOf('blocks/video.liquid');
+  const url = (video.settings ?? []).find((setting) => setting.id === 'video_url');
+  assert.ok(url, 'the video block no longer takes an external URL');
+  assert.deepEqual([...(url.accept ?? [])].sort(), ['vimeo', 'youtube']);
+  assert.ok(
+    (video.settings ?? []).some((setting) => setting.id === 'cover_image'),
+    'the video block has no cover image, so the episode thumbnails would be lost'
+  );
+});
+
 test('stage 2 points at the kit', () => {
   const structure = readFileSync(join(root, 'docs/page-design-structure.md'), 'utf8');
   const stage2 = structure.slice(

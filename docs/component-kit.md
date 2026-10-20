@@ -32,14 +32,27 @@ component**:
 | no settings + one `block` | 2 | `ona-brewguides-and-training`, `ona-sustainability-list` |
 
 Beyond the exact matches are families that do one job through near-identical
-settings — `ona-wholesale-testimonial` and `ona-cafe-testimonial` are both quote
-carousels; `ona-training-image-text`, `-text-two-images`, `-text-image-bg`,
+settings — `ona-training-image-text`, `-text-two-images`, `-text-image-bg`,
 `ona-wholesale-partnership`, `ona-expericences-content` and `ona-training` are
 all a heading, some copy and a piece of media, four of them with a video variant
 bolted on.
 
 **Forty-five sections collapse to about nine**, and Horizon already ships eight
 of the nine.
+
+One section is mis-named and would be mis-mapped because of it.
+`ona-wholesale-testimonial` reads like a sibling of `ona-cafe-testimonial` and
+is not one: its four blocks are **YouTube episodes** — a thumbnail, a play
+icon, an episode title and an embed URL — while the written café quotes all
+live in `ona-cafe-testimonial`. Only the second is a `press-quotes`.
+
+The first is a `slideshow`, and natively so: `_slide` accepts child blocks,
+among them `video`, whose `video_url` setting takes `accept: [youtube, vimeo]`
+and whose `cover_image` is the episode thumbnail. One slide per episode, a
+`video` block and a `text` block for the title, and Horizon draws the play
+control. Nothing has to be re-hosted. (The section-level `video` settings on
+`_slide` and `hero` are Shopify-hosted only, which is what makes this look
+impossible until you read the block tree.)
 
 Alongside that, three kinds of drift the reviews measured across all 116
 sections in `templates/*.json`:
@@ -66,10 +79,10 @@ has to be written.
 | 1 | `section` + `group`/`text`/`image`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×78, `group` ×34, `button` ×14, `image` ×11. | anything that is just stacked copy |
 | 2 | `media-with-content` | media slot + content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones and the 6 media/text variants |
 | 3 | `hero` | full-bleed media with blocks over it: desktop and custom mobile media, overlay, `section_height`, `fetchpriority` on the image itself. Already on the homepage. | `ona-training-banner`, `ona-inner-banner` |
-| 4 | `press-quotes` | quote carousel: logo, quote, attribution, arrows when blocks outnumber columns | `ona-wholesale-testimonial`, `ona-cafe-testimonial` |
+| 4 | `press-quotes` | quote carousel: logo, quote, attribution, arrows when blocks outnumber columns | `ona-cafe-testimonial` (and already carrying its four quotes on the homepage, #246) |
 | 5 | `ona-faq-layout` | already Horizon-native, styles itself, takes `_faq-category` blocks | `ona-faq-lists`, the FAQ half of `ona-expressions` |
 | 6 | `ona-page-media-gallery` | already Horizon-native, styles itself | ad-hoc image grids |
-| 7 | `slideshow` | Horizon's `_slide` carousel | the `slider` blocks in `ona-supported`, `ona-exclusive-access`, `ona-expressions` |
+| 7 | `slideshow` | Horizon's `_slide` carousel; a slide takes child blocks, including `video` with a YouTube/Vimeo URL and a cover image | the `slider` blocks in `ona-supported`, `ona-exclusive-access`, `ona-expressions`, and `ona-wholesale-testimonial`'s episode carousel |
 | 8 | `marquee` | takes `text`, `icon`, `logo`, `_divider`; currently unused | `ona-wholesale-brands` (a logo wall) |
 | 9 | **a page-header section** — *to write* | eyebrow, heading, optional sub-copy, optional visually-hidden variant | `ona-page-title`, `ona-sr-heading` |
 
@@ -120,7 +133,7 @@ sets it. This is what stage 2 means for each.
 
 | Page | Sections now | After | The work |
 | --- | --- | --- | --- |
-| `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; testimonials → `press-quotes`; `ona-wholesale-brands` → `marquee`; `ona-faq-lists` → `ona-faq-layout`; `ona-gust-r`'s native `/contact` form stays as is |
+| `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; `ona-cafe-testimonial` → `press-quotes`; `ona-wholesale-testimonial` → `slideshow` with a `video` block per episode; `ona-wholesale-brands` → `marquee`; `ona-faq-lists` → `ona-faq-layout`; `ona-gust-r`'s native `/contact` form stays as is |
 | `/pages/barista-courses` | 10 (all legacy) | ~6 | four `traning-sourcing-v*` → `media-with-content`; `ona-traning-supported` → `slideshow`; `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
 | `/pages/about` | 7 (all legacy) | ~5 | media/text variants → `media-with-content`; gallery → `ona-page-media-gallery` |
 | `/pages/learn` | 2 | 2 | `ona-page-title` → page-header; `ona-brewguides-and-training` → `section` + `_product-card`-style tiles |
