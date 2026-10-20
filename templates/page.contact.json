@@ -137,10 +137,409 @@
         "padding-block-start": 32,
         "padding-block-end": 84
       }
+    },
+    "contact_details": {
+      "type": "section",
+      "name": "Contact details",
+      "blocks": {
+        "heading": {
+          "type": "text",
+          "name": "Heading",
+          "settings": {
+            "text": "<h2>Get in touch</h2>",
+            "width": "100%",
+            "max_width": "normal",
+            "alignment": "flex-start",
+            "type_preset": "h3",
+            "font": "var(--font-body--family)",
+            "font_size": "",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "intro": {
+          "type": "text",
+          "name": "Intro",
+          "settings": {
+            "text": "<p>Have a question? We&rsquo;d love to hear from you. Reach out via the channels below.</p>",
+            "width": "100%",
+            "max_width": "normal",
+            "alignment": "flex-start",
+            "type_preset": "paragraph",
+            "font": "var(--font-body--family)",
+            "font_size": "",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "details": {
+          "type": "group",
+          "name": "Details",
+          "settings": {
+            "content_direction": "row",
+            "vertical_on_mobile": true,
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "flex-start",
+            "gap": 40,
+            "width": "100%",
+            "custom_width": 100,
+            "width_mobile": "100%",
+            "custom_width_mobile": 100,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "detail_email": {
+              "type": "group",
+              "name": "Email",
+              "settings": {
+                "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "flex-start",
+                "gap": 4,
+                "width": "100%",
+                "custom_width": 100,
+                "width_mobile": "100%",
+                "custom_width_mobile": 100,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {
+                "email_label": {
+                  "type": "text",
+                  "name": "Label",
+                  "settings": {
+                    "text": "<h3>Email</h3>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "flex-start",
+                    "type_preset": "h6",
+                    "font": "var(--font-body--family)",
+                    "font_size": "",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "email_value": {
+                  "type": "text",
+                  "name": "Value",
+                  "settings": {
+                    "text": "<p><a href=\"mailto:admin@onacoffee.com.au\">admin@onacoffee.com.au</a></p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "flex-start",
+                    "type_preset": "paragraph",
+                    "font": "var(--font-body--family)",
+                    "font_size": "",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "email_label",
+                "email_value"
+              ]
+            },
+            "detail_phone": {
+              "type": "group",
+              "name": "Phone",
+              "settings": {
+                "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "flex-start",
+                "gap": 4,
+                "width": "100%",
+                "custom_width": 100,
+                "width_mobile": "100%",
+                "custom_width_mobile": 100,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {
+                "phone_label": {
+                  "type": "text",
+                  "name": "Label",
+                  "settings": {
+                    "text": "<h3>Phone</h3>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "flex-start",
+                    "type_preset": "h6",
+                    "font": "var(--font-body--family)",
+                    "font_size": "",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "phone_value": {
+                  "type": "text",
+                  "name": "Value",
+                  "settings": {
+                    "text": "<p><a href=\"tel:+61261623321\">02 6162 3321</a></p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "flex-start",
+                    "type_preset": "paragraph",
+                    "font": "var(--font-body--family)",
+                    "font_size": "",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "phone_label",
+                "phone_value"
+              ]
+            },
+            "detail_address": {
+              "type": "group",
+              "name": "Address",
+              "settings": {
+                "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "flex-start",
+                "gap": 4,
+                "width": "100%",
+                "custom_width": 100,
+                "width_mobile": "100%",
+                "custom_width_mobile": 100,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {
+                "address_label": {
+                  "type": "text",
+                  "name": "Label",
+                  "settings": {
+                    "text": "<h3>Address</h3>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "flex-start",
+                    "type_preset": "h6",
+                    "font": "var(--font-body--family)",
+                    "font_size": "",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "address_value": {
+                  "type": "text",
+                  "name": "Value",
+                  "settings": {
+                    "text": "<p><a href=\"https://maps.app.goo.gl/sYEoAyMWjWdP5F867\" target=\"_blank\" rel=\"noopener noreferrer\">5/68 Wollongong St, Fyshwick ACT 2609, Australia</a></p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "flex-start",
+                    "type_preset": "paragraph",
+                    "font": "var(--font-body--family)",
+                    "font_size": "",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "address_label",
+                "address_value"
+              ]
+            },
+            "detail_hours": {
+              "type": "group",
+              "name": "Opening hours",
+              "settings": {
+                "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "flex-start",
+                "gap": 4,
+                "width": "100%",
+                "custom_width": 100,
+                "width_mobile": "100%",
+                "custom_width_mobile": 100,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {
+                "hours_label": {
+                  "type": "text",
+                  "name": "Label",
+                  "settings": {
+                    "text": "<h3>Opening hours</h3>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "flex-start",
+                    "type_preset": "h6",
+                    "font": "var(--font-body--family)",
+                    "font_size": "",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "hours_value": {
+                  "type": "text",
+                  "name": "Value",
+                  "settings": {
+                    "text": "<p>Monday to Friday 9 - 5</p><p>Closed on Public Holidays</p>",
+                    "width": "100%",
+                    "max_width": "normal",
+                    "alignment": "flex-start",
+                    "type_preset": "paragraph",
+                    "font": "var(--font-body--family)",
+                    "font_size": "",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "hours_label",
+                "hours_value"
+              ]
+            }
+          },
+          "block_order": [
+            "detail_email",
+            "detail_phone",
+            "detail_address",
+            "detail_hours"
+          ]
+        }
+      },
+      "block_order": [
+        "heading",
+        "intro",
+        "details"
+      ],
+      "settings": {
+        "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "flex-start",
+        "gap": 24,
+        "section_width": "page-width",
+        "padding-block-start": 24,
+        "padding-block-end": 24
+      }
     }
   },
   "order": [
     "main",
+    "contact_details",
     "form"
   ]
 }
