@@ -133,6 +133,81 @@
       const label = panels[index]?.getAttribute('data-tab-label')?.trim();
       if (label) tab.textContent = label;
     });
+
+    /*
+     * Drop any tab whose panel renders nothing -- a Brew Guide on a coffee with
+     * no brew data, say -- taking the button and the panel together.
+     *
+     * The test has to be the rendered content, not the Liquid. Child blocks
+     * always emit a wrapper: blocks/custom-liquid.liquid outputs a <div>
+     * unconditionally, and blocks/product-metafield-text.liquid outputs a
+     * hidden, aria-hidden div for a blank value. A Liquid `capture` of the
+     * children is therefore never blank, and the tab would never be removed --
+     * which is exactly how the first pass failed.
+     *
+     * textContent rather than innerText: this runs during parse, before layout,
+     * and innerText would force one. Both wrappers above contain no text at all
+     * when they have nothing to show, so textContent is enough to tell.
+     *
+     * Order matters. This runs before the deferred module connects, so the
+     * component builds its refs from the pruned DOM and still sees one button
+     * per panel. Removing only one of a pair would leave the counts mismatched,
+     * which is the condition the component treats as "cannot pair these" and
+     * bails on, stacking every panel visible.
+     */
+    /*
+     * Deliberately conservative: a panel counts as empty only when it has no
+     * text AND none of these embeds. The list is a whitelist, which cannot be
+     * exhaustive -- but the two outcomes are not symmetric. Keeping a tab that
+     * turned out to be empty costs an empty tab; removing one that was not
+     * costs the customer content they can no longer reach. So anything
+     * uncertain keeps its tab.
+     */
+    const EMBEDS = 'img, picture, video, audio, iframe, svg, canvas, object, embed, model-viewer';
+    const isEmpty = (panel) => !panel.querySelector(EMBEDS) && panel.textContent.trim() === '';
+
+    const prune = () => {
+      const strip = section.querySelector('.product-tabs__strip');
+      const panelList = section.querySelectorAll('.product-tabs__panels > .product-tabs__panel');
+      const tabList = strip?.querySelectorAll(':scope > .product-tabs__tab') ?? [];
+      if (!strip || panelList.length !== tabList.length) return;
+
+      const empties = [...panelList].reduce((acc, panel, index) => {
+        if (isEmpty(panel)) acc.push(index);
+        return acc;
+      }, []);
+
+      // A strip of one is still a heading for the content under it.
+      if (!empties.length || empties.length >= panelList.length) return;
+
+      for (const index of empties.reverse()) {
+        panelList[index].remove();
+        tabList[index]?.remove();
+      }
+
+      /*
+       * Each button carries its index in `on:click="/select/N"`, baked in at
+       * render. After a removal the survivors still hold their original N, so
+       * the new first button would open the second panel. Renumber them.
+       */
+      strip
+        .querySelectorAll(':scope > .product-tabs__tab')
+        .forEach((tab, index) => tab.setAttribute('on:click', `/select/${index}`));
+    };
+
+    prune();
+
+    /*
+     * Combined listings swap products without a page load: variant-picker.js
+     * calls updateMain(), which morphs a new <main> into the document rather
+     * than re-running this script. The replacement markup arrives unpruned, so
+     * a product with no brew data would show the Brew Guide tab again. Watching
+     * the panel container covers that without the component needing to know.
+     */
+    const panelHost = section.querySelector('.product-tabs__panels');
+    if (panelHost && globalThis.MutationObserver) {
+      new MutationObserver(() => prune()).observe(panelHost, { childList: true });
+    }
   })();
 </script>
 
