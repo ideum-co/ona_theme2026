@@ -201,6 +201,7 @@
   <template ref="resultTemplate">
     <div class="coffee-quiz__result">
       <h2 class="coffee-quiz__question coffee-quiz__result-heading">{{ settings.result_heading }}</h2>
+      <p class="coffee-quiz__result-title" data-title></p>
       <img class="coffee-quiz__result-image" data-image alt="" width="800" height="800" loading="lazy">
       <p class="coffee-quiz__result-description" data-description></p>
       {%- if settings.reasons_label != blank -%}
@@ -445,6 +446,20 @@
     object-fit: contain;
   }
 
+  /* The matched coffee's name - the whole point of the result, and previously nowhere on it (the
+     name only reached the image's alt text). Sits right under the lead-in, as the hero of the panel. */
+  .coffee-quiz__result-title {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--font-size--4xl, 2.5rem);
+    font-weight: var(--font-heading--weight);
+    line-height: 1.1;
+  }
+
+  .coffee-quiz__result-title:empty {
+    display: none;
+  }
+
   .coffee-quiz__result-description {
     max-inline-size: 50ch;
     margin: 0;
@@ -464,13 +479,23 @@
   .coffee-quiz__actions {
     display: flex;
     flex-wrap: wrap;
+    align-items: stretch;
     justify-content: center;
     gap: var(--gap-lg, 1rem);
     margin-block-start: var(--gap-xl, 1.25rem);
   }
 
+  /* The Add to cart lives in a <form> while Subscribe is a bare link, so they were two unlike flex
+     items and never lined up. `display: contents` dissolves the form's box, leaving its button a
+     direct sibling of the link - two identical buttons, equal height and side by side. */
+  .coffee-quiz__actions [data-add-form] {
+    display: contents;
+  }
+
   .coffee-quiz__action {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding-block: 10px;
     padding-inline: var(--padding-4xl, 2rem);
     border: 1px solid var(--coffee-quiz-color);
@@ -478,6 +503,7 @@
     background: transparent;
     color: currentcolor;
     font-size: inherit;
+    text-align: center;
     text-decoration: none;
     cursor: pointer;
   }
