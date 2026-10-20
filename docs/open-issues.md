@@ -88,23 +88,33 @@ wrong and should be `South America`. Nothing here needs a business decision.
 ### 2b. The blends' origins are wrong too, and only Cropster shows it
 
 A single origin can be checked against its own title. A blend cannot — its
-components are only in the roasting records. Cross-referencing
-`gold.fact_roast` for each blend:
+components are only in the roasting records.
 
-| Blend | Components in the roast records | Should be | Storefront says |
-| --- | --- | --- | --- |
-| **Aspen** | ETH Hambela/Yirgacheffe/Lekempti/Shakisso/Lotus, HON Caballero, NCA Picaflor, **PNG Arokora**, BRA Minas/Classico/Samba | East Africa, Central America, South America, Asia Pacific | Central America, South America |
-| **Maple** | ETH Hambela/Lekempti, **COL**, BRA Samba/Classico, HON Las Sonjes | East Africa, South America, Central America | **Asia**, Central America, South America |
-| **Gateway** | ETH (many), **COL Viani**, KEN, RWA Gatare/PB | East Africa, South America | Central America, East Africa |
-| **Raspberry Candy** | ETH only — Guji, Seattle, Amedaro, Koke, Limu, Shakisso | East Africa | East Africa ✅ |
+**Method.** `gold.fact_roast`, restricted to roasts since **2026-04-20** (the
+last six months). The window matters: these recipes change seasonally, so
+all-time history describes what a blend *has* contained, not what it contains.
+Reading it unfiltered puts Brazil in Aspen and Colombia and Honduras in Maple,
+none of which they have been roasted with this season.
 
-So Aspen is missing East Africa — its largest component by roast count — and
-Maple claims an `Asia` it has no basis for.
+| Blend | Roasts in window | Countries now | Should be | Storefront says |
+| --- | --- | --- | --- | --- |
+| **Aspen** | 1,202 | ETH, NCA, HON, **PNG** | East Africa, Central America, Asia Pacific | Central America, South America |
+| **Maple** | 1,653 | **BRA**, ETH | South America, East Africa | **Asia**, Central America, South America |
+| **Gateway** | 1,211 | ETH, **COL**, KEN | East Africa, South America | Central America, East Africa |
+| **Raspberry Candy** | 212 | ETH | East Africa | East Africa ✅ |
+| **Unwind** | 405 | **COL** | South America | Central America |
 
-**Caveat, and it matters.** Blend recipes change seasonally; Raspberry Candy's
-own description says so. These origins are a moving target, which is an argument
-for deriving them from the roast records rather than hand-maintaining them in
-Shopify. Fixing them once by hand will drift again within a season.
+So Aspen is missing East Africa — its largest component — and Papua New Guinea,
+while still claiming a South America it no longer contains. Maple claims `Asia`
+and `Central America` with nothing behind either, and omits East Africa.
+Gateway claims Central America and omits South America. Raspberry Candy is the
+only one correct.
+
+**This is a moving target.** The window above is a snapshot; a recipe change
+next season invalidates it. Hand-correcting these in Shopify will drift again,
+which argues for deriving blend origins from the roast records rather than
+maintaining them by hand. Whoever picks this up should re-run the query rather
+than trust the table.
 
 ### 3. Two taste taxonomies that disagree with each other
 
