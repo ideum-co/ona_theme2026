@@ -117,9 +117,13 @@ Two things fall out:
 
 ## 6. Proposed order
 
-1. **Stop the stretching.** Constrain the icon in
-   `ona-icon-and-content.liquid` with a scoped `{% stylesheet %}`, and request a
-   width that matches how it is drawn. Smallest change, kills the worst 5.
+1. ~~**Stop the stretching.** Constrain the icon in `ona-icon-and-content`.~~
+   **Shipped in #204.** `assets/legacy-page-layout.css` defines the
+   `.col-4-icons` grid and caps the icon at 120x88, with
+   `tests/legacy-image-sizing.test.mjs` holding it; the section measured
+   6,491px -> 230px. The measurements above this line describe the pre-fix tree
+   and are kept as the record of what was wrong, not as work to do. **Remeasure
+   before picking up item 2.** (Codex, #203.)
 2. **Extend `assets/legacy-page-layout.css` to the 95 uncovered selectors**,
    rebuilt on the theme's own tokens rather than copied from the legacy sheet —
    the legacy CSS depends on a cascade this theme does not have. Extend the

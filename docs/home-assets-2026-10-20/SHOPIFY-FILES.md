@@ -36,5 +36,11 @@ has a parameter such as `?v=...`.
 Every file carries alt text. The three bag PNGs keep their transparency and are
 served as WebP-with-alpha by the CDN.
 
-The 12 SVGs in `vector/` were **not** uploaded here — they belong in the theme's
-`assets/`, where Liquid can inline them. See MANIFEST.md.
+The 12 SVGs in `vector/` were **not** uploaded here. **Ten** of them belong in
+the theme's `assets/`, where Liquid can inline them, and shipped in #202. The
+other two are **source-only** — `icons-social.svg` and
+`icons-header-utilities.svg` were deliberately left out because the theme
+already has equivalent artwork (`blocks/_footer-social-icons.liquid` and the
+`icon-header-*.svg` set), so do not go looking for them in `assets/` and do not
+add them. See MANIFEST.md. (Codex, #203 — this had said all 12 were deployable,
+which contradicts the handoff's count of ten.)
