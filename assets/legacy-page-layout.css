@@ -99,3 +99,39 @@
  #MainContent .training-intro .content { grid-template-columns:minmax(0,1fr); gap:24px; }
  #MainContent .training-intro .right-box { gap:10px; }
 }
+
+/*
+ * Icons-and-content and the wholesale brand wall.
+ *
+ * assets/base.css sets `img { width: 100% }` for every image in the theme.
+ * Horizon's own components always wrap an image in a sized container, so that
+ * is safe there. These two sections were ported from the legacy theme without
+ * their stylesheet -- it lives in that theme's 467 KB assets/main.min.css,
+ * which this theme deliberately does not carry -- so nothing constrains them
+ * and the image expands to its parent's full width.
+ *
+ * Measured on 2026-10-20: a 100x150 icon painted at 1016x1526, a 16.4x taller
+ * section, and /pages/wholesale at 40,886px against production's 10,400px.
+ *
+ * The sizes below are production's own, read out of main.min.css and confirmed
+ * against the rendered page: icons max 120x88 inside an 88px row, brand logos
+ * max 170px wide. `width: auto` is the part that matters -- without it the
+ * base.css rule wins and max-width alone cannot pull the image back.
+ */
+#MainContent .col-4-icons .container { width:min(100% - 2 * var(--legacy-page-gutter),1280px); margin-inline:auto; }
+#MainContent .col-4-icons .content { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:clamp(20px,3vw,40px); align-items:start; }
+#MainContent .col-4-icons .content .block { margin:0; padding:0; }
+#MainContent .col-4-icons .box { display:grid; justify-items:center; gap:clamp(16px,2vw,40px); text-align:center; }
+#MainContent .col-4-icons .icon-c { block-size:88px; display:flex; align-items:center; justify-content:center; }
+#MainContent .col-4-icons .icon-c img { width:auto; height:auto; max-width:120px; max-height:88px; }
+
+#MainContent .wholesale-brands .brand-thumb { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:clamp(20px,3vw,48px); }
+#MainContent .wholesale-brands .brand-item { display:flex; align-items:center; justify-content:center; }
+#MainContent .wholesale-brands .brand-thumb img { width:auto; height:auto; max-width:170px; }
+
+@media(max-width:989px){
+ #MainContent .col-4-icons .content { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+@media(max-width:749px){
+ #MainContent .col-4-icons .content { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
