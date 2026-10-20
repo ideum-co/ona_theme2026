@@ -111,13 +111,21 @@
     assign using_resolved_product_color = true
   endif
 
-  if effective_background_color != blank
+  # contrast-override itself supports a text-only path (no background), so this must
+  # not require a background to fire - a text_color-only override would otherwise
+  # silently do nothing, which is exactly the gap Codex's review caught here.
+  assign has_resolved_color = false
+  if effective_background_color != blank or effective_text_color != blank
+    assign has_resolved_color = true
+  endif
+
+  if has_resolved_color
     render 'contrast-override', background_color: effective_background_color, text_color: effective_text_color, section_id: section_id
   endif
 %}
 
 <div
-  class="section-background{% if effective_background_color != blank %} color-custom-{{ section_id }}{% endif %}"
+  class="section-background{% if has_resolved_color %} color-custom-{{ section_id }}{% endif %}"
 ></div>
 <div
   class="product-information__viewport"
@@ -128,7 +136,7 @@
 >
 {% if show_breadcrumbs %}
   <div
-    class="product-information__breadcrumb-row section section--{{ content_width }} spacing-style{% if effective_background_color != blank %} color-custom-{{ section_id }}{% endif %} relative"
+    class="product-information__breadcrumb-row section section--{{ content_width }} spacing-style{% if has_resolved_color %} color-custom-{{ section_id }}{% endif %} relative"
     style="
       --padding-block-start: {{ settings.breadcrumb_padding_top }}px;
       --padding-block-end: {{ settings.breadcrumb_padding_bottom }}px;
@@ -171,7 +179,7 @@
   </div>
 {% endif %}
 <div
-  class="product-information section section--{{ content_width }} spacing-style{% if show_breadcrumbs %} disable-section-top-offset{% endif %}{% if effective_background_color != blank %} color-custom-{{ section_id }}{% endif %} relative"
+  class="product-information section section--{{ content_width }} spacing-style{% if show_breadcrumbs %} disable-section-top-offset{% endif %}{% if has_resolved_color %} color-custom-{{ section_id }}{% endif %} relative"
   style="
     {% render 'spacing-style', settings: settings %}
     --gap: {{ settings.gap }}px;
