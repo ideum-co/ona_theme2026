@@ -189,3 +189,37 @@
 @media(max-width:749px){
  #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.two-columns-title-intro,.training-bookings) > .content.container { grid-template-columns:minmax(0,1fr); gap:28px; }
 }
+
+/*
+ * The decorative blob belongs BEHIND the photo, not above it in flow.
+ *
+ * The ported sections put an `svg.animated-svg` -- a mustard organic shape --
+ * as a sibling of the photo inside `.img`. With no rule it laid out as a
+ * normal block, so the column became blob + photo stacked, and the blob read
+ * as a giant orange rectangle above the image. That is what made these pages
+ * look broken: it is on eight sections (traning-sourcing and its v2-v4,
+ * careers, awards, training-image-text, training-form, wholesale-sourcing
+ * v2-v4), which is most of the legacy pages.
+ *
+ * Production's values, read off theme 160815546559 on /pages/barista-courses:
+ *
+ *   .img.show-icon   display:flex; position:relative          784x1139
+ *   .animated-svg    position:absolute; inset 0 0 auto; z-index:1   784x524
+ *   img              position:relative; z-index:2            784x1139
+ *
+ * The z-index:2 on the image is the part that matters and the part I got
+ * wrong first: without it the blob (z-index:1) paints over the photo. With
+ * it, the photo covers the blob and only the crescent that extends past the
+ * photo's edge shows, which is the intended accent. Verified by hit-testing
+ * the centre of the photo -- `img` must be the element on top, as it is in
+ * production.
+ *
+ * Measured by injecting this into the live pages, images forced to load:
+ *   /pages/barista-courses  13,246px -> 10,484px
+ *   /pages/wholesale        23,611px -> 22,126px
+ *   /pages/about             7,242px ->  6,870px
+ *   learn, private-courses: unchanged (they carry no .animated-svg)
+ */
+#MainContent .img:has(> .animated-svg) { position: relative; display: flex; }
+#MainContent .img > .animated-svg { position: absolute; inset-block-start: 0; inset-inline: 0; z-index: 1; max-width: 100%; height: auto; }
+#MainContent .img > .animated-svg ~ img { position: relative; z-index: 2; }

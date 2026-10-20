@@ -114,3 +114,36 @@ test('the round avatars have an intrinsic size', () => {
   assert.match(avatar[1], /background-size:\s*cover/);
   assert.match(avatar[1], /border-radius:\s*50%/, 'production renders these round');
 });
+
+test('the decorative blob sits behind the photo, not above it in flow', () => {
+  /*
+   * `svg.animated-svg` is a mustard organic shape the ported sections place as
+   * a sibling of the photo inside `.img`. Unstyled it lays out as a normal
+   * block, so the column becomes blob + photo stacked and the blob reads as a
+   * giant orange rectangle above the image -- on eight sections, which is most
+   * of the legacy pages.
+   *
+   * Production (theme 160815546559, /pages/barista-courses): the svg is
+   * absolute at inset 0 0 auto with z-index 1, and the IMAGE carries
+   * z-index 2 so it covers the blob. Only the crescent extending past the
+   * photo shows.
+   */
+  const svg = layout.match(/#MainContent \.img > \.animated-svg\s*\{([^}]*)\}/);
+  assert.ok(svg, 'the blob must be taken out of flow');
+  assert.match(svg[1], /position:\s*absolute/, 'in flow it stacks above the photo');
+  assert.match(svg[1], /z-index:\s*1/);
+
+  const container = layout.match(/#MainContent \.img:has\(> \.animated-svg\)\s*\{([^}]*)\}/);
+  assert.ok(container, 'the blob needs a positioned ancestor');
+  assert.match(container[1], /position:\s*relative/);
+
+  /*
+   * The z-index on the image is the part that is easy to miss, and I missed
+   * it first: without it the blob paints OVER the photo and the page looks
+   * worse, not better. Production puts the photo above the blob.
+   */
+  const image = layout.match(/#MainContent \.img > \.animated-svg ~ img\s*\{([^}]*)\}/);
+  assert.ok(image, 'the photo must be lifted above the blob');
+  assert.match(image[1], /position:\s*relative/);
+  assert.match(image[1], /z-index:\s*2/, 'without this the blob covers the photo');
+});
