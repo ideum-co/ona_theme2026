@@ -27,11 +27,19 @@ test('emptiness is judged from rendered content, not from Liquid', () => {
   assert.doesNotMatch(block, /data-tab-empty/, 'the block cannot make this call');
   assert.match(section, /const isEmpty = \(panel\) =>/, 'the strip judges the rendered panel');
   assert.match(section, /panel\.textContent\.trim\(\) === ''/, 'no text');
-  assert.match(
-    section,
-    /!panel\.querySelector\('img, picture, video, iframe, svg, canvas'\)/,
-    'and no media -- a gallery-only tab is not empty',
-  );
+  assert.match(section, /const EMBEDS = '[^']*'/, 'embeds are listed in one place');
+  assert.match(section, /!panel\.querySelector\(EMBEDS\)/, 'and no embed -- a media-only tab is not empty');
+
+  /*
+   * The whitelist cannot be exhaustive, so the two outcomes are weighted:
+   * keeping a tab that turned out to be empty costs an empty tab; removing one
+   * that was not costs the customer content they can no longer reach. Codex
+   * raised <audio> specifically.
+   */
+  const embeds = section.match(/const EMBEDS = '([^']*)'/)[1];
+  for (const tag of ['img', 'video', 'audio', 'iframe', 'svg', 'object', 'embed']) {
+    assert.ok(embeds.includes(tag), `${tag} renders something, so it must keep its tab`);
+  }
 
   /*
    * textContent, not innerText: this runs during parse, before layout, and
@@ -47,8 +55,8 @@ test('the strip removes the button and the panel together', () => {
    * -- leaving every panel stacked and visible, which is worse than an empty
    * tab. Removing one half of a pair is exactly that condition.
    */
-  assert.match(section, /panels\[index\]\.remove\(\);/, 'the empty panel goes');
-  assert.match(section, /tabs\[index\]\?\.remove\(\);/, 'and so does its button');
+  assert.match(section, /panelList\[index\]\.remove\(\);/, 'the empty panel goes');
+  assert.match(section, /tabList\[index\]\?\.remove\(\);/, 'and so does its button');
   assert.match(
     section,
     /for \(const index of empties\.reverse\(\)\)/,
@@ -89,7 +97,28 @@ test('the last tab is never removed', () => {
    */
   assert.match(
     section,
-    /empties\.length && empties\.length < panels\.length/,
+    /if \(!empties\.length \|\| empties\.length >= panelList\.length\) return;/,
     'an all-empty strip must be left alone',
   );
+});
+
+test('pruning survives a combined-listing product swap', () => {
+  /*
+   * Combined listings swap products without a page load: variant-picker.js
+   * calls updateMain(), which morphs a new <main> into the document rather than
+   * re-running this inline script. The replacement markup arrives unpruned, so
+   * a product with no brew data would show the Brew Guide tab again. Codex,
+   * #236.
+   */
+  assert.match(section, /const prune = \(\) => \{/, 'the prune must be callable more than once');
+  assert.match(section, /new MutationObserver\(\(\) => prune\(\)\)/, 'and re-run when the panels change');
+  assert.match(section, /\.observe\(panelHost, \{ childList: true \}\)/, 'watching the panel container');
+
+  /*
+   * It re-reads the DOM each time rather than closing over the original
+   * NodeLists, which would be stale after a morph.
+   */
+  const body = section.match(/const prune = \(\) => \{([\s\S]*?)\n    \};/);
+  assert.ok(body, 'prune must have a body');
+  assert.match(body[1], /section\.querySelectorAll\('\.product-tabs__panels/, 're-read the panels');
 });

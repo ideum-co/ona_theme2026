@@ -155,20 +155,34 @@
      * which is the condition the component treats as "cannot pair these" and
      * bails on, stacking every panel visible.
      */
-    const isEmpty = (panel) =>
-      !panel.querySelector('img, picture, video, iframe, svg, canvas') &&
-      panel.textContent.trim() === '';
+    /*
+     * Deliberately conservative: a panel counts as empty only when it has no
+     * text AND none of these embeds. The list is a whitelist, which cannot be
+     * exhaustive -- but the two outcomes are not symmetric. Keeping a tab that
+     * turned out to be empty costs an empty tab; removing one that was not
+     * costs the customer content they can no longer reach. So anything
+     * uncertain keeps its tab.
+     */
+    const EMBEDS = 'img, picture, video, audio, iframe, svg, canvas, object, embed, model-viewer';
+    const isEmpty = (panel) => !panel.querySelector(EMBEDS) && panel.textContent.trim() === '';
 
-    const empties = [...panels].reduce((acc, panel, index) => {
-      if (isEmpty(panel)) acc.push(index);
-      return acc;
-    }, []);
+    const prune = () => {
+      const strip = section.querySelector('.product-tabs__strip');
+      const panelList = section.querySelectorAll('.product-tabs__panels > .product-tabs__panel');
+      const tabList = strip?.querySelectorAll(':scope > .product-tabs__tab') ?? [];
+      if (!strip || panelList.length !== tabList.length) return;
 
-    // A strip of one is still a heading for the content under it.
-    if (empties.length && empties.length < panels.length) {
+      const empties = [...panelList].reduce((acc, panel, index) => {
+        if (isEmpty(panel)) acc.push(index);
+        return acc;
+      }, []);
+
+      // A strip of one is still a heading for the content under it.
+      if (!empties.length || empties.length >= panelList.length) return;
+
       for (const index of empties.reverse()) {
-        panels[index].remove();
-        tabs[index]?.remove();
+        panelList[index].remove();
+        tabList[index]?.remove();
       }
 
       /*
@@ -176,9 +190,23 @@
        * render. After a removal the survivors still hold their original N, so
        * the new first button would open the second panel. Renumber them.
        */
-      section
-        .querySelectorAll('.product-tabs__strip > .product-tabs__tab')
+      strip
+        .querySelectorAll(':scope > .product-tabs__tab')
         .forEach((tab, index) => tab.setAttribute('on:click', `/select/${index}`));
+    };
+
+    prune();
+
+    /*
+     * Combined listings swap products without a page load: variant-picker.js
+     * calls updateMain(), which morphs a new <main> into the document rather
+     * than re-running this script. The replacement markup arrives unpruned, so
+     * a product with no brew data would show the Brew Guide tab again. Watching
+     * the panel container covers that without the component needing to know.
+     */
+    const panelHost = section.querySelector('.product-tabs__panels');
+    if (panelHost && globalThis.MutationObserver) {
+      new MutationObserver(() => prune()).observe(panelHost, { childList: true });
     }
   })();
 </script>
