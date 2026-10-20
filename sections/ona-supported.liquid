@@ -1,3 +1,4 @@
+<script src="{{ 'ona-faqs.js' | asset_url }}" type="module"></script>
 <section class="add-image-and-text show-faqs wowo fadeInUp section-full-large img-right" data-wow-duration="1s" data-wow-delay="300ms" id="{{ section.settings.id }}">
     <div class="container">
         <div class="content">
@@ -53,8 +54,9 @@
                           {%- when 'block' -%}
                           <div class="block">
                               <div class="faqs-title">
-                                  <p>{{ block.settings.title }}</p>
-                              </div>
+{%- comment -%} A button, so the row can be focused and pressed. {%- endcomment -%}
+<button type="button" class="faqs-toggle" aria-expanded="false">{{ block.settings.title }}</button>
+</div>
                               <div class="faqs-text">
                                 <p>{{ block.settings.content }}</p>
                               </div>

@@ -1,3 +1,4 @@
+<script src="{{ 'ona-faqs.js' | asset_url }}" type="module"></script>
 <section class="add-faqs-section " id="{{ section.settings.id }}">
     <div class="container">
         <div class="title">
@@ -7,8 +8,9 @@
         {% for block in section.blocks %}
           <div class="block is-active">
               <div class="faqs-title {% if forloop.index == 1 %}is-active{% endif %}">
-                  <p>{{ block.settings.title }}</p>
-              </div>
+{%- comment -%} A button, so the row can be focused and pressed. {%- endcomment -%}
+<button type="button" class="faqs-toggle" aria-expanded="false">{{ block.settings.title }}</button>
+</div>
               <div class="faqs-text {% if forloop.index == 1 %}is-active{% endif %}">
                   {{ block.settings.content }}
               </div>
