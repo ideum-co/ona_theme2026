@@ -159,10 +159,25 @@ app, which is already installed.
 
 ### System and orphan pages
 
-`/pages/llms` (restored 2026-10-20), `/pages/maintenance` (no template — its
-image asset is not in this theme), `/pages/search-results-page`, and five
-`/pages/spurit-*` shells left by a removed subscriptions app. None of these are
-design surfaces; the spurit pages should be unpublished rather than styled.
+Named individually so nothing hides in a group.
+
+| Page | Suffix | State |
+| --- | --- | --- |
+| `/pages/llms` | `llms` | restored 2026-10-20; serves the llms.txt index, no theme layout |
+| `/pages/maintenance` | `maintenance` | no template — its only asset, `maintenance-page-2.jpg`, is not in this theme |
+| `/pages/search-results-page` | none | 14 chars of text; a redirect shim for a removed search app |
+| `/pages/spurit-subscriptions` | none | empty shell; page body carries hand-written CSS overriding `.page-width` |
+| `/pages/spurit-invoices-cancelled` | none | empty shell |
+| `/pages/spurit-reminders-cancelled` | none | empty shell |
+| `/pages/spurit-notifications-cancelled` | none | empty shell |
+| `/pages/spurit-merchant-notifications-cancelled` | none | empty shell |
+
+None are design surfaces. The five `spurit-*` pages are left over from a removed
+subscriptions app and should be unpublished rather than styled — ONAIN-41
+already tracks one of them. `search-results-page` is the same shape.
+
+That is 24 published pages in total, matching the Shopify admin list: eight
+landing/marketing, three bookings, five support and policy, and these eight.
 
 ## Rules
 
