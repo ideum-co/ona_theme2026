@@ -142,56 +142,6 @@
       "type": "section",
       "name": "Contact details",
       "blocks": {
-        "heading": {
-          "type": "text",
-          "name": "Heading",
-          "settings": {
-            "text": "<h2>Get in touch</h2>",
-            "width": "100%",
-            "max_width": "normal",
-            "alignment": "left",
-            "type_preset": "h3",
-            "font": "var(--font-body--family)",
-            "font_size": "",
-            "line_height": "normal",
-            "letter_spacing": "normal",
-            "case": "none",
-            "wrap": "pretty",
-            "background": false,
-            "background_color": "#00000026",
-            "corner_radius": 0,
-            "padding-block-start": 0,
-            "padding-block-end": 0,
-            "padding-inline-start": 0,
-            "padding-inline-end": 0
-          },
-          "blocks": {}
-        },
-        "intro": {
-          "type": "text",
-          "name": "Intro",
-          "settings": {
-            "text": "<p>Have a question? We&rsquo;d love to hear from you. Reach out via the channels below.</p>",
-            "width": "100%",
-            "max_width": "normal",
-            "alignment": "left",
-            "type_preset": "paragraph",
-            "font": "var(--font-body--family)",
-            "font_size": "",
-            "line_height": "normal",
-            "letter_spacing": "normal",
-            "case": "none",
-            "wrap": "pretty",
-            "background": false,
-            "background_color": "#00000026",
-            "corner_radius": 0,
-            "padding-block-start": 0,
-            "padding-block-end": 0,
-            "padding-inline-start": 0,
-            "padding-inline-end": 0
-          },
-          "blocks": {}
-        },
         "details": {
           "type": "group",
           "name": "Details",
@@ -521,8 +471,6 @@
         }
       },
       "block_order": [
-        "heading",
-        "intro",
         "details"
       ],
       "settings": {
