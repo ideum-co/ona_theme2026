@@ -1,3 +1,7 @@
+{%- comment -%}
+  The main menu links to /pages/locations#flagships_content, so this section
+  must keep id="flagships_content" -- see the anchor on the <section> below.
+{%- endcomment -%}
 {%- liquid
   assign all_locations = shop.metaobjects.store_location.values
   assign content_width = 'var(--max-width--body-normal)'
