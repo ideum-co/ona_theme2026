@@ -12,14 +12,24 @@
   elsif block.settings.media_type == 'video' and block.settings.video != blank
     assign has_media = true
   endif
+
+  # Per-block choice for the empty case. Defaults to hiding (and treats an older block saved
+  # before this setting the same way); turn it off to show a placeholder on the storefront too.
+  assign hide_when_empty = true
+  if block.settings.hide_when_empty == false
+    assign hide_when_empty = false
+  endif
+
+  # Show the media when there is some; in the theme editor always show it (placeholder included) so
+  # the block stays selectable and media can be assigned; on the storefront with no media, show the
+  # placeholder only when the merchant has turned off "hide when empty".
+  assign show_media = false
+  if has_media or request.design_mode or hide_when_empty == false
+    assign show_media = true
+  endif
 %}
 
-{%- comment -%}
-  On the storefront, render nothing when there is no media, so an unassigned (dynamic) image does
-  not fall back to a stock placeholder. In the theme editor we keep the placeholder so the block
-  stays selectable and a merchant can still assign media.
-{%- endcomment -%}
-{% if has_media or request.design_mode %}
+{% if show_media %}
   {% render 'media', unset_image_tag: unset_image_tag %}
 {% endif %}
 
@@ -43,6 +53,13 @@
         }
       ],
       "default": "image"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_when_empty",
+      "label": "Hide when no media",
+      "info": "On the storefront, hide this media when no image or video is set (for example a product with no metaobject image), so no stock placeholder shows. The theme editor always shows a placeholder so you can still assign one. Turn off to show a placeholder on the storefront too.",
+      "default": true
     },
     {
       "type": "image_picker",
