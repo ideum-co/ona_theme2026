@@ -12,9 +12,34 @@
  */
 /* Legacy ONA page templates: responsive layout while retaining original editorial blocks.
    Loaded only for the six migrated page suffixes. */
-#MainContent { --legacy-page-gutter: clamp(20px, 5vw, 72px); --legacy-page-gap: clamp(48px, 7vw, 110px); }
+/*
+ * Gutter and measure come from Horizon's own page-width system, so a legacy
+ * section lines up with a Horizon one on the same page instead of sitting a few
+ * dozen pixels inside or outside it.
+ *
+ * Horizon (assets/base.css, "Set up page widths & margins") uses --page-margin
+ * 16px, 40px from 750px up, and caps content at a width token from
+ * snippets/theme-styles-variables.liquid. Those variables are only declared on
+ * .page-width-* elements, which legacy markup is not inside, so the values are
+ * restated here against Horizon's own breakpoint rather than referenced.
+ *
+ * Measured before: /pages/faq's <h1> at left=0 (no rule at all), then left=70
+ * once the sheet loaded, against left=40 for the Horizon section beneath it.
+ *
+ * The cap is --narrow-page-width (90rem/1440px), the Horizon token nearest the
+ * 1280px the ported design used. That keeps the legacy measure close to its
+ * intent while making the two systems agree exactly up to a 1520px viewport,
+ * where both become viewport-bound. Above that Horizon keeps widening toward
+ * --normal-page-width (120rem) and these pages hold at 1440. Closing that last
+ * gap means choosing the final measure against the XD, which is a design call
+ * for a later stage, not a token swap.
+ */
+#MainContent { --legacy-page-gutter: 16px; --legacy-page-measure: 90rem; --legacy-page-gap: clamp(48px, 7vw, 110px); }
+@media screen and (min-width: 750px) {
+  #MainContent { --legacy-page-gutter: 40px; }
+}
 #MainContent > .shopify-section { min-width:0; }
-#MainContent :is(.medium-container,.container) { width:min(100% - 2 * var(--legacy-page-gutter), 1280px); max-width:1280px; margin-inline:auto; }
+#MainContent :is(.medium-container,.container) { width:min(100% - 2 * var(--legacy-page-gutter), var(--legacy-page-measure)); margin-inline:auto; }
 #MainContent :is(.about,.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) { position:relative; padding-block:var(--legacy-page-gap); }
 #MainContent :is(.about,.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) :is(h1,h2,h3,p) { overflow-wrap:break-word; }
 #MainContent :is(.about,.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) h2 { font-family:var(--font-heading--family,serif); font-size:clamp(30px,4.5vw,60px); line-height:1.1; margin:0 0 20px; }
@@ -34,8 +59,8 @@
 #MainContent .sustainability-top img { display:block; width:100%; height:auto; }
 #MainContent .awards table { width:100%; border-collapse:collapse; }
 #MainContent .awards td { padding:12px 8px; border-bottom:1px solid currentColor; }
-#MainContent .sustainability-top .content { width:min(100% - 2 * var(--legacy-page-gutter),1280px); margin-inline:auto; }
-#MainContent .sustainability-list { display:grid; gap:clamp(28px,4vw,64px); width:min(100% - 2 * var(--legacy-page-gutter),1280px); margin-inline:auto; }
+#MainContent .sustainability-top .content { width:min(100% - 2 * var(--legacy-page-gutter),var(--legacy-page-measure)); margin-inline:auto; }
+#MainContent .sustainability-list { display:grid; gap:clamp(28px,4vw,64px); width:min(100% - 2 * var(--legacy-page-gutter),var(--legacy-page-measure)); margin-inline:auto; }
 #MainContent .sustainability-list .list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:32px; align-items:center; }
 #MainContent .sustainability-list .img-bg { min-height:280px; background-size:cover; background-position:center; }
 #MainContent .banner-top { position:relative; min-height:clamp(240px,35vw,520px); display:flex; align-items:center; isolation:isolate; padding-block:50px; overflow:hidden; }
@@ -45,7 +70,9 @@
 #MainContent .animated-svg { max-width:100%; height:auto; }
 #MainContent img { max-width:100%; }
 @media(max-width:749px){
- #MainContent { --legacy-page-gutter:20px; --legacy-page-gap:52px; }
+ /* --legacy-page-gutter is Horizon's --page-margin and is already 16px below
+    750px; only the vertical rhythm tightens here. */
+ #MainContent { --legacy-page-gap:52px; }
  #MainContent .about .medium-container,
  #MainContent .our-philoshophy .content,
  #MainContent .awards .content,
@@ -79,7 +106,7 @@
 #MainContent .bread-crumbs-content ul { display:flex; flex-wrap:wrap; gap:12px; list-style:none; padding:0; }
 #MainContent .product-search iframe { max-width:100%; width:100%; }
 #MainContent .training-bookings .form { padding:clamp(20px,3vw,40px); }
-#MainContent .add-image-and-text-slider .add-images-slider { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; width:min(100% - 2 * var(--legacy-page-gutter),1280px); margin-inline:auto; }
+#MainContent .add-image-and-text-slider .add-images-slider { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; width:min(100% - 2 * var(--legacy-page-gutter),var(--legacy-page-measure)); margin-inline:auto; }
 @media(max-width:749px) {
  #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.two-columns-title-intro,.training-bookings) > .container > .content,
  #MainContent .training > .container,
@@ -130,7 +157,7 @@
  * max 170px wide. `width: auto` is the part that matters -- without it the
  * base.css rule wins and max-width alone cannot pull the image back.
  */
-#MainContent .col-4-icons .container { width:min(100% - 2 * var(--legacy-page-gutter),1280px); margin-inline:auto; }
+#MainContent .col-4-icons .container { width:min(100% - 2 * var(--legacy-page-gutter),var(--legacy-page-measure)); margin-inline:auto; }
 #MainContent .col-4-icons .content { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:clamp(20px,3vw,40px); align-items:start; }
 #MainContent .col-4-icons .content .block { margin:0; padding:0; }
 #MainContent .col-4-icons .box { display:grid; justify-items:center; gap:clamp(16px,2vw,40px); text-align:center; }
