@@ -214,12 +214,27 @@
  * the centre of the photo -- `img` must be the element on top, as it is in
  * production.
  *
- * Measured by injecting this into the live pages, images forced to load:
- *   /pages/barista-courses  13,246px -> 10,484px
- *   /pages/wholesale        23,611px -> 22,126px
- *   /pages/about             7,242px ->  6,870px
+ * The wrapper is matched by SHAPE, not by class name. A first version keyed
+ * on `.img`, and missed two other wrappers the same sections use --
+ * `ona-training-image-text` nests the pair in `.image-box`, and /pages/about
+ * puts the awards blob straight in `.left-box`. Those blobs stayed in flow
+ * and the page barely moved. Codex, #213.
+ *
+ * `:has(> .animated-svg):has(img)` is the shape every one of them shares: a
+ * wrapper holding the blob AND something with an image. The `:has(img)` half
+ * matters -- /pages/about also has a blob whose wrapper has no image, and
+ * taking that one out of flow would collapse its wrapper to zero height.
+ *
+ * Measured by injecting this into the live pages, images forced to load, from
+ * a page that actually loads this stylesheet (the first attempt injected into
+ * /blogs/brewguides, which does not, so the numbers were taken without it):
+ *
+ *                           before    .img only    by shape
+ *   /pages/barista-courses  13,710px   10,948px    10,520px   svgs in flow 6 -> 1 -> 0
+ *   /pages/about             7,242px    6,870px     6,384px                2 -> 1 -> 0
+ *   /pages/wholesale        25,431px   23,539px    23,539px                6 -> 0 -> 0
  *   learn, private-courses: unchanged (they carry no .animated-svg)
  */
-#MainContent .img:has(> .animated-svg) { position: relative; display: flex; }
-#MainContent .img > .animated-svg { position: absolute; inset-block-start: 0; inset-inline: 0; z-index: 1; max-width: 100%; height: auto; }
-#MainContent .img > .animated-svg ~ img { position: relative; z-index: 2; }
+#MainContent :has(> .animated-svg):has(img) { position: relative; }
+#MainContent :has(> .animated-svg):has(img) > .animated-svg { position: absolute; inset-block-start: 0; inset-inline: 0; z-index: 1; max-width: 100%; height: auto; }
+#MainContent :has(> .animated-svg):has(img) img { position: relative; z-index: 2; }

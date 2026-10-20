@@ -128,12 +128,12 @@ test('the decorative blob sits behind the photo, not above it in flow', () => {
    * z-index 2 so it covers the blob. Only the crescent extending past the
    * photo shows.
    */
-  const svg = layout.match(/#MainContent \.img > \.animated-svg\s*\{([^}]*)\}/);
+  const svg = layout.match(/#MainContent :has\(> \.animated-svg\):has\(img\) > \.animated-svg\s*\{([^}]*)\}/);
   assert.ok(svg, 'the blob must be taken out of flow');
   assert.match(svg[1], /position:\s*absolute/, 'in flow it stacks above the photo');
   assert.match(svg[1], /z-index:\s*1/);
 
-  const container = layout.match(/#MainContent \.img:has\(> \.animated-svg\)\s*\{([^}]*)\}/);
+  const container = layout.match(/#MainContent :has\(> \.animated-svg\):has\(img\)\s*\{([^}]*)\}/);
   assert.ok(container, 'the blob needs a positioned ancestor');
   assert.match(container[1], /position:\s*relative/);
 
@@ -142,8 +142,20 @@ test('the decorative blob sits behind the photo, not above it in flow', () => {
    * it first: without it the blob paints OVER the photo and the page looks
    * worse, not better. Production puts the photo above the blob.
    */
-  const image = layout.match(/#MainContent \.img > \.animated-svg ~ img\s*\{([^}]*)\}/);
+  const image = layout.match(/#MainContent :has\(> \.animated-svg\):has\(img\) img\s*\{([^}]*)\}/);
   assert.ok(image, 'the photo must be lifted above the blob');
   assert.match(image[1], /position:\s*relative/);
   assert.match(image[1], /z-index:\s*2/, 'without this the blob covers the photo');
+
+  /*
+   * Keyed on shape, not class: the same sections wrap the pair in `.img`,
+   * `.image-box` and `.left-box`, and a rule naming one of them misses the
+   * others. Codex, #213 -- the first version matched `.img` and left the
+   * /pages/about blob in flow.
+   */
+  assert.doesNotMatch(
+    layout,
+    /#MainContent \.img:has\(> \.animated-svg\)/,
+    'do not key the blob rule on one wrapper class; match the shape',
+  );
 });
