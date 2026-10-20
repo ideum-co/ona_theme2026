@@ -196,8 +196,10 @@ go to `carousel`. **`marquee`** was rejected for animating where the logo wall
 was static; #253 animated the logo wall, so that objection is gone. It stays
 out for a different reason, measured on the files rather than assumed:
 `sections/marquee.liquid` takes `logo` blocks, but `blocks/logo.liquid` renders
-the *shop's* logo and has neither an image picker nor a link, so ten linked
-partner logos would have to go in `icon` blocks instead — those do fit
+the *shop's* logo and has neither an image picker nor a link, so the five
+linked partner logos the live instance carries (`templates/page.wholesale.json`
+→ `wholesale_brands`: Nucleus, Sanremo, La Marzocco, Mahlkönig and Ubermilk,
+all five enabled) would have to go in `icon` blocks instead — those do fit
 (`image_upload` + `link`) — and neither `sections/marquee.liquid` nor
 `blocks/_marquee.liquid` pauses on hover or focus, which #253's marquee does.
 Promoting it means closing that gap and making the argument, not adding a row

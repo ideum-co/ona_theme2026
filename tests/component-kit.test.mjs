@@ -152,16 +152,46 @@ test('every ona-* section is referenced, and every referenced one exists', () =>
     `the kit says ${sentence[1]} sections are shared, but ${shared.length} are`
   );
 
-  /* Each name is followed by its templates in parentheses, so the count in there is the
-     multiplicity the doc claims -- the number a second template use would silently change. */
+  /* Each name is followed by its templates in parentheses. Comparing only how MANY are listed
+     would stay green when a section moves between templates without changing its number of uses,
+     so the names are compared too. The doc shortens a filename to a readable prefix
+     ("private-courses" for page.private-courses-and-experiences.json), which is why each
+     nickname is resolved against the slugs rather than matched whole -- and resolving it is
+     itself an assertion, since a nickname that fits two templates, or none, is also a defect. */
+  const slug = (file) => file.replace(/^page\./, '').replace(/\.json$/, '');
   const claimed = [...sentence[2].matchAll(/`([^`]+)`\s*\(([^)]*)\)/g)].map((match) => [
     match[1],
-    match[2].split(',').filter((part) => part.trim()).length,
+    match[2].split(',').map((part) => part.trim()).filter(Boolean),
   ]);
+
+  const resolved = claimed.map(([type, nicknames]) => {
+    const files = shared.find(([name]) => name === type)?.[1];
+    assert.ok(files, `the kit lists ${type} as shared, but no two templates reference it`);
+    return [
+      type,
+      nicknames
+        .map((nickname) => {
+          /* Exact first: "faq" is also a prefix of "faq-subscriptions", so prefix matching alone
+             is ambiguous wherever one template's name extends another's. */
+          const names = [...files].map(slug);
+          const hits = names.includes(nickname)
+            ? [nickname]
+            : names.filter((name) => name.startsWith(nickname));
+          assert.equal(
+            hits.length,
+            1,
+            `the kit says ${type} is used by "${nickname}", which matches ${hits.length} of the templates that reference it`
+          );
+          return hits[0];
+        })
+        .sort(),
+    ];
+  });
+
   assert.deepEqual(
-    claimed.sort(),
-    shared.map(([type, files]) => [type, files.size]).sort(),
-    'the shared-section list disagrees with the templates that actually reference them'
+    resolved.sort(),
+    shared.map(([type, files]) => [type, [...files].map(slug).sort()]).sort(),
+    'the shared-section list names different templates from the ones that reference those sections'
   );
 });
 
