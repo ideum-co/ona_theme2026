@@ -15,12 +15,38 @@ const kitRows = doc
   .filter((line) => /^\| \d+ \|/.test(line))
   .map((line) => line.split('|').map((cell) => cell.trim()));
 
+const stripBanner = (text) => text.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '');
 const backticked = (text) => [...text.matchAll(/`([^`]+)`/g)].map((match) => match[1]);
 const resolve = (name) =>
   ['sections', 'blocks'].map((dir) => join(root, dir, `${name}.liquid`)).find(existsSync);
 
+const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+
 test('the kit names eight components', () => {
   assert.equal(kitRows.length, 8);
+});
+
+/*
+ * The count is stated three times -- the kit's own line, its collapse sentence, and stage 2 of
+ * page-design-structure.md -- and the table is the only one of the four that a reader can
+ * check. Asserting the table alone let a stale "nine components" sit in the summary while the
+ * suite passed, so this derives both numbers from the table and looks for them everywhere they
+ * are claimed.
+ */
+test('every statement of the count agrees with the table', () => {
+  const total = NUMBER_WORDS[kitRows.length];
+  const existing = NUMBER_WORDS[kitRows.filter((row) => !/to write/i.test(row.join(' '))).length];
+  const structure = readFileSync(join(root, 'docs/page-design-structure.md'), 'utf8');
+
+  const claims = [
+    [doc, new RegExp(`${total} components\\. ${existing} are`, 'i'), 'the kit headline'],
+    [doc, new RegExp(`collapse to about ${total}`, 'i'), "the kit's collapse sentence"],
+    [structure, new RegExp(`collapses to\\s+${total} components — ${existing} of which`, 'i'), 'stage 2'],
+  ];
+
+  for (const [text, pattern, where] of claims) {
+    assert.match(text, pattern, `${where} does not say ${total} components, ${existing} existing`);
+  }
 });
 
 test('every component the kit names exists, except the one it says to write', () => {
@@ -74,7 +100,6 @@ test('the sections the kit calls Horizon-native really do style themselves', () 
  * so both directions of this are the rule, not a snapshot.
  */
 test('every ona-* section is referenced, and every referenced one exists', () => {
-  const stripBanner = (text) => text.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '');
   const referenced = new Set();
 
   const templates = join(root, 'templates');
@@ -133,6 +158,35 @@ test('carousel still composes a static header and media cards', () => {
   for (const type of ['image', 'video', 'text']) {
     assert.ok(accepts('blocks/_card.liquid').includes(type), `a card no longer takes ${type}`);
   }
+});
+
+/*
+ * The kit maps all ten *-sourcing-v* clones onto media-with-content on the strength of one
+ * measurement: between them they have no enabled blocks, so the trailing quote slider their
+ * markup carries draws nothing and the live render really is the two-column row. Enable one
+ * block and that stops being true -- the conversion would then drop visible content -- so the
+ * claim is rechecked here rather than trusted.
+ */
+test('the sourcing clones still render nothing from their blocks', () => {
+  const live = [];
+
+  const templates = join(root, 'templates');
+  for (const file of readdirSync(templates)) {
+    if (!file.endsWith('.json')) continue;
+    const parsed = JSON.parse(stripBanner(readFileSync(join(templates, file), 'utf8')));
+    for (const section of Object.values(parsed.sections ?? {})) {
+      if (!/sourcing/.test(section.type ?? '')) continue;
+      for (const block of Object.values(section.blocks ?? {})) {
+        if (!block.disabled) live.push(`${file}:${section.type}`);
+      }
+    }
+  }
+
+  assert.deepEqual(
+    live,
+    [],
+    'a sourcing section has an enabled block, so its trailing quote slider is live and media-with-content would drop it'
+  );
 });
 
 test('stage 2 points at the kit', () => {

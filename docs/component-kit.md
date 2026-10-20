@@ -76,6 +76,27 @@ dots. The videos, the copy and the Get In Touch button all map; the named
 selector does not. **Decide that one with ONA** before converting wholesale —
 accept dots, or keep the selector as a small block of its own.
 
+### The media slot holds less than the sections do
+
+`media-with-content` looked like the home for all six media/text variants. Its
+media block, `_media-without-appearance`, takes **one** image or one
+Shopify-hosted video — and four of the six need more than that:
+
+| Section | Live media | Fits the slot? |
+| --- | --- | --- |
+| `ona-training-image-text` | one image | yes |
+| `ona-expericences-content` | one image | yes |
+| `ona-training` | `media_type: embed`, a youtu.be URL | no — external |
+| `ona-wholesale-partnership` | `media_type: embed`, a YouTube watch URL | no — external |
+| `ona-training-text-image-bg` | a pasted `<iframe>` of a YouTube embed, over a background image | no — external, and two layers |
+| `ona-training-text-two-images` | `image` **and** `image2`, rendered together | no — two |
+
+Those four go to component 1 instead: a `section` holding a row `group`, with a
+`video` block (whose `video_url` accepts YouTube and Vimeo) or two `image`
+blocks on one side and a column `group` of text on the other. Same layout, same
+media, and it is still a merchant-editable block tree — which is stage 2's
+actual test. Only the two single-image ones are `media-with-content`.
+
 ### Read the markup, not the schema
 
 Three of the mappings in the first draft of this document were wrong in the
@@ -124,8 +145,8 @@ has to be written.
 
 | # | Component | What it is | Replaces |
 | --- | --- | --- | --- |
-| 1 | `section` + `group`/`text`/`image`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×78, `group` ×34, `button` ×14, `image` ×11. `image` carries a `link`, so a static wall of linked logos is this, not a marquee. | anything that is just stacked copy, and `ona-wholesale-brands` |
-| 2 | `media-with-content` | media slot + content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones and the 6 media/text variants |
+| 1 | `section` + `group`/`text`/`image`/`video`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×78, `group` ×34, `button` ×14, `image` ×11. A `group` has `content_direction`, so a row of two blocks is a media/text layout; `image` carries a `link` and `video` carries a YouTube/Vimeo URL. | anything that is just stacked copy, `ona-wholesale-brands`, and the four media/text variants `media-with-content` cannot hold (below) |
+| 2 | `media-with-content` | one fixed media slot + a content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones, and the two media/text variants whose media is a single image |
 | 3 | `hero` | full-bleed media with blocks over it: desktop and custom mobile media, overlay, `section_height`, `fetchpriority` on the image itself. Already on the homepage. | `ona-training-banner`, `ona-inner-banner` |
 | 4 | `carousel` | the composite: a static `group` header taking `@theme` blocks, then `_carousel-content` holding `_card`s that take `image`, `video`, `text` or any theme block | the **5** panel-plus-slider sections in the table above |
 | 5 | `press-quotes` | quote carousel: logo, quote, attribution, arrows when blocks outnumber columns | `ona-cafe-testimonial` (and already carrying its four quotes on the homepage, #246) |
