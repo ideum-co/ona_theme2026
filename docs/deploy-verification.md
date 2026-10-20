@@ -36,6 +36,8 @@ minified with `/` escaped as `\/`.
 | Brew Guide tab appears | `/products/aspen` | Tab present, intro + spec table, "Full brewing guide" links to `/blogs/brewguides/aspen` |
 | Brew Guide tab **hides** | `/products/ona-coffee-canberra-mug` | No Brew Guide tab at all — not an empty one |
 | Brew Guide with no article | `/products/drip-bag-filter-op1-q2` | Tab and specs show; no link (that product has no `select_artlice`) |
+| Origin tab appears | `/products/filter-el-angel-el-salvador-natural` | Origin + Sourcing prose (not raw `{"type":"root"`), and a spec list with Producer / Region / Varietal / Process / Altitude |
+| Origin tab **hides** | `/products/aspen` | No Origin tab — Aspen is a blend and carries none of the `custom.origin_*` fields |
 | Profile tab is its own copy | `/products/aspen` | Profile body ≠ the description in the details column, and reads as prose — raw `{"type":"root"` means the rich text lost its `metafield_tag` |
 | Empty tabs pruned (#236) | any PDP | No tab opens a blank panel; tab strip numbering still selects the right panel |
 | Coffee quiz still present | any PDP | The quiz section renders — it exists only in the theme's copy of `product.json` |

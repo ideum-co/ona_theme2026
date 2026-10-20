@@ -1,0 +1,209 @@
+{%- doc -%}
+  Where a coffee comes from and how it was bought, read from the product's own metafields.
+
+  Same contract as blocks/product-brew-guide.liquid, and for the same reason: it is built for a
+  product tab, where #236's pruning removes a tab whose panel renders nothing. The block emits no
+  markup at all unless the product carries origin copy or at least one spec, so a single origin
+  keeps its Origin tab and a mug, a grinder or a blend never grows one. Nobody has to tick a box.
+
+  Consequently the CSS lives in {% stylesheet %} and NOT in an inline <style>. The pruning test is
+  `panel.textContent.trim() === ''`, and a <style> element's text counts towards that, so an inline
+  sheet would keep every empty panel alive and put the tab back on all 43 products without origin
+  data.
+
+  This replaces the disabled `story` section in templates/product.json, which read the
+  `accentuate.*` namespace. Those fields were migrated to `custom.*`, so the old section could only
+  ever have rendered blank -- which is why it is disabled rather than broken-looking. Metafield
+  types, see reference_shopify_json_string_metafield_no_value:
+    - custom.origin_intro    rich_text_field          -> | metafield_tag, no bare drop
+    - custom.sourcing_intro  rich_text_field          -> | metafield_tag, no bare drop
+    - custom.producer        single_line_text_field   -> .value is the string
+    - custom.region          single_line_text_field   -> .value is the string
+    - custom.varietal        single_line_text_field   -> .value is the string
+    - custom.process         single_line_text_field   -> .value is the string
+    - custom.altitude        single_line_text_field   -> .value is the string
+
+  Coverage on 2026-10-20: 17 of 60 active products carry origin copy or specs.
+{%- enddoc -%}
+
+{%- liquid
+  assign product = closest.product
+  assign origin = product.metafields.custom.origin_intro
+  assign sourcing = product.metafields.custom.sourcing_intro
+
+  assign producer = product.metafields.custom.producer.value | strip
+  assign region = product.metafields.custom.region.value | strip
+  assign varietal = product.metafields.custom.varietal.value | strip
+  assign process = product.metafields.custom.process.value | strip
+  assign altitude = product.metafields.custom.altitude.value | strip
+
+  assign has_specs = false
+  if producer != blank or region != blank or varietal != blank or process != blank or altitude != blank
+    assign has_specs = true
+  endif
+-%}
+
+{%- if origin != blank or sourcing != blank or has_specs -%}
+  <div class="origin-story">
+    {%- if origin != blank or sourcing != blank -%}
+      <div class="origin-story__copy">
+        {%- if origin != blank -%}
+          {%- if block.settings.origin_heading != blank -%}
+            <h3 class="origin-story__heading">{{ block.settings.origin_heading }}</h3>
+          {%- endif -%}
+          <div class="origin-story__prose rte">{{ origin | metafield_tag }}</div>
+        {%- endif -%}
+
+        {%- if sourcing != blank -%}
+          {%- if block.settings.sourcing_heading != blank -%}
+            <h3 class="origin-story__heading">{{ block.settings.sourcing_heading }}</h3>
+          {%- endif -%}
+          <div class="origin-story__prose rte">{{ sourcing | metafield_tag }}</div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if has_specs -%}
+      <dl class="origin-story__specs">
+        {%- if producer != blank -%}
+          <div class="origin-story__row">
+            <dt class="origin-story__label">Producer</dt>
+            <dd class="origin-story__value">{{ producer }}</dd>
+          </div>
+        {%- endif -%}
+        {%- if region != blank -%}
+          <div class="origin-story__row">
+            <dt class="origin-story__label">Region</dt>
+            <dd class="origin-story__value">{{ region }}</dd>
+          </div>
+        {%- endif -%}
+        {%- if varietal != blank -%}
+          <div class="origin-story__row">
+            <dt class="origin-story__label">Varietal</dt>
+            <dd class="origin-story__value">{{ varietal }}</dd>
+          </div>
+        {%- endif -%}
+        {%- if process != blank -%}
+          <div class="origin-story__row">
+            <dt class="origin-story__label">Process</dt>
+            <dd class="origin-story__value">{{ process }}</dd>
+          </div>
+        {%- endif -%}
+        {%- if altitude != blank -%}
+          <div class="origin-story__row">
+            <dt class="origin-story__label">Altitude</dt>
+            <dd class="origin-story__value">{{ altitude }}</dd>
+          </div>
+        {%- endif -%}
+      </dl>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .origin-story {
+    display: grid;
+    gap: var(--gap-2xl);
+    width: 100%;
+  }
+
+  /* Horizon's own breakpoint, so the specs move beside the copy when the tab strip does. */
+  @media screen and (min-width: 750px) {
+    .origin-story {
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .origin-story__copy {
+    display: grid;
+    gap: var(--gap-md);
+  }
+
+  .origin-story__heading {
+    margin: 0;
+    font-size: var(--font-h5--size);
+  }
+
+  /* The authored rich text is plain paragraphs, so the spacing is this block's to set. */
+  .origin-story__heading + .origin-story__prose {
+    margin-block-start: calc(var(--gap-sm) * -1);
+  }
+
+  .origin-story__prose {
+    font-size: var(--font-paragraph--size);
+    line-height: 1.6;
+  }
+
+  .origin-story__prose > :first-child {
+    margin-block-start: 0;
+  }
+
+  .origin-story__prose > :last-child {
+    margin-block-end: 0;
+  }
+
+  .origin-story__specs {
+    margin: 0;
+    display: grid;
+    align-self: start;
+  }
+
+  /*
+   * currentColor throughout. The panel paints itself from the product's own
+   * pdp_background_color and sets the foreground to match, so a hard-coded rule or label colour
+   * would be invisible on at least one of the eleven product colours.
+   */
+  .origin-story__row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--gap-sm);
+    padding-block: var(--gap-md);
+    border-block-end: 1px solid currentColor;
+  }
+
+  .origin-story__row:first-child {
+    border-block-start: 1px solid currentColor;
+  }
+
+  .origin-story__label {
+    font-size: var(--font-h6--size);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .origin-story__value {
+    margin: 0;
+    font-size: var(--font-paragraph--size);
+    text-align: end;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Origin story",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "origin_heading",
+      "label": "Origin heading",
+      "default": "Origin",
+      "info": "Shown only above a product's origin copy. Leave empty to hide it."
+    },
+    {
+      "type": "text",
+      "id": "sourcing_heading",
+      "label": "Sourcing heading",
+      "default": "Sourcing",
+      "info": "Shown only above a product's sourcing copy. Leave empty to hide it."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Origin story"
+    }
+  ]
+}
+{% endschema %}
