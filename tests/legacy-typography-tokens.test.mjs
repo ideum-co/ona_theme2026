@@ -17,16 +17,10 @@ const read = (p) => readFileSync(resolve(root, p), 'utf8');
  * difference between a page that belongs to this site and one that does not.
  */
 
-/*
- * sections/locations-flagships.liquid still carries two invented clamps
- * (4.5rem and 3.5rem) and is deliberately absent here: PR #231 is rewriting
- * that file's tablist, and converting its type in parallel would mean
- * resolving the same hunk twice. It joins this list in the follow-up, which is
- * the commit that converts it.
- */
 const FILES = [
   'assets/legacy-page-layout.css',
   'sections/locations-store-finder.liquid',
+  'sections/locations-flagships.liquid',
   'sections/ona-page-media-gallery.liquid',
 ];
 
