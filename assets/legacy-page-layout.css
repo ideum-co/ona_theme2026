@@ -285,3 +285,10 @@
 @media(prefers-reduced-motion: reduce){
  #MainContent .unique-coffee-block .imgs-slider-unique > .slider-block { transition: none; }
 }
+
+/*
+ * The FAQ collapse used to live here, but legacy-page-layout.css is loaded
+ * only for a fixed list of page suffixes while those sections carry presets
+ * and can be placed on any template. The rules moved into each section's own
+ * {% stylesheet %} so they travel with it. Codex, #218.
+ */

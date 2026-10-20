@@ -1,3 +1,4 @@
+<script src="{{ 'ona-faqs.js' | asset_url }}" type="module"></script>
 <section class="add-faqs-section " id="{{ section.settings.id }}">
     <div class="container">
         <div class="title">
@@ -7,8 +8,9 @@
         {% for block in section.blocks %}
           <div class="block is-active">
               <div class="faqs-title {% if forloop.index == 1 %}is-active{% endif %}">
-                  <p>{{ block.settings.title }}</p>
-              </div>
+{%- comment -%} A button, so the row can be focused and pressed. {%- endcomment -%}
+<button type="button" class="faqs-toggle" aria-expanded="{% if forloop.index == 1 %}true{% else %}false{% endif %}">{{ block.settings.title }}</button>
+</div>
               <div class="faqs-text {% if forloop.index == 1 %}is-active{% endif %}">
                   {{ block.settings.content }}
               </div>
@@ -20,6 +22,35 @@
         </div>
     </div>
 </section>
+{% stylesheet %}
+  /*
+   * The collapse lives with the section, not in legacy-page-layout.css.
+   *
+   * That stylesheet is loaded only for a fixed list of page suffixes in
+   * layout/theme.liquid, but this section has a preset, so it can be added to
+   * any JSON template. Where the sheet is absent the script would still toggle
+   * `is-active` while nothing hid or revealed the answer -- every answer open
+   * and clicks apparently doing nothing. Codex, #218.
+   */
+  .add-faqs .faqs-text { display: none; }
+  .add-faqs .faqs-text.is-active { display: block; }
+
+  /* `button` takes the UA font unless told otherwise. */
+  .add-faqs .faqs-toggle {
+    display: block;
+    inline-size: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: inherit;
+    cursor: pointer;
+  }
+
+  .add-faqs .faqs-toggle:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": {
