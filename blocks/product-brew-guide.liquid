@@ -12,7 +12,7 @@
   sheet would keep every empty panel alive and bring the tab back on all 37 non-coffee products.
 
   Metafield types matter here, see reference_shopify_json_string_metafield_no_value:
-    - custom.brew_guide_intro  rich_text_field            -> render the metafield, no .value
+    - custom.brew_guide_intro  rich_text_field            -> | metafield_tag, no .value
     - custom.brew_spec_labels  list.single_line_text_field -> .value is the array
     - custom.brew_spec_values  list.single_line_text_field -> .value is the array
     - accentuate.select_artlice  string (DEPRECATED)        -> .value is nil, read it directly
@@ -49,7 +49,7 @@
     {%- if intro != blank or guide != blank -%}
       <div class="brew-guide__intro">
         {%- if intro != blank -%}
-          <div class="brew-guide__copy rte">{{ intro }}</div>
+          <div class="brew-guide__copy rte">{{ intro | metafield_tag }}</div>
         {%- endif -%}
         {%- if guide != blank and block.settings.link_label != blank -%}
           <a class="brew-guide__link" href="{{ guide.url }}">{{ block.settings.link_label }}</a>

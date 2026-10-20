@@ -616,7 +616,7 @@
                       "type": "text",
                       "name": "t:names.text",
                       "settings": {
-                        "text": "{{ closest.product.metafields.custom.profile_intro }}",
+                        "text": "{{ closest.product.metafields.custom.profile_intro | metafield_tag }}",
                         "width": "fit-content",
                         "max_width": "normal",
                         "alignment": "left",

@@ -36,7 +36,7 @@ minified with `/` escaped as `\/`.
 | Brew Guide tab appears | `/products/aspen` | Tab present, intro + spec table, "Full brewing guide" links to `/blogs/brewguides/aspen` |
 | Brew Guide tab **hides** | `/products/ona-coffee-canberra-mug` | No Brew Guide tab at all — not an empty one |
 | Brew Guide with no article | `/products/drip-bag-filter-op1-q2` | Tab and specs show; no link (that product has no `select_artlice`) |
-| Profile tab is its own copy | `/products/aspen` | Profile body ≠ the description in the details column |
+| Profile tab is its own copy | `/products/aspen` | Profile body ≠ the description in the details column, and reads as prose — raw `{"type":"root"` means the rich text lost its `metafield_tag` |
 | Empty tabs pruned (#236) | any PDP | No tab opens a blank panel; tab strip numbering still selects the right panel |
 | Coffee quiz still present | any PDP | The quiz section renders — it exists only in the theme's copy of `product.json` |
 | Sticky Add to cart | any PDP, scroll past the real button | Appears. Do **not** "fix" this; it works |

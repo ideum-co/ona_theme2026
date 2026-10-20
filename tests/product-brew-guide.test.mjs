@@ -73,7 +73,15 @@ test('each metafield is read the way its own type requires', () => {
   assert.match(block, /assign labels = product\.metafields\.custom\.brew_spec_labels\.value/, 'list metafields need .value');
   assert.match(block, /assign values = product\.metafields\.custom\.brew_spec_values\.value/, 'list metafields need .value');
 
-  assert.match(block, /assign intro = product\.metafields\.custom\.brew_guide_intro\b(?!\.value)/, 'rich text renders directly');
+  assert.match(block, /assign intro = product\.metafields\.custom\.brew_guide_intro\b(?!\.value)/, 'rich text takes no .value');
+
+  /*
+   * A rich_text_field printed as a bare drop exposes its structured representation rather than the
+   * authored HTML; `metafield_tag` is the filter Shopify provides for it. The rest of this template
+   * already does this -- product.json's `description_video` and the three `who_is_for` descriptions
+   * all go through it. Codex, #240.
+   */
+  assert.match(block, /\{\{ intro \| metafield_tag \}\}/, 'rich text must be rendered through metafield_tag');
   assert.match(
     block,
     /assign guide_path = product\.metafields\.accentuate\.select_artlice \| strip/,
@@ -126,8 +134,8 @@ test('the Profile tab has its own text rather than a second copy of the descript
 
   const texts = Object.values(content).map((b) => b.settings?.text ?? '');
   assert.ok(
-    texts.some((t) => t.includes('metafields.custom.profile_intro')),
-    'the Profile tab must read its own metafield',
+    texts.some((t) => t.includes('{{ closest.product.metafields.custom.profile_intro | metafield_tag }}')),
+    'the Profile tab must read its own metafield, through metafield_tag like the rest of this template',
   );
   assert.ok(
     !texts.some((t) => t.trim() === '{{ closest.product.description }}'),
