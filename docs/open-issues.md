@@ -114,12 +114,21 @@ fallback. The asset has to come across first.
 
 No published page uses the `locations` suffix; the live page uses `location`.
 
-### 12. The legacy measure and Horizon's still part above 1520px
+### 12. ~~The legacy measure and Horizon's still part above 1520px~~ — withdrawn
 
-After #226 the two agree exactly up to a 1520px viewport. Above that Horizon
-widens toward `--normal-page-width` (120rem) while legacy pages hold at
-`--narrow-page-width` (90rem). Closing it means choosing the final measure
-against the XD — a stage-3 design decision, deliberately not a token swap.
+This was wrong, and the measurement that found it was taken at too narrow a
+viewport to show it.
+
+`layout/theme.liquid` renders `<body class="page-width-{{ settings.page_width }}">`,
+and `assets/base.css` declares `--page-margin` and `--page-content-width` on
+those classes. Custom properties inherit, so legacy markup carries Horizon's
+live values already — measured on `/pages/faq`, the legacy `.container` resolves
+`--page-margin` to 40px and `--page-content-width` to 90rem, the same as the
+Horizon section beside it. At a 1686px viewport both sit at left=118, width=1440.
+
+They never diverged. The sheet now references those variables instead of
+restating them, so the gutter steps when Horizon's steps and the measure follows
+whichever `settings.page_width` is set.
 
 ## Process
 

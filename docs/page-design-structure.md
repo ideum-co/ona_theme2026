@@ -33,13 +33,17 @@ Everything below was measured, not assumed.
   `assets/base.css` also carries eight `max-width: 1200px` queries and one
   `min-width: 1400px`, and `snippets/theme-styles-variables.liquid` uses `40em`
   and `60em`. Those are Horizon's own and are left alone.
-- Width tokens, declared on `:root` in
-  `snippets/theme-styles-variables.liquid` so they are in scope everywhere and
-  should be **referenced, never copied**: `--narrow-page-width` 90rem (1440px),
+- Width tokens are declared on `:root` in
+  `snippets/theme-styles-variables.liquid`: `--narrow-page-width` 90rem (1440px),
   `--normal-page-width` 120rem (1920px), `--wide-page-width` 150rem (2400px),
-  `--normal-content-width` 42rem (672px). `--page-margin` is the exception — it
-  is declared on `.page-width-*` elements only, so legacy markup cannot inherit
-  it and its values have to be restated.
+  `--normal-content-width` 42rem (672px).
+- `--page-margin` and `--page-content-width` are declared on the
+  `.page-width-*` classes, and `layout/theme.liquid` puts one of those on
+  `<body>` from `settings.page_width`. Custom properties inherit, so **every
+  element on the page already has Horizon's live values** — including legacy
+  markup. Reference them; never restate them. Restating duplicates Horizon's
+  750px breakpoint, and pinning to a specific width token stops matching the
+  moment the theme's page-width setting changes.
 - Prose measures: `--max-width--body-normal` 32.5em,
   `--max-width--body-narrow` 22.75em.
 - Sections are a grid, not `max-width: X; margin: auto` — see the comment in
