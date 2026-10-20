@@ -4,22 +4,28 @@
     assign unset_image_tag = true
   endif
 
-  # Whether this block actually has media. Connected to a dynamic source (e.g. a product
-  # metaobject), the image or video comes back blank when the product has nothing assigned.
+  # `hide_when_empty` is passed in by a parent block that wants empty media to disappear instead of
+  # falling back to a stock placeholder -- the product-bound "Product media with text". The standard
+  # "Media with text" renders this block without it, so its behaviour is unchanged: a placeholder
+  # shows whenever no media is set, as before. It arrives as a content_for argument, which the
+  # linter does not know about (like `article` elsewhere), so the check is silenced for this line.
+  # theme-check-disable UndefinedObject
+  assign hide_empty = hide_when_empty | default: false
+  # theme-check-enable UndefinedObject
   assign has_media = false
   if block.settings.media_type == 'image' and block.settings.image != blank
     assign has_media = true
   elsif block.settings.media_type == 'video' and block.settings.video != blank
     assign has_media = true
   endif
+  # The theme editor always renders (placeholder included) so the block stays selectable.
+  assign show_media = true
+  if hide_empty and has_media == false and request.design_mode == false
+    assign show_media = false
+  endif
 %}
 
-{%- comment -%}
-  On the storefront, render nothing when there is no media, so an unassigned (dynamic) image does
-  not fall back to a stock placeholder. In the theme editor we keep the placeholder so the block
-  stays selectable and a merchant can still assign media.
-{%- endcomment -%}
-{% if has_media or request.design_mode %}
+{% if show_media %}
   {% render 'media', unset_image_tag: unset_image_tag %}
 {% endif %}
 

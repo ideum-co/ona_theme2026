@@ -115,19 +115,6 @@
     }
   }
 
-  /* When the media half renders nothing - e.g. a dynamic image the product has not set - the
-     content takes the full width instead of leaving an empty column. Higher specificity than the
-     layout rules above, so it wins at every breakpoint and over the media-right variant. */
-  .media-with-text:not(:has(.media-block)) {
-    grid-template-columns: 1fr;
-    grid-template-areas: 'content';
-
-    @media screen and (min-width: 750px) {
-      grid-template-columns: 1fr;
-      grid-template-areas: 'content';
-    }
-  }
-
   .media-with-text--mobile-content-first {
     @media screen and (max-width: 749px) {
       grid-template-areas: 'content' 'media';
