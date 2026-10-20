@@ -282,3 +282,80 @@ if (globalThis.customElements && !customElements.get('locations-flagship-gallery
 if (globalThis.customElements && !customElements.get('locations-flagships-loader')) {
   customElements.define('locations-flagships-loader', LocationsFlagshipsLoader);
 }
+
+/*
+ * Venue tablist.
+ *
+ * The previous theme listed ONA's own venues as clickable names beside the
+ * gallery; the Horizon port rendered every venue expanded instead. This
+ * restores the one-at-a-time behaviour as a tablist.
+ *
+ * Progressive enhancement: the section renders every card visible and the nav
+ * hidden. Only when this element connects does it add `is-enhanced`, which
+ * shows the nav and collapses the list to the active card. Without JavaScript
+ * the page keeps all the content.
+ */
+class LocationsFlagshipsTabs extends HTMLElementBase {
+  connectedCallback() {
+    this.tabs = Array.from(this.querySelectorAll('[role="tab"]'));
+    this.panels = Array.from(this.querySelectorAll('[role="tabpanel"]'));
+    if (this.tabs.length < 2 || this.panels.length !== this.tabs.length) return;
+
+    this.classList.add('is-enhanced');
+    this.addEventListener('click', this.#onClick);
+    this.addEventListener('keydown', this.#onKeydown);
+
+    const active = Math.max(0, this.tabs.findIndex((tab) => tab.classList.contains('is-active')));
+    this.select(active);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('click', this.#onClick);
+    this.removeEventListener('keydown', this.#onKeydown);
+  }
+
+  #onClick = (event) => {
+    const tab = event.target.closest('[role="tab"]');
+    if (!tab || !this.contains(tab)) return;
+    this.select(this.tabs.indexOf(tab));
+  };
+
+  #onKeydown = (event) => {
+    const tab = event.target.closest('[role="tab"]');
+    if (!tab || !this.contains(tab)) return;
+
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+    let next = null;
+    if (step) next = (this.tabs.indexOf(tab) + step + this.tabs.length) % this.tabs.length;
+    if (event.key === 'Home') next = 0;
+    if (event.key === 'End') next = this.tabs.length - 1;
+    if (next === null) return;
+
+    event.preventDefault();
+    this.select(next);
+    this.tabs[next].focus();
+  };
+
+  /**
+   * Moves the selection. Panel visibility, the accessibility tree and the
+   * roving tabindex all change in the same pass -- splitting them is how a
+   * tablist ends up announcing one venue while showing another.
+   */
+  select(index) {
+    this.tabs.forEach((tab, i) => {
+      const isActive = i === index;
+      tab.classList.toggle('is-active', isActive);
+      tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      tab.tabIndex = isActive ? 0 : -1;
+    });
+    this.panels.forEach((panel, i) => {
+      const isActive = i === index;
+      panel.classList.toggle('is-active', isActive);
+      panel.hidden = false; // visibility is CSS's job; `hidden` would beat it
+    });
+  }
+}
+
+if (globalThis.customElements && !customElements.get('locations-flagships-tabs')) {
+  customElements.define('locations-flagships-tabs', LocationsFlagshipsTabs);
+}

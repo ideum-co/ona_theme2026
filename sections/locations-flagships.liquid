@@ -68,6 +68,50 @@
         data-current-page="{{ paginate.current_page }}"
         data-next-page-url="{{ paginate.next.url | escape }}"
       >
+        {%- liquid
+          # The old theme's locations-content put the venue names in a left
+          # column and swapped the gallery and details beside them -- clicking a
+          # name was how you moved between ONA's own venues. The Horizon port
+          # rendered every venue expanded instead, which lost that.
+          #
+          # This rebuilds it as a tablist. The same `flagship` filter runs here
+          # and over the cards below, and both count with flagship_nav_index /
+          # flagship_index so the ids line up.
+          assign flagship_nav_index = 0
+          assign flagship_index = 0
+        -%}
+        <locations-flagships-tabs class="locations-flagships__tabs">
+          <div class="locations-flagships__nav" role="tablist" aria-label="{{ section.settings.heading | default: 'Flagship stores' | escape }}">
+            {%- for location in all_locations -%}
+              {%- liquid
+                assign is_flagship = false
+                for tag in location.tags.value
+                  assign tag_slug = tag.slug.value | default: tag.slug
+                  if tag.slug.value == 'flagship' or tag_slug == 'flagship'
+                    assign is_flagship = true
+                    break
+                  endif
+                endfor
+              -%}
+              {%- if is_flagship -%}
+                {%- liquid
+                  assign flagship_nav_index = flagship_nav_index | plus: 1
+                  assign nav_title = location.title.value | default: location.title
+                -%}
+                <button
+                  type="button"
+                  class="locations-flagships__nav-item{% if flagship_nav_index == 1 %} is-active{% endif %}"
+                  role="tab"
+                  id="FlagshipTab-{{ section.id }}-{{ flagship_nav_index }}"
+                  aria-controls="FlagshipPanel-{{ section.id }}-{{ flagship_nav_index }}"
+                  aria-selected="{% if flagship_nav_index == 1 %}true{% else %}false{% endif %}"
+                >
+                  {{- nav_title | escape -}}
+                </button>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+
         <div class="locations-flagships__list" data-flagship-list>
       {%- for location in all_locations -%}
         {%- liquid
@@ -116,10 +160,14 @@
             endif
           -%}
 
+          {%- assign flagship_index = flagship_index | plus: 1 -%}
           <article
-            class="locations-flagships__card"
+            class="locations-flagships__card{% if flagship_index == 1 %} is-active{% endif %}"
             data-flagship-card
             data-location-id="{{ location.system.id | escape }}"
+            id="FlagshipPanel-{{ section.id }}-{{ flagship_index }}"
+            role="tabpanel"
+            aria-labelledby="FlagshipTab-{{ section.id }}-{{ flagship_index }}"
           >
             {%- if media_count > 0 -%}
               <locations-flagship-gallery
@@ -224,6 +272,7 @@
         {%- endif -%}
           {%- endfor -%}
         </div>
+        </locations-flagships-tabs>
         <p data-flagships-status role="status" aria-live="polite"></p>
         {%- if paginate.pages > 1 -%}
           <nav aria-label="Flagship location pages" data-flagships-fallback-pagination>
@@ -289,6 +338,68 @@
   .locations-flagships__list {
     display: grid;
     gap: clamp(3rem, 8vw, 8rem);
+  }
+
+  /*
+   * The venue tablist. Hidden until the custom element connects, because
+   * without JavaScript every card stays visible and a row of buttons that
+   * switch nothing would be worse than no buttons at all.
+   */
+  .locations-flagships__nav {
+    display: none;
+  }
+
+  .locations-flagships__tabs.is-enhanced .locations-flagships__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(1rem, 3vw, 2.5rem);
+    margin-block-end: clamp(2rem, 5vw, 4rem);
+    border-block-end: 1px solid currentcolor;
+  }
+
+  /*
+   * Square, uppercase and wide-tracked: the treatment the previous ONA theme
+   * used for these names, and the one Onyx uses for its secondary headings.
+   */
+  .locations-flagships__nav-item {
+    padding: 0 0 clamp(0.75rem, 2vw, 1.25rem);
+    border: 0;
+    border-block-end: 2px solid transparent;
+    border-radius: 0;
+    background: none;
+    font-family: inherit;
+    font-size: var(--font-size--sm, 0.875rem);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: inherit;
+    opacity: 0.55;
+    cursor: pointer;
+    transition: opacity 0.2s ease, border-color 0.2s ease;
+  }
+
+  .locations-flagships__nav-item:hover,
+  .locations-flagships__nav-item:focus-visible {
+    opacity: 1;
+  }
+
+  .locations-flagships__nav-item.is-active {
+    opacity: 1;
+    border-block-end-color: currentcolor;
+  }
+
+  /* One venue at a time, but only once the tablist is actually driving it. */
+  .locations-flagships__tabs.is-enhanced .locations-flagships__card {
+    display: none;
+  }
+
+  .locations-flagships__tabs.is-enhanced .locations-flagships__card.is-active {
+    display: grid;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .locations-flagships__nav-item {
+      transition: none;
+    }
   }
 
   .locations-flagships__card {
