@@ -27,9 +27,47 @@ const SECTIONS = [
   'ona-faq-lists',
 ];
 
-test('answers start closed and open on is-active', () => {
-  assert.match(layout, /\.add-faqs \.faqs-text\s*\{[^}]*display:\s*none/, 'all answers open is the bug');
-  assert.match(layout, /\.add-faqs \.faqs-text\.is-active\s*\{[^}]*display:\s*block/);
+test('answers start closed and open on is-active, in every section that has them', () => {
+  /*
+   * The rules live in each section's own {% stylesheet %}, not in
+   * legacy-page-layout.css: that sheet is loaded only for a fixed list of page
+   * suffixes in layout/theme.liquid, while these sections carry presets and
+   * can be placed on any template. Where the sheet is absent the script would
+   * toggle classes while nothing hid or revealed the answer. Codex, #218.
+   */
+  for (const name of SECTIONS) {
+    const source = read(`sections/${name}.liquid`);
+    const styles = source.match(/\{%\s*stylesheet\s*%\}([\s\S]*?)\{%\s*endstylesheet\s*%\}/);
+    assert.ok(styles, `${name}: the collapse must travel with the section`);
+    assert.match(styles[1], /\.faqs-text\s*\{[^}]*display:\s*none/, `${name}: all answers open is the bug`);
+    assert.match(styles[1], /\.faqs-text\.is-active\s*\{[^}]*display:\s*block/, `${name}: and is-active opens one`);
+  }
+
+  // And it must NOT be left behind in the page-scoped sheet, or the two drift.
+  assert.doesNotMatch(
+    layout,
+    /\.add-faqs \.faqs-text\s*\{[^}]*display:\s*none/,
+    'the page-scoped copy should be gone now the sections carry it',
+  );
+});
+
+test('a FAQ that renders open says so', () => {
+  /*
+   * ona-faq-lists opens its first answer, marking the title and panel
+   * `is-active`. The button must report `aria-expanded="true"` to match, or
+   * assistive technology calls it closed and the first click computes "open"
+   * and leaves it open. Codex, #218.
+   */
+  const source = read('sections/ona-faq-lists.liquid');
+  assert.match(
+    source,
+    /aria-expanded="\{%\s*if forloop\.index == 1\s*%\}true\{%\s*else\s*%\}false\{%\s*endif\s*%\}"/,
+    'the open answer must report itself open',
+  );
+  // The three states have to agree, so the condition must be the same one.
+  for (const what of ['faqs-title', 'faqs-text']) {
+    assert.match(source, new RegExp(`class="${what} \\{%\\s*if forloop\\.index == 1\\s*%\\}is-active`), `${what} uses the same condition`);
+  }
 });
 
 test('every FAQ title is a real button that says whether it is open', () => {
@@ -37,8 +75,14 @@ test('every FAQ title is a real button that says whether it is open', () => {
     const section = read(`sections/${name}.liquid`);
     assert.match(
       section,
-      /<button type="button" class="faqs-toggle" aria-expanded="(true|false)">/,
+      /<button type="button" class="faqs-toggle" aria-expanded="/,
       `${name}: a <div> title cannot be focused or pressed`,
+    );
+    // Literal or Liquid-conditional, but it must resolve to one of the two.
+    const expanded = section.match(/aria-expanded="([^"]*)"/)[1];
+    assert.ok(
+      /^(true|false)$/.test(expanded) || (expanded.includes('true') && expanded.includes('false')),
+      `${name}: aria-expanded must resolve to true or false, got ${expanded}`,
     );
     assert.match(
       section,

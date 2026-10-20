@@ -287,25 +287,8 @@
 }
 
 /*
- * The ported FAQ lists open on click, as they did on the old theme.
- *
- * Every `.faqs-text` rendered open because the legacy theme's accordion script
- * never came across. Measured on /pages/wholesale: 788px of open copy in
- * `ona-training` alone, which is almost the entire difference between its
- * 1,349px and the old theme's 517px, plus 323px in `expressions` and 242px in
- * `supported` -- about 1,570px across the page.
- *
- * Confirmed against the real pre-Horizon theme (147508887743): every
- * `.faqs-text` is `display: none` on load, clicking `.faqs-title` adds
- * `is-active` and opens it, clicking again closes it. The `is-active`
- * convention is already in this theme's Liquid (ona-faq-lists marks the first
- * item with it), so this keeps it rather than inventing another.
- *
- * assets/ona-faqs.js moves the flag; the collapse is here.
+ * The FAQ collapse used to live here, but legacy-page-layout.css is loaded
+ * only for a fixed list of page suffixes while those sections carry presets
+ * and can be placed on any template. The rules moved into each section's own
+ * {% stylesheet %} so they travel with it. Codex, #218.
  */
-#MainContent .add-faqs .faqs-text { display: none; }
-#MainContent .add-faqs .faqs-text.is-active { display: block; }
-
-/* `button` takes the UA font unless told otherwise. */
-#MainContent .add-faqs .faqs-toggle { display: block; inline-size: 100%; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: inherit; cursor: pointer; }
-#MainContent .add-faqs .faqs-toggle:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
