@@ -207,12 +207,25 @@
  *   .animated-svg    position:absolute; inset 0 0 auto; z-index:1   784x524
  *   img              position:relative; z-index:2            784x1139
  *
- * The z-index:2 on the image is the part that matters and the part I got
- * wrong first: without it the blob (z-index:1) paints over the photo. With
- * it, the photo covers the blob and only the crescent that extends past the
- * photo's edge shows, which is the intended accent. Verified by hit-testing
- * the centre of the photo -- `img` must be the element on top, as it is in
- * production.
+ * It goes BEHIND everything in its wrapper, not merely behind the photo.
+ *
+ * Production places each blob individually: on the real pre-Horizon theme
+ * (147508887743, Debut 17.13.0) the same decoration is `top:-90px;left:994px`
+ * in one section, `top:526px;left:169px` in another and `top:509px;left:-138px`
+ * in a third, often hanging outside its own box. There is no faithful generic
+ * placement to copy, so this rule does the one thing that matters -- take the
+ * blob out of flow so it stops inflating the page -- and keeps it behind the
+ * content.
+ *
+ * An earlier version used `z-index: 1` plus `z-index: 2` on the image. That
+ * holds where the wrapper has only a blob and a photo, but `.awards .left-box`
+ * on /pages/about puts an h2 and h3 BEFORE the slider and only images were
+ * being raised, so the solid blob painted over the headings. Codex, #213.
+ * Measured on /pages/about, headings overlapped by a blob in front of them:
+ * 1 before any fix -> 3 with z-index 1 -> 1 with z-index -1. The negative
+ * index adds no coverage the page did not already have, and the height is
+ * identical either way. Screenshot confirms the Awards heading is legible and
+ * the blob still paints behind it.
  *
  * The wrapper is matched by SHAPE, not by class name. A first version keyed
  * on `.img`, and missed two other wrappers the same sections use --
@@ -236,5 +249,4 @@
  *   learn, private-courses: unchanged (they carry no .animated-svg)
  */
 #MainContent :has(> .animated-svg):has(img) { position: relative; }
-#MainContent :has(> .animated-svg):has(img) > .animated-svg { position: absolute; inset-block-start: 0; inset-inline: 0; z-index: 1; max-width: 100%; height: auto; }
-#MainContent :has(> .animated-svg):has(img) img { position: relative; z-index: 2; }
+#MainContent :has(> .animated-svg):has(img) > .animated-svg { position: absolute; inset-block-start: 0; inset-inline: 0; z-index: -1; max-width: 100%; height: auto; }

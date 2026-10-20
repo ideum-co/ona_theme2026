@@ -131,21 +131,24 @@ test('the decorative blob sits behind the photo, not above it in flow', () => {
   const svg = layout.match(/#MainContent :has\(> \.animated-svg\):has\(img\) > \.animated-svg\s*\{([^}]*)\}/);
   assert.ok(svg, 'the blob must be taken out of flow');
   assert.match(svg[1], /position:\s*absolute/, 'in flow it stacks above the photo');
-  assert.match(svg[1], /z-index:\s*1/);
+  /*
+   * Negative, so it sits behind EVERYTHING in the wrapper. `.awards .left-box`
+   * on /pages/about puts an h2 and h3 before the slider, and a positive index
+   * painted the solid blob over them. Codex, #213.
+   */
+  assert.match(svg[1], /z-index:\s*-1/, 'a positive index covers headings in .left-box');
 
   const container = layout.match(/#MainContent :has\(> \.animated-svg\):has\(img\)\s*\{([^}]*)\}/);
   assert.ok(container, 'the blob needs a positioned ancestor');
   assert.match(container[1], /position:\s*relative/);
 
-  /*
-   * The z-index on the image is the part that is easy to miss, and I missed
-   * it first: without it the blob paints OVER the photo and the page looks
-   * worse, not better. Production puts the photo above the blob.
-   */
-  const image = layout.match(/#MainContent :has\(> \.animated-svg\):has\(img\) img\s*\{([^}]*)\}/);
-  assert.ok(image, 'the photo must be lifted above the blob');
-  assert.match(image[1], /position:\s*relative/);
-  assert.match(image[1], /z-index:\s*2/, 'without this the blob covers the photo');
+  // No companion rule raising images: with the blob behind everything at -1,
+  // nothing needs lifting, and raising only images is what covered the headings.
+  assert.doesNotMatch(
+    layout,
+    /:has\(> \.animated-svg\):has\(img\) img\s*\{[^}]*z-index/,
+    'raising the image is only needed when the blob is in front; it is not',
+  );
 
   /*
    * Keyed on shape, not class: the same sections wrap the pair in `.img`,
