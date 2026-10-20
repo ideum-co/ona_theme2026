@@ -43,3 +43,35 @@ test("the contact page still carries ONA's contact details", () => {
   // A tel: link that keeps the spaces is not dialable from a phone.
   assert.ok(raw.includes('tel:+61261623321'), 'the phone number needs a dialable tel: link');
 });
+
+test('the contact page does not say "get in touch" twice', () => {
+  /*
+   * The page's own body already opens with `<h2>GET IN TOUCH</h2>` and the
+   * invitation sentence under it, and `main` renders that body verbatim. The
+   * first pass at this section repeated both -- a second "Get in touch" heading
+   * and a second "we'd love to hear from you" paragraph -- so the rendered page
+   * asked the customer to get in touch twice before showing a single detail.
+   *
+   * The details themselves are what was missing; the words around them were not.
+   */
+  const raw = read('templates/page.contact.json').replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '');
+  const template = JSON.parse(raw);
+  const details = template.sections.contact_details;
+
+  const texts = [];
+  const walk = (node) => {
+    for (const b of Object.values(node.blocks ?? {})) {
+      if (typeof b.settings?.text === 'string') texts.push(b.settings.text);
+      walk(b);
+    }
+  };
+  walk(details);
+
+  for (const text of texts) {
+    assert.doesNotMatch(
+      text,
+      /get in touch|love to hear from you/i,
+      `page.content already carries this copy: ${text.slice(0, 60)}`,
+    );
+  }
+});
