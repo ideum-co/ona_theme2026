@@ -14,7 +14,11 @@ const script = read('assets/ona-slider.js');
  * /pages/wholesale at a 1685px viewport: the testimonial section ran 1,988px
  * with four episodes stacked, and `supported` 1,688px with three.
  */
-const SECTIONS = ['sections/ona-supported.liquid', 'sections/ona-wholesale-testimonial.liquid'];
+const SECTIONS = [
+  'sections/ona-supported.liquid',
+  'sections/ona-wholesale-testimonial.liquid',
+  'sections/ona-awards.liquid',
+];
 
 test('each ported slider is driven by <ona-slider>', () => {
   for (const file of SECTIONS) {
@@ -106,4 +110,18 @@ test('hiding a slide stops whatever was playing in it', () => {
   assert.ok(stop, 'stopMedia must have a body');
   assert.match(stop[1], /querySelectorAll\('video, audio'\)[\s\S]*?\.pause\(\)/, 'HTML media is paused');
   assert.match(stop[1], /querySelectorAll\('iframe'\)[\s\S]*?setAttribute\('src', src\)/, 'embedded players are reset');
+});
+
+test('the awards photos are labelled by their own count, not the loop index', () => {
+  /*
+   * ona-awards walks every block and filters to `block1`, but `block2` -- the
+   * awards table rows -- outnumbers it twelve to five on /pages/about. Using
+   * forloop.index would label five photos 1, 3, 7 and so on, because it counts
+   * the rows too.
+   */
+  const src = read('sections/ona-awards.liquid');
+  assert.match(src, /assign award_index = 0/, 'the images need their own counter');
+  assert.match(src, /assign award_index = award_index \| plus: 1/, 'incremented only inside the block1 branch');
+  assert.match(src, /data-slide-label="\{\{ award_index \}\}"/, 'and that is what labels the tab');
+  assert.doesNotMatch(src, /data-slide-label="\{\{ forloop\.index \}\}"/, 'forloop.index counts the table rows too');
 });
