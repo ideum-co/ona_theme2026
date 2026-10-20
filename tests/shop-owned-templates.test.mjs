@@ -188,6 +188,10 @@ test('product.json keeps the editor-wired PDP', () => {
     // The empty Brew Guide tab. Re-enabling it shows an empty tab on all 92 PDPs.
     'product_tabs_fW4maV.product_tab_4tzPxX',
     'story',
+    // Disabled in the theme editor after the repo's copy was taken, and picked
+    // up when the live template was reconciled back into git. The editor's
+    // decision stands; this entry records it rather than reversing it.
+    'story_video_VUwQ6f',
   ], 'the set of disabled PDP sections and blocks changed');
 });
 
