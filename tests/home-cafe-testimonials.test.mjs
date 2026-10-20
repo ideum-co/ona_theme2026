@@ -46,8 +46,18 @@ test('a quote can carry both a logo and a name', () => {
   assert.ok(figure.indexOf('<figcaption') > figure.indexOf('<blockquote'), 'the attribution follows the words it attributes');
   assert.match(figure.slice(figure.indexOf('<figcaption')), /<\/figcaption>\s*\{%-? endif -?%\}\s*$/, 'and nothing follows it inside the figure');
 
-  // A logo with no accessible name is a decorative image standing in for an attribution.
-  assert.match(section, /class: 'press-quotes__logo', alt: block\.settings\.source/, 'the logo takes its alt from the name');
+  /*
+   * A logo whose source is named below it is decorative; one without a source is the quote's
+   * only identification, so it keeps the alt the image picker stored. Passing a blank source
+   * straight to alt would have emptied it for the three press logos that have no source --
+   * image_tag only falls back to image.alt when alt is not passed at all.
+   */
+  assert.match(section, /class: 'press-quotes__logo', alt: logo_alt/, 'the logo alt is chosen, not restated');
+  assert.match(
+    section,
+    /assign logo_alt = block\.settings\.logo\.alt\s+if block\.settings\.source != blank\s+assign logo_alt = ''/,
+    'a named source makes the logo decorative; an unnamed one keeps the stored alt',
+  );
 });
 
 test('the existing press quotes are untouched by that change', () => {

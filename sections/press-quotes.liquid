@@ -22,10 +22,23 @@
         {%- if block.settings.logo_svg != blank -%}
           <span class="press-quotes__logo--svg">{%- render 'svg-without-styles', svg: block.settings.logo_svg -%}</span>
         {%- elsif block.settings.logo != blank -%}
+          {%- comment -%}
+            The figcaption below already names the source, so a logo that has one would be
+            announced twice; a logo without one is the quote's only identification, so it keeps
+            whatever alt the image picker stored. Both cases go through the same assign because
+            image_tag only falls back to image.alt when alt is not passed at all -- passing a
+            blank source would have emptied the alt on the three press logos that have no source.
+          {%- endcomment -%}
+          {%- liquid
+            assign logo_alt = block.settings.logo.alt
+            if block.settings.source != blank
+              assign logo_alt = ''
+            endif
+          -%}
           {{
             block.settings.logo
             | image_url: width: 600
-            | image_tag: widths: '150, 300, 450, 600', sizes: '(min-width: 750px) 20vw, 60vw', loading: 'lazy', class: 'press-quotes__logo', alt: block.settings.source
+            | image_tag: widths: '150, 300, 450, 600', sizes: '(min-width: 750px) 20vw, 60vw', loading: 'lazy', class: 'press-quotes__logo', alt: logo_alt
           }}
         {%- endif -%}
 
