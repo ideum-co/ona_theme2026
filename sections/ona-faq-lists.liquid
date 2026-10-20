@@ -49,6 +49,41 @@
   }
 
   .add-faqs .faqs-toggle:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+  /* Closing "Need help?" call-out. It sat small and flush-left against the
+     footer; centre it with room to breathe and make the contact address read
+     as a clear link. */
+  #MainContent .add-faqs-section .end-text {
+    margin-block-start: clamp(40px, 6vw, 80px);
+    padding-block: clamp(40px, 6vw, 72px);
+    text-align: center;
+  }
+
+  #MainContent .add-faqs-section .end-text > :first-child { margin-block-start: 0; }
+  #MainContent .add-faqs-section .end-text > :last-child { margin-block-end: 0; }
+
+  #MainContent .add-faqs-section .end-text :is(h2, h3, h4) {
+    font-family: var(--font-heading--family, serif);
+    font-size: var(--font-h2--size, 3rem);
+    line-height: 1.12;
+    margin: 0 0 12px;
+  }
+
+  #MainContent .add-faqs-section .end-text p {
+    max-inline-size: 48ch;
+    margin-inline: auto;
+    font-size: var(--font-paragraph--size, 1rem);
+    line-height: 1.6;
+  }
+
+  #MainContent .add-faqs-section .end-text a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+    font-weight: 600;
+  }
+  #MainContent .add-faqs-section .end-text a:hover { text-decoration-thickness: 2px; }
 {% endstylesheet %}
 
 {% schema %}

@@ -10,9 +10,11 @@
             {% assign duration = duration | plus: 100 %}
             <div class="block  wowo fadeInUp" data-wow-duration="1s" data-wow-delay="{{ duration }}ms">
                 <a href="{{ block.settings.url }}" class="box icon-box-anchor">
+                  {% if block.settings.icon != blank %}
                   <div class="icon-c">
                      <img src="{{ block.settings.icon | img_url: '400x' }}" alt="{{ block.settings.icon.alt | escape }}" class="wowo animate__heartBeat" data-wow-duration="1.5s" loading="lazy" decoding="async">
                   </div>
+                  {% endif %}
                   <div class="text wowo fadeInDown" data-wow-duration="1s" data-wow-delay="{{ duration }}ms">
                       <p>{{ block.settings.title }}</p>
                   </div>
@@ -22,6 +24,42 @@
         </div>
     </div>
 </section>
+
+{% stylesheet %}
+  /* These items are anchor links that jump to sections further down, but they
+     read as plain text. Give them an obvious link affordance -- underline, a
+     hover state and a pointer -- so people know they can act on them. Scoped to
+     this section (same #MainContent prefix as the legacy layout it sits on). */
+  #MainContent .col-4-icons .icon-box-anchor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    color: var(--color-foreground, #470a12);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  #MainContent .col-4-icons .icon-box-anchor .text p {
+    margin: 0;
+    text-decoration: underline;
+    text-underline-offset: 5px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: rgb(var(--color-foreground-rgb, 71 10 18) / 0.45);
+    transition: text-decoration-color .15s ease, color .15s ease;
+  }
+
+  #MainContent .col-4-icons .icon-box-anchor:hover .text p,
+  #MainContent .col-4-icons .icon-box-anchor:focus-visible .text p {
+    text-decoration-color: currentColor;
+  }
+
+  #MainContent .col-4-icons .icon-box-anchor:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+  }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": {
