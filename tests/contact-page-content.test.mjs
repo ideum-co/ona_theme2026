@@ -117,3 +117,27 @@ test('the contact page offers one form, not two', () => {
   const forms = types.filter((t) => /contact-form|contact_form/.test(t));
   assert.deepEqual(forms, [], `the page body already carries the Globo form; the template must not add another: ${forms.join(', ')}`);
 });
+
+test('the page body is not set to the tightest measure', () => {
+  /*
+   * `main` renders page.content, and this page's content is not only prose --
+   * it carries the Globo form embed, 13 fields including the enquiry-type
+   * router. The block was set to `narrow`, the tightest of the three options
+   * (narrow / normal / none) and tighter than blocks/text.liquid's own default
+   * of `normal`. Measured live, the form rendered 319px wide.
+   *
+   * `normal` keeps the prose above it at a readable measure while giving the
+   * form room. This asserts only that the tightest option is not used, so the
+   * choice between `normal` and `none` stays open.
+   */
+  const raw = read('templates/page.contact.json').replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '');
+  const template = JSON.parse(raw);
+  const body = template.sections.main?.blocks?.content?.settings;
+
+  assert.ok(body, 'the page body block is gone; page.content would not render');
+  assert.notEqual(
+    body.max_width,
+    'narrow',
+    'the page body carries the contact form, not just prose',
+  );
+});

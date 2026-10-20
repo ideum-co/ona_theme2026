@@ -18,7 +18,7 @@
           "settings": {
             "text": "<h1>{{ closest.page.title }}</h1>",
             "width": "100%",
-            "max_width": "normal",
+            "max_width": "narrow",
             "alignment": "center",
             "type_preset": "h2",
             "font": "var(--font-body--family)",
@@ -43,7 +43,7 @@
           "settings": {
             "text": "{{ closest.page.content }}",
             "width": "100%",
-            "max_width": "narrow",
+            "max_width": "normal",
             "alignment": "center",
             "type_preset": "rte",
             "font": "var(--font-body--family)",
@@ -122,7 +122,7 @@
                   "settings": {
                     "text": "<h3>Email</h3>",
                     "width": "100%",
-                    "max_width": "normal",
+                    "max_width": "narrow",
                     "alignment": "left",
                     "type_preset": "h6",
                     "font": "var(--font-body--family)",
@@ -147,7 +147,7 @@
                   "settings": {
                     "text": "<p><a href=\"mailto:admin@onacoffee.com.au\">admin@onacoffee.com.au</a></p>",
                     "width": "100%",
-                    "max_width": "normal",
+                    "max_width": "narrow",
                     "alignment": "left",
                     "type_preset": "paragraph",
                     "font": "var(--font-body--family)",
@@ -197,7 +197,7 @@
                   "settings": {
                     "text": "<h3>Phone</h3>",
                     "width": "100%",
-                    "max_width": "normal",
+                    "max_width": "narrow",
                     "alignment": "left",
                     "type_preset": "h6",
                     "font": "var(--font-body--family)",
@@ -222,7 +222,7 @@
                   "settings": {
                     "text": "<p><a href=\"tel:+61261623321\">02 6162 3321</a></p>",
                     "width": "100%",
-                    "max_width": "normal",
+                    "max_width": "narrow",
                     "alignment": "left",
                     "type_preset": "paragraph",
                     "font": "var(--font-body--family)",
@@ -272,7 +272,7 @@
                   "settings": {
                     "text": "<h3>Address</h3>",
                     "width": "100%",
-                    "max_width": "normal",
+                    "max_width": "narrow",
                     "alignment": "left",
                     "type_preset": "h6",
                     "font": "var(--font-body--family)",
@@ -297,7 +297,7 @@
                   "settings": {
                     "text": "<p><a href=\"https://maps.app.goo.gl/sYEoAyMWjWdP5F867\" target=\"_blank\" rel=\"noopener noreferrer\">5/68 Wollongong St, Fyshwick ACT 2609, Australia</a></p>",
                     "width": "100%",
-                    "max_width": "normal",
+                    "max_width": "narrow",
                     "alignment": "left",
                     "type_preset": "paragraph",
                     "font": "var(--font-body--family)",
@@ -347,7 +347,7 @@
                   "settings": {
                     "text": "<h3>Opening hours</h3>",
                     "width": "100%",
-                    "max_width": "normal",
+                    "max_width": "narrow",
                     "alignment": "left",
                     "type_preset": "h6",
                     "font": "var(--font-body--family)",
@@ -372,7 +372,7 @@
                   "settings": {
                     "text": "<p>Monday to Friday 9 - 5</p><p>Closed on Public Holidays</p>",
                     "width": "100%",
-                    "max_width": "normal",
+                    "max_width": "narrow",
                     "alignment": "left",
                     "type_preset": "paragraph",
                     "font": "var(--font-body--family)",
