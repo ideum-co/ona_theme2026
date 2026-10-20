@@ -4519,7 +4519,7 @@
           "settings": {
             "heading": "How <em>do you</em> brew?",
             "subtext": "How do you make your coffee?",
-            "options": "Espresso\nPour Over/ Filter\nFrench Press\nAeroPress\nStovetop / Moka Pot\nAutomatic Machine\nI'm not sure"
+            "options": "Espresso\nPour Over/ Filter | raspberry-candy-filter\nFrench Press | gargari\nAeroPress | gargari\nStovetop / Moka Pot\nAutomatic Machine\nI'm not sure"
           }
         },
         "question_2": {
@@ -4527,7 +4527,7 @@
           "settings": {
             "heading": "How do you <em>drink it</em>?",
             "subtext": "How do you usually enjoy your coffee?",
-            "options": "Black\nWith milk\nBoth\nIced\nIt depends"
+            "options": "Black | raspberry-candy-filter\nWith milk\nBoth\nIced\nIt depends"
           }
         },
         "question_3": {
@@ -4535,7 +4535,7 @@
           "settings": {
             "heading": "What sounds <em>best</em>?",
             "subtext": "What flavours sound best to you?",
-            "options": "🍫 Chocolatey & nutty | ugly-sweater\n🍯 Sweet & caramel-like | maple\n🍓 Fruity & juicy | raspberry-candy\n🌸 Floral & delicate | raspberry-candy\n🍊 Bright & citrusy | raspberry-candy\n🍇 Rich & wine-like | ugly-sweater"
+            "options": "🍫 Chocolatey & nutty | aspen\n🍯 Sweet & caramel-like | maple\n🍓 Fruity & juicy | raspberry-candy\n🌸 Floral & delicate | raspberry-candy-filter\n🍊 Bright & citrusy | unwind\n🍇 Rich & wine-like | gargari"
           }
         },
         "question_4": {
@@ -4543,7 +4543,7 @@
           "settings": {
             "heading": "How <em>adventurous</em> are you?",
             "subtext": "How adventurous do you like your coffee?",
-            "options": "Keep it familiar | maple\nSomewhere in the middle | maple\nTake me somewhere new | raspberry-candy"
+            "options": "Keep it familiar | gateway\nSomewhere in the middle | aspen\nTake me somewhere new | gargari"
           }
         },
         "question_5": {
@@ -4551,7 +4551,7 @@
           "settings": {
             "heading": "What <em>matters most</em>?",
             "subtext": "What matters most in your next coffee?",
-            "options": "Something easy to drink every day | maple\nSomething sweet & balanced | maple\nSomething bright & fruity | raspberry-candy\nSomething complex & interesting | ugly-sweater\nSomething special / limited | raspberry-candy\nI just want the best one!"
+            "options": "Something easy to drink every day | gateway\nSomething sweet & balanced | maple\nSomething bright & fruity | raspberry-candy\nSomething complex & interesting | gargari\nSomething special / limited | gargari\nI just want the best one!"
           }
         },
         "question_6": {
@@ -4559,7 +4559,17 @@
           "settings": {
             "heading": "What are you <em>shopping for</em>?",
             "subtext": "What are you shopping for?",
-            "options": "My everyday coffee\nSomething for the weekend\nA coffee to explore\nA gift\nNot sure yet"
+            "options": "My everyday coffee | gateway\nSomething for the weekend | unwind\nA coffee to explore | gargari\nA gift\nNot sure yet"
+          }
+        },
+        "match_gateway": {
+          "type": "match",
+          "settings": {
+            "tag": "gateway",
+            "product": "gateway",
+            "title": "Gateway",
+            "description": "An approachable, easy-drinking blend with berries and chocolate — the perfect first step into specialty coffee.",
+            "reasons": "Smooth & approachable\nGreat in milk\nIdeal if you're just getting started"
           }
         },
         "match_raspberry_candy": {
@@ -4568,18 +4578,8 @@
             "tag": "raspberry-candy",
             "product": "raspberry-candy",
             "title": "Raspberry Candy",
-            "description": "Bright and juicy with notes of raspberry, caramel and milk chocolate.",
-            "reasons": "Sweet & fruit-forward\nApproachable but interesting\nONA's signature release"
-          }
-        },
-        "match_ugly_sweater": {
-          "type": "match",
-          "settings": {
-            "tag": "ugly-sweater",
-            "product": "ugly-sweater",
-            "title": "Ugly Sweater",
-            "description": "A cosy, unconventional blend with notes of milk chocolate and hazelnut.",
-            "reasons": "Great with milk\nRich & comforting\nA little unconventional"
+            "description": "Our most popular blend — fruit-forward espresso with vibrant berry notes and creamy white chocolate sweetness.",
+            "reasons": "Juicy & fruit-forward\nShines in milk\nONA's signature release"
           }
         },
         "match_maple": {
@@ -4588,8 +4588,48 @@
             "tag": "maple",
             "product": "maple",
             "title": "Maple",
-            "description": "A balanced, easy-drinking everyday coffee with warm caramel sweetness.",
-            "reasons": "Classic & balanced\nEasy to drink every day\nA dependable favourite"
+            "description": "A warm, balanced everyday espresso with caramel, biscuit, nut and gentle spice.",
+            "reasons": "Sweet & caramel-like\nComforting & balanced\nEasy to drink every day"
+          }
+        },
+        "match_aspen": {
+          "type": "match",
+          "settings": {
+            "tag": "aspen",
+            "product": "aspen",
+            "title": "Aspen",
+            "description": "A rich, classic blend built on chocolate, hazelnut and malt — made for milk.",
+            "reasons": "Chocolatey & nutty\nSmooth with milk\nA dependable crowd-pleaser"
+          }
+        },
+        "match_unwind": {
+          "type": "match",
+          "settings": {
+            "tag": "unwind",
+            "product": "unwind",
+            "title": "Unwind",
+            "description": "All the flavour without the caffeine — a smooth, balanced decaf with caramel, chocolate and citrus.",
+            "reasons": "Decaf, any time of day\nSmooth & balanced\nPerfect to wind down"
+          }
+        },
+        "match_raspberry_candy_filter": {
+          "type": "match",
+          "settings": {
+            "tag": "raspberry-candy-filter",
+            "product": "raspberry-candy-filter",
+            "title": "Raspberry Candy Filter",
+            "description": "The filter side of Raspberry Candy — raspberry, chocolate and hibiscus, built for black coffee.",
+            "reasons": "Fruity & floral\nBest brewed as filter\nBright and clean black"
+          }
+        },
+        "match_gargari": {
+          "type": "match",
+          "settings": {
+            "tag": "gargari",
+            "product": "milk-w-som1",
+            "title": "Gargari Gutity G1 Red, Ethiopia, Natural",
+            "description": "A single-origin natural from Ethiopia — berries, caramel and milk chocolate, for when you want something special.",
+            "reasons": "Complex & distinctive\nSingle-origin Ethiopia\nOne to explore"
           }
         }
       },
@@ -4600,9 +4640,13 @@
         "question_4",
         "question_5",
         "question_6",
+        "match_gateway",
         "match_raspberry_candy",
-        "match_ugly_sweater",
-        "match_maple"
+        "match_maple",
+        "match_aspen",
+        "match_unwind",
+        "match_raspberry_candy_filter",
+        "match_gargari"
       ],
       "settings": {
         "title": "Find your coffee quiz",
