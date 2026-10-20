@@ -1,3 +1,15 @@
+/*
+ * Shared layout for the legacy `ona-*` sections, loaded by layout/theme.liquid
+ * for the migrated page suffixes. Extend THIS sheet rather than adding a scoped
+ * {% stylesheet %} per section -- it already styles most of the classes those
+ * sections use, so a per-section block fights it.
+ *
+ * Deploy note: on 2026-10-20 this file and sections/locations-flagships.liquid
+ * were both left behind by the GitHub theme sync while files merged either side
+ * of them went through, so the live theme served a copy from 2026-10-16 with
+ * none of #204's rules. Merged is not deployed -- check the file's updatedAt on
+ * the theme, not just the merge.
+ */
 /* Legacy ONA page templates: responsive layout while retaining original editorial blocks.
    Loaded only for the six migrated page suffixes. */
 #MainContent { --legacy-page-gutter: clamp(20px, 5vw, 72px); --legacy-page-gap: clamp(48px, 7vw, 110px); }
