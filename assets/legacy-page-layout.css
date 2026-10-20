@@ -250,3 +250,38 @@
  */
 #MainContent :has(> .animated-svg):has(img) { position: relative; }
 #MainContent :has(> .animated-svg):has(img) > .animated-svg { position: absolute; inset-block-start: 0; inset-inline: 0; z-index: -1; max-width: 100%; height: auto; }
+
+/*
+ * "Unique coffees": one coffee at a time, as the old theme showed it.
+ *
+ * The ported markup carries the pieces of a slider the legacy theme drove with
+ * slick -- one `.slider-block` of three images per coffee, plus one handle per
+ * coffee. slick is not in this theme, so every block rendered at once: nine
+ * images stacked, and the section measured 9,110px on /pages/wholesale, 39% of
+ * the whole page, against the old theme's 475px.
+ *
+ * The real pre-Horizon theme (147508887743, Debut 17.13.0) overlays the blocks
+ * and cross-fades: wrapper 637x332 `position:relative`, each block 637x312 at
+ * `left: 0 / -637px / -1274px` with `opacity: 1 / 0 / 0`, three images in a
+ * flex row inside. Same result here with a grid stack, which does not depend
+ * on each block's pixel width.
+ *
+ * assets/ona-unique-coffees.js only moves `is-active`; the layout is here.
+ */
+#MainContent .unique-coffee-block .imgs-slider-unique { display: grid; position: relative; }
+#MainContent .unique-coffee-block .imgs-slider-unique > .slider-block { grid-area: 1 / 1; display: flex; align-items: center; gap: clamp(8px, 1.5vw, 20px); opacity: 0; visibility: hidden; transition: opacity .25s ease; }
+#MainContent .unique-coffee-block .imgs-slider-unique > .slider-block.is-active { opacity: 1; visibility: visible; }
+#MainContent .unique-coffee-block .imgs-slider-unique > .slider-block > img { flex: 1 1 0; min-width: 0; width: auto; height: auto; object-fit: contain; }
+
+/* The tabs. `button` takes the UA font unless told otherwise. */
+#MainContent .unique-coffee-block .slider-handle { padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: inherit; cursor: pointer; }
+#MainContent .unique-coffee-block .slider-handle.is-active { font-weight: 700; }
+#MainContent .unique-coffee-block .slider-handle:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+/* Only the selected coffee's copy is open, so the column cannot grow by three. */
+#MainContent .unique-coffee-block .faqs-text { display: none; }
+#MainContent .unique-coffee-block .faqs-text.is-active { display: block; }
+
+@media(prefers-reduced-motion: reduce){
+ #MainContent .unique-coffee-block .imgs-slider-unique > .slider-block { transition: none; }
+}
