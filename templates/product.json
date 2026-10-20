@@ -716,11 +716,48 @@
           "block_order": [
             "judge_me_reviews_review_widget_LLV6L8"
           ]
+        },
+        "product_tab_origin_Hq2Lvn": {
+          "type": "product-tab",
+          "settings": {
+            "label": "Origin"
+          },
+          "blocks": {
+            "origin_story_Rt7Kcs": {
+              "type": "product-origin-story",
+              "settings": {
+                "origin_heading": "Origin",
+                "sourcing_heading": "Sourcing"
+              }
+            }
+          },
+          "block_order": [
+            "origin_story_Rt7Kcs"
+          ]
+        },
+        "product_tab_faqs_Jv4Wmd": {
+          "type": "product-tab",
+          "settings": {
+            "label": "FAQs"
+          },
+          "blocks": {
+            "product_faqs_Zb9Nxe": {
+              "type": "product-faqs",
+              "settings": {
+                "heading": ""
+              }
+            }
+          },
+          "block_order": [
+            "product_faqs_Zb9Nxe"
+          ]
         }
       },
       "block_order": [
         "product_tab_ePcCkQ",
+        "product_tab_origin_Hq2Lvn",
         "product_tab_4tzPxX",
+        "product_tab_faqs_Jv4Wmd",
         "product_tab_dFwTTp"
       ],
       "name": "Product tabs",

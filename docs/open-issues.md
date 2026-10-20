@@ -338,3 +338,15 @@ cached user stylesheet and a Splide vendor bundle. `window.Rebuy` is an object;
 
 Turning it off means uninstalling the app or removing its script tag in the
 admin, not a theme change.
+
+### 19. `{% else if %}` is not Liquid, and two sections use it
+
+`sections/ona-supported.liquid` and `sections/ona-wholesale-testimonial.liquid`
+both contain `{% else if video_url != '' %}`. Liquid has no `else if` — the tag
+parses as a bare `{% else %}` and the condition is **silently discarded**, so
+that branch always runs. (`elsif` is the correct spelling; `{% elsif %}`.)
+
+Found during review of #244, which touches the trailing whitespace on those
+very lines and so makes the bug look new. It is not: it predates the PR and
+came across in the port. Fixing it is a behaviour change and belongs in its own
+PR with a before/after on `/pages/wholesale`, not in a whitespace resend.
