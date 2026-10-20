@@ -55,7 +55,7 @@ test('a quote can carry both a logo and a name', () => {
   assert.match(section, /class: 'press-quotes__logo', alt: logo_alt/, 'the logo alt is chosen, not restated');
   assert.match(
     section,
-    /assign logo_alt = block\.settings\.logo\.alt\s+if block\.settings\.source != blank\s+assign logo_alt = ''/,
+    /assign logo_alt = block\.settings\.logo\.alt \| default: ''\s+if block\.settings\.source != blank\s+assign logo_alt = ''/,
     'a named source makes the logo decorative; an unnamed one keeps the stored alt',
   );
 });
@@ -101,6 +101,13 @@ test('the homepage carries the four café testimonials', () => {
    * so the arrows were never drawn.
    */
   assert.ok(press.block_order.length > press.settings.columns, 'otherwise there is nothing to page through');
+
+  /*
+   * Outnumbering the columns is only half of it: sections/press-quotes.liquid gates the arrows
+   * on `icons_style != 'none'` as well, so setting the icon style to None in the editor leaves
+   * slides four to seven reachable by swipe alone, with this test still green.
+   */
+  assert.notEqual(press.settings.icons_style, 'none', 'with no icons the extra slides are swipe-only');
 });
 
 test('the homepage is at Shopify\'s section ceiling, which is why these are blocks', () => {

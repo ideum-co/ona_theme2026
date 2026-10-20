@@ -30,7 +30,7 @@
             blank source would have emptied the alt on the three press logos that have no source.
           {%- endcomment -%}
           {%- liquid
-            assign logo_alt = block.settings.logo.alt
+            assign logo_alt = block.settings.logo.alt | default: ''
             if block.settings.source != blank
               assign logo_alt = ''
             endif
@@ -169,6 +169,12 @@
    */
   .press-quotes__source {
     margin: 0;
+  }
+
+  /* Only pulls back against a preceding sibling's grid gap. A block with a source and neither a
+     logo nor a quote makes the caption the only grid item, and the negative margin would then
+     lift it out of the figure's content box and into whatever sits above. */
+  .press-quotes__source:not(:first-child) {
     margin-block-start: calc(var(--gap-sm) - var(--gap-xl));
     font-family: var(--font-heading--family);
     font-size: var(--font-h5--size, var(--font-size--xl));
