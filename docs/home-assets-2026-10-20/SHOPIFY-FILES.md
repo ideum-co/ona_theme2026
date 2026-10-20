@@ -4,7 +4,11 @@
 Base: `https://cdn.shopify.com/s/files/1/0464/4824/6934/files/`
 
 Pick these in the theme editor (Content > Files), or reference the URL directly.
-Append `&width=NNN` for a resized copy — the CDN serves WebP automatically.
+Append `?width=NNN` for a resized copy — the CDN serves WebP automatically.
+Use `?`, not `&`: these URLs carry no query string, so `&width=400` becomes part
+of the filename and 404s (verified — `?width=400` returns 25,550 bytes, the
+same URL with `&` returns HTTP 404). Use `&width=NNN` only on a URL that already
+has a parameter such as `?v=...`.
 
 | block | file | master |
 |---|---|---|
