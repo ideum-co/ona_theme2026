@@ -22,17 +22,39 @@
         {%- if block.settings.logo_svg != blank -%}
           <span class="press-quotes__logo--svg">{%- render 'svg-without-styles', svg: block.settings.logo_svg -%}</span>
         {%- elsif block.settings.logo != blank -%}
+          {%- comment -%}
+            The figcaption below already names the source, so a logo that has one would be
+            announced twice; a logo without one is the quote's only identification, so it keeps
+            whatever alt the image picker stored. Both cases go through the same assign because
+            image_tag only falls back to image.alt when alt is not passed at all -- passing a
+            blank source would have emptied the alt on the three press logos that have no source.
+          {%- endcomment -%}
+          {%- liquid
+            assign logo_alt = block.settings.logo.alt | default: ''
+            if block.settings.source != blank
+              assign logo_alt = ''
+            endif
+          -%}
           {{
             block.settings.logo
             | image_url: width: 600
-            | image_tag: widths: '150, 300, 450, 600', sizes: '(min-width: 750px) 20vw, 60vw', loading: 'lazy', class: 'press-quotes__logo'
+            | image_tag: widths: '150, 300, 450, 600', sizes: '(min-width: 750px) 20vw, 60vw', loading: 'lazy', class: 'press-quotes__logo', alt: logo_alt
           }}
-        {%- elsif block.settings.source != blank -%}
-          <p class="press-quotes__source">{{ block.settings.source }}</p>
         {%- endif -%}
 
         {%- if block.settings.quote != blank -%}
           <blockquote class="press-quotes__quote">{{ block.settings.quote }}</blockquote>
+        {%- endif -%}
+
+        {%- comment -%}
+          The attribution used to be an `elsif` on the logo, so a quote could show a logo or a
+          name but never both. That is fine for a masthead everyone recognises -- Broadsheet, the
+          Urban List -- and wrong for a café: its square logo is not a wordmark, so without the
+          name the quote is unattributed. It is a <figcaption> rather than a <p> because that is
+          what attributes a <figure>, and it is last because the spec allows only first or last.
+        {%- endcomment -%}
+        {%- if block.settings.source != blank -%}
+          <figcaption class="press-quotes__source">{{ block.settings.source }}</figcaption>
         {%- endif -%}
       </figure>
     {%- endcapture -%}
@@ -139,10 +161,23 @@
     line-height: 0;
   }
 
+  /*
+   * A figcaption has to be a direct child of the <figure>, so it cannot be grouped with the quote
+   * inside a tighter-gapped wrapper and instead inherits the item's --gap-xl. That is the space
+   * the design wants under a logo; an attribution belongs next to the words it attributes, so it
+   * pulls back.
+   */
   .press-quotes__source {
     margin: 0;
     font-family: var(--font-heading--family);
     font-size: var(--font-h5--size, var(--font-size--xl));
+  }
+
+  /* Only pulls back against a preceding sibling's grid gap. A block with a source and neither a
+     logo nor a quote makes the caption the only grid item, and the negative margin would then
+     lift it out of the figure's content box and into whatever sits above. */
+  .press-quotes__source:not(:first-child) {
+    margin-block-start: calc(var(--gap-sm) - var(--gap-xl));
   }
 
   .press-quotes__quote {
