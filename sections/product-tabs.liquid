@@ -8,7 +8,7 @@
   assign product_resource = closest.product | default: product
 
   assign background_color = settings.background_color
-  assign text_color = settings.text_color
+  assign explicit_text_color = settings.text_color
 
   if settings.color_source == 'product'
     assign namespace = settings.color_namespace | strip
@@ -22,36 +22,15 @@
       endif
     endif
 
+    # Con colores por producto, el ajuste de texto de la seccion deja de ser una eleccion: es un
+    # unico valor frente a tantos fondos como productos, y ese emparejamiento accidental es
+    # exactamente lo que el sistema de contraste existe para evitar. Aqui solo cuenta como
+    # explicito el metacampo del propio producto; sin el, decide el contraste.
+    assign explicit_text_color = ''
     if namespace != blank and text_key != blank
       assign product_text = product_resource.metafields[namespace][text_key].value
       if product_text != blank
-        assign text_color = product_text
-      endif
-    endif
-  endif
-
-  # El fondo puede venir por producto, pero el color de las etiquetas es un unico valor guardado,
-  # asi que un color claro de cafe y una etiqueta crema se emparejan por accidente. Hoy en main,
-  # 32 de los 37 productos con custom.pdp_background_color no llegan a AA contra #F5F4E9 y 13 se
-  # quedan por debajo de 3:1 -- ilegibles incluso como texto grande.
-  #
-  # Las otras 55 superficies con color del tema no tienen este problema porque pasan por
-  # snippets/contrast-override.liquid, que conserva un color explicito cuando contrasta y, si no,
-  # toma el extremo de la paleta que pide el brillo del fondo. Esta seccion escribe su propia
-  # custom property y por eso nunca heredo esa regla. Misma regla, mismo umbral 4.5, mismo punto
-  # medio 128.
-  #
-  # La precedencia es la del snippet: un metacampo de texto por producto es explicito y siempre
-  # gana. Solo se corrige el valor de seccion, y solo cuando de verdad falla, para que los cafes
-  # oscuros que hoy se leen bien en crema queden exactamente igual.
-  if background_color != blank and product_text == blank
-    assign label_contrast = background_color | color_contrast: text_color
-    if label_contrast != blank and label_contrast < 4.5
-      assign label_brightness = background_color | color_brightness
-      if label_brightness > 128
-        assign text_color = 'var(--palette-darkest)'
-      else
-        assign text_color = 'var(--palette-lightest)'
+        assign explicit_text_color = product_text
       endif
     endif
   endif
@@ -64,6 +43,33 @@
   # always behave as tabs.
 -%}
 
+{%- comment -%}
+  El fondo lo pone el producto; el color del texto no lo ponia nadie. Hasta ahora esta seccion
+  escribia sus propias custom properties y por eso era la unica superficie con color del tema que
+  no pasaba por snippets/contrast-override.liquid: 55 secciones heredan esa regla y product-tabs
+  no. El efecto en main se veia en los dos extremos. Con fondo claro -- 32 de los 37 productos con
+  custom.pdp_background_color no llegan a AA contra #F5F4E9 y 13 ni a 3:1 -- las etiquetas quedaban
+  ilegibles. Sin fondo -- los ~54 productos sin metacampo: todo el equipo y el merchandising -- la
+  seccion no pintaba fondo alguno y el texto crema caia sobre la pagina crema: contraste 1.01,
+  medido en vivo en /products/hario-v60-dripper-clear-plastic, donde la pestana y el panel entero
+  desaparecian. Un valor vacio es una custom property valida, asi que `--product-tabs-background: ;`
+  no fallaba: invalidaba en silencio el `background` que la leia.
+
+  Delegar en el snippet en vez de repetir su regla aqui deja una sola implementacion del contraste
+  en el tema, no dos que puedan separarse. El snippet emite el juego completo de tokens
+  (--color-foreground, --color y sus variantes rgb) sobre la seccion y sobre los .text-block que
+  contiene, asi que los paneles heredan el color correcto sin que esta seccion sepa nada de ellos.
+  Sin fondo no emite nada y el texto cae en el color de la pagina, que es lo correcto para un
+  producto sin vestir.
+
+  Como color explicito se le pasa solo el metacampo del producto: ver la nota de arriba.
+{%- endcomment -%}
+{%- render 'contrast-override',
+  background_color: background_color,
+  text_color: explicit_text_color,
+  section_id: section.id
+-%}
+
 <script
   src="{{ 'product-tabs.js' | asset_url }}"
   type="module"
@@ -71,10 +77,11 @@
 ></script>
 
 <product-tabs-component
-  class="product-tabs spacing-style"
+  class="product-tabs spacing-style color-custom-{{ section.id }}"
   style="
-    --product-tabs-background: {{ background_color }};
-    --product-tabs-color: {{ text_color }};
+    {%- if background_color != blank %}
+      --product-tabs-background: {{ background_color }};
+    {%- endif %}
     --product-tabs-label-size: {{ settings.label_size }}px;
     {%- if settings.label_size_mobile > 0 %}
       --product-tabs-label-size-mobile: {{ settings.label_size_mobile }}px;
@@ -238,10 +245,14 @@
 </script>
 
 {% stylesheet %}
+  /*
+   * El color lo pone contrast-override sobre .color-custom-<id>, que es este mismo elemento, asi
+   * que aqui no se declara: una segunda declaracion solo podria contradecirlo. Sin fondo la
+   * custom property no se emite y el fallback deja la seccion transparente sobre la pagina.
+   */
   .product-tabs {
     display: block;
-    background: var(--product-tabs-background);
-    color: var(--product-tabs-color, inherit);
+    background: var(--product-tabs-background, transparent);
   }
 
   .product-tabs__inner {
