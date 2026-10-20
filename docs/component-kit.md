@@ -46,13 +46,44 @@ is not one: its four blocks are **YouTube episodes** — a thumbnail, a play
 icon, an episode title and an embed URL — while the written café quotes all
 live in `ona-cafe-testimonial`. Only the second is a `press-quotes`.
 
-The first is a `slideshow`, and natively so: `_slide` accepts child blocks,
-among them `video`, whose `video_url` setting takes `accept: [youtube, vimeo]`
-and whose `cover_image` is the episode thumbnail. One slide per episode, a
-`video` block and a `text` block for the title, and Horizon draws the play
-control. Nothing has to be re-hosted. (The section-level `video` settings on
-`_slide` and `hero` are Shopify-hosted only, which is what makes this look
-impossible until you read the block tree.)
+The first does not map onto anything in the kit, and this is the one place the
+document says so rather than guessing. Beside the carousel it renders a
+persistent panel — an `<h2>`, an `<h3>`, body copy and a hard-coded
+"Get In Touch" link to a Monday form — plus an episode-select dropdown that
+lists every episode title and drives the slider through `data-tag`. Horizon's
+`slideshow` takes only `_slide` blocks and offers arrows and dots; it has no
+side panel and no named-item selector. The videos themselves would survive
+(a `_slide` takes a `video` child block, whose `video_url` accepts YouTube and
+whose `cover_image` is the thumbnail) but the panel and the selector would
+not. **Decide this one before converting the page**, with ONA: keep the
+section, or rebuild the panel as a `media-with-content` wrapper and accept a
+different selector.
+
+### Read the markup, not the schema
+
+Three of the mappings in the first draft of this document were wrong in the
+same way, and the way is worth naming because it will happen again. The table
+was built by parsing `{% schema %}` blocks, and a schema describes settings,
+not rendered structure. All of these are invisible to it:
+
+- every `*-sourcing-v*` clone renders a trailing `.add-images-slider` of
+  image/blockquote/citation blocks after the two-column row;
+- `ona-wholesale-testimonial` renders the persistent panel and selector above;
+- `ona-wholesale-brands` is a static grid, and the component that looked like
+  its match animates.
+
+The sourcing one resolves in the mapping's favour, but only by measurement:
+across `page.wholesale.json` and `page.training.json` the ten clones have
+**zero enabled blocks** between them — nine carry none at all, and
+`ona-sourcing` carries four that are all `disabled: true`. So the live render
+of all ten really is the two-column row, and `media-with-content` reproduces
+it. What is at stake is stored content, not visible content: those four
+disabled quotes, and the disabled blocks on `ona-faq-lists`, have to be
+carried across or dropped on purpose — ONA's call, the same shape as the
+disabled placeholder testimonials on the homepage.
+
+So: before converting any section, read its Liquid. The schema tells you what
+a merchant can set, not what the page draws.
 
 Alongside that, three kinds of drift the reviews measured across all 116
 sections in `templates/*.json`:
@@ -82,8 +113,8 @@ has to be written.
 | 4 | `press-quotes` | quote carousel: logo, quote, attribution, arrows when blocks outnumber columns | `ona-cafe-testimonial` (and already carrying its four quotes on the homepage, #246) |
 | 5 | `ona-faq-layout` | already Horizon-native, styles itself, takes `_faq-category` blocks | `ona-faq-lists`, the FAQ half of `ona-expressions` |
 | 6 | `ona-page-media-gallery` | already Horizon-native, styles itself | ad-hoc image grids |
-| 7 | `slideshow` | Horizon's `_slide` carousel; a slide takes child blocks, including `video` with a YouTube/Vimeo URL and a cover image | the `slider` blocks in `ona-supported`, `ona-exclusive-access`, `ona-expressions`, and `ona-wholesale-testimonial`'s episode carousel |
-| 8 | `marquee` | takes `text`, `icon`, `logo`, `_divider`; currently unused | `ona-wholesale-brands` (a logo wall) |
+| 7 | `slideshow` | Horizon's `_slide` carousel; a slide takes child blocks, including `video` with a YouTube/Vimeo URL and a cover image | the `slider` blocks in `ona-supported`, `ona-exclusive-access`, `ona-expressions` |
+| 8 | `section` + `image` blocks | `image` carries a `link`, so a static grid of linked logos needs no new component. **Not `marquee`** — it animates unless the viewer asks for reduced motion and its schema has no off switch, so swapping a static wall for it is a visible change, which stage 2 forbids. | `ona-wholesale-brands` (a static wall of five linked logos) |
 | 9 | **a page-header section** — *to write* | eyebrow, heading, optional sub-copy, optional visually-hidden variant | `ona-page-title`, `ona-sr-heading` |
 
 Nothing else should be added. A tenth component needs an argument, not a page.
@@ -133,7 +164,7 @@ sets it. This is what stage 2 means for each.
 
 | Page | Sections now | After | The work |
 | --- | --- | --- | --- |
-| `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; `ona-cafe-testimonial` → `press-quotes`; `ona-wholesale-testimonial` → `slideshow` with a `video` block per episode; `ona-wholesale-brands` → `marquee`; `ona-faq-lists` → `ona-faq-layout`; `ona-gust-r`'s native `/contact` form stays as is |
+| `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; `ona-cafe-testimonial` → `press-quotes`; `ona-wholesale-testimonial` needs a decision first (see above); `ona-wholesale-brands` → `section` + linked `image` blocks, kept static; `ona-faq-lists` → `ona-faq-layout`; `ona-gust-r`'s native `/contact` form stays as is |
 | `/pages/barista-courses` | 10 (all legacy) | ~6 | four `traning-sourcing-v*` → `media-with-content`; `ona-traning-supported` → `slideshow`; `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
 | `/pages/about` | 7 (all legacy) | ~5 | media/text variants → `media-with-content`; gallery → `ona-page-media-gallery` |
 | `/pages/learn` | 2 | 2 | `ona-page-title` → page-header; `ona-brewguides-and-training` → `section` + `_product-card`-style tiles |

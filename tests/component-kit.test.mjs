@@ -129,6 +129,41 @@ test('a slide can carry an externally hosted video', () => {
   );
 });
 
+/*
+ * The kit maps all ten *-sourcing-v* clones onto media-with-content on the strength of one
+ * measurement: between them they have no enabled blocks, so the trailing quote slider their
+ * markup carries draws nothing and the live render really is the two-column row. Enable one
+ * block and that stops being true -- the conversion would then drop visible content -- so the
+ * claim is rechecked here rather than trusted.
+ */
+test('the sourcing clones still render nothing from their blocks', () => {
+  const stripBanner = (text) => text.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '');
+  const live = [];
+  const dormant = [];
+
+  const templates = join(root, 'templates');
+  for (const file of readdirSync(templates)) {
+    if (!file.endsWith('.json')) continue;
+    const parsed = JSON.parse(stripBanner(readFileSync(join(templates, file), 'utf8')));
+    for (const section of Object.values(parsed.sections ?? {})) {
+      if (!/sourcing/.test(section.type ?? '')) continue;
+      for (const block of Object.values(section.blocks ?? {})) {
+        (block.disabled ? dormant : live).push(`${file}:${section.type}`);
+      }
+    }
+  }
+
+  assert.deepEqual(
+    live,
+    [],
+    'a sourcing section has an enabled block, so its trailing quote slider is live and media-with-content would drop it'
+  );
+  assert.ok(
+    dormant.length === 0 || doc.includes('disabled'),
+    'the stored disabled blocks need to stay accounted for in the kit'
+  );
+});
+
 test('stage 2 points at the kit', () => {
   const structure = readFileSync(join(root, 'docs/page-design-structure.md'), 'utf8');
   const stage2 = structure.slice(
