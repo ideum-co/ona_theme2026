@@ -22,9 +22,10 @@ test("the contact page still carries ONA's contact details", () => {
   const template = JSON.parse(raw);
 
   assert.ok(template.sections.contact_details, 'the contact details section is gone');
-  assert.ok(
-    template.order.indexOf('contact_details') < template.order.indexOf('form'),
-    'the details belong above the form, as they do on the production page',
+  assert.equal(
+    template.order[template.order.length - 1],
+    'contact_details',
+    'the details belong below the page body, as they do on the production page',
   );
 
   /*
@@ -74,4 +75,45 @@ test('the contact page does not say "get in touch" twice', () => {
       `page.content already carries this copy: ${text.slice(0, 60)}`,
     );
   }
+});
+
+test('the contact page offers one form, not two', () => {
+  /*
+   * Measured on the live theme: /pages/contact rendered TWO working forms.
+   *
+   *   - Globo (Powerful Form Builder) form 62822, posting to form.globo.io,
+   *     13 fields, with an enquiry-type router -- General / Orders and order
+   *     tracking / Wholesale partnerships / Media / Other -- embedded as a
+   *     `globo-formbuilder` div inside the page's own body.
+   *   - Horizon's native `contact-form` block, posting to /contact, 7 fields,
+   *     no routing. It arrived with the Horizon base template; nobody asked
+   *     for it.
+   *
+   * The Globo one is what admin actually receives enquiries through, so the
+   * native duplicate is the one that goes. The eventual destination is
+   * Shopify's own Forms app -- already installed on this shop, and the native
+   * route -- but migrating the router is its own piece of work, and losing
+   * admin's enquiry routing to get there a stage early is not a trade worth
+   * making.
+   *
+   * This asserts the template adds no form of its own. It cannot see the Globo
+   * embed, which lives in page content rather than the theme.
+   */
+  const raw = read('templates/page.contact.json').replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '');
+  const template = JSON.parse(raw);
+
+  const types = [];
+  const walk = (node) => {
+    for (const b of Object.values(node.blocks ?? {})) {
+      if (b.type) types.push(b.type);
+      walk(b);
+    }
+  };
+  for (const section of Object.values(template.sections)) {
+    if (section.type) types.push(section.type);
+    walk(section);
+  }
+
+  const forms = types.filter((t) => /contact-form|contact_form/.test(t));
+  assert.deepEqual(forms, [], `the page body already carries the Globo form; the template must not add another: ${forms.join(', ')}`);
 });
