@@ -135,29 +135,50 @@
     });
 
     /*
-     * Drop any tab whose panel rendered nothing -- a Brew Guide on a coffee
-     * with no brew data, say -- taking the button and the panel together.
+     * Drop any tab whose panel renders nothing -- a Brew Guide on a coffee with
+     * no brew data, say -- taking the button and the panel together.
+     *
+     * The test has to be the rendered content, not the Liquid. Child blocks
+     * always emit a wrapper: blocks/custom-liquid.liquid outputs a <div>
+     * unconditionally, and blocks/product-metafield-text.liquid outputs a
+     * hidden, aria-hidden div for a blank value. A Liquid `capture` of the
+     * children is therefore never blank, and the tab would never be removed --
+     * which is exactly how the first pass failed.
+     *
+     * textContent rather than innerText: this runs during parse, before layout,
+     * and innerText would force one. Both wrappers above contain no text at all
+     * when they have nothing to show, so textContent is enough to tell.
      *
      * Order matters. This runs before the deferred module connects, so the
      * component builds its refs from the pruned DOM and still sees one button
-     * per panel. Removing only one of the pair would leave the counts
-     * mismatched, which is the exact condition the component treats as "cannot
-     * pair these" and bails on, stacking every panel visible.
-     *
-     * Last pair standing is left alone: a tab strip of one is still a heading
-     * for the content under it, and removing it would leave an unlabelled
-     * panel.
+     * per panel. Removing only one of a pair would leave the counts mismatched,
+     * which is the condition the component treats as "cannot pair these" and
+     * bails on, stacking every panel visible.
      */
+    const isEmpty = (panel) =>
+      !panel.querySelector('img, picture, video, iframe, svg, canvas') &&
+      panel.textContent.trim() === '';
+
     const empties = [...panels].reduce((acc, panel, index) => {
-      if (panel.hasAttribute('data-tab-empty')) acc.push(index);
+      if (isEmpty(panel)) acc.push(index);
       return acc;
     }, []);
 
+    // A strip of one is still a heading for the content under it.
     if (empties.length && empties.length < panels.length) {
       for (const index of empties.reverse()) {
         panels[index].remove();
         tabs[index]?.remove();
       }
+
+      /*
+       * Each button carries its index in `on:click="/select/N"`, baked in at
+       * render. After a removal the survivors still hold their original N, so
+       * the new first button would open the second panel. Renumber them.
+       */
+      section
+        .querySelectorAll('.product-tabs__strip > .product-tabs__tab')
+        .forEach((tab, index) => tab.setAttribute('on:click', `/select/${index}`));
     }
   })();
 </script>

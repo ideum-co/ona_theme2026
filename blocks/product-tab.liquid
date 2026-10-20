@@ -31,22 +31,6 @@
     text is filled from this attribute by the component instead.
   {%- endcomment -%}
   data-tab-label="{{ block.settings.label | escape }}"
-  {%- comment -%}
-    A tab whose blocks render nothing is marked here so the strip can drop it.
-
-    This is content-driven on purpose. A Brew Guide tab enabled once for the
-    whole catalogue is empty on every coffee that has no brew data, and the
-    alternative -- a per-product flag someone has to set and keep in step with
-    the content -- goes stale the first time a metafield is filled in and
-    nobody remembers the switch. Whatever the blocks inside actually render is
-    the honest signal, and it works for Profile, Origin and Sourcing too, not
-    just Brew Guide.
-
-    The section cannot make this call: it builds the strip from
-    `section.blocks` and, as the note above says, does not read a child theme
-    block's settings reliably from there. The panel knows; the strip is told.
-  {%- endcomment -%}
-  {%- if children | strip == blank -%}data-tab-empty="true"{%- endif -%}
   {{ block.shopify_attributes }}
 >
   {{ children }}
