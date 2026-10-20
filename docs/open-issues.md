@@ -271,3 +271,15 @@ pulls it. Needs a bypass allowance for the `shopify` app — an admin change.
 and `config/settings_data.json` are edited in the theme editor and are ahead of
 git. PR #159 is flagged do-not-merge for this reason (an Oct-14 snapshot against
 an Oct-20 theme). Any PR touching these needs to pull first.
+
+### 19. `{% else if %}` is not Liquid, and two sections use it
+
+`sections/ona-supported.liquid` and `sections/ona-wholesale-testimonial.liquid`
+both contain `{% else if video_url != '' %}`. Liquid has no `else if` — the tag
+parses as a bare `{% else %}` and the condition is **silently discarded**, so
+that branch always runs. (`elsif` is the correct spelling; `{% elsif %}`.)
+
+Found during review of #244, which touches the trailing whitespace on those
+very lines and so makes the bug look new. It is not: it predates the PR and
+came across in the port. Fixing it is a behaviour change and belongs in its own
+PR with a before/after on `/pages/wholesale`, not in a whitespace resend.

@@ -105,9 +105,29 @@ test('the structured data describes exactly the questions the page shows', () =>
   assert.match(emitted, /"@type":"FAQPage"/, 'and it is a FAQPage');
   assert.doesNotMatch(block.slice(0, guardStart), /<script\b/i, 'never outside the guard');
 
-  assert.match(block, /\{\{ question \| json \}\}/, 'the question must be JSON-escaped');
-  assert.match(block, /assign answer_text = answer \| strip_html \| strip/, 'the answer is flattened to text');
-  assert.match(block, /\{\{ answer_text \| json \}\}/, 'and JSON-escaped');
+  /*
+   * Both strings are JSON-escaped and then have `</` neutralised: `json` escapes JSON
+   * metacharacters but not `<` or `/`, so a `</script>` inside merchant text would end the
+   * script element early and spill the rest onto the page.
+   */
+  assert.ok(
+    block.includes(String.raw`assign question_json = question | json | replace: '</', '<\/'`),
+    'the question is escaped and its </ neutralised',
+  );
+  assert.ok(
+    block.includes(String.raw`assign answer_json = answer | strip | json | replace: '</', '<\/'`),
+    'the answer likewise',
+  );
+
+  /*
+   * The answer goes into acceptedAnswer.text as HTML. Google allows <p> <br> <ol> <ul> <li>
+   * <a> <b> <strong> <i> <em> there, and strip_html would cost two things: it removes tags
+   * but not entities, so `&amp;` would reach the structured data literally with no Liquid
+   * filter able to undo it, and it joins paragraphs with no separator.
+   */
+  assert.doesNotMatch(block, /text":\{\{ answer_text/, 'the structured answer must not be the stripped text');
+  assert.match(block, /assign answer_text = answer \| strip_html \| strip/, 'answer_text stays, as the emptiness test');
+  assert.match(block, /question != blank and answer_text != blank/, 'and that is what decides whether a row is described');
 
   assert.match(block, /\{%-? if described > 0 -?%\},\{%-? endif -?%\}/, 'commas come from a counter, not forloop.first');
   assert.doesNotMatch(block, /forloop\.first/, 'forloop.first breaks as soon as a row is skipped');

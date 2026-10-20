@@ -26,10 +26,22 @@
   Coverage on 2026-10-20: 17 of 60 active products carry origin copy or specs.
 {%- enddoc -%}
 
+{%- comment -%}
+  The prose is tested on its RENDERED text, not on the metafield drop. `x != blank` on a
+  metafield object asks "is this nil", so a rich_text_field saved as an empty document --
+  what a bulk import writes for every row it has no copy for -- is "present" and opens the
+  guard. The heading would then render beside an empty <p>, the panel's textContent would be
+  "OriginSourcing" rather than "", and the empty-tab pruning in sections/product-tabs.liquid
+  would keep a tab containing two bare words on every product. Same shape as the <style> and
+  <svg> traps in the doc above, through a different door. Pattern copied from
+  sections/locations-store-finder.liquid:349.
+{%- endcomment -%}
+{%- capture origin_html -%}{{ closest.product.metafields.custom.origin_intro | metafield_tag }}{%- endcapture -%}
+{%- capture sourcing_html -%}{{ closest.product.metafields.custom.sourcing_intro | metafield_tag }}{%- endcapture -%}
 {%- liquid
   assign product = closest.product
-  assign origin = product.metafields.custom.origin_intro
-  assign sourcing = product.metafields.custom.sourcing_intro
+  assign origin = origin_html | strip_html | strip
+  assign sourcing = sourcing_html | strip_html | strip
 
   assign producer = product.metafields.custom.producer.value | strip
   assign region = product.metafields.custom.region.value | strip
@@ -51,14 +63,14 @@
           {%- if block.settings.origin_heading != blank -%}
             <h3 class="origin-story__heading">{{ block.settings.origin_heading }}</h3>
           {%- endif -%}
-          <div class="origin-story__prose rte">{{ origin | metafield_tag }}</div>
+          <div class="origin-story__prose rte">{{ origin_html }}</div>
         {%- endif -%}
 
         {%- if sourcing != blank -%}
           {%- if block.settings.sourcing_heading != blank -%}
             <h3 class="origin-story__heading">{{ block.settings.sourcing_heading }}</h3>
           {%- endif -%}
-          <div class="origin-story__prose rte">{{ sourcing | metafield_tag }}</div>
+          <div class="origin-story__prose rte">{{ sourcing_html }}</div>
         {%- endif -%}
       </div>
     {%- endif -%}
@@ -68,31 +80,31 @@
         {%- if producer != blank -%}
           <div class="origin-story__row">
             <dt class="origin-story__label">Producer</dt>
-            <dd class="origin-story__value">{{ producer }}</dd>
+            <dd class="origin-story__value">{{ producer | escape }}</dd>
           </div>
         {%- endif -%}
         {%- if region != blank -%}
           <div class="origin-story__row">
             <dt class="origin-story__label">Region</dt>
-            <dd class="origin-story__value">{{ region }}</dd>
+            <dd class="origin-story__value">{{ region | escape }}</dd>
           </div>
         {%- endif -%}
         {%- if varietal != blank -%}
           <div class="origin-story__row">
             <dt class="origin-story__label">Varietal</dt>
-            <dd class="origin-story__value">{{ varietal }}</dd>
+            <dd class="origin-story__value">{{ varietal | escape }}</dd>
           </div>
         {%- endif -%}
         {%- if process != blank -%}
           <div class="origin-story__row">
             <dt class="origin-story__label">Process</dt>
-            <dd class="origin-story__value">{{ process }}</dd>
+            <dd class="origin-story__value">{{ process | escape }}</dd>
           </div>
         {%- endif -%}
         {%- if altitude != blank -%}
           <div class="origin-story__row">
             <dt class="origin-story__label">Altitude</dt>
-            <dd class="origin-story__value">{{ altitude }}</dd>
+            <dd class="origin-story__value">{{ altitude | escape }}</dd>
           </div>
         {%- endif -%}
       </dl>

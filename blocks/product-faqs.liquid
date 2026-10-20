@@ -49,7 +49,7 @@
     {%- if question != blank and answer_text != blank -%}
       <details class="product-faqs__item">
         <summary class="product-faqs__question">
-          <span>{{ question }}</span>
+          <span>{{ question | escape }}</span>
           <span class="product-faqs__icon" aria-hidden="true"></span>
         </summary>
         <div class="product-faqs__answer rte">{{ answer }}</div>
@@ -66,7 +66,22 @@
     {%- if question != blank and answer_text != blank -%}
       {%- if described > 0 -%},{%- endif -%}
       {%- assign described = described | plus: 1 -%}
-      {"@type":"Question","name":{{ question | json }},"acceptedAnswer":{"@type":"Answer","text":{{ answer_text | json }}}}
+      {%- comment -%}
+        The answer goes in as HTML, not as stripped text. Google's FAQPage spec allows
+        <p> <br> <ol> <ul> <li> <a> <b> <strong> <i> <em> inside acceptedAnswer.text, and
+        stripping them costs two things: strip_html removes tags but NOT entities, so
+        `Ona & Co's "house" blend` would reach the structured data as the literal
+        `Ona &amp; Co&#39;s &quot;house&quot; blend` with no Liquid filter able to undo it;
+        and it joins paragraphs without a separator, turning two sentences into
+        "...in the grinder.We recommend...". answer_text stays, as the emptiness test only.
+
+        `| replace: '</', '<\/'` closes the one hole `json` leaves: it escapes JSON
+        metacharacters but not `<` or `/`, so a question or answer containing `</script>`
+        would end the script element early and spill the rest onto the page.
+      {%- endcomment -%}
+      {%- assign question_json = question | json | replace: '</', '<\/' -%}
+      {%- assign answer_json = answer | strip | json | replace: '</', '<\/' -%}
+      {"@type":"Question","name":{{ question_json }},"acceptedAnswer":{"@type":"Answer","text":{{ answer_json }}}}
     {%- endif -%}
   {%- endfor -%}
 {%- endcapture -%}

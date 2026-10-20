@@ -85,13 +85,34 @@ test('each metafield is read the way its own type requires', () => {
    * `{"type":"root"...` on the page -- rather than the authored HTML. Codex caught this twice on
    * #240; the rest of the template already goes through metafield_tag.
    */
-  assert.match(block, /assign origin = product\.metafields\.custom\.origin_intro\b(?!\.value)/, 'rich text takes no .value');
-  assert.match(block, /assign sourcing = product\.metafields\.custom\.sourcing_intro\b(?!\.value)/, 'rich text takes no .value');
-  assert.match(block, /\{\{ origin \| metafield_tag \}\}/, 'origin copy must go through metafield_tag');
-  assert.match(block, /\{\{ sourcing \| metafield_tag \}\}/, 'sourcing copy must go through metafield_tag');
+  for (const field of ['origin', 'sourcing']) {
+    assert.match(
+      block,
+      new RegExp(`capture ${field}_html -%\\}\\{\\{ closest\\.product\\.metafields\\.custom\\.${field}_intro \\| metafield_tag \\}\\}`),
+      `${field} copy must go through metafield_tag, and no .value`,
+    );
+
+    /*
+     * And the guard has to test the RENDERED text, not the metafield. `x != blank` on a
+     * metafield object only asks whether it is nil, so a rich_text_field saved as an empty
+     * document opens the guard, the heading renders beside an empty <p>, and the panel is no
+     * longer empty -- which keeps a tab of two bare words on every product that has the row.
+     */
+    assert.match(
+      block,
+      new RegExp(`assign ${field} = ${field}_html \\| strip_html \\| strip`),
+      `${field} must be guarded on its rendered text`,
+    );
+    assert.doesNotMatch(
+      block,
+      new RegExp(`assign ${field} = product\\.metafields`),
+      `${field} must not be guarded on the bare metafield drop`,
+    );
+  }
 
   for (const key of ['producer', 'region', 'varietal', 'process', 'altitude']) {
     assert.match(block, new RegExp(`assign ${key} = product\\.metafields\\.custom\\.${key}\\.value \\| strip`), `${key} is a single_line_text_field: .value, stripped`);
+    assert.match(block, new RegExp(`\\{\\{ ${key} \\| escape \\}\\}`), `${key} is merchant text and must be escaped`);
   }
 });
 
