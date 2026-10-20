@@ -12,27 +12,27 @@
                   {%- when 'slider' -%}
                     <div class="slider-block" data-parent="slider-{{ section.settings.id }}" data-slider-slide data-slide-label="{{ block.settings.video_title | default: forloop.index | escape }}">
                        {% if block.settings.media_type == 'embed' or block.settings.media_type == 'upload' %}
-                        <div class="scale-video">    
-                            {% assign unique_id = 'now' | date: '%s' %} 
+                        <div class="scale-video">
+                            {% assign unique_id = 'now' | date: '%s' %}
                             {%assign player_id = section.settings.id | append: 'uplaod_video_' | append:unique_id | append:i %}
                             {% assign video_id = '' %}
-                            {% assign video_url = '' %} 
-                            
-                            {% assign autoplay = block.settings.autoplay %} 
+                            {% assign video_url = '' %}
+
+                            {% assign autoplay = block.settings.autoplay %}
                             {% if block.settings.media_type == 'upload' %}
                                   {% assign video_id = block.settings.video.sources[0].url %}
-                                  {% assign video_url = video_id %} 
+                                  {% assign video_url = video_id %}
                                   <video id="{{ player_id }}" class="video-js" controls muted defaultMuted playsinline preload="auto" data-src="{{video_id}}"></video>
-                            {% else %}  
-                                {% assign video_url = block.settings.video_url %} 
+                            {% else %}
+                                {% assign video_url = block.settings.video_url %}
                                 {% assign video_id_index = video_url | split: '/' | size | minus: 1 %}
                                 {% if video_url contains 'v=' %}{% assign video_id = video_url | split: 'v=' | last | split: '&' | first %}{% else %}{% assign video_id = video_url | split: '/' | last | split: '?' | first %}{% endif %}
                                 {% if video_url contains 'vimeo' %}
                                     <iframe id="{{ player_id }}" src="https://player.vimeo.com/video/{{ video_id }}" data-auto="{{ autoplay }}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen playsinline></iframe>
-                                {% else if video_url != '' %}                    
-                                    <div id="{{ player_id }}" data-auto="{{ autoplay }}"></div>              
+                                {% else if video_url != '' %}
+                                    <div id="{{ player_id }}" data-auto="{{ autoplay }}"></div>
                                 {% endif  %}
-                             {% endif  %}                              
+                             {% endif  %}
                         </div>
                           <a class="scale-cover-video play-video" data-auto="{{ autoplay }}" data-url="{{ video_url }}" data-video="{{ video_id }}" data-type="{{ block.settings.media_type }}" data-id="{{ player_id }}">
                               {% if block.settings.play_icon != blank %}<img src="{{ block.settings.play_icon | img_url: '100x' }}" alt="title-play-video" />{% endif %}
@@ -46,7 +46,7 @@
                     </div>
                    {% assign i = i | plus:1 %}
                 {% endcase %}
-              {% endfor %}  
+              {% endfor %}
             </div>
             </ona-slider>
             <div class="text wowo fadeInUp">
@@ -176,7 +176,7 @@
         "en": "ID"
       }
     },
-    
+
     {
       "type": "text",
       "id": "title",
@@ -198,7 +198,7 @@
       "default":false
     }
   ],
-  "blocks": [ 
+  "blocks": [
     {
       "type": "slider",
         "name": {
@@ -222,9 +222,9 @@
               {
                 "value": "upload",
                 "label": "Upload Video"
-              }    
+              }
             ]
-          },  
+          },
           {
             "type": "image_picker",
             "id": "image",
@@ -234,7 +234,7 @@
           },
           {
             "type": "video",
-            "id": "video",  
+            "id": "video",
             "label": "Select Video"
           },
           {
@@ -248,7 +248,7 @@
           },
           {
           "type": "image_picker",
-          "id": "play_icon",      
+          "id": "play_icon",
           "label": {
     		"en": "Play Icon"
           }
@@ -260,7 +260,7 @@
             "default":false
           }
         ]
-      },   
+      },
     {
       "type": "block",
       "name": {
@@ -281,7 +281,7 @@
             "en": "Content"
           }
         }
-      ] 
+      ]
     }
   ],
   "presets": [

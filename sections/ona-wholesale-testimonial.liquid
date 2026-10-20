@@ -4,37 +4,37 @@
         <div class="content">
             <ona-slider class="ona-slider">
             <div class="ona-slider__nav" role="tablist" aria-label="{{ section.settings.title | default: 'Testimonials' | escape }}" data-slider-nav></div>
-            <div class="img imgs-slider-testimonial wowo fadeIn slider-{{ section.settings.id }}" data-auto="{{ section.settings.slider_autoplay }}" id="slider-{{ section.settings.id }}" data-slider-track> 
+            <div class="img imgs-slider-testimonial wowo fadeIn slider-{{ section.settings.id }}" data-auto="{{ section.settings.slider_autoplay }}" id="slider-{{ section.settings.id }}" data-slider-track>
                {% assign i = 0  %}
-               
+
                {% for block in section.blocks %}
                 {%- case block.type -%}
                   {%- when 'block' -%}
                     <div class="slider-block episode_{{ forloop.index }}" data-parent="slider-{{ section.settings.id }}" data-slider-slide data-slide-label="Episode {{ forloop.index }}">
                         {% if block.settings.media_type == 'embed' or block.settings.media_type == 'upload' %}
-                        <div class="scale-video">    
-                            {% assign unique_id = 'now' | date: '%s' %} 
+                        <div class="scale-video">
+                            {% assign unique_id = 'now' | date: '%s' %}
                             {%assign player_id = section.settings.id | append: 'uplaod_video_' | append:unique_id | append:i %}
                             {% assign video_id = '' %}
-                            {% assign video_url = '' %} 
-                            
-                            {% assign autoplay = block.settings.autoplay %} 
+                            {% assign video_url = '' %}
+
+                            {% assign autoplay = block.settings.autoplay %}
                             {% if block.settings.media_type == 'upload' %}
-                             
+
                                   {% assign video_id = block.settings.video.sources[1].url %}
-                                  {% assign video_url = video_id %} 
+                                  {% assign video_url = video_id %}
                                   <video id="{{ player_id }}" class="video-js" controls muted defaultMuted playsinline preload="auto" data-src="{{video_id}}"></video>
-                            {% else %}  
-                                {% assign video_url = block.settings.video_url %} 
+                            {% else %}
+                                {% assign video_url = block.settings.video_url %}
                                 {% assign video_id_index = video_url | split: '/' | size | minus: 1 %}
                                 {% if video_url contains 'v=' %}{% assign video_id = video_url | split: 'v=' | last | split: '&' | first %}{% else %}{% assign video_id = video_url | split: '/' | last | split: '?' | first %}{% endif %}
                                 {% if video_url contains 'vimeo' %}
                                     <iframe id="{{ player_id }}" src="https://player.vimeo.com/video/{{ video_id }}" data-auto="{{ autoplay }}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen playsinline></iframe>
-                                {% else if video_url != '' %}                    
-                                    <div id="{{ player_id }}" data-auto="{{ autoplay }}"></div>              
+                                {% else if video_url != '' %}
+                                    <div id="{{ player_id }}" data-auto="{{ autoplay }}"></div>
                                 {% endif  %}
-                             {% endif  %}                              
-                        </div> 
+                             {% endif  %}
+                        </div>
                           <a class="scale-cover-video play-video" data-auto="{{ autoplay }}" data-url="{{ video_url }}" data-video="{{ video_id }}" data-type="{{ block.settings.media_type }}" data-id="{{ player_id }}">
                               {% if block.settings.play_icon != blank %}<img src="{{ block.settings.play_icon | img_url: '100x' }}" alt="title-play-video" />{% endif %}
                           </a>
@@ -52,14 +52,14 @@
                     </div>
                     {% assign i = i | plus:1 %}
                 {% endcase %}
-              {% endfor %}     
-             
+              {% endfor %}
+
             </div>
             </ona-slider>
             <div class="text wowo fadeInUp" data-wow-duration="0.75s" data-wow-delay="900ms">
                 <h2>{{ section.settings.title }}</h2>
                 <h3>{{ section.settings.subtitle }}</h3>
-                <p>{{ section.settings.content }}</p> 
+                <p>{{ section.settings.content }}</p>
               <p></p>
                   <p>
                   <a href="https://forms.monday.com/forms/6b1a3a5478c16210a1dae4ae5b3f86dc?r=use1" class="more-btn" target="_blank" rel="noreferrer noopener">Get In Touch</a>
@@ -83,7 +83,7 @@
                               <option value="episode_{{ forloop.index }}" {% if forloop.index == 1  %}selected{% endif %}>Ep {{ forloop.index }}. {{ block.settings.video_title }}</option>
                           {% endif %}
                       {% endfor %}
-                    </select>   
+                    </select>
                     {% endcomment %}
                   </div>
                 </div>
@@ -193,8 +193,8 @@
       "id": "slider_autoplay",
       "label": "Slider Auto Play",
       "default":false
-    }     
-  ], 
+    }
+  ],
   "blocks": [
     {
       "type": "block",
@@ -219,9 +219,9 @@
               {
                 "value": "upload",
                 "label": "Upload Video"
-              }    
+              }
             ]
-          },  
+          },
           {
             "type": "image_picker",
             "id": "image",
@@ -231,7 +231,7 @@
           },
           {
             "type": "video",
-            "id": "video",  
+            "id": "video",
             "label": "Select Video"
           },
           {
@@ -245,12 +245,12 @@
           },
           {
             "type": "text",
-            "id": "video_title",  
+            "id": "video_title",
             "label": "Title"
           },
         {
           "type": "image_picker",
-          "id": "play_icon",      
+          "id": "play_icon",
           "label": {
     		"en": "Play Icon"
           }
