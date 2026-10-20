@@ -142,6 +142,58 @@
 #MainContent .ona-legacy-contact-form textarea { resize:vertical; }
 #MainContent .ona-legacy-contact-form button { margin-block-start:12px; justify-self:start; }
 
+/*
+ * Wholesale enquiry form wrapper.
+ *
+ * The markup is a pop-up (`.wholesale-form.pop-up-form` > `.form-box` > `.box`)
+ * whose open/close script lives in the legacy theme's main.js, which this theme
+ * does not carry -- so it renders inline instead of as a modal. Nothing
+ * constrained the wrapper, so the form (max-width:100%, above) filled the whole
+ * viewport, with the heading and fields flush to the window. Present it as a
+ * centred enquiry section with a readable measure -- deliberately narrower than
+ * --legacy-page-measure, so it uses max-width (not the shared min() cap) and the
+ * section carries the gutter.
+ */
+#MainContent .wholesale-form { padding-block: var(--legacy-page-gap); padding-inline: var(--legacy-page-gutter); }
+#MainContent .wholesale-form .box { max-width: 620px; margin-inline: auto; }
+#MainContent .wholesale-form .box > h2 { font-family: var(--font-heading--family, serif); font-weight:400; font-size:var(--font-h2--size, 3rem); line-height:1.12; margin:0 0 24px; }
+#MainContent .wholesale-form .pop-up-form-close { display:none; } /* the modal close control has no place inline */
+#MainContent .wholesale-form .title:empty { display:none; }
+
+/*
+ * Legacy CTA links styled as buttons. `.more-btn` (and the enquiry trigger
+ * `.wholesale-roaster-form-btn`) were plain maroon text with no background,
+ * padding or box -- their button styles were in main.css. Reuse the theme's own
+ * primary-button tokens so they match every other button and follow the section
+ * colour scheme.
+ */
+#MainContent :is(.more-btn, .wholesale-roaster-form-btn) {
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:14px 28px;
+  background-color: var(--color-primary-button-background);
+  color: var(--color-primary-button-text);
+  border: 1px solid var(--color-primary-button-border, transparent);
+  border-radius:0; text-decoration:none; cursor:pointer;
+  font-size:15px; line-height:1; letter-spacing:.02em;
+  transition: background-color .15s ease, color .15s ease;
+}
+#MainContent :is(.more-btn, .wholesale-roaster-form-btn):hover {
+  background-color: var(--color-primary-button-hover-background);
+  color: var(--color-primary-button-hover-text);
+}
+
+/*
+ * Testimonial video sections: hide the legacy episode dropdown.
+ *
+ * `.video_select_wrap > .filter-select` is a custom dropdown whose open/close
+ * and video-switching script was in the legacy main.js, which this theme does
+ * not carry -- so its <ul> rendered all four episodes as raw native buttons and
+ * nothing happened on click. The track is already enhanced into a working
+ * slider with Episode 1-4 tabs above the video, so this control is a broken
+ * duplicate. Hide it rather than leave unstyled, dead buttons on the page.
+ */
+#MainContent .testimonial_video_section .video_select_wrap { display:none; }
+
 /* Training intro images need an intrinsic box; background-only divs are otherwise zero-height. */
 #MainContent .training-intro { padding-block:var(--legacy-page-gap); }
 #MainContent .training-intro .content { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:center; gap:clamp(24px,5vw,70px); }
