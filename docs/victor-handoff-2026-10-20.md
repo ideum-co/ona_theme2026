@@ -86,7 +86,12 @@ for Broadsheet, Espresso Room and Urban List. Inline them with
 `{{ 'name.svg' | inline_asset_content }}` — the eight single-colour ones use
 `currentColor`, so they take the colour of whatever section they sit in.
 
-Full inventory and the format reasoning: `~/ona-home-assets-2026-10-20/`.
+Full inventory and the format reasoning:
+[`docs/home-assets-2026-10-20/MANIFEST.md`](home-assets-2026-10-20/MANIFEST.md)
+(every extracted file, its source frame and why it is raster or vector) and
+[`SHOPIFY-FILES.md`](home-assets-2026-10-20/SHOPIFY-FILES.md) (the uploaded CDN
+URLs). These were only in my home directory until now, which meant the link
+resolved to nothing for anyone else — Codex, #203.
 
 ---
 
