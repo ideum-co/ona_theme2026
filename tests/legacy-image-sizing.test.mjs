@@ -114,3 +114,51 @@ test('the round avatars have an intrinsic size', () => {
   assert.match(avatar[1], /background-size:\s*cover/);
   assert.match(avatar[1], /border-radius:\s*50%/, 'production renders these round');
 });
+
+test('the decorative blob sits behind the photo, not above it in flow', () => {
+  /*
+   * `svg.animated-svg` is a mustard organic shape the ported sections place as
+   * a sibling of the photo inside `.img`. Unstyled it lays out as a normal
+   * block, so the column becomes blob + photo stacked and the blob reads as a
+   * giant orange rectangle above the image -- on eight sections, which is most
+   * of the legacy pages.
+   *
+   * Production (theme 160815546559, /pages/barista-courses): the svg is
+   * absolute at inset 0 0 auto with z-index 1, and the IMAGE carries
+   * z-index 2 so it covers the blob. Only the crescent extending past the
+   * photo shows.
+   */
+  const svg = layout.match(/#MainContent :has\(> \.animated-svg\):has\(img\) > \.animated-svg\s*\{([^}]*)\}/);
+  assert.ok(svg, 'the blob must be taken out of flow');
+  assert.match(svg[1], /position:\s*absolute/, 'in flow it stacks above the photo');
+  /*
+   * Negative, so it sits behind EVERYTHING in the wrapper. `.awards .left-box`
+   * on /pages/about puts an h2 and h3 before the slider, and a positive index
+   * painted the solid blob over them. Codex, #213.
+   */
+  assert.match(svg[1], /z-index:\s*-1/, 'a positive index covers headings in .left-box');
+
+  const container = layout.match(/#MainContent :has\(> \.animated-svg\):has\(img\)\s*\{([^}]*)\}/);
+  assert.ok(container, 'the blob needs a positioned ancestor');
+  assert.match(container[1], /position:\s*relative/);
+
+  // No companion rule raising images: with the blob behind everything at -1,
+  // nothing needs lifting, and raising only images is what covered the headings.
+  assert.doesNotMatch(
+    layout,
+    /:has\(> \.animated-svg\):has\(img\) img\s*\{[^}]*z-index/,
+    'raising the image is only needed when the blob is in front; it is not',
+  );
+
+  /*
+   * Keyed on shape, not class: the same sections wrap the pair in `.img`,
+   * `.image-box` and `.left-box`, and a rule naming one of them misses the
+   * others. Codex, #213 -- the first version matched `.img` and left the
+   * /pages/about blob in flow.
+   */
+  assert.doesNotMatch(
+    layout,
+    /#MainContent \.img:has\(> \.animated-svg\)/,
+    'do not key the blob rule on one wrapper class; match the shape',
+  );
+});

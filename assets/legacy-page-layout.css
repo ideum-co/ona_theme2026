@@ -189,3 +189,64 @@
 @media(max-width:749px){
  #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.two-columns-title-intro,.training-bookings) > .content.container { grid-template-columns:minmax(0,1fr); gap:28px; }
 }
+
+/*
+ * The decorative blob belongs BEHIND the photo, not above it in flow.
+ *
+ * The ported sections put an `svg.animated-svg` -- a mustard organic shape --
+ * as a sibling of the photo inside `.img`. With no rule it laid out as a
+ * normal block, so the column became blob + photo stacked, and the blob read
+ * as a giant orange rectangle above the image. That is what made these pages
+ * look broken: it is on eight sections (traning-sourcing and its v2-v4,
+ * careers, awards, training-image-text, training-form, wholesale-sourcing
+ * v2-v4), which is most of the legacy pages.
+ *
+ * Production's values, read off theme 160815546559 on /pages/barista-courses:
+ *
+ *   .img.show-icon   display:flex; position:relative          784x1139
+ *   .animated-svg    position:absolute; inset 0 0 auto; z-index:1   784x524
+ *   img              position:relative; z-index:2            784x1139
+ *
+ * It goes BEHIND everything in its wrapper, not merely behind the photo.
+ *
+ * Production places each blob individually: on the real pre-Horizon theme
+ * (147508887743, Debut 17.13.0) the same decoration is `top:-90px;left:994px`
+ * in one section, `top:526px;left:169px` in another and `top:509px;left:-138px`
+ * in a third, often hanging outside its own box. There is no faithful generic
+ * placement to copy, so this rule does the one thing that matters -- take the
+ * blob out of flow so it stops inflating the page -- and keeps it behind the
+ * content.
+ *
+ * An earlier version used `z-index: 1` plus `z-index: 2` on the image. That
+ * holds where the wrapper has only a blob and a photo, but `.awards .left-box`
+ * on /pages/about puts an h2 and h3 BEFORE the slider and only images were
+ * being raised, so the solid blob painted over the headings. Codex, #213.
+ * Measured on /pages/about, headings overlapped by a blob in front of them:
+ * 1 before any fix -> 3 with z-index 1 -> 1 with z-index -1. The negative
+ * index adds no coverage the page did not already have, and the height is
+ * identical either way. Screenshot confirms the Awards heading is legible and
+ * the blob still paints behind it.
+ *
+ * The wrapper is matched by SHAPE, not by class name. A first version keyed
+ * on `.img`, and missed two other wrappers the same sections use --
+ * `ona-training-image-text` nests the pair in `.image-box`, and /pages/about
+ * puts the awards blob straight in `.left-box`. Those blobs stayed in flow
+ * and the page barely moved. Codex, #213.
+ *
+ * `:has(> .animated-svg):has(img)` is the shape every one of them shares: a
+ * wrapper holding the blob AND something with an image. The `:has(img)` half
+ * matters -- /pages/about also has a blob whose wrapper has no image, and
+ * taking that one out of flow would collapse its wrapper to zero height.
+ *
+ * Measured by injecting this into the live pages, images forced to load, from
+ * a page that actually loads this stylesheet (the first attempt injected into
+ * /blogs/brewguides, which does not, so the numbers were taken without it):
+ *
+ *                           before    .img only    by shape
+ *   /pages/barista-courses  13,710px   10,948px    10,520px   svgs in flow 6 -> 1 -> 0
+ *   /pages/about             7,242px    6,870px     6,384px                2 -> 1 -> 0
+ *   /pages/wholesale        25,431px   23,539px    23,539px                6 -> 0 -> 0
+ *   learn, private-courses: unchanged (they carry no .animated-svg)
+ */
+#MainContent :has(> .animated-svg):has(img) { position: relative; }
+#MainContent :has(> .animated-svg):has(img) > .animated-svg { position: absolute; inset-block-start: 0; inset-inline: 0; z-index: -1; max-width: 100%; height: auto; }
