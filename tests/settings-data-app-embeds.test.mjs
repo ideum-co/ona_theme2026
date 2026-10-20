@@ -36,15 +36,20 @@ test('a disabled embed says so explicitly rather than being deleted', () => {
    * Turning an embed off is `"disabled": true`, not removing the block. A removed block is
    * indistinguishable from a drift wipe, both here and in the theme editor, so the record of the
    * decision is lost. Appstle's subscription helper is the one currently off.
+   *
+   * Every block is checked, not just the disabled ones, and nothing here requires an embed to be
+   * live: a shop that has deliberately switched all of them off still has a fully reconciled
+   * file, and Shopify still writes every record with the flag set. An earlier draft asserted at
+   * least one was enabled, which would have turned that valid state into a CI failure and
+   * contradicted the shape-only rule above. Codex, #245.
    */
-  const off = Object.values(settings.current.blocks).filter((b) => b.disabled === true);
-  for (const block of off) {
-    assert.equal(typeof block.type, 'string', 'a disabled embed keeps its type');
+  for (const [id, block] of Object.entries(settings.current.blocks)) {
+    assert.equal(typeof block.type, 'string', `block ${id} must keep its type, enabled or not`);
+    assert.ok(
+      block.disabled === undefined || typeof block.disabled === 'boolean',
+      `block ${id}: disabled is a flag, not a value to improvise with`,
+    );
   }
-  assert.ok(
-    Object.values(settings.current.blocks).some((b) => b.disabled === false),
-    'at least one embed must be live, or this file is not reconciled',
-  );
 });
 
 test('the favicon survives', () => {
