@@ -159,6 +159,19 @@ the quiz routes to.
 
 ## Theme and pages
 
+### 6b. `ona-unique-coffees` keeps its collapse in the shared sheet
+
+The section has a preset, so it can be placed on any JSON template — but the
+rules that stack its slides and show one (`#MainContent .unique-coffee-block
+.imgs-slider-unique …`) live in `assets/legacy-page-layout.css`, which only
+loads for a fixed list of page suffixes. On any other template the script would
+toggle `is-active` while nothing collapses anything, and every slide would show
+at full size. That is exactly how the FAQ sections broke before #218.
+
+It works today because it is only used on `/pages/wholesale`. The fix is the
+one `ona-supported` and `ona-wholesale-testimonial` now use: move the rules into
+the section's own `{% stylesheet %}`, or adopt the shared `<ona-slider>`.
+
 ### 7. `/pages/locations` ships 1.35 MB of `<main>` HTML
 
 It works — 45,873 characters of text, 20 images — but the store-finder section

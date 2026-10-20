@@ -1,13 +1,16 @@
+<script src="{{ 'ona-slider.js' | asset_url }}" type="module"></script>
 <section class="add-image-and-text unique-testimonial-block testimonial_video_section section-full-large bg-red wowo no-padding show-image-slider fadeIn section-relative-image" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
     <div class="container">
         <div class="content">
-            <div class="img imgs-slider-testimonial wowo fadeIn slider-{{ section.settings.id }}" data-auto="{{ section.settings.slider_autoplay }}" id="slider-{{ section.settings.id }}"> 
+            <ona-slider class="ona-slider">
+            <div class="ona-slider__nav" role="tablist" aria-label="{{ section.settings.title | default: 'Testimonials' | escape }}" data-slider-nav></div>
+            <div class="img imgs-slider-testimonial wowo fadeIn slider-{{ section.settings.id }}" data-auto="{{ section.settings.slider_autoplay }}" id="slider-{{ section.settings.id }}" data-slider-track> 
                {% assign i = 0  %}
                
                {% for block in section.blocks %}
                 {%- case block.type -%}
                   {%- when 'block' -%}
-                    <div class="slider-block episode_{{ forloop.index }}" data-parent="slider-{{ section.settings.id }}">
+                    <div class="slider-block episode_{{ forloop.index }}" data-parent="slider-{{ section.settings.id }}" data-slider-slide data-slide-label="Episode {{ forloop.index }}">
                         {% if block.settings.media_type == 'embed' or block.settings.media_type == 'upload' %}
                         <div class="scale-video">    
                             {% assign unique_id = 'now' | date: '%s' %} 
@@ -52,6 +55,7 @@
               {% endfor %}     
              
             </div>
+            </ona-slider>
             <div class="text wowo fadeInUp" data-wow-duration="0.75s" data-wow-delay="900ms">
                 <h2>{{ section.settings.title }}</h2>
                 <h3>{{ section.settings.subtitle }}</h3>
@@ -87,6 +91,69 @@
         </div>
     </div>
 </section>
+{% stylesheet %}
+  /*
+   * Slider styles live with the section, not in legacy-page-layout.css: that
+   * sheet is loaded only for a fixed list of page suffixes, and this section
+   * has a preset, so it can be placed on any JSON template. Where the sheet is
+   * absent the slides would stack at full size with nothing to collapse them.
+   */
+  .ona-slider__nav { display: none; }
+
+  .ona-slider.is-enhanced .ona-slider__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(0.75rem, 2vw, 1.75rem);
+    margin-block-end: clamp(1rem, 3vw, 2rem);
+  }
+
+  /* Square, uppercase, wide-tracked -- the treatment these pages already use. */
+  .ona-slider__tab {
+    padding: 0 0 0.5rem;
+    border: 0;
+    border-block-end: 2px solid transparent;
+    border-radius: 0;
+    background: none;
+    font: inherit;
+    font-size: var(--font-h6--size, 0.75rem);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: inherit;
+    opacity: 0.55;
+    cursor: pointer;
+  }
+
+  .ona-slider__tab:hover,
+  .ona-slider__tab:focus-visible { opacity: 1; }
+
+  .ona-slider__tab.is-active {
+    opacity: 1;
+    border-block-end-color: currentcolor;
+  }
+
+  /*
+   * Stacking only once enhanced. Before that the track flows normally and every
+   * slide is readable; a slider that collapses before its script runs loses
+   * content on a slow connection.
+   */
+  .ona-slider.is-enhanced [data-slider-track] { display: grid; }
+
+  .ona-slider.is-enhanced [data-slider-slide] {
+    grid-area: 1 / 1;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease;
+  }
+
+  .ona-slider.is-enhanced [data-slider-slide].is-active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ona-slider.is-enhanced [data-slider-slide] { transition: none; }
+  }
+{% endstylesheet %}
 {% schema %}
 {
   "name": {
