@@ -87,11 +87,14 @@
    *
    * The old theme shows it small instead: 265x433 at its own 0.61 ratio, in a
    * narrow column, whole page 1,171px. This caps a portrait hero near that
-   * size while leaving landscape heroes -- the Journal's, which run 1.25 to
-   * 1.78 and include two at exactly 16/9 -- full width and untouched.
+   * size while leaving landscape heroes full width and untouched.
+   *
+   * A maximum, not a width: the block exposes desktop and mobile width
+   * settings, and `inline-size` would override `--width` and pin every
+   * portrait hero at 420px even where a merchant asked for less.
    */
   .blog-post-featured-image--portrait {
-    inline-size: min(100%, 420px);
+    max-inline-size: 420px;
     margin-inline: auto;
   }
 

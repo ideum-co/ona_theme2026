@@ -50,12 +50,45 @@ test('a portrait hero is capped so it cannot become a tower', () => {
   );
   const rule = block.match(/\.blog-post-featured-image--portrait\s*\{([^}]*)\}/);
   assert.ok(rule, 'a portrait hero needs a width cap');
-  assert.match(rule[1], /inline-size:\s*min\(100%,\s*\d+px\)/, 'cap it, but never wider than the column');
+
+  /*
+   * A maximum, not a width. The block exposes `width` and `width_mobile`, which
+   * reach the element as `width: var(--width)`; a plain `inline-size` here wins
+   * on specificity and pins every portrait hero at the cap, so a merchant who
+   * asks for less than 420px silently gets 420px.
+   */
+  assert.match(rule[1], /max-inline-size:\s*\d+px/, 'cap it as a maximum, so smaller widths still apply');
+  assert.doesNotMatch(rule[1], /(?<!max-)inline-size:/, 'a fixed inline-size would override the width settings');
 
   // The cap must not apply to landscape heroes, or the Journal shrinks too.
   assert.doesNotMatch(
     block,
-    /\.blog-post-featured-image\s*\{[^}]*inline-size:\s*min\(100%,\s*\d+px\)/,
+    /\.blog-post-featured-image\s*\{[^}]*max-inline-size:\s*\d+px/,
     'only the portrait variant is capped',
   );
+});
+
+test('the Journal keeps its landscape banner', () => {
+  /*
+   * `adapt` on templates/article.json reaches every article that has no
+   * template suffix -- the brew guides, which is the point. The Journal's
+   * articles all carry the `news` suffix, but with no templates/article.news.json
+   * they fell back to article.json too, so `adapt` would have re-shaped them
+   * as well: 'Amazonian Canephoras' is 1536x2049, portrait, and would have been
+   * capped to 420px instead of running as the banner it is today.
+   *
+   * Giving `news` its own template leaves the Journal exactly as it was.
+   */
+  const journal = JSON.parse(read('templates/article.news.json').replace(/^\s*\/\*[\s\S]*?\*\/\s*/, ''));
+  let image = null;
+  const walk = (node) => {
+    for (const b of Object.values(node.blocks ?? {})) {
+      if (b.type === '_blog-post-featured-image') image = b;
+      walk(b);
+    }
+  };
+  for (const s of Object.values(journal.sections)) walk(s);
+
+  assert.ok(image, 'the Journal template must have a featured image block');
+  assert.equal(image.settings.image_ratio, 'landscape', 'the Journal banner ratio must not change');
 });
