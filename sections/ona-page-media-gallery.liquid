@@ -1,0 +1,176 @@
+{%- doc -%}
+  Renders the gallery a page carries in its `accentuate.image` metafield.
+
+  The legacy `sustainability` template showed these as a slick carousel. The
+  images are not Shopify files -- they are absolute Accentuate CDN URLs held in
+  a `json_string` metafield -- so `image_url` and `image_tag` cannot touch them
+  and the markup has to set its own dimensions. Each URL carries its intrinsic
+  size as the query string (`...jpg?1920x1280`), which is where the width and
+  height below come from; the URL is passed through whole, since that is the
+  form the CDN is already serving.
+
+  Note the access path: `page.metafields.accentuate.image`, with NO `.value`.
+  `json_string` is one of Shopify's deprecated metafield types and does not
+  carry the `.value` property that modern types do -- `.value` returns nil and
+  the gallery silently renders nothing. Confirmed against the section that
+  renders these today on theme 160815546559, which iterates the metafield
+  directly.
+{%- enddoc -%}
+
+{%- liquid
+  assign raw = page.metafields.accentuate.image
+  if section.settings.background_color != blank
+    render 'contrast-override', background_color: section.settings.background_color, section_id: section.id
+  endif
+-%}
+
+{%- if raw != blank -%}
+  <div
+    class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+  ></div>
+
+  <section
+    class="
+      ona-page-gallery section section--page-width spacing-style
+      {% if section.settings.background_color != blank %}color-custom-{{ section.id }}{% endif %}
+    "
+    style="
+      --ona-page-gallery-min: {{ section.settings.column_min_width }}px;
+      --ona-page-gallery-gap: {{ section.settings.gap }}px;
+      {% render 'spacing-style', settings: section.settings %}
+    "
+    {{ section.shopify_attributes }}
+  >
+    {%- if section.settings.heading != blank -%}
+      <h2 class="ona-page-gallery__heading">{{ section.settings.heading | escape }}</h2>
+    {%- endif -%}
+
+    <ul class="ona-page-gallery__grid" role="list">
+      {%- for src in raw -%}
+        {%- liquid
+          # `...jpg?1920x1280` -- the query is the intrinsic size. A URL without
+          # one leaves `dims` equal to the whole URL, so both halves have to
+          # parse to a positive number before the attributes are trusted.
+          assign dims = src | split: '?' | last
+          assign w = dims | split: 'x' | first | times: 1
+          assign h = dims | split: 'x' | last | times: 1
+          if w <= 0 or h <= 0
+            assign w = 0
+          endif
+        -%}
+        {%- comment -%}
+          alt="" on purpose. The metafield carries URLs and nothing else, so
+          there is no per-image description to use; alt="{{ page.title }}"
+          would announce "Women In Coffee" five times in a row and tell a
+          screen-reader user nothing about any of them. Empty alt marks them
+          decorative and lets a screen reader skip to the prose beside them,
+          which is where the campaign is actually described. The section
+          serving these on theme 160815546559 does the same. Codex, #210.
+          If per-image text ever exists, this is where it belongs.
+        {%- endcomment -%}
+        <li class="ona-page-gallery__item">
+          <img
+            src="{{ src }}"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            {% if w > 0 %}width="{{ w }}" height="{{ h }}"{% endif %}
+          >
+        </li>
+      {%- endfor -%}
+    </ul>
+  </section>
+{%- endif -%}
+
+{% stylesheet %}
+  .ona-page-gallery__heading {
+    margin: 0 0 clamp(1.5rem, 3vw, 3rem);
+    font-size: clamp(1.75rem, 4vw, 3rem);
+    line-height: 1.1;
+  }
+
+  .ona-page-gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--ona-page-gallery-min), 100%), 1fr));
+    gap: var(--ona-page-gallery-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /*
+   * A single image should not stretch to the full content width the way a grid
+   * cell would -- `recycled-boxes` carries exactly one.
+   */
+  .ona-page-gallery__grid:has(> :only-child) {
+    grid-template-columns: minmax(0, min(var(--ona-page-gallery-min), 100%));
+    justify-content: center;
+  }
+
+  .ona-page-gallery__item {
+    min-inline-size: 0;
+  }
+
+  /*
+   * base.css sets `img { width: 100% }`; height:auto keeps the intrinsic ratio
+   * from the width/height attributes instead of squashing it.
+   */
+  .ona-page-gallery__item img {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Page media gallery",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "t:settings.heading" },
+    {
+      "type": "range",
+      "id": "column_min_width",
+      "label": "Minimum column width",
+      "min": 180,
+      "max": 640,
+      "step": 20,
+      "unit": "px",
+      "default": 320
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "t:settings.gap",
+      "min": 0,
+      "max": 64,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    { "type": "header", "content": "t:content.colors" },
+    { "type": "color", "id": "background_color", "label": "t:settings.background_color" },
+    { "type": "header", "content": "t:content.padding" },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "presets": [{ "name": "Page media gallery" }]
+}
+{% endschema %}
