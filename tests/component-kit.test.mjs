@@ -100,16 +100,20 @@ test('the sections the kit calls Horizon-native really do style themselves', () 
  * so both directions of this are the rule, not a snapshot.
  */
 test('every ona-* section is referenced, and every referenced one exists', () => {
-  const referenced = new Set();
+  const uses = new Map();
 
   const templates = join(root, 'templates');
   for (const file of readdirSync(templates)) {
     if (!file.endsWith('.json')) continue;
     const parsed = JSON.parse(stripBanner(readFileSync(join(templates, file), 'utf8')));
     for (const section of Object.values(parsed.sections ?? {})) {
-      if (section.type?.startsWith('ona-')) referenced.add(section.type);
+      if (!section.type?.startsWith('ona-')) continue;
+      if (!uses.has(section.type)) uses.set(section.type, new Set());
+      uses.get(section.type).add(file);
     }
   }
+
+  const referenced = new Set(uses.keys());
 
   const onDisk = new Set(
     readdirSync(join(root, 'sections'))
@@ -122,6 +126,43 @@ test('every ona-* section is referenced, and every referenced one exists', () =>
 
   const unused = [...onDisk].filter((type) => !referenced.has(type)).sort();
   assert.deepEqual(unused, [], 'an ona-* section has no remaining use and should go in the PR that removed it');
+
+  /*
+   * The two assertions above are set differences, so they stay green when a PR adds a section
+   * AND a template reference for it, or adds a second template use of an existing one. The doc
+   * states a total and a shared-section list that both move in exactly those cases, so derive
+   * them here as well: the inventory is only guarded if the numbers are.
+   */
+  const total = onDisk.size;
+  const structure = readFileSync(join(root, 'docs/page-design-structure.md'), 'utf8');
+  for (const [text, pattern, where] of [
+    [doc, new RegExp(`\\*\\*${total} \`ona-\\*\` sections\\*\\*`), 'the kit headline'],
+    [doc, new RegExp(`all\\s+${total} are referenced`), "the kit's deletion step"],
+    [structure, new RegExp(`the theme ships\\s+${total}\\s+\`ona-\\*\` sections`), 'stage 2'],
+  ]) {
+    assert.match(text, pattern, `${where} does not say ${total} ona-* sections`);
+  }
+
+  const shared = [...uses.entries()].filter(([, files]) => files.size > 1).sort();
+  const sentence = doc.match(/(\w+) are used by more than one template:([\s\S]*?)\.\n/);
+  assert.ok(sentence, 'the kit no longer states which sections more than one template uses');
+  assert.equal(
+    sentence[1].toLowerCase(),
+    NUMBER_WORDS[shared.length],
+    `the kit says ${sentence[1]} sections are shared, but ${shared.length} are`
+  );
+
+  /* Each name is followed by its templates in parentheses, so the count in there is the
+     multiplicity the doc claims -- the number a second template use would silently change. */
+  const claimed = [...sentence[2].matchAll(/`([^`]+)`\s*\(([^)]*)\)/g)].map((match) => [
+    match[1],
+    match[2].split(',').filter((part) => part.trim()).length,
+  ]);
+  assert.deepEqual(
+    claimed.sort(),
+    shared.map(([type, files]) => [type, files.size]).sort(),
+    'the shared-section list disagrees with the templates that actually reference them'
+  );
 });
 
 /*
