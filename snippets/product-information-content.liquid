@@ -7,6 +7,12 @@
   @param {product} product - Product object
   @param {string} section_id - Unique section ID
   @param {object} settings - Section settings object
+  @param {string} [resolved_background_color] - Background color already resolved by the caller
+    (e.g. a per-product metafield in product-information.liquid). Defaults to
+    settings.background_color when not passed, so featured-product-information's
+    unmodified call keeps its existing static-only behaviour.
+  @param {string} [resolved_text_color] - Text color companion to resolved_background_color,
+    same default-to-settings behaviour.
   @param {string} media_gallery - Captured HTML for the product media gallery block
   @param {string} product_details - Captured HTML for the product details block
   @param {string} additional_blocks - Captured HTML for additional section blocks
@@ -92,13 +98,34 @@
 %}
 
 {% liquid
-  if settings.background_color != blank
-    render 'contrast-override', background_color: settings.background_color, section_id: section_id
+  assign effective_background_color = resolved_background_color | default: settings.background_color
+  assign effective_text_color = resolved_text_color | default: settings.text_color
+
+  # True only when the caller resolved a per-product color that differs from the
+  # section's own static setting - i.e. product-information.liquid found a metafield.
+  # Drives the breadcrumb colors below: a per-product background needs breadcrumb text
+  # that contrasts against it too, not whatever fixed color the static background was
+  # tuned for.
+  assign using_resolved_product_color = false
+  if resolved_background_color != blank and resolved_background_color != settings.background_color
+    assign using_resolved_product_color = true
+  endif
+
+  # contrast-override itself supports a text-only path (no background), so this must
+  # not require a background to fire - a text_color-only override would otherwise
+  # silently do nothing, which is exactly the gap Codex's review caught here.
+  assign has_resolved_color = false
+  if effective_background_color != blank or effective_text_color != blank
+    assign has_resolved_color = true
+  endif
+
+  if has_resolved_color
+    render 'contrast-override', background_color: effective_background_color, text_color: effective_text_color, section_id: section_id
   endif
 %}
 
 <div
-  class="section-background{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %}"
+  class="section-background{% if has_resolved_color %} color-custom-{{ section_id }}{% endif %}"
 ></div>
 <div
   class="product-information__viewport"
@@ -109,15 +136,20 @@
 >
 {% if show_breadcrumbs %}
   <div
-    class="product-information__breadcrumb-row section section--{{ content_width }} spacing-style{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %} relative"
+    class="product-information__breadcrumb-row section section--{{ content_width }} spacing-style{% if has_resolved_color %} color-custom-{{ section_id }}{% endif %} relative"
     style="
       --padding-block-start: {{ settings.breadcrumb_padding_top }}px;
       --padding-block-end: {{ settings.breadcrumb_padding_bottom }}px;
       --product-breadcrumb-gap: {{ settings.breadcrumb_gap }}px;
       --product-breadcrumb-font-size: {{ settings.breadcrumb_font_size }}px;
       --product-breadcrumb-font-size-mobile: {{ settings.breadcrumb_font_size_mobile }}px;
-      --product-breadcrumb-text-color: {{ settings.breadcrumb_text_color | default: 'currentcolor' }};
-      --product-breadcrumb-link-color: {{ settings.breadcrumb_link_color | default: settings.breadcrumb_text_color | default: 'currentcolor' }};
+      {% if using_resolved_product_color %}
+        --product-breadcrumb-text-color: var(--color-foreground, currentcolor);
+        --product-breadcrumb-link-color: var(--color-foreground, currentcolor);
+      {% else %}
+        --product-breadcrumb-text-color: {{ settings.breadcrumb_text_color | default: 'currentcolor' }};
+        --product-breadcrumb-link-color: {{ settings.breadcrumb_link_color | default: settings.breadcrumb_text_color | default: 'currentcolor' }};
+      {% endif %}
     "
   >
     <nav
@@ -147,7 +179,7 @@
   </div>
 {% endif %}
 <div
-  class="product-information section section--{{ content_width }} spacing-style{% if show_breadcrumbs %} disable-section-top-offset{% endif %}{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %} relative"
+  class="product-information section section--{{ content_width }} spacing-style{% if show_breadcrumbs %} disable-section-top-offset{% endif %}{% if has_resolved_color %} color-custom-{{ section_id }}{% endif %} relative"
   style="
     {% render 'spacing-style', settings: settings %}
     --gap: {{ settings.gap }}px;
