@@ -5,6 +5,16 @@
   # the metafields). No per-product value, no metafield namespace/key configured, or a
   # blank metafield all fall back to the section's own static color - what a new,
   # unstyled product shows until someone sets it.
+  #
+  # The resolved colors are threaded into 'product-information-content' below rather
+  # than rendered here. That snippet (shared with featured-product-information) is the
+  # one that actually draws the section background, the breadcrumb row and the main
+  # content wrapper - all three keyed on the same color-custom-{{ section.id }} class.
+  # An independent contrast-override call here would emit a second, competing style
+  # block against that identical class; at equal CSS specificity, whichever one is
+  # later in the document wins, which is the snippet's static-settings version, not
+  # this one - so the per-product color would resolve correctly and then visibly do
+  # nothing. Resolve once, pass it down, let the snippet be the only thing that renders.
   assign product_resource = closest.product | default: product
 
   assign background_color = section.settings.background_color
@@ -29,12 +39,7 @@
       endif
     endif
   endif
-
-  if background_color != blank
-    render 'contrast-override', background_color: background_color, text_color: text_color, section_id: section.id
-  endif
 -%}
-<div class="section-background{% if background_color != blank %} color-custom-{{ section.id }}{% endif %}"></div>
 
 <script type="application/ld+json">
   {{ closest.product | structured_data }}
@@ -214,6 +219,8 @@
   product: closest.product,
   section_id: section.id,
   settings: section.settings,
+  resolved_background_color: background_color,
+  resolved_text_color: text_color,
   media_gallery: media_gallery,
   product_details: product_details,
   additional_blocks: additional_blocks
