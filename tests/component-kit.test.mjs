@@ -189,6 +189,36 @@ test('the sourcing clones still render nothing from their blocks', () => {
   );
 });
 
+/*
+ * A section that contains a {% form %} or reads a metafield is doing something no generic
+ * block does, so leaving one out of the plan is how a live form or a metafield-backed counter
+ * gets quietly replaced by a text block. The set is derived from the Liquid, and each member
+ * has to be accounted for somewhere -- either in the kit (ona-page-media-gallery is a
+ * component) or in the section that says what the kit does not cover.
+ */
+test('every section carrying a form or a metafield is accounted for', () => {
+  const behavioural = readdirSync(join(root, 'sections'))
+    .filter((file) => file.startsWith('ona-') && file.endsWith('.liquid'))
+    .filter((file) => {
+      const source = readFileSync(join(root, 'sections', file), 'utf8');
+      return /\{%-?\s*form\s/.test(source) || /(?:shop|page|product)\.metafields/.test(source);
+    })
+    .map((file) => file.slice(0, -'.liquid'.length));
+
+  assert.ok(behavioural.length > 0, 'the probe found no behavioural sections, so it is broken');
+
+  const scope = doc.slice(doc.indexOf('## What the kit does not cover'), doc.indexOf('## Page by page'));
+  assert.ok(scope.length > 0, 'the kit no longer says what it does not cover');
+
+  const kit = kitRows.map((row) => row.join(' ')).join('\n');
+  const unaccounted = behavioural.filter((name) => !scope.includes(name) && !kit.includes(name)).sort();
+  assert.deepEqual(
+    unaccounted,
+    [],
+    'these sections carry a form or a metafield and appear in neither the kit nor its exclusions'
+  );
+});
+
 test('stage 2 points at the kit', () => {
   const structure = readFileSync(join(root, 'docs/page-design-structure.md'), 'utf8');
   const stage2 = structure.slice(

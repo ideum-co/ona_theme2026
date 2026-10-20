@@ -37,8 +37,9 @@ settings — `ona-training-image-text`, `-text-two-images`, `-text-image-bg`,
 all a heading, some copy and a piece of media, four of them with a video variant
 bolted on.
 
-**Forty-five sections collapse to about eight**, and Horizon already ships
-seven of the eight.
+**The layout fragments collapse to about eight components**, and Horizon
+already ships seven of the eight. A handful of sections are not layout at all,
+and they are listed separately below rather than forced into the kit.
 
 One section is mis-named and would be mis-mapped because of it.
 `ona-wholesale-testimonial` reads like a sibling of `ona-cafe-testimonial` and
@@ -85,7 +86,7 @@ Shopify-hosted video — and four of the six need more than that:
 | Section | Live media | Fits the slot? |
 | --- | --- | --- |
 | `ona-training-image-text` | one image | yes |
-| `ona-expericences-content` | one image | yes |
+| `ona-expericences-content` | one image — but beside a live `{% form 'contact' %}`, see below | no |
 | `ona-training` | `media_type: embed`, a youtu.be URL | no — external |
 | `ona-wholesale-partnership` | `media_type: embed`, a YouTube watch URL | no — external |
 | `ona-training-text-image-bg` | a pasted `<iframe>` of a YouTube embed, over a background image | no — external, and two layers |
@@ -95,7 +96,7 @@ Those four go to component 1 instead: a `section` holding a row `group`, with a
 `video` block (whose `video_url` accepts YouTube and Vimeo) or two `image`
 blocks on one side and a column `group` of text on the other. Same layout, same
 media, and it is still a merchant-editable block tree — which is stage 2's
-actual test. Only the two single-image ones are `media-with-content`.
+actual test. Only `ona-training-image-text` is a plain `media-with-content`.
 
 ### Read the markup, not the schema
 
@@ -146,7 +147,7 @@ has to be written.
 | # | Component | What it is | Replaces |
 | --- | --- | --- | --- |
 | 1 | `section` + `group`/`text`/`image`/`video`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×78, `group` ×34, `button` ×14, `image` ×11. A `group` has `content_direction`, so a row of two blocks is a media/text layout; `image` carries a `link` and `video` carries a YouTube/Vimeo URL. | anything that is just stacked copy, `ona-wholesale-brands`, and the four media/text variants `media-with-content` cannot hold (below) |
-| 2 | `media-with-content` | one fixed media slot + a content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones, and the two media/text variants whose media is a single image |
+| 2 | `media-with-content` | one fixed media slot + a content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones, and `ona-training-image-text` |
 | 3 | `hero` | full-bleed media with blocks over it: desktop and custom mobile media, overlay, `section_height`, `fetchpriority` on the image itself. Already on the homepage. | `ona-training-banner`, `ona-inner-banner` |
 | 4 | `carousel` | the composite: a static `group` header taking `@theme` blocks, then `_carousel-content` holding `_card`s that take `image`, `video`, `text` or any theme block | the **5** panel-plus-slider sections in the table above |
 | 5 | `press-quotes` | quote carousel: logo, quote, attribution, arrows when blocks outnumber columns | `ona-cafe-testimonial` (and already carrying its four quotes on the homepage, #246) |
@@ -199,6 +200,28 @@ would delete the hero. It maps to `hero`, which carries desktop and mobile
 media as settings and sets `fetchpriority` on the `<img>` itself — the preload
 pair exists to do by hand what Horizon does natively, and converting retires it
 rather than losing it. Same for `ona-inner-banner`, which has the same schema.
+
+## What the kit does not cover
+
+The kit is for **layout**. Some sections carry behaviour, and behaviour does
+not collapse into a generic block. They are findable rather than
+remembered — a section that contains a `{% form %}`, reads a metafield, or
+loads its own script is doing something a `text` block cannot:
+
+| Section | Behaviour | Target |
+| --- | --- | --- |
+| `ona-gust-r` (wholesale) | `{% form 'contact' %}`, 8 inputs | `section` + Horizon's `contact-form` block |
+| `ona-training-form` (training) | `{% form 'contact' %}` | same |
+| `ona-expericences-content` (private courses) | two columns: heading/image/lead/copy on the left, a working contact form on the right | `section` + two `group`s, the right one holding `contact-form` — **not** `media-with-content`, which has one media slot and one content slot |
+| `ona-unique-coffees` (wholesale) | three named tabs that switch a three-image panel and its copy together, with `role="tabpanel"` and `aria-hidden` wiring | **nothing in Horizon does this.** `carousel` gives cards and dots, an `accordion` does not drive a separate panel. Keep the section, or write a tabs component — a decision, not a mapping |
+| `ona-donation-counter` (homepage) | reads `shop.metafields.custom.donation_total` and renders it as flip-counter digits | keep: it has its own schema and stylesheet and no generic block reproduces it |
+| `ona-bookings-top`, `ona-training-iframe` (bookings, training) | metafield-driven booking iframes | keep until the booking provider changes |
+
+So the honest version of the collapse: the **layout** fragments go to eight
+components. Six sections carry behaviour — three of them onto Horizon's
+`contact-form`, three of them staying as they are — and `ona-unique-coffees`
+is the one section on the wholesale page that stage 2 cannot convert without a
+decision first.
 
 ## Page by page
 

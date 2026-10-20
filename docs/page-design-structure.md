@@ -111,8 +111,10 @@ editor afterwards; a ported `ona-*` section usually fails that, a Horizon
 **Which components, and what each legacy section maps onto, is
 [component-kit.md](component-kit.md).** Short version: the theme ships 45
 `ona-*` sections, every one of them is still referenced by a template, ten of
-them share one byte-for-byte identical schema, and the whole set collapses to
-eight components — seven of which Horizon already ships.
+them share one byte-for-byte identical schema, and the layout among them
+collapses to eight components — seven of which Horizon already ships. The
+sections that carry behaviour rather than layout are listed apart from the
+kit, because a form or a metafield reader does not become a `text` block.
 
 Precedent: `sections/ona-faq-layout.liquid` and
 `sections/ona-page-media-gallery.liquid` are Horizon-native and style themselves,
