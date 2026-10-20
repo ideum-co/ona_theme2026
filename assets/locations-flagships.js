@@ -288,30 +288,88 @@ if (globalThis.customElements && !customElements.get('locations-flagships-loader
  *
  * The previous theme listed ONA's own venues as clickable names beside the
  * gallery; the Horizon port rendered every venue expanded instead. This
- * restores the one-at-a-time behaviour as a tablist.
+ * restores the one-at-a-time behaviour.
  *
- * Progressive enhancement: the section renders every card visible and the nav
- * hidden. Only when this element connects does it add `is-enhanced`, which
- * shows the nav and collapses the list to the active card. Without JavaScript
- * the page keeps all the content.
+ * The buttons are built here rather than in Liquid because
+ * LocationsFlagshipsLoader calls list.replaceChildren() once it has aggregated
+ * venues from every paginated page. Markup-rendered buttons would then point at
+ * panels that no longer exist, a per-page Liquid counter would emit duplicate
+ * ids across pages, and any venue arriving after the first page would have a
+ * panel with no tab -- which, with the collapsed layout active, means a venue
+ * nobody can reach. Building from the cards and rebuilding on mutation keeps
+ * tabs and panels in step by construction.
+ *
+ * Progressive enhancement: the nav is display:none and every card is visible
+ * until this connects and adds `is-enhanced`.
  */
 class LocationsFlagshipsTabs extends HTMLElementBase {
   connectedCallback() {
-    this.tabs = Array.from(this.querySelectorAll('[role="tab"]'));
-    this.panels = Array.from(this.querySelectorAll('[role="tabpanel"]'));
-    if (this.tabs.length < 2 || this.panels.length !== this.tabs.length) return;
+    this.nav = this.querySelector('[data-flagship-nav]');
+    this.list = this.querySelector('[data-flagship-list]');
+    if (!this.nav || !this.list) return;
 
-    this.classList.add('is-enhanced');
     this.addEventListener('click', this.#onClick);
     this.addEventListener('keydown', this.#onKeydown);
 
-    const active = Math.max(0, this.tabs.findIndex((tab) => tab.classList.contains('is-active')));
-    this.select(active);
+    this.refresh();
+
+    if (globalThis.MutationObserver) {
+      this.observer = new MutationObserver(() => this.refresh());
+      this.observer.observe(this.list, { childList: true });
+    }
   }
 
   disconnectedCallback() {
     this.removeEventListener('click', this.#onClick);
     this.removeEventListener('keydown', this.#onKeydown);
+    this.observer?.disconnect();
+  }
+
+  /**
+   * Rebuilds the tablist from whatever cards are in the list right now, keeping
+   * the selected venue if it is still present.
+   */
+  refresh() {
+    const selected = this.tabs?.[this.activeIndex ?? 0]?.dataset.locationId ?? null;
+    this.panels = Array.from(this.list.querySelectorAll('[data-flagship-card]'));
+
+    /*
+     * One venue needs no tablist, and zero means the loader has not finished.
+     * Either way the collapsed layout comes off, so nothing is left hidden
+     * behind a control that is not there.
+     */
+    if (this.panels.length < 2) {
+      this.classList.remove('is-enhanced');
+      this.nav.replaceChildren();
+      this.tabs = [];
+      return;
+    }
+
+    const uid = this.dataset.uid ?? (this.dataset.uid = Math.random().toString(36).slice(2, 8));
+    const buttons = this.panels.map((panel, i) => {
+      const panelId = `FlagshipPanel-${uid}-${i + 1}`;
+      const tabId = `FlagshipTab-${uid}-${i + 1}`;
+      panel.id = panelId;
+      panel.setAttribute('role', 'tabpanel');
+      panel.setAttribute('aria-labelledby', tabId);
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'locations-flagships__nav-item';
+      button.setAttribute('role', 'tab');
+      button.id = tabId;
+      button.setAttribute('aria-controls', panelId);
+      button.dataset.locationId = panel.dataset.locationId ?? '';
+      button.textContent = panel.querySelector('.locations-flagships__title')?.textContent?.trim() ?? `Venue ${i + 1}`;
+      return button;
+    });
+
+    this.nav.replaceChildren(...buttons);
+    this.tabs = buttons;
+    this.classList.add('is-enhanced');
+
+    const keep = buttons.findIndex((b) => selected && b.dataset.locationId === selected);
+    this.select(keep >= 0 ? keep : 0);
   }
 
   #onClick = (event) => {
@@ -342,6 +400,7 @@ class LocationsFlagshipsTabs extends HTMLElementBase {
    * tablist ends up announcing one venue while showing another.
    */
   select(index) {
+    this.activeIndex = index;
     this.tabs.forEach((tab, i) => {
       const isActive = i === index;
       tab.classList.toggle('is-active', isActive);
@@ -349,9 +408,7 @@ class LocationsFlagshipsTabs extends HTMLElementBase {
       tab.tabIndex = isActive ? 0 : -1;
     });
     this.panels.forEach((panel, i) => {
-      const isActive = i === index;
-      panel.classList.toggle('is-active', isActive);
-      panel.hidden = false; // visibility is CSS's job; `hidden` would beat it
+      panel.classList.toggle('is-active', i === index);
     });
   }
 }

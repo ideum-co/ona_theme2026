@@ -68,49 +68,26 @@
         data-current-page="{{ paginate.current_page }}"
         data-next-page-url="{{ paginate.next.url | escape }}"
       >
-        {%- liquid
-          # The old theme's locations-content put the venue names in a left
-          # column and swapped the gallery and details beside them -- clicking a
-          # name was how you moved between ONA's own venues. The Horizon port
-          # rendered every venue expanded instead, which lost that.
-          #
-          # This rebuilds it as a tablist. The same `flagship` filter runs here
-          # and over the cards below, and both count with flagship_nav_index /
-          # flagship_index so the ids line up.
-          assign flagship_nav_index = 0
-          assign flagship_index = 0
-        -%}
+        {%- comment -%}
+          The old theme's locations-content put the venue names in a left column
+          and swapped the gallery and details beside them -- clicking a name was
+          how you moved between ONA's own venues. The Horizon port rendered every
+          venue expanded instead, which lost that.
+
+          The nav is intentionally empty here. LocationsFlagshipsLoader calls
+          list.replaceChildren() once it has aggregated venues from every
+          paginated page, so any buttons rendered here would point at panels that
+          no longer exist, and a per-page Liquid counter would emit duplicate ids
+          across pages. <locations-flagships-tabs> builds the buttons from the
+          cards instead and rebuilds them whenever the list changes.
+        {%- endcomment -%}
         <locations-flagships-tabs class="locations-flagships__tabs">
-          <div class="locations-flagships__nav" role="tablist" aria-label="{{ section.settings.heading | default: 'Flagship stores' | escape }}">
-            {%- for location in all_locations -%}
-              {%- liquid
-                assign is_flagship = false
-                for tag in location.tags.value
-                  assign tag_slug = tag.slug.value | default: tag.slug
-                  if tag.slug.value == 'flagship' or tag_slug == 'flagship'
-                    assign is_flagship = true
-                    break
-                  endif
-                endfor
-              -%}
-              {%- if is_flagship -%}
-                {%- liquid
-                  assign flagship_nav_index = flagship_nav_index | plus: 1
-                  assign nav_title = location.title.value | default: location.title
-                -%}
-                <button
-                  type="button"
-                  class="locations-flagships__nav-item{% if flagship_nav_index == 1 %} is-active{% endif %}"
-                  role="tab"
-                  id="FlagshipTab-{{ section.id }}-{{ flagship_nav_index }}"
-                  aria-controls="FlagshipPanel-{{ section.id }}-{{ flagship_nav_index }}"
-                  aria-selected="{% if flagship_nav_index == 1 %}true{% else %}false{% endif %}"
-                >
-                  {{- nav_title | escape -}}
-                </button>
-              {%- endif -%}
-            {%- endfor -%}
-          </div>
+          <div
+            class="locations-flagships__nav"
+            role="tablist"
+            aria-label="{{ section.settings.heading | default: 'Flagship stores' | escape }}"
+            data-flagship-nav
+          ></div>
 
         <div class="locations-flagships__list" data-flagship-list>
       {%- for location in all_locations -%}
@@ -160,14 +137,11 @@
             endif
           -%}
 
-          {%- assign flagship_index = flagship_index | plus: 1 -%}
           <article
-            class="locations-flagships__card{% if flagship_index == 1 %} is-active{% endif %}"
+            class="locations-flagships__card"
             data-flagship-card
             data-location-id="{{ location.system.id | escape }}"
-            id="FlagshipPanel-{{ section.id }}-{{ flagship_index }}"
             role="tabpanel"
-            aria-labelledby="FlagshipTab-{{ section.id }}-{{ flagship_index }}"
           >
             {%- if media_count > 0 -%}
               <locations-flagship-gallery
