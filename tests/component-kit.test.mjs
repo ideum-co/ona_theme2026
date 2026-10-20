@@ -219,6 +219,44 @@ test('every section carrying a form or a metafield is accounted for', () => {
   );
 });
 
+/*
+ * The verification status at the top of the kit claims the duplication groups are parsed from
+ * schemas and guarded. They were parsed; they were not guarded, so a clone could drift and the
+ * document would keep calling it an identical copy. This derives the groups and compares their
+ * sizes to the counts the table states.
+ */
+test('the duplication table still matches the schemas', () => {
+  const groups = new Map();
+
+  for (const file of readdirSync(join(root, 'sections'))) {
+    if (!file.startsWith('ona-') || !file.endsWith('.liquid')) continue;
+    const source = readFileSync(join(root, 'sections', file), 'utf8');
+    const schema = source.match(/\{%-?\s*schema\s*-?%\}([\s\S]*?)\{%-?\s*endschema\s*-?%\}/);
+
+    let key = 'no-schema';
+    if (schema) {
+      const parsed = JSON.parse(schema[1]);
+      const settings = (parsed.settings ?? []).map((setting) => setting.id).filter(Boolean).sort();
+      const blocks = (parsed.blocks ?? []).map((block) => block.type).sort();
+      key = JSON.stringify([settings, blocks]);
+    }
+    groups.set(key, (groups.get(key) ?? 0) + 1);
+  }
+
+  const derived = [...groups.values()].filter((size) => size > 1).sort((a, b) => b - a);
+
+  const table = doc.slice(doc.indexOf('| Identical schema | Copies | Which |'));
+  const stated = [...table.slice(0, table.indexOf('\n\n')).matchAll(/\|\s*\**(\d+)\**\s*\|/g)]
+    .map((match) => Number(match[1]))
+    .sort((a, b) => b - a);
+
+  assert.deepEqual(
+    stated,
+    derived,
+    'the duplication table disagrees with the schemas it claims to be parsed from'
+  );
+});
+
 test('stage 2 points at the kit', () => {
   const structure = readFileSync(join(root, 'docs/page-design-structure.md'), 'utf8');
   const stage2 = structure.slice(
