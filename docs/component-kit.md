@@ -23,8 +23,9 @@ enabled blocks.
 derived from schemas and block trees, and a schema says nothing about what a
 page draws or how it is laid out. Review of this document found the same
 mistake fourteen times, including in fixes written to correct earlier
-instances of it. Three live counterexamples are recorded in
-[Known gaps](#known-gaps) below.
+instances of it. The live counterexamples found so far are recorded in
+[Known gaps](#known-gaps) below; that table grows every time someone checks a
+row against the page rather than the schema.
 
 So: treat every "Replaces" cell and every row of the page-by-page table as a
 **candidate**, not a decision. Each conversion PR has to open the legacy
@@ -232,7 +233,7 @@ loads its own script is doing something a `text` block cannot:
 | --- | --- | --- |
 | `ona-gust-r` (wholesale) | `{% form 'contact' %}` with a fixed subject and a business field | **not** `contact-form` as it stands — see [Known gaps](#known-gaps) |
 | `ona-training-form` (training) | `{% form 'contact' %}` | same |
-| `ona-expericences-content` (private courses) | two columns: heading/image/lead/copy on the left, a working contact form on the right | `section` + two `group`s, the right one holding `contact-form` — **not** `media-with-content`, which has one media slot and one content slot |
+| `ona-expericences-content` (private courses) | two columns: heading/image/lead/copy on the left, a working contact form on the right, posting a fixed `contact[subject]` | the two-column shell is `section` + two `group`s — **not** `media-with-content`, which has one media slot and one content slot. The form itself is **not** stock `contact-form`: see [Known gaps](#known-gaps) |
 | `ona-unique-coffees` (wholesale) | three named tabs that switch a three-image panel and its copy together, with `role="tabpanel"` and `aria-hidden` wiring | **nothing in Horizon does this.** `carousel` gives cards and dots, an `accordion` does not drive a separate panel. Keep the section, or write a tabs component — a decision, not a mapping |
 | `ona-donation-counter` (homepage) | reads `shop.metafields.custom.donation_total` and renders it as flip-counter digits | keep: it has its own schema and stylesheet and no generic block reproduces it |
 | `ona-bookings-top`, `ona-training-iframe` (bookings, training) | metafield-driven booking iframes | keep until the booking provider changes |
@@ -254,6 +255,10 @@ needs a decision before the page it is on can reach stage 2.
 | `ona-gust-r` | Horizon's `contact-form` block has name, email, phone and body. The live form also posts `contact[subject]` = "Wholesale partnership enquiry" and a `contact[business]` field, which is how enquiries are identified and routed. Swapping it would silently change what ONA receives. |
 | `ona-awards` | `templates/page.about.json` gives it five slider images (`block1`) and twelve award-table rows (`block2`). `ona-page-media-gallery` reads `page.metafields.accentuate.image` and takes neither; `media-with-content` has one media slot. Nothing holds both. |
 | `ona-unique-coffees` | three named tabs switching a three-image panel and its copy together. `carousel` gives cards and dots; an accordion does not drive a separate panel. |
+| `ona-expericences-content` | the live form posts `contact[subject]` = "Private courses and experiences enquiry" (`sections/ona-expericences-content.liquid:50`). Horizon's `contact-form` block has no subject setting — its schema is width, colour, input style, border and padding — so the swap would silently merge these enquiries into the untagged pile. The same loss is already treated as blocking for `ona-gust-r`; it is blocking here too. |
+| `ona-training` (wholesale) | the text column is not ordinary text. `templates/page.wholesale.json` gives the live instance three enabled blocks, and `sections/ona-training.liquid:40-56` renders each as a `faqs-toggle` button with `aria-expanded`, followed by a "Get In Touch" link to a Monday form. A `media-with-content` text slot drops both the interaction and the CTA; the blocks need an `accordion` and the link needs to survive. |
+| `ona-faq-lists` (wholesale) | all six FAQ blocks on the live instance are **disabled**, but `title2` ("Need help?") and `tips` (the admin mailto) are populated, so what the page actually renders is the tips, not a FAQ list. `ona-faq-layout` has a left-column `body` and `_faq-category` blocks and no slot for trailing copy, so the replacement cannot be invisible here. The bookings instance has to be checked separately before the section is retired. |
+| `ona-bread-crumbs` | live on `/pages/private-courses-and-experiences`, rendering linked ancestors and a dynamic `page.title`. The only other breadcrumb in the theme is the product-specific one, so there is no generic target: keep the section, or write a page-breadcrumb component. |
 | `ona-cafe-testimonial` — **until #246 merges** | all four live blocks have both an `image` and a `title`, and the legacy section renders the title as a citation. On `main` today, `sections/press-quotes.liquid:30` shows `source` only in an `elsif` after both logo fields, so a block with a logo cannot also show a name — migrating the four cafés would hide every café name. #246 replaces that branch with a trailing `<figcaption>`, which is what makes this mapping work; it is a dependency, not an assumption. |
 
 ## Page by page
@@ -264,12 +269,12 @@ the verification rule at the top and to the gaps above.
 
 | Page | Sections now | After | The work |
 | --- | --- | --- | --- |
-| `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; `ona-cafe-testimonial` → `press-quotes`; the four panel-plus-slider composites and `ona-unique-coffees` have no verified target (see Known gaps); `ona-wholesale-brands` → `section` + linked `image` blocks, kept static; `ona-faq-lists` → `ona-faq-layout`; `ona-gust-r` stays until its subject and business fields have a home |
+| `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; `ona-cafe-testimonial` → `press-quotes`; the four panel-plus-slider composites and `ona-unique-coffees` have no verified target (see Known gaps); `ona-wholesale-brands` → `section` + linked `image` blocks, kept static; `ona-faq-lists` and `ona-training` have no verified target (see Known gaps); `ona-gust-r` stays until its subject and business fields have a home |
 | `/pages/barista-courses` | 10 (all legacy) | ~6 | four `traning-sourcing-v*` → `media-with-content`; `ona-traning-supported` has no verified target (see Known gaps); `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
 | `/pages/about` | 7 (all legacy) | ~5 | media/text variants → `media-with-content`; `ona-awards` has no verified target (see Known gaps) |
 | `/pages/learn` | 2 | 2 | `ona-page-title` → page-header; `ona-brewguides-and-training` → `section` + `_product-card`-style tiles |
 | `/pages/faq`, `/pages/subscription-faq` | 2 each | 2 each | `ona-page-title` → page-header. `ona-faq-layout` already Horizon-native — leave it |
-| `/pages/private-courses-and-experiences` | 3 | 3 | thin on content; layout swap only after the copy lands |
+| `/pages/private-courses-and-experiences` | 3 | 3 | thin on content; layout swap only after the copy lands. Two of its three sections have no target anyway: `ona-expericences-content`'s form and `ona-bread-crumbs` (see Known gaps) |
 | `/pages/womenincoffee`, `/pages/recycled-boxes` | 2, 1 | — | same: content first |
 | bookings ×3 | 4 each | 4 each | the iframe's framing only |
 
