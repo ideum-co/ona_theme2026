@@ -41,11 +41,14 @@ Three things this tells us that a screenshot does not:
   earlier draft called them "the control group" and told everyone to copy them;
   Codex checked, and for `cafe_testimonial` that was wrong (PR #203). Every logo
   in it sits on a bare `<div class="bg-img" style="background-image: ...">`, and
-  **`.bg-img` has no rule anywhere in `assets/*.css`** — the shared sheet styles
-  the differently-spelled `.img-bg` (6 rules). With no height and no aspect
-  ratio the element collapses, so the section's media is invisible and its total
-  height resembles live by accident. Matching height is a symptom worth
-  explaining, never a certificate. `wholesale_partnership` is built on
+  at the time of this measurement **`.bg-img` had no rule anywhere in
+  `assets/*.css`** — the shared sheet styled the differently-spelled `.img-bg`
+  (6 rules). With no height and no aspect ratio the element collapsed to
+  411x0, so the section's media was invisible while its total height resembled
+  live by accident. **Fixed in #209**, which gives it `padding-top:100%` and
+  `border-radius:50%`; it now renders 125x125, production's size, and
+  `tests/legacy-image-sizing.test.mjs` holds it. The lesson outlives the bug:
+  matching height is a symptom worth explaining, never a certificate. `wholesale_partnership` is built on
   `.add-image-and-text`, which the shared sheet does cover — but verify it
   element by element before holding it up as a model.
 - **`faq_lists` is the opposite problem.** It is *shorter* than live, so
@@ -101,8 +104,11 @@ before picking up item 2 rather than trusting this ordering (Codex, #203):
    2,308px -> 265px. Together with item 1 the page went 32,136px -> 23,830px,
    upscaled images 17 -> 12, and the worst upscale 11.8x -> 3.7x.
 4. **`ona-wholesale-testimonial`** — 4.2x.
-5. **The four `sourcing` variants** — 2.9x to 3.9x. The shared fault is
-   `.bg-img`, above; one rule should move all of them.
+5. ~~**The four `sourcing` variants** — 2.9x to 3.9x.~~ **Done, #209.** Their
+   shared fault was the row layout, not `.bg-img` (they render none — see
+   above): the two-column rule did not match the single-element
+   `<div class="content container">`. With that fixed the live page went
+   27,033px -> 15,974px and its upscaled images 10 -> 0.
 6. **`ona-faq-lists`** — the collapsed one, and it is a content problem before
    it is a behaviour problem. All six blocks under
    `templates/page.wholesale.json` are `"disabled": true`, so the section
