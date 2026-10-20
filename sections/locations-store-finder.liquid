@@ -510,6 +510,8 @@
     padding-inline: 1.2rem;
     border: 1px solid var(--locations-finder-accent-color);
     cursor: pointer;
+    /* <button> takes the UA font otherwise: this rendered Arial 13.333px. */
+    font: inherit;
   }
 
   .locations-store-finder__location-button {

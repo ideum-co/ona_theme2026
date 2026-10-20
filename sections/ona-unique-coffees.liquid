@@ -1,9 +1,12 @@
+<script src="{{ 'ona-unique-coffees.js' | asset_url }}" type="module"></script>
+
+<ona-unique-coffees>
 <section class="add-image-and-text invert-columns show-faqs unique-coffee-block  wowo show-image-slider fadeIn" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
     <div class="container">
         <div class="content">
             <div class="img imgs-slider-unique"> 
                {% for block in section.blocks %}
-                    <div class="slider-block">
+                    <div class="slider-block{% if forloop.first %} is-active{% endif %}" id="{{ section.id }}-panel-{{ forloop.index0 }}" role="tabpanel" aria-labelledby="{{ section.id }}-tab-{{ forloop.index0 }}"{% unless forloop.first %} aria-hidden="true"{% endunless %}>
                         <img src="{{ block.settings.image | img_url: '800x' }}" alt="{{ section.settings.image.alt | escape }}" class="wowo fadeInup" data-wow-duration="0.75s" data-wow-delay="300ms" loading="lazy" decoding="async">                    
                         <img src="{{ block.settings.image2 | img_url: '800x' }}" alt="{{ section.settings.image2.alt | escape }}" class="wowo fadeInup" data-wow-duration="0.75s" data-wow-delay="600ms" loading="lazy" decoding="async">                
                         <img src="{{ block.settings.image3 | img_url: '800x' }}" alt="{{ section.settings.image3.alt | escape }}" class="wowo fadeInup" data-wow-duration="0.75s" data-wow-delay="900ms" loading="lazy" decoding="async">                 
@@ -16,22 +19,39 @@
                 <p>{{ section.settings.content }}</p>
                 <div class="add-faqs">
                   {% assign i = 0  %}
+                  <div class="add-faqs__tabs" role="tablist" aria-label="{{ section.settings.title | default: 'Coffees' | escape }}">
                   {% for block in section.blocks %}
                     <div class="block">
                       <div class="faqs-title">
-                        <p class="slider-handle" data-item="{{i}}">{{ block.settings.title }}</p>
+                        {%- comment -%}
+                          A real button, so the tab is reachable by keyboard. It
+                          was a <p> with a click handler in the legacy theme.
+                          Buttons take the UA font unless told otherwise --
+                          tests/form-control-fonts.test.mjs guards that.
+                        {%- endcomment -%}
+                        <button
+                          type="button"
+                          class="slider-handle{% if forloop.first %} is-active{% endif %}"
+                          id="{{ section.id }}-tab-{{ i }}"
+                          role="tab"
+                          data-item="{{i}}"
+                          aria-controls="{{ section.id }}-panel-{{ i }}"
+                          aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                        >{{ block.settings.title }}</button>
                       </div>
-                      <div class="faqs-text">
+                      <div class="faqs-text{% if forloop.first %} is-active{% endif %}" role="region" aria-labelledby="{{ section.id }}-tab-{{ i }}">
                         <p>{{ block.settings.content }}</p>
                       </div>
                     </div>    
                   {% assign i = i | plus:1 %}
                   {% endfor %}
+                  </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+</ona-unique-coffees>
 
 {% schema %}
 {
