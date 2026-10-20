@@ -55,11 +55,25 @@ const allowedValues = (schema) => {
   return out;
 };
 
+/*
+ * A section may declare its block schemas INLINE, in its own `blocks` array,
+ * instead of pointing at a standalone file -- `sections/ona-supported.liquid`
+ * defines a `slider` block whose `media_type` options live there, and no
+ * `blocks/slider.liquid` exists. Resolving by filename alone gave those blocks
+ * an empty schema and checked nothing. Codex, #211.
+ *
+ * So the parent's schema comes down the walk, and an inline definition wins
+ * over a standalone file of the same name.
+ */
+const inlineBlockSchema = (parentSchema, type) =>
+  (parentSchema?.blocks ?? []).find((b) => b.type === type && b.settings) ?? null;
+
 const violations = () => {
   const found = [];
 
-  const check = (node, type, dirs, where) => {
-    const allowed = allowedValues(schemaOf(type, dirs));
+  const check = (node, type, dirs, where, parentSchema) => {
+    const schema = inlineBlockSchema(parentSchema, type) ?? schemaOf(type, dirs);
+    const allowed = allowedValues(schema);
     for (const [key, value] of Object.entries(node.settings ?? {})) {
       if (typeof value === 'string' && allowed[key] && !allowed[key].includes(value)) {
         // The location is part of the record: a tuple alone would let a new
@@ -68,7 +82,7 @@ const violations = () => {
       }
     }
     for (const [id, child] of Object.entries(node.blocks ?? {})) {
-      check(child, child.type, ['blocks', 'sections'], `${where}.${id}`);
+      check(child, child.type, ['blocks', 'sections'], `${where}.${id}`, schema);
     }
   };
 
@@ -80,12 +94,20 @@ const violations = () => {
     let parsed;
     try {
       parsed = JSON.parse(stripComments(read(file)));
-    } catch {
+    } catch (error) {
+      /*
+       * Do NOT skip quietly. An earlier version did, and when a probe
+       * accidentally wrote malformed JSON the whole file dropped out of the
+       * check and the probe "passed" -- the defect was invisible because the
+       * file carrying it was never read. A template Shopify cannot parse is a
+       * broken storefront, so it belongs in the output.
+       */
+      found.push(`${file} DOES NOT PARSE: ${error.message}`);
       continue;
     }
     // Sections carry their own settings and their own schema, in sections/.
     for (const [id, section] of Object.entries(parsed.sections ?? {})) {
-      check(section, section.type, ['sections', 'blocks'], `${file}:${id}`);
+      check(section, section.type, ['sections', 'blocks'], `${file}:${id}`, null);
     }
   }
   return found.sort();
