@@ -123,4 +123,12 @@ test('selection moves the panel and the accessibility tree together', () => {
   assert.match(tabs, /ArrowRight|ArrowLeft/, 'a tablist is arrow-key navigable');
   // Rebuilding must not silently jump the reader back to the first venue.
   assert.match(tabs, /b\.dataset\.locationId === selected/, 'the open venue survives a rebuild');
+
+  /*
+   * A rebuild replaces the buttons, destroying the focused one. The loader can
+   * finish while a keyboard user is part-way along the tablist, and focus would
+   * then drop to <body> mid-interaction. Codex, #231.
+   */
+  assert.match(tabs, /tab === document\.activeElement/, 'the rebuild must notice it held focus');
+  assert.match(tabs, /if \(hadFocus\) buttons\[index\]\.focus\(\)/, 'and put it back on the equivalent tab');
 });

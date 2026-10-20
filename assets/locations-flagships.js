@@ -331,6 +331,13 @@ class LocationsFlagshipsTabs extends HTMLElementBase {
    */
   refresh() {
     const selected = this.tabs?.[this.activeIndex ?? 0]?.dataset.locationId ?? null;
+    /*
+     * A rebuild replaces the buttons, which destroys the focused one. The
+     * loader can finish while a keyboard user is part-way along the tablist,
+     * and focus would then fall back to <body> mid-interaction -- so remember
+     * whether focus was ours and put it back on the equivalent tab.
+     */
+    const hadFocus = this.tabs?.some((tab) => tab === document.activeElement) ?? false;
     this.panels = Array.from(this.list.querySelectorAll('[data-flagship-card]'));
 
     /*
@@ -380,7 +387,9 @@ class LocationsFlagshipsTabs extends HTMLElementBase {
     this.classList.add('is-enhanced');
 
     const keep = buttons.findIndex((b) => selected && b.dataset.locationId === selected);
-    this.select(keep >= 0 ? keep : 0);
+    const index = keep >= 0 ? keep : 0;
+    this.select(index);
+    if (hadFocus) buttons[index].focus();
   }
 
   #onClick = (event) => {
