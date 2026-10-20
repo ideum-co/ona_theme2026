@@ -265,9 +265,76 @@ the Shopify app's push is rejected and there are no Shopify-authored commits on
 it. Anything edited in the theme editor lives only on the theme until someone
 pulls it. Needs a bypass allowance for the `shopify` app — an admin change.
 
-### 15. Four shop-owned files are theme-ahead of the repo
+### 15. Three shop-owned files are theme-ahead of the repo
 
-`templates/index.json`, `templates/product.json`, `templates/page.location.json`
-and `config/settings_data.json` are edited in the theme editor and are ahead of
+`templates/index.json`, `templates/product.json` and
+`templates/page.location.json` are edited in the theme editor and are ahead of
 git. PR #159 is flagged do-not-merge for this reason (an Oct-14 snapshot against
 an Oct-20 theme). Any PR touching these needs to pull first.
+
+`config/settings_data.json` was the fourth; this PR reconciles it, so on merge
+it is current. It goes back on this list the moment anyone touches theme
+settings in the editor again.
+
+### 16. Four app embeds load on every page and render nothing anywhere
+
+Audited 2026-10-20 against the live storefront (8 pages sampled: home,
+`/collections/all`, `/products/aspen`, and the locations, wholesale, contact,
+bookings and training pages), plus all 26 page bodies and every template in the
+repo. `config/settings_data.json` carries fourteen app embeds. Four of them
+have no consumer at all:
+
+| Embed | Evidence it is unused |
+| --- | --- |
+| `promap-rp/findonline-embed-block` | 0 containers on any sampled page |
+| `promap-rp/stockistform-embed-block` | 0 references in any of the 26 page bodies |
+| `promap-rp/storelocator-embed-block` | the store finder is the theme's own `page.locations.json` |
+| `promap-rp/wheretobuy-embed-block` | no ProMap app block in any template |
+
+Between them they add `storelocator.css` and `findonline.css` to every page,
+and `//cdn.roseperl.com/storelocator-prod/assets/js/infobubble.min.js` — a
+third-party origin — to four of them.
+
+Two more render nothing but are cheaper:
+
+- `dotdigital/chat` is configured `"region": "none"`. It still pulls six files
+  from `webchat.dotdigital.com` (bootstrap, bridge, the widget CSS and two
+  iframe documents) and produces no fixed-position element on the page.
+- `microsoft-clarity/brandAgents_js` issues **zero** network requests. Clarity
+  itself works — one tag, `xsv0z8njx6`, `window.clarity` is a function, and
+  there is no second copy of it anywhere.
+- `forms` (Shopify Forms) loads `shopify-forms-loader.js` on every page. There
+  is no `<shopify-form>` element on any sampled page, no reference in any page
+  body and no app block in any template. Worth checking in the admin before
+  switching off: a form configured as a timed or once-per-visitor popup would
+  not show up in this audit.
+
+### 17. Powerful Form Builder costs 212 KB on every page for one form
+
+`powerful-form-builder/app-embed` injects a single inline `<script>` of
+**216,945 bytes** into the `<head>` of every page — 23% of the homepage's
+952 KB of HTML. It carries the markup for every form in the account, including
+ones the page will never show.
+
+Exactly one form in the store uses it: form `62822` on `/pages/contact`, which
+posts to `form.globo.io`. It is placed in the page's body HTML, not in the
+theme. Nothing else in the store references Globo.
+
+The wholesale page already proves the alternative: its "Get in touch" form is a
+native Shopify `/contact` form with eight fields, rendered by the theme's own
+`ona-gust-r` section, with no app involved.
+
+So the fix is not to disable the embed — that breaks the contact form. It is to
+rebuild form 62822 the way wholesale already does it, then uninstall the app.
+
+### 18. Rebuy loads on every page through a script tag and renders nothing
+
+Not an app embed, so it is invisible to the App embeds panel and unaffected by
+anything in `config/settings_data.json`. Rebuy Personalization Engine is
+installed with `write_script_tags` and injects six files on every page —
+`rebuy.js`, a global bundle, two stylesheets including a full FontAwesome, a
+cached user stylesheet and a Splide vendor bundle. `window.Rebuy` is an object;
+`[data-rebuy-id]` matches **0** elements on every page sampled.
+
+Turning it off means uninstalling the app or removing its script tag in the
+admin, not a theme change.
