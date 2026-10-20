@@ -75,7 +75,14 @@ const violations = () => {
     const schema = inlineBlockSchema(parentSchema, type) ?? schemaOf(type, dirs);
     const allowed = allowedValues(schema);
     for (const [key, value] of Object.entries(node.settings ?? {})) {
-      if (typeof value === 'string' && allowed[key] && !allowed[key].includes(value)) {
+      /*
+       * A non-string is a violation too, not something to skip. Schemas
+       * declare options as strings, so `mobile_columns: 2` against options
+       * "1" / "2" is off-schema -- and an earlier `typeof value === 'string'`
+       * guard skipped exactly those, which is the quietest way for this test
+       * to pass on a value Shopify may drop. Codex, #211.
+       */
+      if (allowed[key] && !(typeof value === 'string' && allowed[key].includes(value))) {
         // The location is part of the record: a tuple alone would let a new
         // occurrence hide behind an allowlisted one somewhere else.
         found.push(`${where} ${type}.${key}=${JSON.stringify(value)}`);
