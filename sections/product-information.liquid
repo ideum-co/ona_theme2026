@@ -1,3 +1,41 @@
+{%- liquid
+  # Per-product color override, same pattern as sections/product-tabs.liquid and
+  # sections/product-dna.liquid: a pair of metafields on the product (namespace + key
+  # are section settings, so the convention is fixed once here and the team just fills
+  # the metafields). No per-product value, no metafield namespace/key configured, or a
+  # blank metafield all fall back to the section's own static color - what a new,
+  # unstyled product shows until someone sets it.
+  assign product_resource = closest.product | default: product
+
+  assign background_color = section.settings.background_color
+  assign text_color = section.settings.text_color
+
+  if section.settings.color_source == 'product'
+    assign namespace = section.settings.color_namespace | strip
+    assign background_key = section.settings.background_color_key | strip
+    assign text_key = section.settings.text_color_key | strip
+
+    if namespace != blank and background_key != blank
+      assign product_background = product_resource.metafields[namespace][background_key].value
+      if product_background != blank
+        assign background_color = product_background
+      endif
+    endif
+
+    if namespace != blank and text_key != blank
+      assign product_text = product_resource.metafields[namespace][text_key].value
+      if product_text != blank
+        assign text_color = product_text
+      endif
+    endif
+  endif
+
+  if background_color != blank
+    render 'contrast-override', background_color: background_color, text_color: text_color, section_id: section.id
+  endif
+-%}
+<div class="section-background{% if background_color != blank %} color-custom-{{ section.id }}{% endif %}"></div>
+
 <script type="application/ld+json">
   {{ closest.product | structured_data }}
 </script>
@@ -572,6 +610,54 @@
       "id": "background_color",
       "label": "t:settings.background_color",
       "placeholder": "t:settings.default"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "placeholder": "t:settings.default"
+    },
+    {
+      "type": "header",
+      "content": "Per-product color"
+    },
+    {
+      "type": "select",
+      "id": "color_source",
+      "label": "Color source",
+      "info": "Per product reads the metafields below, and falls back to these colors when a product has none.",
+      "options": [
+        {
+          "value": "product",
+          "label": "Per product (metafield)"
+        },
+        {
+          "value": "section",
+          "label": "These colors"
+        }
+      ],
+      "default": "product"
+    },
+    {
+      "type": "text",
+      "id": "color_namespace",
+      "label": "Metafield namespace",
+      "default": "custom",
+      "visible_if": "{{ section.settings.color_source == 'product' }}"
+    },
+    {
+      "type": "text",
+      "id": "background_color_key",
+      "label": "Background metafield key",
+      "default": "pdp_background_color",
+      "visible_if": "{{ section.settings.color_source == 'product' }}"
+    },
+    {
+      "type": "text",
+      "id": "text_color_key",
+      "label": "Text metafield key",
+      "default": "pdp_text_color",
+      "visible_if": "{{ section.settings.color_source == 'product' }}"
     },
     {
       "type": "header",
