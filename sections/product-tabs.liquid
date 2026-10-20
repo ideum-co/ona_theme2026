@@ -30,6 +30,32 @@
     endif
   endif
 
+  # El fondo puede venir por producto, pero el color de las etiquetas es un unico valor guardado,
+  # asi que un color claro de cafe y una etiqueta crema se emparejan por accidente. Hoy en main,
+  # 32 de los 37 productos con custom.pdp_background_color no llegan a AA contra #F5F4E9 y 13 se
+  # quedan por debajo de 3:1 -- ilegibles incluso como texto grande.
+  #
+  # Las otras 55 superficies con color del tema no tienen este problema porque pasan por
+  # snippets/contrast-override.liquid, que conserva un color explicito cuando contrasta y, si no,
+  # toma el extremo de la paleta que pide el brillo del fondo. Esta seccion escribe su propia
+  # custom property y por eso nunca heredo esa regla. Misma regla, mismo umbral 4.5, mismo punto
+  # medio 128.
+  #
+  # La precedencia es la del snippet: un metacampo de texto por producto es explicito y siempre
+  # gana. Solo se corrige el valor de seccion, y solo cuando de verdad falla, para que los cafes
+  # oscuros que hoy se leen bien en crema queden exactamente igual.
+  if background_color != blank and product_text == blank
+    assign label_contrast = background_color | color_contrast: text_color
+    if label_contrast != blank and label_contrast < 4.5
+      assign label_brightness = background_color | color_brightness
+      if label_brightness > 128
+        assign text_color = 'var(--palette-darkest)'
+      else
+        assign text_color = 'var(--palette-lightest)'
+      endif
+    endif
+  endif
+
   # Every tab gets a button, always. An earlier version drew a button only for a labelled tab, so
   # a tab left unlabelled produced a panel with no way to reach it - and, worse, the button count
   # then no longer matched the panel count, which is the exact condition the component treats as
