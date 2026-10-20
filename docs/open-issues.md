@@ -265,12 +265,16 @@ the Shopify app's push is rejected and there are no Shopify-authored commits on
 it. Anything edited in the theme editor lives only on the theme until someone
 pulls it. Needs a bypass allowance for the `shopify` app — an admin change.
 
-### 15. Four shop-owned files are theme-ahead of the repo
+### 15. Three shop-owned files are theme-ahead of the repo
 
-`templates/index.json`, `templates/product.json`, `templates/page.location.json`
-and `config/settings_data.json` are edited in the theme editor and are ahead of
+`templates/index.json`, `templates/product.json` and
+`templates/page.location.json` are edited in the theme editor and are ahead of
 git. PR #159 is flagged do-not-merge for this reason (an Oct-14 snapshot against
 an Oct-20 theme). Any PR touching these needs to pull first.
+
+`config/settings_data.json` was the fourth; this PR reconciles it, so on merge
+it is current. It goes back on this list the moment anyone touches theme
+settings in the editor again.
 
 ### 16. Four app embeds load on every page and render nothing anywhere
 

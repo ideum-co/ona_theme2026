@@ -21,9 +21,15 @@ const settings = JSON.parse(read('config/settings_data.json').replace(/^\s*\/\*[
  */
 
 test('the repository copy still carries the app embeds', () => {
-  const blocks = settings.current?.blocks;
-  assert.ok(blocks && typeof blocks === 'object', 'current.blocks is missing — the embeds would be wiped on merge');
-  assert.ok(Object.keys(blocks).length > 0, 'current.blocks is empty — same outcome');
+  /*
+   * The key has to be present: its absence is the wipe this file exists to prevent. Its being
+   * *empty* is a different thing -- Shopify writes `"blocks": {}` when a shop has no embed apps
+   * installed at all, and a faithful reconcile of that shop would fail here for no reason. Same
+   * class of mistake as the enabled-count assertion below, one level out.
+   */
+  assert.ok('blocks' in (settings.current ?? {}), 'current.blocks is missing — the embeds would be wiped on merge');
+  const blocks = settings.current.blocks;
+  assert.ok(blocks && typeof blocks === 'object', 'current.blocks is not an object');
 
   for (const [id, block] of Object.entries(blocks)) {
     assert.match(block.type ?? '', /^shopify:\/\/apps\//, `block ${id} is not an app embed`);
@@ -43,7 +49,7 @@ test('a disabled embed says so explicitly rather than being deleted', () => {
    * least one was enabled, which would have turned that valid state into a CI failure and
    * contradicted the shape-only rule above. Codex, #245.
    */
-  for (const [id, block] of Object.entries(settings.current.blocks)) {
+  for (const [id, block] of Object.entries(settings.current?.blocks ?? {})) {
     assert.equal(typeof block.type, 'string', `block ${id} must keep its type, enabled or not`);
     assert.ok(
       block.disabled === undefined || typeof block.disabled === 'boolean',
@@ -53,6 +59,17 @@ test('a disabled embed says so explicitly rather than being deleted', () => {
 });
 
 test('the favicon survives', () => {
-  // Also absent from the repository copy, and also dropped by any merge of it.
-  assert.match(settings.current?.favicon ?? '', /^shopify:\/\//, 'current.favicon must point at a shop image');
+  /*
+   * Also absent from the repository copy, and also dropped by any merge of it -- so the key has
+   * to be here. But `favicon` is an image_picker with no default in config/settings_schema.json,
+   * which means a merchant can clear it, and Shopify then writes "". Requiring a value would
+   * fail a correct reconcile of that state and tell whoever did it that their right answer is
+   * wrong. Present, and well-formed if set.
+   */
+  assert.ok('favicon' in (settings.current ?? {}), 'current.favicon is missing — it would be dropped on merge');
+
+  const favicon = settings.current.favicon;
+  if (favicon !== '') {
+    assert.match(favicon ?? '', /^shopify:\/\//, 'a set favicon must point at a shop image');
+  }
 });
