@@ -421,6 +421,26 @@ test('page.location.json is declared shop-owned, and never carries the Maps key'
   // still asked only for the ordinary pre-merge reconcile.
   const checklist = doc.slice(doc.indexOf('## 6.'), doc.indexOf('## 7.'));
   assert.match(checklist, /page\.location\.json/, 'the release checklist must call out this template');
+
+  // §5 can be perfectly correct and still change nothing, because the table
+  // people actually fill in recorded only the two md5s and whether they matched
+  // -- with no cell for the parsed result, an unequal hash reads as "reconcile"
+  // and the destructive step §5 exists to prevent happens anyway. Codex, #264.
+  assert.match(
+    checklist,
+    /inconclusive/i,
+    'the checklist must say an unequal checksum is inconclusive, not grounds to reconcile',
+  );
+  assert.match(
+    checklist,
+    /parsed vs `origin\/main`/,
+    'the checksum table must have a column for the parsed comparison against the deployed revision',
+  );
+  assert.match(
+    checklist,
+    /reconcile needed\?/i,
+    'the checksum table must record the reconcile decision separately from the hash comparison',
+  );
   assert.match(checklist, /re-enter the Google\n\s*Maps API key/i, 'and must say to re-enter the key after merging');
   assert.match(checklist, /mapsApiKey/, 'and must give the check that proves it took');
 

@@ -314,7 +314,11 @@ Paste into the body of every `staging-v2` → `main` PR:
       handling is newer than the Node 20 line and a quoted pattern fails there
 - [ ] `staging-v2` previewed on the staging theme, on desktop **and a real phone**
 - [ ] No `templates/*.json` or `config/settings_data.json` touched
-      — or, if touched: live checksum read, reconciled, recorded below
+      — or, if touched: live checksum read and recorded below. An unequal
+      checksum is **not** grounds to reconcile; it is inconclusive. Run the §5
+      step 2a parsed comparison against the **deployed** revision
+      (`git show origin/main:<file>`), record the result, and reconcile only if
+      that comparison shows the editor changed something
 - [ ] Section count ≤ 25 and blocks ≤ 50 for every JSON template changed
 - [ ] Rollback named — and check which theme is actually `MAIN` first; it has
       changed twice without notice. `160335790271` is the pre-cutover theme;
@@ -329,8 +333,13 @@ Paste into the body of every `staging-v2` → `main` PR:
 - [ ] `staging-v2` re-pointed at `main` with the §4 step 5 command
 
 **Checksums read before merge:**
-| file | repo md5 | live md5 | equal? |
-|---|---|---|---|
+| file | repo md5 | live md5 | equal? | if unequal: parsed vs `origin/main` | reconcile needed? |
+|---|---|---|---|---|---|
+
+> The last two columns are the ones that decide anything. `equal?` = no means
+> *inconclusive*, not *drifted* — these files are stored minified and this repo
+> carries them pretty-printed (§5). Write `identical` or list what the editor
+> added, removed or changed, and only then answer the reconcile column.
 
 **After merge — confirm the pull landed:**
 | file | checksum re-read at | matches repo? |
