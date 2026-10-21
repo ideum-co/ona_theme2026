@@ -35,7 +35,9 @@ import test from 'node:test';
  * branch. A release PR changes one of these files on purpose, so diffing live
  * against the branch reports your own edits as editor drift and sends you off
  * to "reconcile" the release away. Inspect the branch's diff separately with
- * `git diff origin/main...HEAD -- templates/`.
+ * `git diff origin/main...HEAD -- templates/ config/settings_data.json`.
+ * If `git show origin/main:<file>` fails the file is a first-time import:
+ * live is the baseline and there is nothing to reconcile.
  *
  * Semantically identical means encoding only, and is safe. See §5 of
  * docs/branching-and-release.md, which this header mirrors.
@@ -448,6 +450,19 @@ test('page.location.json is declared shop-owned, and never carries the Maps key'
     /reconcile needed\?/i,
     'the checksum table must record the reconcile decision separately from the hash comparison',
   );
+
+  // This file's own header restates the procedure, and has drifted from §5
+  // three times on this PR alone -- each fix to the doc left the header saying
+  // the superseded thing one file further from where anyone reads it. Codex,
+  // #264. Pin the header against the same facts the doc is pinned against.
+  const header = readFileSync(import.meta.filename, 'utf8').slice(0, 2500);
+  for (const [pattern, what] of [
+    [/origin\/main/, 'the deployed baseline'],
+    [/config\/settings_data\.json/, 'settings_data.json in the release diff'],
+    [/first-time import/i, 'the first-time-import case'],
+  ]) {
+    assert.match(header, pattern, `this file's header must mirror §5 on ${what}`);
+  }
   assert.match(checklist, /re-enter the Google\n\s*Maps API key/i, 'and must say to re-enter the key after merging');
   assert.match(checklist, /mapsApiKey/, 'and must give the check that proves it took');
 
