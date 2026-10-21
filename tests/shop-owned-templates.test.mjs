@@ -412,8 +412,15 @@ test('page.location.json is declared shop-owned, and never carries the Maps key'
   );
   assert.match(
     shopOwned,
-    /git diff origin\/main\.\.\.HEAD/,
-    "§5 must send the PR's own diff to a separate inspection",
+    /git diff origin\/main\.\.\.HEAD --\s*\n?\s*templates\/ config\/settings_data\.json/,
+    "§5's separate diff must cover settings_data.json, which §5 governs too",
+  );
+  // A first-time import has no deployed baseline to diff against, so the
+  // procedure has to say what to do instead of failing the command. Codex, #264.
+  assert.match(
+    shopOwned,
+    /first-time import/i,
+    '§5 must handle a file that is not yet in the deployed revision',
   );
 
   // The rule in §5 is only followed if it reaches the list people actually

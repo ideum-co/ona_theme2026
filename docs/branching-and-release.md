@@ -274,8 +274,18 @@ Before any release PR that touches a `templates/*.json` or
      then rebase your change on top.
 
    Then inspect your release diff separately — `git diff origin/main...HEAD --
-   templates/` — so the two questions stay apart: *what did the editor change
-   since we deployed?* and *what am I about to change?*
+   templates/ config/settings_data.json` — so the two questions stay apart:
+   *what did the editor change since we deployed?* and *what am I about to
+   change?* `settings_data.json` is in that path list because §5 subjects it to
+   the same rule; leaving it out hides half of what a release moves.
+
+   **First-time imports have no baseline.** If `git show origin/main:<file>`
+   fails because the file is not in the deployed revision — as
+   `templates/product.merch.json` was before #264 — there is nothing to compare
+   against and nothing to reconcile: the editor is the only author the file has.
+   Take the live body as the baseline, say so in the checklist's parsed column
+   (`new import — live is the baseline`), and keep any deliberate change to it
+   in a separate commit so the import itself stays reviewable as a pure copy.
 
 > **Why an unequal checksum proves nothing for these seven files.** The theme
 > editor stores JSON **minified**; this repository carries it pretty-printed.
@@ -318,7 +328,9 @@ Paste into the body of every `staging-v2` → `main` PR:
       checksum is **not** grounds to reconcile; it is inconclusive. Run the §5
       step 2a parsed comparison against the **deployed** revision
       (`git show origin/main:<file>`), record the result, and reconcile only if
-      that comparison shows the editor changed something
+      that comparison shows the editor changed something. If that command fails
+      the file is a first-time import: live is the baseline, nothing to
+      reconcile — record it as such
 - [ ] Section count ≤ 25 and blocks ≤ 50 for every JSON template changed
 - [ ] Rollback named — and check which theme is actually `MAIN` first; it has
       changed twice without notice. `160335790271` is the pre-cutover theme;
