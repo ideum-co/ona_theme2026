@@ -1,0 +1,320 @@
+{%- comment -%}
+  Campaign banner -- logo, campaign dates, copy and a link out to the article.
+
+  Ported from the legacy theme (`sections/ona-logo-and-text.liquid`, styles in
+  `assets/style.css`) for the 2026 cutover. On the live legacy homepage it sits
+  directly above the contribution counter and carries the Water For Good
+  campaign; the 2026 homepage shipped the counter without it, so the campaign
+  ran with no explanation next to the number.
+
+  Four deliberate differences from the legacy copy:
+
+  1. The styles live here. The legacy rules are in ONA's `style.css`, which this
+     theme does not carry, so a straight port would have rendered unstyled.
+     Everything below is scoped to `.campaign-banner`.
+  2. Width comes from Horizon. Legacy pins `max-width: 1440px` with 67/73px
+     gutters; this inherits `--page-content-width` and `--page-margin`, so the
+     banner tracks settings.page_width like every other section instead of
+     drifting from it. See tests/legacy-horizon-page-width.test.mjs.
+  3. Fonts come from the brand tokens. The CTA is the one real substitution:
+     legacy sets it in "Palmer Lake Print", which this theme does not ship, so
+     it falls back to the brand display face -- the same substitution, and the
+     same open question, as the counter. NEEDS A FORMSWELL DECISION.
+  4. The campaign line no longer hardcodes a date. Legacy reads the end date
+     from `shop.metafields.custom.donation_end_date` but falls back to the
+     literal "22 March (International Water Day)" when it is missing, which is
+     wrong for any campaign that does not end on International Water Day --
+     including this one, which ends 31 October. A fallback that quietly states
+     a different fact is worse than no line at all, so the line renders only
+     when the metafield has a value. Anything to append after the date, such as
+     a day name, is `campaign_note`, which ships empty.
+
+  The end date is `shop.metafields.custom.donation_end_date` (date). The
+  counter next to it reads `shop.metafields.custom.donation_total` from the
+  same recompute job.
+{%- endcomment -%}
+
+{%- liquid
+  assign campaign_end = shop.metafields.custom.donation_end_date.value
+  assign logo = section.settings.logo
+-%}
+
+<section
+  class="campaign-banner"
+  style="background-color: {{ section.settings.bg_color }};"
+  {{ section.shopify_attributes }}
+>
+  <div class="campaign-banner__inner">
+    {%- if logo != blank -%}
+      <div class="campaign-banner__logo">
+        <img
+          src="{{ logo | image_url: width: 640 }}"
+          srcset="{{ logo | image_url: width: 320 }} 320w, {{ logo | image_url: width: 640 }} 640w, {{ logo | image_url: width: 960 }} 960w"
+          sizes="(max-width: 989px) 320px, 33vw"
+          alt="{{ section.settings.logo_alt | escape }}"
+          width="{{ logo.width }}"
+          height="{{ logo.height }}"
+          loading="lazy"
+        >
+      </div>
+    {%- endif -%}
+
+    <div class="campaign-banner__content">
+      {%- if section.settings.title != blank -%}
+        <h2 class="campaign-banner__title">{{ section.settings.title | escape }}</h2>
+      {%- endif -%}
+
+      {%- if campaign_end != blank and section.settings.campaign_label != blank -%}
+        <p class="campaign-banner__campaign">
+          {{- section.settings.campaign_label }} {{ campaign_end | date: '%-d %B' -}}
+          {%- if section.settings.campaign_note != blank %} {{ section.settings.campaign_note }}{% endif -%}
+        </p>
+      {%- endif -%}
+
+      {%- if section.settings.description != blank -%}
+        <div class="campaign-banner__description rte">{{ section.settings.description }}</div>
+      {%- endif -%}
+
+      {%- if section.settings.cta_text != blank and section.settings.cta_url != blank -%}
+        <a href="{{ section.settings.cta_url }}" class="campaign-banner__cta">
+          {{- section.settings.cta_text -}}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .campaign-banner {
+    padding-block: 84px;
+  }
+
+  /*
+   * Horizon hangs --page-content-width and --page-margin off the
+   * page-width-{{ settings.page_width }} class on <body>, and custom properties
+   * inherit, so this matches every other section without restating any number.
+   */
+  .campaign-banner__inner {
+    max-width: var(--page-content-width);
+    margin-inline: auto;
+    padding-inline: var(--page-margin);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 11.6%;
+  }
+
+  .campaign-banner__logo {
+    width: 33.3%;
+    min-width: 320px;
+  }
+
+  .campaign-banner__logo img {
+    width: 100%;
+    height: auto;
+    vertical-align: middle;
+  }
+
+  .campaign-banner__content {
+    width: 42%;
+  }
+
+  .campaign-banner__title {
+    font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif);
+    font-size: 31px;
+    font-weight: 700;
+    line-height: calc(39 / 31);
+    letter-spacing: calc(1.65 / 31 * 1em);
+    color: #2b2c30;
+    max-width: 380px;
+    margin: 0 0 22px;
+  }
+
+  .campaign-banner__campaign {
+    font-family: var(--font-brand-text, 'Karla', sans-serif);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.6;
+    letter-spacing: -0.013em;
+    color: #2b2c30;
+    margin: 0 0 10px;
+  }
+
+  .campaign-banner__description {
+    margin-bottom: 16px;
+  }
+
+  .campaign-banner__description p {
+    font-family: var(--font-brand-text, 'Karla', sans-serif);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.19;
+    letter-spacing: -0.006em;
+    color: #2b2c30;
+  }
+
+  .campaign-banner__description a {
+    font: inherit;
+    letter-spacing: inherit;
+    color: #661a34;
+    text-decoration: underline;
+    text-decoration-color: currentColor;
+  }
+
+  .campaign-banner__description a:hover {
+    opacity: 0.7;
+  }
+
+  /*
+   * Legacy sets this in "Palmer Lake Print" at 43px. The theme does not ship
+   * that face, so it falls back to the brand display font -- same substitution
+   * the counter's CTA makes. Formswell's call before go-live.
+   */
+  .campaign-banner__cta {
+    display: inline-block;
+    font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif);
+    font-size: 43px;
+    line-height: 1;
+    color: #441925;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.25em;
+    text-decoration-color: transparent;
+    transition: text-decoration-color 0.2s ease;
+  }
+
+  .campaign-banner__cta:hover {
+    text-decoration-color: currentColor;
+  }
+
+  @media screen and (max-width: 989px) {
+    .campaign-banner {
+      padding-block: 56px;
+    }
+
+    .campaign-banner__inner {
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 40px;
+    }
+
+    .campaign-banner__logo {
+      width: 100%;
+      max-width: 320px;
+      min-width: 0;
+    }
+
+    .campaign-banner__content {
+      width: 100%;
+    }
+
+    .campaign-banner__title {
+      font-size: 27px;
+    }
+
+    .campaign-banner__cta {
+      font-size: 34px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .campaign-banner {
+      padding-block: 40px;
+    }
+
+    .campaign-banner__title {
+      font-size: 24px;
+      max-width: none;
+    }
+
+    .campaign-banner__cta {
+      font-size: 28px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .campaign-banner__cta {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Campaign banner",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "#f9f8f3"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo"
+    },
+    {
+      "type": "text",
+      "id": "logo_alt",
+      "label": "Logo alt text",
+      "info": "Describes the logo for screen readers and when the image fails to load.",
+      "default": "Water for Good"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Coffee That Supports Clean Water"
+    },
+    {
+      "type": "header",
+      "content": "Campaign dates"
+    },
+    {
+      "type": "paragraph",
+      "content": "The end date comes from the shop metafield custom.donation_end_date, the same source the contribution counter uses. With no value set, the whole line is hidden rather than showing a date that is not the campaign's."
+    },
+    {
+      "type": "text",
+      "id": "campaign_label",
+      "label": "Text before the date",
+      "default": "Campaign running now until"
+    },
+    {
+      "type": "text",
+      "id": "campaign_note",
+      "label": "Text after the date",
+      "info": "Optional, e.g. a day name. Leave blank for none."
+    },
+    {
+      "type": "header",
+      "content": "Body"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description"
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "Link text",
+      "default": "Learn more"
+    },
+    {
+      "type": "url",
+      "id": "cta_url",
+      "label": "Link url"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Campaign banner",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}
