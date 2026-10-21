@@ -704,11 +704,29 @@
           "block_order": [
             "judge_me_reviews_review_widget_LLV6L8"
           ]
+        },
+        "product_tab_faqs_Jv4Wmd": {
+          "type": "product-tab",
+          "settings": {
+            "label": "FAQs"
+          },
+          "blocks": {
+            "product_faqs_Zb9Nxe": {
+              "type": "product-faqs",
+              "settings": {
+                "heading": ""
+              }
+            }
+          },
+          "block_order": [
+            "product_faqs_Zb9Nxe"
+          ]
         }
       },
       "block_order": [
         "product_tab_ePcCkQ",
         "product_tab_4tzPxX",
+        "product_tab_faqs_Jv4Wmd",
         "product_tab_dFwTTp"
       ],
       "name": "Product tabs",

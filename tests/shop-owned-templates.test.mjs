@@ -251,7 +251,31 @@ test('product.merch.json keeps the editor-wired merch PDP', () => {
   // "product-3", and neither template exists on the theme or in this repo. The
   // storefront falls back to `templates/product.json`, so a V60 dripper renders
   // the coffee Profile tab. Re-pointing those products at this template is the
-  // fix; nothing here needs to change for it.
+  // fix -- but not before the FAQs tab below exists here, which is the one
+  // thing those products would otherwise lose.
+  //
+  // The FAQs tab is the one thing this template was missing that its products
+  // actually have. `custom.accordion` is populated on 11 of the ACTIVE Brew
+  // Gear products still pointed at product-2/product-3, and on two products
+  // already on this template -- hario-v60-filter-papers-1 and
+  // water-for-good-bottle -- whose FAQs have therefore never rendered. The
+  // other coffee-only sections are safe to lose: not one equipment product has
+  // origin_intro, producer, brew_guide_intro, who_is_for or profile_image.
+  //
+  // blocks/product-faqs.liquid emits nothing without an answerable FAQ and
+  // #236 prunes the empty tab, so a t-shirt is unaffected by this being here.
+  // Reassigning products to this template is only non-destructive while it
+  // stays.
+  {
+    const tabs = sections.product_tabs_fW4maV;
+    assert.ok(
+      tabs.block_order.includes('product_tab_faqs_Jv4Wmd'),
+      'the merch PDP must carry the FAQs tab, or reassigned products lose their FAQs',
+    );
+    const faqTab = tabs.blocks.product_tab_faqs_Jv4Wmd;
+    assert.equal(faqTab.settings.label, 'FAQs');
+    assert.equal(faqTab.blocks.product_faqs_Zb9Nxe.type, 'product-faqs');
+  }
   assert.deepEqual(disabledPaths(sections), [
     'brew_guide',
     'faqs',
