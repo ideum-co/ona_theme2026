@@ -161,27 +161,26 @@
   (collection_faq_questions != blank), not on collection_faqs.size > 0, because the metafield can
   hold entries that all fail the content check -- size alone does not mean anything will render.
 
-  Also skips an exact-duplicate question within one collection's list (tracked via
-  seen_faq_questions): the faq_item metaobject type has at least one known duplicate pair
-  (can-i-choose-the-exact-coffee / -1, flagged separately on ONAIN-47) and a collection whose faqs
-  list ever included both would otherwise emit two identical Question nodes.
+  Does NOT dedupe questions. An earlier version of this did, defending against the faq_item
+  metaobject type's one known duplicate pair (can-i-choose-the-exact-coffee / -1, ONAIN-47) --
+  cut after checking all 25 collections with a populated custom.faqs: none of them reference both
+  members of that pair, so the guard defended a condition that does not exist. It was also wrong
+  on its own terms -- `seen_faq_questions contains question` is substring containment, not
+  equality, so it would have silently dropped any question that happens to be a substring of an
+  earlier one in the same list ("What is espresso?" after "What is espresso style coffee?"), the
+  same class of silent-drop bug this file exists to avoid. The duplicate metaobject pair is admin
+  data and belongs fixed on ONAIN-47, not papered over in a schema emitter.
 {%- endcomment -%}
 {%- assign collection_faqs = collection.metafields.custom.faqs.value -%}
 {%- capture collection_faq_questions -%}
   {%- assign described = 0 -%}
-  {%- assign seen_faq_questions = '' -%}
   {%- for faq in collection_faqs -%}
     {%- assign question = faq.question | strip -%}
     {%- capture answer -%}{{ faq.answer | metafield_tag }}{%- endcapture -%}
     {%- assign answer_text = answer | strip_html | strip -%}
-    {%- assign already_seen = false -%}
-    {%- if question != blank and seen_faq_questions contains question -%}
-      {%- assign already_seen = true -%}
-    {%- endif -%}
-    {%- if question != blank and answer_text != blank and already_seen == false -%}
+    {%- if question != blank and answer_text != blank -%}
       {%- if described > 0 -%},{%- endif -%}
       {%- assign described = described | plus: 1 -%}
-      {%- assign seen_faq_questions = seen_faq_questions | append: '|' | append: question -%}
       {%- assign question_json = question | json | replace: '</', '<\/' -%}
       {%- assign answer_json = answer | strip | json | replace: '</', '<\/' -%}
       {"@type":"Question","name":{{ question_json }},"acceptedAnswer":{"@type":"Answer","text":{{ answer_json }}}}

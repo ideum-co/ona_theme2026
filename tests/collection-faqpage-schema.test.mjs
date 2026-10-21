@@ -47,7 +47,7 @@ test('a blank question or a blank answer is skipped -- ported from blocks/produc
   // half-finished admin save -- exactly the failure blocks/product-faqs.liquid's own guard was
   // written to prevent, and the one the first version of this file omitted.
   assert.match(outerCaptureBlock, /assign answer_text = answer \| strip_html \| strip/, 'must derive a stripped-text version of the answer to test for blankness, same as blocks/product-faqs.liquid');
-  const entryGuardMatch = outerCaptureBlock.match(/\{%-\s*if question != blank and answer_text != blank and already_seen == false\s*-%\}/);
+  const entryGuardMatch = outerCaptureBlock.match(/\{%-\s*if question != blank and answer_text != blank\s*-%\}/);
   assert.ok(entryGuardMatch, 'each entry must be guarded on question != blank and answer_text != blank before it is emitted');
 });
 
@@ -63,13 +63,17 @@ test('the comma is driven by a described counter, not forloop.index, so a skippe
   assert.match(outerCaptureBlock, /assign described = described \| plus: 1/, 'described must increment only inside the content guard, i.e. only for entries that are actually emitted');
 });
 
-test('an exact-duplicate question within one collection\'s list is skipped once, not emitted twice', () => {
-  // The faq_item metaobject type has at least one known duplicate pair
-  // (can-i-choose-the-exact-coffee / -1, ONAIN-47). If a collection's faqs list ever referenced
-  // both, this stops two identical Question nodes from landing in one FAQPage.
-  assert.match(outerCaptureBlock, /assign seen_faq_questions = ''/, 'must track questions already emitted for this collection');
-  assert.match(outerCaptureBlock, /seen_faq_questions contains question/, 'must check the current question against what has already been emitted');
-  assert.match(outerCaptureBlock, /already_seen == false/, 'the duplicate check must gate emission, not just get computed and ignored');
+test('does not dedupe questions -- deliberate, not an oversight', () => {
+  // An earlier version tracked seen_faq_questions and skipped repeats, defending against the
+  // faq_item metaobject type's one known duplicate pair (can-i-choose-the-exact-coffee / -1,
+  // ONAIN-47). Cut after checking all 25 collections with a populated custom.faqs: none
+  // reference both members of that pair, so the guard defended a condition the data does not
+  // contain. It was also wrong on its own terms -- Liquid `contains` is substring containment,
+  // not equality, so it would have silently dropped any question that happens to be a substring
+  // of an earlier one in the same list. The duplicate metaobject pair belongs fixed on ONAIN-47,
+  // not papered over here. This test exists so a future change doesn't reintroduce it by
+  // "helpfully" closing what looks like a gap.
+  assert.doesNotMatch(outerCaptureBlock, /seen_faq_questions/, 'no per-collection question-dedup tracking -- see the comment above this test for why');
 });
 
 test('question and answer are escaped against JSON metacharacters and premature </script> termination', () => {
