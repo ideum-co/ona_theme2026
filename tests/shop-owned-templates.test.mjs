@@ -29,6 +29,14 @@ import test from 'node:test';
  * On unequal, fetch `body.content` and compare the PARSED JSON -- flatten both
  * sides to leaf paths and diff the sets. Do not md5 the body either; it is a
  * pretty-printed rendering of the stored bytes and matches neither side.
+ *
+ * "Both sides" means the live body and the DEPLOYED revision -- `git show
+ * origin/main:templates/product.json` -- never the copy on your release
+ * branch. A release PR changes one of these files on purpose, so diffing live
+ * against the branch reports your own edits as editor drift and sends you off
+ * to "reconcile" the release away. Inspect the branch's diff separately with
+ * `git diff origin/main...HEAD -- templates/`.
+ *
  * Semantically identical means encoding only, and is safe. See §5 of
  * docs/branching-and-release.md, which this header mirrors.
  */
