@@ -6,9 +6,13 @@
   is a single component to maintain. The block binds its media to the product (e.g. the
   custom.profile_image dynamic source) and hides the media when the product has none, leaving the
   text full width -- no placeholder.
+
+  Width is handled here through the theme's own `.section` grid: "Page" keeps the block in the
+  central page-width column (the default), "Full" lets it span edge to edge. The block's own "Limit
+  content width" is a finer control that only caps the text column, not the whole section.
 {%- endcomment -%}
 <div
-  class="product-media-with-text-section"
+  class="section section--{{ section.settings.section_width }} spacing-style"
   style="{% render 'spacing-style', settings: section.settings %}"
   {{ section.shopify_attributes }}
 >
@@ -22,6 +26,26 @@
     "templates": ["product"]
   },
   "settings": [
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
+    },
     {
       "type": "header",
       "content": "t:content.padding"
