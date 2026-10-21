@@ -276,6 +276,29 @@ test('product.merch.json keeps the editor-wired merch PDP', () => {
     assert.equal(faqTab.settings.label, 'FAQs');
     assert.equal(faqTab.blocks.product_faqs_Zb9Nxe.type, 'product-faqs');
   }
+
+  // The summary line must stay blank here. blocks/pdp-product-summary.liquid
+  // ships a richtext default of "Caramel, biscuits, nuts and spices" -- real
+  // tasting notes, for a coffee -- and overrides it only from
+  // accentuate.tastes_like. No merch or equipment product has that metafield,
+  // so any non-blank value here prints coffee tasting notes on every t-shirt,
+  // tote, board game, grinder and dripper. It did, until 2026-10-21.
+  //
+  // Blank is the deliberate state, not an oversight: the block's own
+  // `if summary_description != blank` guard prunes the line, and the
+  // description_key wiring is left in place so populating
+  // accentuate.tastes_like on a merch product is all it takes to give these
+  // PDPs their own summary copy later.
+  {
+    const summary = sections.main.blocks['product-details'].blocks.pdp_product_summary.settings;
+    assert.equal(
+      summary.description,
+      '',
+      'the merch summary line must stay blank -- a value here prints coffee tasting notes on merch',
+    );
+    assert.equal(summary.description_key, 'tastes_like', 'keep the metafield override wired for later');
+    assert.equal(summary.namespace, 'accentuate');
+  }
   assert.deepEqual(disabledPaths(sections), [
     'brew_guide',
     'faqs',
