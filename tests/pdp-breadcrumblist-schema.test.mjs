@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
 
@@ -13,15 +13,32 @@ const source = read('snippets/product-information-content.liquid');
  * snippet renders twice and emits two BreadcrumbList nodes. This isn't something the snippet
  * itself can guard against, so it's pinned here as a fact about the current templates instead --
  * same "check the data, not just the logic" discipline as the FAQ dedup removal and the
- * live-title survey. If this starts failing, a template was added that needs the duplicate-
- * emission question revisited, not just this test updated.
+ * live-title survey.
+ *
+ * Walks templates/ for every product*.json file rather than naming product.json and
+ * product.merch.json by hand (same pattern as tests/homepage-wfg-campaign.test.mjs and
+ * tests/pdp-product-summary.test.mjs). A hardcoded list protects only the templates that existed
+ * when it was written -- it fails open on every new one, which is exactly what's about to happen:
+ * Felipe is splitting product templates by type (coffee / non-coffee / merch / equipment, likely a
+ * gift-card one too), and each new file would otherwise render this snippet with zero guard the
+ * day it's created. Verified: a hardcoded two-item list did not catch a generated three-node
+ * duplicate-emission template; the walk does.
+ *
+ * `assert.ok(productTemplates.length >= 2)` guards the other way a scan like this fails open --
+ * a glob that silently matches nothing passes every assertion in the loop below for having
+ * nothing to check.
  */
+const productTemplates = readdirSync(resolve(root, 'templates')).filter((name) => /^product(\..+)?\.json$/.test(name));
+
+test('every templates/product*.json file is covered by this scan, not a remembered list', () => {
+  assert.ok(productTemplates.length >= 2, `expected at least product.json and product.merch.json under templates/, found: ${productTemplates.join(', ') || '(none)'}`);
+});
+
 test('no live product template renders product-information more than once, and featured-product-information is unreferenced', () => {
-  for (const templatePath of ['templates/product.json', 'templates/product.merch.json']) {
+  for (const name of productTemplates) {
+    const templatePath = `templates/${name}`;
     const occurrences = (read(templatePath).match(/"type":\s*"product-information"/g) || []).length;
     assert.equal(occurrences, 1, `${templatePath} must reference product-information exactly once -- a second reference would render snippets/product-information-content.liquid (and its BreadcrumbList) twice on one page`);
-  }
-  for (const templatePath of ['templates/product.json', 'templates/product.merch.json']) {
     assert.doesNotMatch(read(templatePath), /"type":\s*"featured-product-information"/, `${templatePath} must not also reference featured-product-information -- combined with product-information, that would emit two BreadcrumbList nodes on one page`);
   }
 });

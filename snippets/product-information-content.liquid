@@ -193,11 +193,13 @@
     Here the setting and the schema live in the same file, so no separate guard test is needed.
 
     This snippet is shared by sections/product-information.liquid and
-    sections/featured-product-information.liquid. Checked both live product templates before
-    writing this: templates/product.json and templates/product.merch.json each reference
-    product-information exactly once, and featured-product-information is not referenced by any
-    template at all right now -- so there is no page today where this snippet renders twice and
-    emits two BreadcrumbList nodes. That is a fact about the current templates, not a property of
+    sections/featured-product-information.liquid. Checked every templates/product*.json file
+    before writing this (not just product.json and product.merch.json by name -- a product
+    template split by type is coming, and a hardcoded pair would stop protecting anything the day
+    a new one landed): each references product-information exactly once, and none reference
+    featured-product-information at all -- so there is no page today where this snippet renders
+    twice and emits two BreadcrumbList nodes. That is a fact about the current templates, not a
+    property of
     this file, and would need re-checking if a template is added that uses both sections together.
 
     Escaping matches blocks/product-faqs.liquid and sections/main-collection.liquid: `| json`
