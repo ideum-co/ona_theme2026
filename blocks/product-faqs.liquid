@@ -76,7 +76,7 @@
         "...in the grinder.We recommend...". answer_text stays, as the emptiness test only.
 
         `| replace: '</', '<\/'` is defense-in-depth, not a required fix on this platform: Shopify's
-        `json` filter already escapes `<` as the Unicode sequence `<` before this runs, so no
+        `json` filter already escapes `<` as the Unicode escape `\u003c` before this runs, so no
         literal `<` ever reaches the output -- a question or answer containing `</script>` cannot
         end the script element early on its own. Verified against the live storefront response, not
         assumed from the filter's docs (Codex raised this as a possible gap on PR #272; it wasn't

@@ -101,7 +101,7 @@
 
           Escaping mirrors blocks/product-faqs.liquid, including the `| replace: '</', '<\/'` after
           `| json` -- see that file's comment for why it's defense-in-depth rather than a required
-          fix on this platform (Shopify's `json` filter already escapes `<` as `<` before
+          fix on this platform (Shopify's `json` filter already escapes `<` as `\u003c` before
           replace runs, so no literal `<` ever reaches a product title containing "</script>").
         {%- endcomment -%}
         {%- capture item_list_entries -%}
