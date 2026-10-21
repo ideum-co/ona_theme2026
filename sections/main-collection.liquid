@@ -99,9 +99,10 @@
           a mismatch between a claimed total and what is actually listed is exactly the kind of
           structured-data defect that gets a page's schema distrusted or ignored.
 
-          Escaping mirrors blocks/product-faqs.liquid: `| json` handles JSON metacharacters but not
-          `<` or `/`, so `| replace: '</', '<\/'` is what stops a product title containing
-          "</script>" from ending the element early.
+          Escaping mirrors blocks/product-faqs.liquid, including the `| replace: '</', '<\/'` after
+          `| json` -- see that file's comment for why it's defense-in-depth rather than a required
+          fix on this platform (Shopify's `json` filter already escapes `<` as `\u003c` before
+          replace runs, so no literal `<` ever reaches a product title containing "</script>").
         {%- endcomment -%}
         {%- capture item_list_entries -%}
           {%- for product in collection.products -%}

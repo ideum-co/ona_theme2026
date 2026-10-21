@@ -75,9 +75,14 @@
         and it joins paragraphs without a separator, turning two sentences into
         "...in the grinder.We recommend...". answer_text stays, as the emptiness test only.
 
-        `| replace: '</', '<\/'` closes the one hole `json` leaves: it escapes JSON
-        metacharacters but not `<` or `/`, so a question or answer containing `</script>`
-        would end the script element early and spill the rest onto the page.
+        `| replace: '</', '<\/'` is defense-in-depth, not a required fix on this platform: Shopify's
+        `json` filter already escapes `<` as the Unicode escape `\u003c` before this runs, so no
+        literal `<` ever reaches the output -- a question or answer containing `</script>` cannot
+        end the script element early on its own. Verified against the live storefront response, not
+        assumed from the filter's docs (Codex raised this as a possible gap on PR #272; it wasn't
+        one, once checked). The replace matches nothing, ever, on this platform, and stays anyway:
+        it's harmless, documents the intent, and a `json` filter that does NOT escape `<` on some
+        other platform would need exactly this -- so don't drop it if this idiom is ever ported.
       {%- endcomment -%}
       {%- assign question_json = question | json | replace: '</', '<\/' -%}
       {%- assign answer_json = answer | strip | json | replace: '</', '<\/' -%}
