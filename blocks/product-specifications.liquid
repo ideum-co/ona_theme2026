@@ -1,0 +1,153 @@
+{%- doc -%}
+  A label/value specification list for a product, read from the product's own metafields.
+
+  Built for a product tab like the brew guide: it emits no markup when the product has neither an
+  intro nor a spec pair, so an empty panel prunes its own tab (#236). A grinder or machine shows its
+  specs; a product without them never shows the tab, with no per-product switch. The metafield keys
+  are settings, so one block serves "Specifications", "What's in the box", or any paired list.
+
+  CSS lives in {% stylesheet %}, NOT an inline <style>: the pruning test is
+  `panel.textContent.trim() === ''`, and an inline <style>'s text would keep an empty panel alive
+  and bring its tab back.
+
+  Expected metafield types:
+    - <intro>   rich_text_field             -> | metafield_tag, no .value
+    - <labels>  list.single_line_text_field -> .value is the array
+    - <values>  list.single_line_text_field -> .value is the array
+{%- enddoc -%}
+
+{%- liquid
+  assign product = closest.product
+  assign namespace = block.settings.namespace | strip
+  assign intro = product.metafields[namespace][block.settings.intro_key]
+  assign labels = product.metafields[namespace][block.settings.labels_key].value
+  assign values = product.metafields[namespace][block.settings.values_key].value
+
+  # The two lists are maintained by hand, so pair only as far as both go rather than indexing past
+  # the end of the shorter one and printing empty rows.
+  assign spec_count = 0
+  if labels.size > 0 and values.size > 0
+    assign spec_count = labels.size
+    if values.size < spec_count
+      assign spec_count = values.size
+    endif
+  endif
+-%}
+
+{%- if intro != blank or spec_count > 0 -%}
+  <div class="product-specs">
+    {%- if intro != blank -%}
+      <div class="product-specs__intro rte">{{ intro | metafield_tag }}</div>
+    {%- endif -%}
+
+    {%- if spec_count > 0 -%}
+      {%- assign last_index = spec_count | minus: 1 -%}
+      <dl class="product-specs__list">
+        {%- for index in (0..last_index) -%}
+          {%- assign label = labels[index] | strip -%}
+          {%- assign value = values[index] | strip -%}
+          {%- if label != blank and value != blank -%}
+            <div class="product-specs__row">
+              <dt class="product-specs__label">{{ label }}</dt>
+              <dd class="product-specs__value">{{ value }}</dd>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </dl>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .product-specs {
+    display: grid;
+    gap: var(--gap-2xl);
+    width: 100%;
+  }
+
+  .product-specs__intro {
+    font-size: var(--font-paragraph--size);
+    line-height: 1.6;
+  }
+
+  .product-specs__intro > :first-child {
+    margin-block-start: 0;
+  }
+
+  .product-specs__intro > :last-child {
+    margin-block-end: 0;
+  }
+
+  .product-specs__list {
+    margin: 0;
+    display: grid;
+  }
+
+  /*
+   * currentColor throughout, like the brew guide: the panel can paint itself from the product's own
+   * colours, so a hard-coded label/border colour would be invisible on at least one of them.
+   */
+  .product-specs__row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--gap-sm);
+    padding-block: var(--gap-md);
+    border-block-end: 1px solid currentColor;
+  }
+
+  .product-specs__row:first-child {
+    border-block-start: 1px solid currentColor;
+  }
+
+  .product-specs__label {
+    font-size: var(--font-h6--size);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .product-specs__value {
+    margin: 0;
+    font-size: var(--font-paragraph--size);
+    text-align: end;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Specifications",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "namespace",
+      "label": "Metafield namespace",
+      "default": "custom"
+    },
+    {
+      "type": "text",
+      "id": "intro_key",
+      "label": "Intro key (rich text)",
+      "default": "specs_intro"
+    },
+    {
+      "type": "text",
+      "id": "labels_key",
+      "label": "Labels key (list of text)",
+      "default": "spec_labels"
+    },
+    {
+      "type": "text",
+      "id": "values_key",
+      "label": "Values key (list of text)",
+      "default": "spec_values",
+      "info": "Labels and values pair in order. The block, and its tab, hide when the product has neither an intro nor a label/value pair."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Specifications"
+    }
+  ]
+}
+{% endschema %}
