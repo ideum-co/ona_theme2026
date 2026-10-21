@@ -215,7 +215,7 @@
     Escaping matches blocks/product-faqs.liquid and sections/main-collection.liquid, including the
     `| replace: '</', '<\/'` after `| json` -- see product-faqs.liquid's comment for why it's
     defense-in-depth rather than a required fix on this platform (Shopify's `json` filter already
-    escapes `<` as `<` before replace runs, so no literal `<` ever reaches a product or
+    escapes `<` as the Unicode escape `\u003c` before replace runs, so no literal `<` ever reaches a product or
     collection title containing "</script>").
   {%- endcomment -%}
   {%- if emit_breadcrumb_schema -%}
