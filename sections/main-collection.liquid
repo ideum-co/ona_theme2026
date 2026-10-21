@@ -146,22 +146,50 @@
   is collection-level content, independent of which page of products is showing, so it belongs
   outside pagination entirely -- unlike the ItemList, which is correctly re-scoped per page.
 
-  faqs.size > 0 is the exact guard templates/collection.json's own custom-liquid block uses, kept
-  identical on purpose: schema presence must never diverge from the visible-content guard it
-  describes, or a crawler gets markup for a FAQ block a visitor cannot see.
+  tests/collection-faqs-section.test.mjs pins that templates/collection.json's "faqs" section still
+  exists, is still in `order`, and its block still reads this same metafield -- the one guard this
+  file cannot provide on its own, since that section lives in a shop-owned JSON template an editor
+  can change without this file knowing.
+
+  Blank-question/answer filtering and the described counter mirror blocks/product-faqs.liquid
+  exactly (Codex, PR #271): a metaobject reference whose entry is half-filled in the admin comes
+  back with a blank field, not an absent one, so the guard has to check content, not presence.
+  Using `described` rather than `forloop.index` for the comma matters specifically because a
+  *skipped* entry must not leave a stray comma -- `{%- if forloop.index > 1 -%}` would emit a
+  leading comma if entry 1 were skipped, and a double comma if a middle entry were, both of which
+  are malformed JSON. The `<script>` tag is guarded on the captured string itself
+  (collection_faq_questions != blank), not on collection_faqs.size > 0, because the metafield can
+  hold entries that all fail the content check -- size alone does not mean anything will render.
+
+  Also skips an exact-duplicate question within one collection's list (tracked via
+  seen_faq_questions): the faq_item metaobject type has at least one known duplicate pair
+  (can-i-choose-the-exact-coffee / -1, flagged separately on ONAIN-47) and a collection whose faqs
+  list ever included both would otherwise emit two identical Question nodes.
 {%- endcomment -%}
 {%- assign collection_faqs = collection.metafields.custom.faqs.value -%}
-{%- if collection_faqs.size > 0 -%}
-  {%- capture collection_faq_questions -%}
-    {%- for faq in collection_faqs -%}
-      {%- if forloop.index > 1 -%},{%- endif -%}
-      {%- capture faq_answer -%}{{ faq.answer | metafield_tag }}{%- endcapture -%}
-      {%- assign question_json = faq.question | json | replace: '</', '<\/' -%}
-      {%- assign answer_json = faq_answer | strip | json | replace: '</', '<\/' -%}
+{%- capture collection_faq_questions -%}
+  {%- assign described = 0 -%}
+  {%- assign seen_faq_questions = '' -%}
+  {%- for faq in collection_faqs -%}
+    {%- assign question = faq.question | strip -%}
+    {%- capture answer -%}{{ faq.answer | metafield_tag }}{%- endcapture -%}
+    {%- assign answer_text = answer | strip_html | strip -%}
+    {%- assign already_seen = false -%}
+    {%- if question != blank and seen_faq_questions contains question -%}
+      {%- assign already_seen = true -%}
+    {%- endif -%}
+    {%- if question != blank and answer_text != blank and already_seen == false -%}
+      {%- if described > 0 -%},{%- endif -%}
+      {%- assign described = described | plus: 1 -%}
+      {%- assign seen_faq_questions = seen_faq_questions | append: '|' | append: question -%}
+      {%- assign question_json = question | json | replace: '</', '<\/' -%}
+      {%- assign answer_json = answer | strip | json | replace: '</', '<\/' -%}
       {"@type":"Question","name":{{ question_json }},"acceptedAnswer":{"@type":"Answer","text":{{ answer_json }}}}
-    {%- endfor -%}
-  {%- endcapture -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
 
+{%- if collection_faq_questions != blank -%}
   <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{{ collection_faq_questions | strip }}]}
   </script>

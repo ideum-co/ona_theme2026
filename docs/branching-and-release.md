@@ -174,7 +174,7 @@ small ones in two hours is how the first staging branch died (§1a).
 
 ## 5. The rule that matters most: shop-owned JSON
 
-Seven files on the live theme are written by the **theme editor**, not by this
+Eight files on the live theme are written by the **theme editor**, not by this
 repository:
 
 - `templates/index.json`
@@ -183,7 +183,24 @@ repository:
 - `templates/page.location.json`
 - `templates/page.faq.json`
 - `templates/page.faq-subscriptions.json`
+- `templates/collection.json`
 - `config/settings_data.json`
+
+> **`templates/collection.json` joined this list on 2026-10-21.** It was
+> missing despite carrying real logic, not just section configuration: its
+> `faqs` section is a `custom-liquid` block whose `custom_liquid` setting is a
+> *string holding Liquid*, reading `closest.collection.metafields.custom.faqs.value`
+> to render each collection's FAQ accordion. `grep --include=*.liquid` cannot see
+> it — it is JSON, not Liquid, on disk — which is how an SEO audit twice
+> concluded that content was unrendered when it was live on 13 collections the
+> whole time. `shopify[bot]` has written to this file 7 times historically, same
+> as the other shop-owned files, but it carried none of this section's
+> protection until now. `tests/collection-faqs-section.test.mjs` pins the `faqs`
+> section's existence and enabled state for the same reason
+> `tests/shop-owned-templates.test.mjs` exists: so an editor change that removes
+> or disables it fails the suite instead of silently stranding the structured
+> data in `sections/main-collection.liquid` that describes content no longer on
+> the page.
 
 > **`templates/product.merch.json` joined this list on 2026-10-21**, when it
 > was first committed at all. It had existed only on the live theme — never in
@@ -287,7 +304,7 @@ Before any release PR that touches a `templates/*.json` or
    (`new import — live is the baseline`), and keep any deliberate change to it
    in a separate commit so the import itself stays reviewable as a pure copy.
 
-> **Why an unequal checksum proves nothing for these seven files.** The theme
+> **Why an unequal checksum proves nothing for these eight files.** The theme
 > editor stores JSON **minified**; this repository carries it pretty-printed.
 > On 2026-10-21 `templates/index.json` reported `size` 115283 against a body of
 > 188663 bytes, and `templates/product.json` 54655 against 85018 — the same
