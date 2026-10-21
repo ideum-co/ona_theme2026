@@ -10,24 +10,49 @@ const source = read('sections/ona-bread-crumbs.liquid');
 // Code only -- see tests/collection-itemlist-schema.test.mjs for why.
 const code = source.replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, '');
 
-const captureStart = code.indexOf('{%- capture crumb_list_items -%}');
-assert.ok(captureStart > -1, 'the crumb_list_items capture must exist');
+const captureStart = code.indexOf('{%- capture crumb_link_items -%}');
+assert.ok(captureStart > -1, 'the crumb_link_items capture must exist');
 const captureEnd = code.indexOf('{%- endcapture -%}', captureStart) + '{%- endcapture -%}'.length;
 const captureBlock = code.slice(captureStart, captureEnd);
 
-const schemaGateStart = code.indexOf('{%- if crumb_position > 0 -%}', captureEnd);
-assert.ok(schemaGateStart > -1, 'the BreadcrumbList guard must exist after the capture');
+const schemaGateStart = code.indexOf('{%- if crumb_link_items != blank -%}', captureEnd);
+assert.ok(schemaGateStart > -1, 'the BreadcrumbList guard must exist after the capture, gated on the captured string');
 const schemaEnd = code.indexOf('</script>', schemaGateStart) + '</script>'.length;
 const schemaBlock = code.slice(schemaGateStart, schemaEnd);
 
-test('script is gated on crumb_position > 0, not section.blocks.size -- block count does not mean any block survives the content check', () => {
-  // Codex, PR #272 round 3: section.blocks.size > 0 was the old gate, but both label and url are
-  // optional in this block's schema, so a block can exist and still be entirely blank. Testing
-  // crumb_position (incremented only for emitted link crumbs) after the capture runs is the one
-  // guard that reflects what was actually produced, same reason the collection FAQPage schema
-  // gates on its captured output rather than collection_faqs.size.
-  assert.doesNotMatch(code, /if section\.blocks\.size > 0/, 'must not gate on section.blocks.size -- a block existing does not mean it has content');
-  assert.match(schemaBlock, /application\/ld\+json/, 'the ld+json script must be inside the crumb_position > 0 guard');
+/*
+ * Peer review on #272 round 4: a prior version of this file gated the script on
+ * `crumb_position > 0`, a counter assigned inside the {% for %}/{% capture %} and read back after
+ * {% endcapture %}. That depends on Liquid leaking the assignment out of the capture's scope --
+ * likely true, but unverified here, and the one thing a *gate* cannot afford to be wrong about: if
+ * the leak didn't hold, crumb_position would read nil, `nil > 0` is false with no error in Liquid,
+ * and the BreadcrumbList would vanish from the one page that uses this section -- silently, with
+ * every text-pattern test in this file still green, because none of them execute Liquid.
+ *
+ * Fixed by capturing ONLY the link crumbs into crumb_link_items and gating on that string's
+ * blankness: a capture's own target is guaranteed to exist, so there's nothing left to leak. The
+ * current-page item is built and interpolated separately, after the gate, and still uses
+ * crumb_position for its position NUMBER -- deliberately: if that specific leak somehow failed,
+ * the failure mode is a visible, debuggable wrong number on one item, not a missing script. Gating
+ * input and cosmetic input are held to different standards on purpose.
+ *
+ * The tests below can still only prove the text is pinned to this shape, not that Liquid's scoping
+ * actually behaves as described -- that distinction is the other half of the lesson from this
+ * round, and it's worth stating in the test file, not just the commit message.
+ */
+test('the script is gated on the captured crumb_link_items string, not a counter read back out of capture scope', () => {
+  assert.doesNotMatch(code, /if crumb_position > 0 -%\}\s*\n\s*<script/, 'must not gate the script on crumb_position -- that depends on an assignment leaking out of {% capture %} scope, which is not a property this test (or anything else here) verifies');
+  assert.match(schemaBlock, /application\/ld\+json/, 'the ld+json script must be inside the crumb_link_items != blank guard');
+});
+
+test('crumb_link_items captures only the link crumbs, not the current-page item', () => {
+  assert.doesNotMatch(captureBlock, /current_name|current_url|current_position/, 'the current-page item must be built outside this capture, so the gate input (crumb_link_items) cannot be blank-but-nonempty from an unconditional trailing item');
+});
+
+test('the current-page item is appended after the gate, interpolated directly rather than captured', () => {
+  const afterGate = code.slice(schemaGateStart);
+  assert.match(afterGate, /assign current_position = crumb_position \| plus: 1/, 'current_position must still be derived from crumb_position (accepted residual use -- see file header comment)');
+  assert.match(afterGate, /"itemListElement":\[\{\{ crumb_link_items \| strip \}\},\{"@type":"ListItem"/, 'the current-page ListItem must be appended directly after crumb_link_items in the itemListElement array, with a literal comma, not built inside another capture');
 });
 
 test('a link block with a blank label or blank url is skipped, not emitted with a null name or empty item', () => {
@@ -41,10 +66,7 @@ test('a link block with a blank label or blank url is skipped, not emitted with 
   assert.match(captureBlock, /\{%-\s*if crumb_label != blank and crumb_target != blank\s*-%\}/, 'each link block must be guarded on both crumb_label and crumb_target being non-blank before it is emitted');
 });
 
-test('crumb_position increments only inside the content guard, so a skipped block cannot consume a position number or shift the current-page item', () => {
-  // The part Codex's finding understated: incrementing position BEFORE validation (the old code)
-  // meant a blank block still consumed a position number, so the comma logic stayed "correct"
-  // around an entry that should not exist, and the current-page item inherited the wrong position.
+test('crumb_position increments only inside the content guard, so a skipped block cannot consume a position number', () => {
   const guardIndex = captureBlock.indexOf('if crumb_label != blank and crumb_target != blank');
   const incrementIndex = captureBlock.indexOf('assign crumb_position = crumb_position | plus: 1');
   assert.ok(incrementIndex > guardIndex, 'crumb_position must only increment after the blank check, inside its guard -- incrementing before validation is the bug this test exists to catch');
@@ -55,26 +77,15 @@ test('the comma before a link crumb is driven by crumb_position, not forloop.ind
   assert.match(captureBlock, /\{%-\s*if crumb_position > 1\s*-%\},\{%-\s*endif\s*-%\}/, 'the comma before a link crumb must be emitted only when a prior crumb was actually emitted');
 });
 
-test('the current-page item\'s leading comma depends on whether any link crumb was actually emitted', () => {
-  // The current-page ListItem is always appended unconditionally (there is always a current page),
-  // but its own leading comma must still reflect crumb_position -- otherwise a page with zero valid
-  // link crumbs (but the capture still running) would produce a leading comma before the only item.
-  const currentItemIndex = captureBlock.indexOf('"name":{{ current_name }}');
-  const currentCommaGuard = captureBlock.lastIndexOf('{%- if crumb_position > 0 -%},{%- endif -%}', currentItemIndex);
-  assert.ok(currentCommaGuard > -1 && currentCommaGuard < currentItemIndex, 'the current-page item must be preceded by a crumb_position > 0 comma guard');
-});
-
 test('iterates section.blocks directly, unlike the FAQ page -- this is a section-schema blocks array, not a theme block', () => {
   assert.match(captureBlock, /for block in section\.blocks/, 'must iterate section.blocks, the same array the visible <ul> loop iterates');
   assert.match(captureBlock, /if block\.type == 'link'/, "must filter to type == 'link', same as the visible loop");
 });
 
-test('positions start at 1 and the current page is always last, after every link crumb', () => {
+test('positions start at 1 for link crumbs; the current page is always one past the last link crumb', () => {
   assert.match(captureBlock, /assign crumb_position = 0/, 'position counter must start at 0 before the loop so the first valid link block becomes position 1');
-  assert.match(captureBlock, /assign current_position = crumb_position \| plus: 1/, 'the current-page item\'s position must be one past however many link crumbs actually survived, not a hard-coded number');
-  const currentItemIndex = captureBlock.indexOf('"name":{{ current_name }}');
-  const loopEndIndex = captureBlock.indexOf('{%- endfor -%}');
-  assert.ok(currentItemIndex > loopEndIndex, 'the current-page ListItem must be emitted after the link-crumb loop, i.e. always last');
+  const afterGate = code.slice(schemaGateStart);
+  assert.match(afterGate, /assign current_position = crumb_position \| plus: 1/, 'the current-page item\'s position must be one past however many link crumbs actually survived, not a hard-coded number');
 });
 
 test('an internal (relative) crumb URL is made absolute; an external one is left as-is', () => {
@@ -97,12 +108,14 @@ test('current-page name falls back to page.title when current_label is blank, sa
   const visibleListEnd = code.indexOf('</ul>', visibleListStart) + '</ul>'.length;
   const visibleList = code.slice(visibleListStart, visibleListEnd);
   assert.match(visibleList, /current_label != blank.*page\.title/s, 'the visible <li> must still fall back to page.title when current_label is blank');
-  assert.match(captureBlock, /current_crumb_label = section\.settings\.current_label \| default: page\.title/, 'the schema must use the identical fallback, via the `default` filter, so the two can never disagree about the current page\'s label');
+  const afterGate = code.slice(schemaGateStart);
+  assert.match(afterGate, /current_crumb_label = section\.settings\.current_label \| default: page\.title/, 'the schema must use the identical fallback, via the `default` filter, so the two can never disagree about the current page\'s label');
 });
 
 test('all names and urls are escaped against JSON metacharacters and premature </script> termination', () => {
   assert.match(captureBlock, /crumb_name = crumb_label \| json \| replace: '<\/', '<\\\/'/, 'crumb_name must be escaped the same way as blocks/product-faqs.liquid, reading the already-validated crumb_label rather than block.settings.label directly');
   assert.match(captureBlock, /crumb_url = crumb_url_raw \| json \| replace: '<\/', '<\\\/'/, 'crumb_url must be escaped the same way');
-  assert.match(captureBlock, /current_name = current_crumb_label \| json \| replace: '<\/', '<\\\/'/, 'current_name must be escaped the same way');
-  assert.match(captureBlock, /current_url = request\.origin \| append: page\.url \| json \| replace: '<\/', '<\\\/'/, 'current_url must be escaped the same way');
+  const afterGate = code.slice(schemaGateStart);
+  assert.match(afterGate, /current_name = current_crumb_label \| json \| replace: '<\/', '<\\\/'/, 'current_name must be escaped the same way');
+  assert.match(afterGate, /current_url = request\.origin \| append: page\.url \| json \| replace: '<\/', '<\\\/'/, 'current_url must be escaped the same way');
 });

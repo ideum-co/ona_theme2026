@@ -25,12 +25,21 @@
   logic (keyed off crumb_position, not forloop.index) cannot produce a leading or double comma for
   the same reason the collection FAQPage capture can't.
 
-  Gated on crumb_position > 0 after the capture runs, not on section.blocks.size > 0: block count
-  doesn't mean any block survives the content check, same reason the collection FAQPage schema
-  gates on the captured output rather than collection_faqs.size. The current-page ListItem is
-  always appended unconditionally, so testing the captured string's blankness wouldn't catch this
-  the way it does for the FAQ case; crumb_position (incremented only for emitted link crumbs) is
-  the thing that actually reflects whether there's a real trail above the current page.
+  Gated on crumb_link_items != blank, not on a counter: an earlier version of this gated on
+  crumb_position > 0, reading a variable assigned inside the {% for %}/{% capture %} back out
+  after {% endcapture %}. Liquid's scoping almost certainly leaks that (precedent elsewhere in the
+  theme assumes it does), but "almost certainly" is exactly the property a silent-failure gate
+  cannot run on: if the leak didn't hold, crumb_position would read nil at the gate, `nil > 0` is
+  false with no error in Liquid, and the whole BreadcrumbList would vanish from every page with a
+  green test suite, because a text-pattern test can't observe runtime scoping (Codex, PR #272
+  round 4 -- caught by the peer reviewing the rebased branch, not by any test here). Capturing only
+  the link crumbs into crumb_link_items and gating on that string's blankness removes the
+  dependency entirely: the capture's own target is guaranteed to exist as a string, same reasoning
+  as the collection FAQPage schema's own gate on its captured output rather than
+  collection_faqs.size. The current-page item is built separately, outside the capture, and still
+  reads crumb_position for its position NUMBER -- but a failure there just produces a visible,
+  debuggable wrong number on one item, not a missing script. That asymmetry (gate must not depend
+  on the leak; a cosmetic value can) is the actual fix, not merely moving code around.
 
   Escaping matches blocks/product-faqs.liquid, sections/main-collection.liquid and
   snippets/product-information-content.liquid, including the `| replace: '</', '<\/'` after
@@ -40,7 +49,7 @@
   visible <li> above outputs block.settings.label unescaped for HTML, which this does not copy --
   JSON-LD needs its own escaping regardless of what the surrounding markup does.
 {%- endcomment -%}
-{%- capture crumb_list_items -%}
+{%- capture crumb_link_items -%}
   {%- assign crumb_position = 0 -%}
   {%- for block in section.blocks -%}
     {%- if block.type == 'link' -%}
@@ -69,17 +78,15 @@
       {%- endif -%}
     {%- endif -%}
   {%- endfor -%}
+{%- endcapture -%}
+
+{%- if crumb_link_items != blank -%}
   {%- assign current_position = crumb_position | plus: 1 -%}
   {%- assign current_crumb_label = section.settings.current_label | default: page.title -%}
   {%- assign current_name = current_crumb_label | json | replace: '</', '<\/' -%}
   {%- assign current_url = request.origin | append: page.url | json | replace: '</', '<\/' -%}
-  {%- if crumb_position > 0 -%},{%- endif -%}
-  {"@type":"ListItem","position":{{ current_position }},"name":{{ current_name }},"item":{{ current_url }}}
-{%- endcapture -%}
-
-{%- if crumb_position > 0 -%}
   <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{{ crumb_list_items | strip }}]}
+    {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{{ crumb_link_items | strip }},{"@type":"ListItem","position":{{ current_position }},"name":{{ current_name }},"item":{{ current_url }}}]}
   </script>
 {%- endif -%}
 
