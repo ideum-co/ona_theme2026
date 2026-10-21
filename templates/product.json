@@ -539,7 +539,7 @@
                   "static": true,
                   "settings": {
                     "media_type": "image",
-                    "image": "shopify://shop_images/ona-home-10-category-latte.jpg",
+                    "image": "{{ closest.product.metafields.custom.profile_image.value }}",
                     "link": "",
                     "video_loop": true,
                     "video_autoplay": false,
@@ -1114,7 +1114,7 @@
         "image_xbbFa6": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/guide.webp",
+            "image": "{{ closest.product.metafields.custom.who_is_for_image.value }}",
             "link": "",
             "image_ratio": "adapt",
             "width": "custom",
@@ -1174,7 +1174,8 @@
         "border_radius": 0,
         "padding-block-start": 40,
         "padding-block-end": 40
-      }
+      },
+      "disabled": true
     },
     "story": {
       "type": "section",
@@ -1825,6 +1826,175 @@
         "accent_background": "#f5f4ea",
         "accent_color": "#6b1235"
       }
+    },
+    "product_media_with_text_Vy9RW6": {
+      "type": "product-media-with-text",
+      "blocks": {
+        "product-media-with-text": {
+          "type": "product-media-with-text",
+          "static": true,
+          "settings": {
+            "media_position": "left",
+            "media_width_ratio": 50,
+            "media_height": "60svh",
+            "gap": 0,
+            "content_distribution": "together",
+            "limit_content_width": true,
+            "max_width": 1360,
+            "content_padding_custom": true,
+            "content_padding_inline": 24,
+            "content_padding_block_start": 64,
+            "content_padding_block_end": 64,
+            "mobile_content_first": false,
+            "mobile_text_center": false,
+            "mobile_padding_inline": 0
+          },
+          "blocks": {
+            "media": {
+              "type": "_media-without-appearance",
+              "static": true,
+              "settings": {
+                "media_type": "image",
+                "image": "{{ closest.product.metafields.custom.who_is_for_image.value }}",
+                "link": "",
+                "video_loop": true,
+                "video_autoplay": false,
+                "image_position": "cover",
+                "image_position_mobile": "contain",
+                "video_position": "cover"
+              },
+              "blocks": {}
+            },
+            "content": {
+              "type": "_content-without-appearance",
+              "static": true,
+              "settings": {
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 24
+              },
+              "blocks": {
+                "text_j6GiMy": {
+                  "type": "text",
+                  "name": "t:names.heading",
+                  "settings": {
+                    "text": "<h3>Who's {{ closest.product.title }} For?</h3>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "h1",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "text_eTRcaH": {
+                  "type": "text",
+                  "name": "t:names.text",
+                  "settings": {
+                    "text": "<p><strong>{{ closest.product.metafields.custom.who_is_for.value.title_1.value }}</strong></p>{{ closest.product.metafields.custom.who_is_for.value.description_1 | metafield_tag }}",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "custom",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1.25rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "text_xK4dLY": {
+                  "type": "text",
+                  "name": "t:names.text",
+                  "settings": {
+                    "text": "<p><strong>{{ closest.product.metafields.custom.who_is_for.value.title_2.value }}</strong></p>{{ closest.product.metafields.custom.who_is_for.value.description_2 | metafield_tag }}",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "custom",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1.25rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "text_8K87Fg": {
+                  "type": "text",
+                  "name": "t:names.text",
+                  "settings": {
+                    "text": "<p><strong>{{ closest.product.metafields.custom.who_is_for.value.title_3.value }}</strong></p>{{ closest.product.metafields.custom.who_is_for.value.description_3 | metafield_tag }}<p></p>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "custom",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1.25rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "text_j6GiMy",
+                "text_eTRcaH",
+                "text_xK4dLY",
+                "text_8K87Fg"
+              ]
+            }
+          },
+          "block_order": []
+        }
+      },
+      "name": "Product media with text",
+      "settings": {
+        "padding-block-start": 64,
+        "padding-block-end": 64
+      }
     }
   },
   "order": [
@@ -1833,6 +2003,7 @@
     "product_tabs_fW4maV",
     "story_video_VUwQ6f",
     "product_dna_trxBBN",
+    "product_media_with_text_Vy9RW6",
     "section_EhyeAD",
     "story",
     "brew_guide",

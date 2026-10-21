@@ -174,15 +174,27 @@ small ones in two hours is how the first staging branch died (§1a).
 
 ## 5. The rule that matters most: shop-owned JSON
 
-Six files on the live theme are written by the **theme editor**, not by this
+Seven files on the live theme are written by the **theme editor**, not by this
 repository:
 
 - `templates/index.json`
 - `templates/product.json`
+- `templates/product.merch.json`
 - `templates/page.location.json`
 - `templates/page.faq.json`
 - `templates/page.faq-subscriptions.json`
 - `config/settings_data.json`
+
+> **`templates/product.merch.json` joined this list on 2026-10-21**, when it
+> was first committed at all. It had existed only on the live theme — never in
+> this repository — since 2026-10-20, so for 21 products the template that
+> renders their page was unversioned: no history, no review, and nothing to
+> restore from if the editor broke it. It also showed what being unversioned
+> costs. #257 moved the summary badges from two hard-coded settings to the
+> `filters.brew_method` metafield and updated `templates/product.json`; this
+> file could not be updated in the same PR because it was not here, so it kept
+> `badge_1: "Staple Range"` and `badge_2: "Best with Milk"` as dead keys the
+> block had stopped reading. They are removed in the commit that adds the file.
 
 > The two FAQ templates joined this list on 2026-10-19, when they were ported
 > from the live theme. Every question and answer lives in them, so an

@@ -185,6 +185,14 @@ test('product.json keeps the editor-wired PDP', () => {
     'main.product-details.tastes_like_pdp',
     'product_dna_trxBBN',
     'product_tabs_XnTEpK',
+    // Disabled in the theme editor on 2026-10-21, in the same save that added
+    // `product_media_with_text_Vy9RW6`. That section supersedes this one: #259
+    // and #261 built it as a dedicated, top-level "Product media with text",
+    // and `section_EhyeAD` is the hand-rolled version it replaces. Leaving both
+    // on double-renders the same idea. As with `story_video_VUwQ6f` below, the
+    // editor's decision stands and this entry records it rather than reversing
+    // it. Its image was rebound to `custom.who_is_for_image` in the same save.
+    'section_EhyeAD',
     // `product_tabs_fW4maV.product_tab_4tzPxX`, the Brew Guide tab, is no longer
     // in this list. It was disabled because it was empty and would otherwise
     // have shown on all 92 PDPs; it now holds `product-brew-guide`, which emits
@@ -196,6 +204,59 @@ test('product.json keeps the editor-wired PDP', () => {
     // decision stands; this entry records it rather than reversing it.
     'story_video_VUwQ6f',
   ], 'the set of disabled PDP sections and blocks changed');
+});
+
+test('product.merch.json keeps the editor-wired merch PDP', () => {
+  // This template renders 21 products -- every Merch item plus the V60 filter
+  // papers -- and lived only on the live theme until 2026-10-21. It gets the
+  // same pinning as product.json for the same reason: it is editor-written, so
+  // a merge from a stale snapshot overwrites it silently.
+  const { sections, order } = readTemplate('product.merch.json');
+
+  assert.equal(order.length, Object.keys(sections).length, 'order and sections disagree');
+  assert.equal(sections.main.type, 'product-information');
+
+  // The whole disabled set, at every depth, for the reason given in the
+  // index.json test above.
+  //
+  // The two entries that matter most are the tabs: this template switches OFF
+  // both `product_tab_ePcCkQ` (Profile) and `product_tab_4tzPxX` (Brew Guide),
+  // which `templates/product.json` leaves on. That is the merch template doing
+  // its job -- a t-shirt has no tasting profile and no recipe -- and it is why
+  // the "TASTES LIKE" label with nothing after it is not a merch problem.
+  //
+  // It is, however, an equipment problem, and not because of this file: 21
+  // Brew Gear products carry `templateSuffix: "product-2"` and one carries
+  // "product-3", and neither template exists on the theme or in this repo. The
+  // storefront falls back to `templates/product.json`, so a V60 dripper renders
+  // the coffee Profile tab. Re-pointing those products at this template is the
+  // fix; nothing here needs to change for it.
+  assert.deepEqual(disabledPaths(sections), [
+    'brew_guide',
+    'faqs',
+    'main.product-details.best_for_pdp',
+    'main.product-details.divider_VJhene',
+    'main.product-details.group_icgrde',
+    'main.product-details.tastes_like_pdp',
+    'product_dna_trxBBN',
+    'product_tabs_XnTEpK',
+    'product_tabs_fW4maV.product_tab_4tzPxX',
+    'product_tabs_fW4maV.product_tab_ePcCkQ',
+    'section_EhyeAD',
+    'story',
+    'story_video_VUwQ6f',
+  ], 'the set of disabled merch PDP sections and blocks changed');
+
+  // The badges come from the metafield, as #257 made them everywhere else.
+  // This file carried `badge_1`/`badge_2` -- "Staple Range", "Best with Milk"
+  // -- hard-coded onto every merch product, because #257 could not reach a file
+  // that was not in the repository. The block stopped reading them, so they
+  // rendered nothing and simply sat here; the next person to read this template
+  // would reasonably have believed they were live.
+  const summary = sections.main.blocks['product-details'].blocks.pdp_product_summary.settings;
+  for (const dead of ['badge_1', 'badge_2', 'badge_1_key', 'badge_2_key']) {
+    assert.ok(!(dead in summary), `${dead} is a pre-#257 setting the block no longer reads`);
+  }
 });
 
 test('the promo badge stays on both card surfaces, after the gallery', () => {
@@ -280,6 +341,7 @@ test('page.location.json is declared shop-owned, and never carries the Maps key'
   for (const file of [
     'templates/index.json',
     'templates/product.json',
+    'templates/product.merch.json',
     'templates/page.location.json',
     'config/settings_data.json',
   ]) {
