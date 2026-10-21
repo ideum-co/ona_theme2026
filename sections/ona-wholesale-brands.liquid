@@ -32,6 +32,7 @@
      this overrides it for this section only (same #MainContent prefix, so the
      specificity matches). */
   #MainContent .wholesale-brands .brand-marquee {
+    --brand-gap: clamp(32px, 4vw, 64px);
     display: block;
     overflow: hidden;
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
@@ -43,7 +44,17 @@
     flex-wrap: nowrap;
     width: max-content;
     align-items: center;
-    gap: clamp(32px, 4vw, 64px);
+    /*
+     * The spacing is a trailing margin on each item, NOT `gap` on this track.
+     * `.brand-track__loop` is `display: contents`, so the duplicated set's
+     * children become direct flex children here: 2N items with 2N-1 gaps.
+     * `translateX(-50%)` then moves N*item + (N-0.5)*gap, while a seamless
+     * loop needs N*item + N*gap -- the row jumped back half a gap on every
+     * cycle. Measured on the live page: gap 61.44px, track 553px, -50% =
+     * 276px against a real stride of 307px, a visible 31px snap every 26s.
+     * A trailing margin gives every item the same width + spacing, so half
+     * the track is exactly one set and the seam disappears.
+     */
     animation: ona-brand-scroll 26s linear infinite;
   }
 
@@ -59,6 +70,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-inline-end: var(--brand-gap);
   }
 
   #MainContent .wholesale-brands .brand-thumb img {
