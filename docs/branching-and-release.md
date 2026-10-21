@@ -174,15 +174,27 @@ small ones in two hours is how the first staging branch died (§1a).
 
 ## 5. The rule that matters most: shop-owned JSON
 
-Six files on the live theme are written by the **theme editor**, not by this
+Seven files on the live theme are written by the **theme editor**, not by this
 repository:
 
 - `templates/index.json`
 - `templates/product.json`
+- `templates/product.merch.json`
 - `templates/page.location.json`
 - `templates/page.faq.json`
 - `templates/page.faq-subscriptions.json`
 - `config/settings_data.json`
+
+> **`templates/product.merch.json` joined this list on 2026-10-21**, when it
+> was first committed at all. It had existed only on the live theme — never in
+> this repository — since 2026-10-20, so for 21 products the template that
+> renders their page was unversioned: no history, no review, and nothing to
+> restore from if the editor broke it. It also showed what being unversioned
+> costs. #257 moved the summary badges from two hard-coded settings to the
+> `filters.brew_method` metafield and updated `templates/product.json`; this
+> file could not be updated in the same PR because it was not here, so it kept
+> `badge_1: "Staple Range"` and `badge_2: "Best with Milk"` as dead keys the
+> block had stopped reading. They are removed in the commit that adds the file.
 
 > The two FAQ templates joined this list on 2026-10-19, when they were ported
 > from the live theme. Every question and answer lives in them, so an
@@ -232,10 +244,65 @@ Before any release PR that touches a `templates/*.json` or
          files(first: 20, filenames: ["templates/*.json", "config/settings_data.json"]) {
            nodes { filename checksumMd5 size updatedAt } } } } }
    ```
-2. Compare against `md5sum` of the repo file.
-   - **Equal** → the integration owns it. Safe to change through a PR.
-   - **Unequal** → the editor owns it. **Reconcile the theme's state into the
-     repo first**, in its own commit, then make your change on top.
+2. Compare against `md5sum` of the repo file. **The checksum can only clear a
+   file, never convict it** — see the box below.
+   - **Equal** → the integration wrote it and the editor has not touched it
+     since. Safe to change through a PR. This half is reliable.
+   - **Unequal** → *inconclusive*. Go to step 2a.
+
+   2a. Fetch the body and compare the **parsed JSON**, not the bytes:
+   ```graphql
+   { node(id: "gid://shopify/OnlineStoreTheme/154676789439") {
+       ... on OnlineStoreTheme {
+         files(first: 1, filenames: ["templates/product.json"]) {
+           nodes { filename body { ... on OnlineStoreThemeFileBodyText { content } } } } } } }
+   ```
+   Compare the live body against the **deployed pre-change revision** —
+   `git show origin/main:templates/product.json`, the state the integration last
+   pushed — **not** against the file on your release branch. Your branch already
+   carries the change you are about to ship; diffing live against it reports your
+   own intentional edits as editor drift, and "reconciling" them would undo the
+   release.
+
+   Load both sides with `json.loads` after stripping the `/* … */` banner,
+   flatten to leaf paths, and compare as sets — added keys, removed keys,
+   changed values.
+   - **Semantically identical** → live matches what we last deployed. The editor
+     has not touched it; your branch's diff is the only change in flight. Safe.
+   - **Anything added, removed or changed** → the editor owns it.
+     **Reconcile the theme's state into the repo first**, in its own commit,
+     then rebase your change on top.
+
+   Then inspect your release diff separately — `git diff origin/main...HEAD --
+   templates/ config/settings_data.json` — so the two questions stay apart:
+   *what did the editor change since we deployed?* and *what am I about to
+   change?* `settings_data.json` is in that path list because §5 subjects it to
+   the same rule; leaving it out hides half of what a release moves.
+
+   **First-time imports have no baseline.** If `git show origin/main:<file>`
+   fails because the file is not in the deployed revision — as
+   `templates/product.merch.json` was before #264 — there is nothing to compare
+   against and nothing to reconcile: the editor is the only author the file has.
+   Take the live body as the baseline, say so in the checklist's parsed column
+   (`new import — live is the baseline`), and keep any deliberate change to it
+   in a separate commit so the import itself stays reviewable as a pure copy.
+
+> **Why an unequal checksum proves nothing for these seven files.** The theme
+> editor stores JSON **minified**; this repository carries it pretty-printed.
+> On 2026-10-21 `templates/index.json` reported `size` 115283 against a body of
+> 188663 bytes, and `templates/product.json` 54655 against 85018 — the same
+> content in two encodings. `checksumMd5` is the md5 of the *stored* bytes, so
+> for any editor-saved file it will differ from the repo's md5 even when not a
+> single value has changed. Relying on it reports drift on every release and
+> teaches people to ignore the check.
+>
+> Nor can you md5 the body: `body.content` is a pretty-printed *rendering* of
+> the stored bytes, so it matches neither `checksumMd5` nor, byte for byte, the
+> repo file. Parse both sides and compare the structures.
+>
+> The checksum stays exact for GitHub-pushed files, which are stored as pushed.
+> That is how #263 proved `sections/footer-group.json` had been dropped: the
+> live md5 matched repo revision `81ad071` byte for byte.
 3. After merging, **read the checksum again**. An unchanged checksum does not
    mean "no-op" — it means the integration *refused the file*. Shopify declines
    any JSON template over **25 sections** or **50 blocks per section**, silently:
@@ -257,7 +324,13 @@ Paste into the body of every `staging-v2` → `main` PR:
       handling is newer than the Node 20 line and a quoted pattern fails there
 - [ ] `staging-v2` previewed on the staging theme, on desktop **and a real phone**
 - [ ] No `templates/*.json` or `config/settings_data.json` touched
-      — or, if touched: live checksum read, reconciled, recorded below
+      — or, if touched: live checksum read and recorded below. An unequal
+      checksum is **not** grounds to reconcile; it is inconclusive. Run the §5
+      step 2a parsed comparison against the **deployed** revision
+      (`git show origin/main:<file>`), record the result, and reconcile only if
+      that comparison shows the editor changed something. If that command fails
+      the file is a first-time import: live is the baseline, nothing to
+      reconcile — record it as such
 - [ ] Section count ≤ 25 and blocks ≤ 50 for every JSON template changed
 - [ ] Rollback named — and check which theme is actually `MAIN` first; it has
       changed twice without notice. `160335790271` is the pre-cutover theme;
@@ -272,8 +345,13 @@ Paste into the body of every `staging-v2` → `main` PR:
 - [ ] `staging-v2` re-pointed at `main` with the §4 step 5 command
 
 **Checksums read before merge:**
-| file | repo md5 | live md5 | equal? |
-|---|---|---|---|
+| file | repo md5 | live md5 | equal? | if unequal: parsed vs `origin/main` | reconcile needed? |
+|---|---|---|---|---|---|
+
+> The last two columns are the ones that decide anything. `equal?` = no means
+> *inconclusive*, not *drifted* — these files are stored minified and this repo
+> carries them pretty-printed (§5). Write `identical` or list what the editor
+> added, removed or changed, and only then answer the reconcile column.
 
 **After merge — confirm the pull landed:**
 | file | checksum re-read at | matches repo? |

@@ -123,7 +123,7 @@
               "name": "t:names.button",
               "settings": {
                 "label": "Find your coffee",
-                "link": "#find-your-coffee",
+                "link": "#coffee-quiz",
                 "open_in_new_tab": false,
                 "style_class": "button-custom",
                 "custom_button_background": "#8a1238",
@@ -1864,7 +1864,7 @@
                   "name": "t:names.button",
                   "settings": {
                     "label": "Shop now",
-                    "link": "shopify://collections/all",
+                    "link": "shopify://products/raspberry-candy",
                     "open_in_new_tab": false,
                     "style_class": "button-custom",
                     "custom_button_background": "#d51a69",
@@ -1890,7 +1890,7 @@
                   "name": "t:names.button",
                   "settings": {
                     "label": "Subscribe & Save",
-                    "link": "shopify://collections/all",
+                    "link": "shopify://collections/coffee-subscriptions",
                     "open_in_new_tab": false,
                     "style_class": "button-custom",
                     "custom_button_background": "#d51a69",
