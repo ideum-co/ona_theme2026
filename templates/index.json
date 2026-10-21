@@ -1551,82 +1551,6 @@
         "padding-block-end": 40
       }
     },
-    "club_benefits_QGRDdd": {
-      "type": "club-benefits",
-      "blocks": {
-        "benefit_GzVPJ7": {
-          "type": "benefit",
-          "settings": {
-            "icon_svg": "",
-            "icon": "shopify://shop_images/freshly.svg",
-            "title": "Freshly <em>roasted</em>"
-          }
-        },
-        "benefit_Mdj93W": {
-          "type": "benefit",
-          "settings": {
-            "icon_svg": "",
-            "icon": "shopify://shop_images/news.svg",
-            "title": "New <em>releases</em>"
-          }
-        },
-        "benefit_3DmUNx": {
-          "type": "benefit",
-          "settings": {
-            "icon_svg": "",
-            "icon": "shopify://shop_images/delivery.svg",
-            "title": "Flexible <em>delivery</em>"
-          }
-        },
-        "testimonial_qq68zy": {
-          "type": "testimonial",
-          "settings": {
-            "quote": "\"The easiest way to make sure I never run out of great coffee. I love getting to discover new ONA coffees along the way.\"",
-            "author": "Sarah",
-            "author_role": "ONA Coffee Club member"
-          }
-        }
-      },
-      "block_order": [
-        "benefit_GzVPJ7",
-        "benefit_Mdj93W",
-        "benefit_3DmUNx",
-        "testimonial_qq68zy"
-      ],
-      "disabled": true,
-      "name": "t:names.club_benefits",
-      "settings": {
-        "section_width": "page-width",
-        "limit_content_width": false,
-        "max_width": 1360,
-        "heading_tag": "h3",
-        "heading": "Club <em>benefits</em>",
-        "heading_size": 40,
-        "type_preset": "rte",
-        "font": "var(--font-body--family)",
-        "font_size": "1rem",
-        "line_height": "normal",
-        "letter_spacing": "normal",
-        "case": "none",
-        "wrap": "pretty",
-        "columns": 3,
-        "icon_size": 112,
-        "benefit_size": 40,
-        "quote_size": 25,
-        "icons_style": "chevron",
-        "autoplay": false,
-        "autoplay_speed": 6,
-        "button_label": "Join the ONA Coffee Club",
-        "button_link": "",
-        "button_position": "after_testimonials",
-        "button_background": "#8a1538",
-        "button_text": "#f5f4ea",
-        "background_color": "#4a4340",
-        "text_color": "#f5f4ea",
-        "padding-block-start": 120,
-        "padding-block-end": 120
-      }
-    },
     "club_benefits_937XiA": {
       "type": "club-benefits",
       "blocks": {
@@ -2753,74 +2677,6 @@
         "border_radius": 0,
         "padding-block-start": 80,
         "padding-block-end": 80
-      }
-    },
-    "story_video_LN6zzn": {
-      "type": "story-video",
-      "disabled": true,
-      "name": "t:names.story_video",
-      "settings": {
-        "heading_tag": "h3",
-        "heading": "More than coffee. <em>Since 2008.</em>",
-        "heading_size": 44,
-        "type_preset": "rte",
-        "font": "var(--font-body--family)",
-        "font_size": "1rem",
-        "line_height": "normal",
-        "letter_spacing": "normal",
-        "case": "none",
-        "wrap": "pretty",
-        "body": "",
-        "body_type_preset": "rte",
-        "body_font": "var(--font-body--family)",
-        "body_font_size": "1rem",
-        "body_line_height": "normal",
-        "body_letter_spacing": "normal",
-        "body_case": "none",
-        "body_wrap": "pretty",
-        "body_alignment": "center",
-        "button_label": "Learn more",
-        "button_link": "",
-        "button_background": "#f5f4ea",
-        "button_text": "#751132",
-        "button_type_preset": "rte",
-        "button_font": "var(--font-body--family)",
-        "button_font_size": "1rem",
-        "button_line_height": "normal",
-        "button_letter_spacing": "normal",
-        "button_case": "none",
-        "button_wrap": "pretty",
-        "source": "uploaded",
-        "video": "shopify://files/videos/ona-hero-coffee-cherries-picking.mp4",
-        "video_url": "",
-        "video_autoplay": false,
-        "video_loop": true,
-        "alt": "",
-        "aspect_ratio": "16/9",
-        "hide_video_mobile": false,
-        "video_overhang_mobile": 0,
-        "video_max_width": 1280,
-        "video_overhang": 0,
-        "play_background": "#751132",
-        "play_color": "#f5f4ea",
-        "play_size": 96,
-        "background_color": "#751132",
-        "text_color": "#f5f4ea",
-        "padding-block-start": 80,
-        "padding-block-end": 80,
-        "content_gap": 16,
-        "intro_padding_block_start": 0,
-        "intro_padding_block_end": 0,
-        "intro_individual_side_padding": false,
-        "intro_padding_inline_start": 0,
-        "intro_padding_inline_end": 0,
-        "intro_padding_inline": 0,
-        "media_padding_block_start": 0,
-        "media_padding_block_end": 0,
-        "media_individual_side_padding": false,
-        "media_padding_inline_start": 0,
-        "media_padding_inline_end": 0,
-        "media_padding_inline": 0
       }
     },
     "story_video_URBFL6": {
@@ -4826,10 +4682,25 @@
         "padding_inline": 0,
         "padding_inline_mobile": 0
       }
+    },
+    "wfg_campaign_banner": {
+      "type": "ona-campaign-banner",
+      "settings": {
+        "bg_color": "#f9f8f3",
+        "logo": "shopify://shop_images/WFG2_-_stacked.png",
+        "logo_alt": "Water for Good",
+        "title": "Coffee That Supports Clean Water",
+        "campaign_label": "Campaign running now until",
+        "campaign_note": "",
+        "description": "<p>Together with <a href=\"https://waterforgood.org/\">Water for Good</a> and Project Origin, we’re continuing our long-term commitment to support safe, reliable water in coffee-growing communities.</p><p>From <strong>1–31 October</strong>, we’ll make a fixed contribution from every participating purchase toward our <strong>$20,000 fundraising goal</strong>. You don’t need to make a separate donation—simply choose a participating coffee or product and be part of the impact.</p><p>This campaign brings us closer to our longer-term goal of helping support <strong>250 community water points over seven years</strong>, creating lasting, community-led access to clean water.</p>",
+        "cta_text": "Learn more",
+        "cta_url": "shopify://blogs/news/coffee-community-and-clean-water-continuing-our-work-with-water-for-good"
+      }
     }
   },
   "order": [
     "hero_ona",
+    "wfg_campaign_banner",
     "wfg_donation_counter",
     "floating_badge_r89NRP",
     "find_your_coffee",
@@ -4839,13 +4710,11 @@
     "club_invite_QLL4T3",
     "club_invite_TGPaF8",
     "slideshow_nBcaMx",
-    "club_benefits_QGRDdd",
     "club_benefits_937XiA",
     "section_LpJJ4p",
     "product_intro_k9p6yn",
     "club_benefits",
     "raspberry_candy",
-    "story_video_LN6zzn",
     "story_video_URBFL6",
     "learn_with_ona",
     "press_quotes_4kW9eF",

@@ -117,8 +117,15 @@ test('the homepage is at Shopify\'s section ceiling, which is why these are bloc
    * for a 26th section, because the failure mode is the integration silently refusing the entire
    * file rather than dropping the extra section.
    */
-  assert.equal(Object.keys(index.sections).length, 25, 'if this ever drops, a section becomes possible again');
-  assert.equal(index.order.length, 25);
+  //
+  // 2026-10-21: this is now 24, not 25. Two disabled duplicates of live
+  // sections were deleted to make room for the Water For Good campaign
+  // banner, which took one of the two freed slots. The single remaining slot
+  // is headroom, deliberately not spent -- the reason these testimonials are
+  // blocks has not changed, and a page one section below a hard ceiling is not
+  // an invitation.
+  assert.equal(Object.keys(index.sections).length, 24, 'if this climbs to 25 the homepage is full again');
+  assert.equal(index.order.length, Object.keys(index.sections).length);
 });
 
 test('the wholesale page keeps its own copy', () => {
