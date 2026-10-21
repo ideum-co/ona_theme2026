@@ -17,44 +17,67 @@
   architecture, not a theme block with content_for 'blocks'), so this can read every crumb directly
   instead of running into the same wall SEO-26 did.
 
-  Guarded on section.blocks.size > 0: with zero link blocks the visible list is just one bare <li>
-  for the current page, which isn't a real breadcrumb trail and isn't worth describing as one.
+  Both `label` and `url` are optional in this block's schema (no `required`), so a merchant can add
+  a link crumb and leave either blank -- the schema has to check content, not just block.type ==
+  'link', same discipline as blocks/product-faqs.liquid's blank-question/answer guard (Codex, PR
+  #272, round 2). crumb_position only increments inside that content guard, so a skipped blank
+  block cannot consume a position number or shift the current-page item's position, and the comma
+  logic (keyed off crumb_position, not forloop.index) cannot produce a leading or double comma for
+  the same reason the collection FAQPage capture can't.
+
+  Gated on crumb_position > 0 after the capture runs, not on section.blocks.size > 0: block count
+  doesn't mean any block survives the content check, same reason the collection FAQPage schema
+  gates on the captured output rather than collection_faqs.size. The current-page ListItem is
+  always appended unconditionally, so testing the captured string's blankness wouldn't catch this
+  the way it does for the FAQ case; crumb_position (incremented only for emitted link crumbs) is
+  the thing that actually reflects whether there's a real trail above the current page.
 
   Escaping matches blocks/product-faqs.liquid, sections/main-collection.liquid and
-  snippets/product-information-content.liquid: `| json` handles JSON metacharacters but not `<` or
-  `/`, so `| replace: '</', '<\/'` is what stops a crumb label containing "</script>" from ending
-  the element early. The visible <li> above outputs block.settings.label unescaped for HTML, which
-  this does not copy -- JSON-LD needs its own escaping regardless of what the surrounding markup does.
+  snippets/product-information-content.liquid, including the `| replace: '</', '<\/'` after
+  `| json` -- see product-faqs.liquid's comment for why it's defense-in-depth rather than a
+  required fix on this platform (Shopify's `json` filter already escapes `<` as the Unicode escape
+  before replace runs, so no literal `<` ever reaches a crumb label containing "</script>"). The
+  visible <li> above outputs block.settings.label unescaped for HTML, which this does not copy --
+  JSON-LD needs its own escaping regardless of what the surrounding markup does.
 {%- endcomment -%}
-{%- if section.blocks.size > 0 -%}
-  {%- capture crumb_list_items -%}
-    {%- assign crumb_position = 0 -%}
-    {%- for block in section.blocks -%}
-      {%- if block.type == 'link' -%}
+{%- capture crumb_list_items -%}
+  {%- assign crumb_position = 0 -%}
+  {%- for block in section.blocks -%}
+    {%- if block.type == 'link' -%}
+      {%- assign crumb_label = block.settings.label | strip -%}
+      {%- assign crumb_target = block.settings.url -%}
+      {%- if crumb_label != blank and crumb_target != blank -%}
         {%- assign crumb_position = crumb_position | plus: 1 -%}
         {%- if crumb_position > 1 -%},{%- endif -%}
         {%- # block.settings.url is Shopify's "url" setting type, which stores a relative path
-             ("/collections/all") for anything picked from the internal link picker but can hold
-             a full external URL if a merchant pastes one in directly. schema.org wants item as a
-             fully qualified URL either way, so origin is prepended only when the value doesn't
-             already look absolute, rather than assuming one or the other. -%}
-        {%- if block.settings.url contains '://' -%}
-          {%- assign crumb_url_raw = block.settings.url -%}
+             ("/collections/all") for anything picked from the internal link picker, a full
+             external URL if a merchant pastes one in directly, or a protocol-relative one
+             ("//docs.example.com/path") -- the only form `contains '://'` misses, since it has no
+             "://" at all. schema.org wants item as a fully qualified URL regardless of which form
+             was used, so origin is prepended only when the value doesn't already look absolute in
+             either sense. Getting this wrong means the schema's URL silently disagrees with the
+             visible <a href>, which is exactly what BreadcrumbList validators check for. -%}
+        {%- assign crumb_target_prefix = crumb_target | slice: 0, 2 -%}
+        {%- if crumb_target contains '://' or crumb_target_prefix == '//' -%}
+          {%- assign crumb_url_raw = crumb_target -%}
         {%- else -%}
-          {%- assign crumb_url_raw = request.origin | append: block.settings.url -%}
+          {%- assign crumb_url_raw = request.origin | append: crumb_target -%}
         {%- endif -%}
         {%- assign crumb_url = crumb_url_raw | json | replace: '</', '<\/' -%}
-        {%- assign crumb_name = block.settings.label | json | replace: '</', '<\/' -%}
+        {%- assign crumb_name = crumb_label | json | replace: '</', '<\/' -%}
         {"@type":"ListItem","position":{{ crumb_position }},"name":{{ crumb_name }},"item":{{ crumb_url }}}
       {%- endif -%}
-    {%- endfor -%}
-    {%- assign current_position = crumb_position | plus: 1 -%}
-    {%- assign current_crumb_label = section.settings.current_label | default: page.title -%}
-    {%- assign current_name = current_crumb_label | json | replace: '</', '<\/' -%}
-    {%- assign current_url = request.origin | append: page.url | json | replace: '</', '<\/' -%}
-    ,{"@type":"ListItem","position":{{ current_position }},"name":{{ current_name }},"item":{{ current_url }}}
-  {%- endcapture -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- assign current_position = crumb_position | plus: 1 -%}
+  {%- assign current_crumb_label = section.settings.current_label | default: page.title -%}
+  {%- assign current_name = current_crumb_label | json | replace: '</', '<\/' -%}
+  {%- assign current_url = request.origin | append: page.url | json | replace: '</', '<\/' -%}
+  {%- if crumb_position > 0 -%},{%- endif -%}
+  {"@type":"ListItem","position":{{ current_position }},"name":{{ current_name }},"item":{{ current_url }}}
+{%- endcapture -%}
 
+{%- if crumb_position > 0 -%}
   <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{{ crumb_list_items | strip }}]}
   </script>
