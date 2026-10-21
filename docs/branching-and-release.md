@@ -257,13 +257,25 @@ Before any release PR that touches a `templates/*.json` or
          files(first: 1, filenames: ["templates/product.json"]) {
            nodes { filename body { ... on OnlineStoreThemeFileBodyText { content } } } } } } }
    ```
+   Compare the live body against the **deployed pre-change revision** —
+   `git show origin/main:templates/product.json`, the state the integration last
+   pushed — **not** against the file on your release branch. Your branch already
+   carries the change you are about to ship; diffing live against it reports your
+   own intentional edits as editor drift, and "reconciling" them would undo the
+   release.
+
    Load both sides with `json.loads` after stripping the `/* … */` banner,
    flatten to leaf paths, and compare as sets — added keys, removed keys,
    changed values.
-   - **Semantically identical** → storage format only. Safe.
+   - **Semantically identical** → live matches what we last deployed. The editor
+     has not touched it; your branch's diff is the only change in flight. Safe.
    - **Anything added, removed or changed** → the editor owns it.
      **Reconcile the theme's state into the repo first**, in its own commit,
-     then make your change on top.
+     then rebase your change on top.
+
+   Then inspect your release diff separately — `git diff origin/main...HEAD --
+   templates/` — so the two questions stay apart: *what did the editor change
+   since we deployed?* and *what am I about to change?*
 
 > **Why an unequal checksum proves nothing for these seven files.** The theme
 > editor stores JSON **minified**; this repository carries it pretty-printed.

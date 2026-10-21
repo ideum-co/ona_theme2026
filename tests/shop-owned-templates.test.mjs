@@ -387,6 +387,27 @@ test('page.location.json is declared shop-owned, and never carries the Maps key'
     '§5 must say an unequal checksum is inconclusive rather than proof of drift',
   );
 
+  // The parsed comparison needs the right baseline. A release PR deliberately
+  // changes one of these files, so diffing live against the *branch* reports
+  // the PR's own edits as editor drift and sends you off to "reconcile" away
+  // the release. Codex, PR #264. The baseline is the deployed revision --
+  // origin/main -- with the branch's own diff inspected separately.
+  assert.match(
+    shopOwned,
+    /deployed pre-change revision[^`]*`git show origin\/main:/is,
+    '§5 must name the deployed origin/main revision as the parsed-comparison baseline',
+  );
+  assert.match(
+    shopOwned,
+    /not\b[^.]*against the file on your release branch/is,
+    '§5 must warn against diffing live against the release branch itself',
+  );
+  assert.match(
+    shopOwned,
+    /git diff origin\/main\.\.\.HEAD/,
+    "§5 must send the PR's own diff to a separate inspection",
+  );
+
   // The rule in §5 is only followed if it reaches the list people actually
   // tick. Codex, PR #191: §5 gained the re-enter step while §6's checklist
   // still asked only for the ordinary pre-merge reconcile.
