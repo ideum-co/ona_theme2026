@@ -16,10 +16,21 @@ import test from 'node:test';
  * instead of reaching the theme. If a change here is deliberate, update the
  * test in the same commit and say why in the message.
  *
- * Procedure before merging anything that touches these files:
- * compare the theme's `checksumMd5` with the md5 of the repo file. Equal means
- * the integration wrote it and the editor has not diverged it -- safe. Unequal
- * means the editor has, and the shop copy must be merged in first.
+ * Procedure before merging anything that touches these files: compare the
+ * theme's `checksumMd5` with the md5 of the repo file. Equal means the
+ * integration wrote it and the editor has not diverged it -- safe.
+ *
+ * Unequal means NOTHING on its own, and reading it as "the editor diverged it"
+ * is wrong. The editor stores these minified while this repo carries them
+ * pretty-printed, so the hashes differ on encoding alone: on 2026-10-21
+ * index.json reported size 115283 against a body of 188663 bytes. Treating
+ * that as drift flags every release and trains people to skip the check.
+ *
+ * On unequal, fetch `body.content` and compare the PARSED JSON -- flatten both
+ * sides to leaf paths and diff the sets. Do not md5 the body either; it is a
+ * pretty-printed rendering of the stored bytes and matches neither side.
+ * Semantically identical means encoding only, and is safe. See §5 of
+ * docs/branching-and-release.md, which this header mirrors.
  */
 
 const root = resolve(import.meta.dirname, '..');
@@ -351,6 +362,30 @@ test('page.location.json is declared shop-owned, and never carries the Maps key'
     );
   }
   assert.match(shopOwned, /page\.location\.json.*credential/is, '§5 must say why this one is different');
+
+  // §5 must not tell anyone that an unequal checksum proves editor drift.
+  // These files are stored minified and this repo carries them pretty-printed,
+  // so the hashes differ on encoding alone -- the check fires on every release
+  // and gets ignored. Codex caught the procedure still saying so on PR #264,
+  // in the same PR whose commit message documented the measurements.
+  // The checksum can clear a file (equal means the integration wrote it) but
+  // never convict one, so the procedure has to send an unequal result on to a
+  // parsed comparison.
+  assert.match(
+    shopOwned,
+    /minified/i,
+    '§5 must explain that the editor stores these minified, or the checksum check reads as drift',
+  );
+  assert.match(
+    shopOwned,
+    /parsed JSON|parse both sides/i,
+    '§5 must prescribe comparing parsed JSON when the checksum differs',
+  );
+  assert.match(
+    shopOwned,
+    /inconclusive/i,
+    '§5 must say an unequal checksum is inconclusive rather than proof of drift',
+  );
 
   // The rule in §5 is only followed if it reaches the list people actually
   // tick. Codex, PR #191: §5 gained the re-enter step while §6's checklist
