@@ -11,6 +11,55 @@
   </div>
 </section>
 
+{%- comment -%}
+  BreadcrumbList for the trail above -- unlike the FAQ page's nested theme blocks, `section.blocks`
+  here IS a plain iterable array (this is a section-schema "blocks" array, the older block
+  architecture, not a theme block with content_for 'blocks'), so this can read every crumb directly
+  instead of running into the same wall SEO-26 did.
+
+  Guarded on section.blocks.size > 0: with zero link blocks the visible list is just one bare <li>
+  for the current page, which isn't a real breadcrumb trail and isn't worth describing as one.
+
+  Escaping matches blocks/product-faqs.liquid, sections/main-collection.liquid and
+  snippets/product-information-content.liquid: `| json` handles JSON metacharacters but not `<` or
+  `/`, so `| replace: '</', '<\/'` is what stops a crumb label containing "</script>" from ending
+  the element early. The visible <li> above outputs block.settings.label unescaped for HTML, which
+  this does not copy -- JSON-LD needs its own escaping regardless of what the surrounding markup does.
+{%- endcomment -%}
+{%- if section.blocks.size > 0 -%}
+  {%- capture crumb_list_items -%}
+    {%- assign crumb_position = 0 -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'link' -%}
+        {%- assign crumb_position = crumb_position | plus: 1 -%}
+        {%- if crumb_position > 1 -%},{%- endif -%}
+        {%- # block.settings.url is Shopify's "url" setting type, which stores a relative path
+             ("/collections/all") for anything picked from the internal link picker but can hold
+             a full external URL if a merchant pastes one in directly. schema.org wants item as a
+             fully qualified URL either way, so origin is prepended only when the value doesn't
+             already look absolute, rather than assuming one or the other. -%}
+        {%- if block.settings.url contains '://' -%}
+          {%- assign crumb_url_raw = block.settings.url -%}
+        {%- else -%}
+          {%- assign crumb_url_raw = request.origin | append: block.settings.url -%}
+        {%- endif -%}
+        {%- assign crumb_url = crumb_url_raw | json | replace: '</', '<\/' -%}
+        {%- assign crumb_name = block.settings.label | json | replace: '</', '<\/' -%}
+        {"@type":"ListItem","position":{{ crumb_position }},"name":{{ crumb_name }},"item":{{ crumb_url }}}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- assign current_position = crumb_position | plus: 1 -%}
+    {%- assign current_crumb_label = section.settings.current_label | default: page.title -%}
+    {%- assign current_name = current_crumb_label | json | replace: '</', '<\/' -%}
+    {%- assign current_url = request.origin | append: page.url | json | replace: '</', '<\/' -%}
+    ,{"@type":"ListItem","position":{{ current_position }},"name":{{ current_name }},"item":{{ current_url }}}
+  {%- endcapture -%}
+
+  <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{{ crumb_list_items | strip }}]}
+  </script>
+{%- endif -%}
+
 {% schema %}
 {
   "name": "Breadcrumbs",

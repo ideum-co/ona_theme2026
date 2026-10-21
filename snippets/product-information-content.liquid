@@ -177,6 +177,53 @@
       </ol>
     </nav>
   </div>
+
+  {%- comment -%}
+    BreadcrumbList mirrors the &lt;ol&gt; above item for item -- same root/collection/product
+    sequence, same collection-presence condition (settings.breadcrumb_show_collection and
+    breadcrumb_collection != blank), so the schema can never list a trail the visitor doesn't
+    actually see. position is 1-based in display order; the "all products" root is always
+    position 1, the current product is always last.
+
+    Sitting inside the same {% if show_breadcrumbs %} guard as the visible &lt;ol&gt; (not a
+    separate condition) is deliberate: show_breadcrumbs is a per-section visibility setting, and
+    the schema inheriting it is correct coupling, not a gap -- unlike the collection FAQPage
+    block (sections/main-collection.liquid), which reads a setting from templates/collection.json
+    this file has no access to and needs tests/collection-faqs-section.test.mjs to pin instead.
+    Here the setting and the schema live in the same file, so no separate guard test is needed.
+
+    This snippet is shared by sections/product-information.liquid and
+    sections/featured-product-information.liquid. Checked both live product templates before
+    writing this: templates/product.json and templates/product.merch.json each reference
+    product-information exactly once, and featured-product-information is not referenced by any
+    template at all right now -- so there is no page today where this snippet renders twice and
+    emits two BreadcrumbList nodes. That is a fact about the current templates, not a property of
+    this file, and would need re-checking if a template is added that uses both sections together.
+
+    Escaping matches blocks/product-faqs.liquid and sections/main-collection.liquid: `| json`
+    handles JSON metacharacters but not `<` or `/`, so `| replace: '</', '<\/'` is what stops a
+    product or collection title containing "</script>" from ending the element early.
+  {%- endcomment -%}
+  {%- capture breadcrumb_list_items -%}
+    {%- assign breadcrumb_position = 1 -%}
+    {%- assign root_url = request.origin | append: routes.all_products_collection_url | json | replace: '</', '<\/' -%}
+    {%- assign root_name = settings.breadcrumb_root_label | json | replace: '</', '<\/' -%}
+    {"@type":"ListItem","position":{{ breadcrumb_position }},"name":{{ root_name }},"item":{{ root_url }}}
+    {%- assign breadcrumb_position = breadcrumb_position | plus: 1 -%}
+    {%- if settings.breadcrumb_show_collection and breadcrumb_collection != blank -%}
+      {%- assign collection_url = request.origin | append: breadcrumb_collection.url | json | replace: '</', '<\/' -%}
+      {%- assign collection_name = breadcrumb_collection.title | json | replace: '</', '<\/' -%}
+      ,{"@type":"ListItem","position":{{ breadcrumb_position }},"name":{{ collection_name }},"item":{{ collection_url }}}
+      {%- assign breadcrumb_position = breadcrumb_position | plus: 1 -%}
+    {%- endif -%}
+    {%- assign product_url = request.origin | append: product.url | json | replace: '</', '<\/' -%}
+    {%- assign product_name = product.title | json | replace: '</', '<\/' -%}
+    ,{"@type":"ListItem","position":{{ breadcrumb_position }},"name":{{ product_name }},"item":{{ product_url }}}
+  {%- endcapture -%}
+
+  <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{{ breadcrumb_list_items | strip }}]}
+  </script>
 {% endif %}
 <div
   class="product-information section section--{{ content_width }} spacing-style{% if show_breadcrumbs %} disable-section-top-offset{% endif %}{% if has_resolved_color %} color-custom-{{ section_id }}{% endif %} relative"
