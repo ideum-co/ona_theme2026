@@ -76,7 +76,7 @@
       {%- endif -%}
 
       {%- if section.settings.cta_text != blank and section.settings.cta_url != blank -%}
-        <a href="{{ section.settings.cta_url }}" class="campaign-banner__cta">
+        <a href="{{ section.settings.cta_url }}" class="campaign-banner__cta button">
           {{- section.settings.cta_text -}}
         </a>
       {%- endif -%}
@@ -165,26 +165,10 @@
     opacity: 0.7;
   }
 
-  /*
-   * Legacy sets this in "Palmer Lake Print" at 43px. The theme does not ship
-   * that face, so it falls back to the brand display font -- same substitution
-   * the counter's CTA makes. Formswell's call before go-live.
-   */
+  /* The CTA is the theme's primary button (base.css `.button`, driven by the
+     --color-primary-button-* tokens); this only handles its spacing. */
   .campaign-banner__cta {
-    display: inline-block;
-    font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif);
-    font-size: 43px;
-    line-height: 1;
-    color: #441925;
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-    text-underline-offset: 0.25em;
-    text-decoration-color: transparent;
-    transition: text-decoration-color 0.2s ease;
-  }
-
-  .campaign-banner__cta:hover {
-    text-decoration-color: currentColor;
+    margin-block-start: 8px;
   }
 
   @media screen and (max-width: 989px) {
@@ -212,10 +196,6 @@
     .campaign-banner__title {
       font-size: 27px;
     }
-
-    .campaign-banner__cta {
-      font-size: 34px;
-    }
   }
 
   @media screen and (max-width: 749px) {
@@ -226,16 +206,6 @@
     .campaign-banner__title {
       font-size: 24px;
       max-width: none;
-    }
-
-    .campaign-banner__cta {
-      font-size: 28px;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .campaign-banner__cta {
-      transition: none;
     }
   }
 {% endstylesheet %}
