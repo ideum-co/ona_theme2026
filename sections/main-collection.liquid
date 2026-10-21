@@ -90,10 +90,82 @@
           paginate: paginate,
           enable_infinite_scroll: section.settings.enable_infinite_scroll
         %}
+
+        {%- comment -%}
+          ItemList JSON-LD scoped to the page of products actually rendered above, not the whole
+          collection -- infinite scroll and pagination both mean "the whole collection" is not what
+          a visitor or a crawler sees at this URL. numberOfItems is set from the same count driving
+          itemListElement rather than from collection.products_count, so the two can never disagree;
+          a mismatch between a claimed total and what is actually listed is exactly the kind of
+          structured-data defect that gets a page's schema distrusted or ignored.
+
+          Escaping mirrors blocks/product-faqs.liquid: `| json` handles JSON metacharacters but not
+          `<` or `/`, so `| replace: '</', '<\/'` is what stops a product title containing
+          "</script>" from ending the element early.
+        {%- endcomment -%}
+        {%- capture item_list_entries -%}
+          {%- for product in collection.products -%}
+            {%- if forloop.index > 1 -%},{%- endif -%}
+            {%- assign item_url = request.origin | append: product.url | json | replace: '</', '<\/' -%}
+            {%- assign item_name = product.title | json | replace: '</', '<\/' -%}
+            {
+              "@type": "ListItem",
+              "position": {{ forloop.index }},
+              "url": {{ item_url }},
+              "name": {{ item_name }}
+              {%- if product.featured_image != blank -%}
+                ,"image": {{ product.featured_image | image_url: width: 600 | prepend: "https:" | json }}
+              {%- endif -%}
+            }
+          {%- endfor -%}
+        {%- endcapture -%}
+
+        {%- if item_list_entries != blank -%}
+          <script type="application/ld+json">
+            {
+              "@context": "https://schema.org",
+              "@type": "ItemList",
+              "numberOfItems": {{ collection.products.size }},
+              "itemListElement": [{{ item_list_entries | strip }}]
+            }
+          </script>
+        {%- endif -%}
       {% endpaginate %}
     </div>
   </results-list>
 </collection-component>
+
+{%- comment -%}
+  FAQPage schema for the collection FAQs that templates/collection.json's "faqs" section already
+  renders (a custom-liquid block reading this same metafield -- grep for "faq" with --include=*.liquid
+  will not find it, since it lives as a string inside a JSON template, not a .liquid file. Learned
+  that the hard way: an earlier version of this change assumed that content was unrendered and
+  proposed building it from scratch).
+
+  Deliberately NOT scoped inside the {% paginate %} block above: collection.metafields.custom.faqs
+  is collection-level content, independent of which page of products is showing, so it belongs
+  outside pagination entirely -- unlike the ItemList, which is correctly re-scoped per page.
+
+  faqs.size > 0 is the exact guard templates/collection.json's own custom-liquid block uses, kept
+  identical on purpose: schema presence must never diverge from the visible-content guard it
+  describes, or a crawler gets markup for a FAQ block a visitor cannot see.
+{%- endcomment -%}
+{%- assign collection_faqs = collection.metafields.custom.faqs.value -%}
+{%- if collection_faqs.size > 0 -%}
+  {%- capture collection_faq_questions -%}
+    {%- for faq in collection_faqs -%}
+      {%- if forloop.index > 1 -%},{%- endif -%}
+      {%- capture faq_answer -%}{{ faq.answer | metafield_tag }}{%- endcapture -%}
+      {%- assign question_json = faq.question | json | replace: '</', '<\/' -%}
+      {%- assign answer_json = faq_answer | strip | json | replace: '</', '<\/' -%}
+      {"@type":"Question","name":{{ question_json }},"acceptedAnswer":{"@type":"Answer","text":{{ answer_json }}}}
+    {%- endfor -%}
+  {%- endcapture -%}
+
+  <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{{ collection_faq_questions | strip }}]}
+  </script>
+{%- endif -%}
 
 {% schema %}
 {
