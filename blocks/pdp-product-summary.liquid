@@ -2,17 +2,18 @@
   assign block_settings = block.settings
   assign product_resource = closest.product
 
-  # Badges come from a product metafield (default filters.brew_method, a list of
-  # metaobject references). Every value renders as its own badge, in order, with
-  # no cap; an unset metafield renders no badges and takes no space.
+  # Badges come from the product metafield named by the two settings below. The
+  # schema defaults them to filters.brew_method, so a block added in the editor
+  # keeps the coffee behaviour. Every value renders as its own badge, in order,
+  # with no cap; an unset metafield renders no badges and takes no space.
+  #
+  # A blank namespace or key means "this template shows no badges" and stays
+  # blank -- it is deliberately NOT coalesced back to filters.brew_method.
+  # Coalescing pointed every template that left these unset at the coffee
+  # metafield, so merch would have started printing brew methods on t-shirts
+  # and grinders the moment anyone set filters.brew_method on them.
   assign badge_namespace = block_settings.badge_namespace | strip
-  if badge_namespace == blank
-    assign badge_namespace = 'filters'
-  endif
   assign badge_key = block_settings.badge_key | strip
-  if badge_key == blank
-    assign badge_key = 'brew_method'
-  endif
   assign badge_field = block_settings.badge_field | strip
   assign badges_mf = product_resource.metafields[badge_namespace][badge_key]
 

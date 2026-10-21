@@ -90,6 +90,8 @@
               "type": "pdp-product-summary",
               "settings": {
                 "description": "",
+                "badge_namespace": "",
+                "badge_key": "",
                 "show_rating": true,
                 "rating_value": 5,
                 "rating_count": 0,
