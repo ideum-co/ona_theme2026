@@ -61,7 +61,10 @@
 
     <div class="campaign-banner__content">
       {%- if section.settings.title != blank -%}
-        <h2 class="campaign-banner__title">{{ section.settings.title | escape }}</h2>
+        <h2
+          class="campaign-banner__title {{ section.settings.title_preset | default: 'h2' }}"
+          {%- if section.settings.title_font != blank %} style="font-family: {{ section.settings.title_font }};"{% endif -%}
+        >{{ section.settings.title | escape }}</h2>
       {%- endif -%}
 
       {%- if campaign_end != blank and section.settings.campaign_label != blank -%}
@@ -119,12 +122,10 @@
     width: 42%;
   }
 
+  /* Typography comes from the theme's heading tokens via the preset class (.h1-.h6),
+     so the Title follows the design system and the editor's Title style / Font controls.
+     Only colour, measure and spacing are set here. */
   .campaign-banner__title {
-    font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif);
-    font-size: 31px;
-    font-weight: 700;
-    line-height: calc(39 / 31);
-    letter-spacing: calc(1.65 / 31 * 1em);
     color: #2b2c30;
     max-width: 380px;
     margin: 0 0 22px;
@@ -192,10 +193,6 @@
     .campaign-banner__content {
       width: 100%;
     }
-
-    .campaign-banner__title {
-      font-size: 27px;
-    }
   }
 
   @media screen and (max-width: 749px) {
@@ -204,7 +201,6 @@
     }
 
     .campaign-banner__title {
-      font-size: 24px;
       max-width: none;
     }
   }
@@ -238,6 +234,34 @@
       "id": "title",
       "label": "Title",
       "default": "Coffee That Supports Clean Water"
+    },
+    {
+      "type": "select",
+      "id": "title_preset",
+      "label": "t:settings.preset",
+      "info": "t:info.edit_presets_in_theme_settings",
+      "options": [
+        { "value": "h1", "label": "t:options.h1" },
+        { "value": "h2", "label": "t:options.h2" },
+        { "value": "h3", "label": "t:options.h3" },
+        { "value": "h4", "label": "t:options.h4" },
+        { "value": "h5", "label": "t:options.h5" },
+        { "value": "h6", "label": "t:options.h6" }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "title_font",
+      "label": "t:settings.font",
+      "options": [
+        { "value": "", "label": "t:options.default" },
+        { "value": "var(--font-heading--family)", "label": "t:options.heading" },
+        { "value": "var(--font-subheading--family)", "label": "t:options.subheading" },
+        { "value": "var(--font-body--family)", "label": "t:options.body" },
+        { "value": "var(--font-accent--family)", "label": "t:options.accent" }
+      ],
+      "default": ""
     },
     {
       "type": "header",
