@@ -212,9 +212,11 @@
     property of
     this file, and would need re-checking if a template is added that uses both sections together.
 
-    Escaping matches blocks/product-faqs.liquid and sections/main-collection.liquid: `| json`
-    handles JSON metacharacters but not `<` or `/`, so `| replace: '</', '<\/'` is what stops a
-    product or collection title containing "</script>" from ending the element early.
+    Escaping matches blocks/product-faqs.liquid and sections/main-collection.liquid, including the
+    `| replace: '</', '<\/'` after `| json` -- see product-faqs.liquid's comment for why it's
+    defense-in-depth rather than a required fix on this platform (Shopify's `json` filter already
+    escapes `<` as `<` before replace runs, so no literal `<` ever reaches a product or
+    collection title containing "</script>").
   {%- endcomment -%}
   {%- if emit_breadcrumb_schema -%}
     {%- capture breadcrumb_list_items -%}
