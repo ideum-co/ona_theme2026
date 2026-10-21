@@ -16,6 +16,16 @@
   @param {string} media_gallery - Captured HTML for the product media gallery block
   @param {string} product_details - Captured HTML for the product details block
   @param {string} additional_blocks - Captured HTML for additional section blocks
+  @param {boolean} [emit_breadcrumb_schema] - Explicit opt-in for the BreadcrumbList JSON-LD
+    below. Deliberately NOT inferred from show_breadcrumbs: featured-product-information.liquid's
+    schema defines none of the breadcrumb_* settings this file reads, so on that caller `settings`
+    is the section's own (breadcrumb-less) settings object, and show_breadcrumbs's own nil-coalesce
+    (see below) makes it true anyway -- rendering a visible trail with an empty root label today
+    (pre-existing, not introduced here) and would emit invalid structured data (an empty "name")
+    if this schema inferred its gate the same way. product-information.liquid passes true because
+    its settings genuinely have breadcrumb_root_label etc.; featured-product-information.liquid
+    does not pass this at all, so the schema stays off there even though the visible list still
+    renders with its existing (separately tracked) empty-root-label defect. Codex, PR #272.
 
   @example
   {% capture media_gallery %}
@@ -206,26 +216,28 @@
     handles JSON metacharacters but not `<` or `/`, so `| replace: '</', '<\/'` is what stops a
     product or collection title containing "</script>" from ending the element early.
   {%- endcomment -%}
-  {%- capture breadcrumb_list_items -%}
-    {%- assign breadcrumb_position = 1 -%}
-    {%- assign root_url = request.origin | append: routes.all_products_collection_url | json | replace: '</', '<\/' -%}
-    {%- assign root_name = settings.breadcrumb_root_label | json | replace: '</', '<\/' -%}
-    {"@type":"ListItem","position":{{ breadcrumb_position }},"name":{{ root_name }},"item":{{ root_url }}}
-    {%- assign breadcrumb_position = breadcrumb_position | plus: 1 -%}
-    {%- if settings.breadcrumb_show_collection and breadcrumb_collection != blank -%}
-      {%- assign collection_url = request.origin | append: breadcrumb_collection.url | json | replace: '</', '<\/' -%}
-      {%- assign collection_name = breadcrumb_collection.title | json | replace: '</', '<\/' -%}
-      ,{"@type":"ListItem","position":{{ breadcrumb_position }},"name":{{ collection_name }},"item":{{ collection_url }}}
+  {%- if emit_breadcrumb_schema -%}
+    {%- capture breadcrumb_list_items -%}
+      {%- assign breadcrumb_position = 1 -%}
+      {%- assign root_url = request.origin | append: routes.all_products_collection_url | json | replace: '</', '<\/' -%}
+      {%- assign root_name = settings.breadcrumb_root_label | json | replace: '</', '<\/' -%}
+      {"@type":"ListItem","position":{{ breadcrumb_position }},"name":{{ root_name }},"item":{{ root_url }}}
       {%- assign breadcrumb_position = breadcrumb_position | plus: 1 -%}
-    {%- endif -%}
-    {%- assign product_url = request.origin | append: product.url | json | replace: '</', '<\/' -%}
-    {%- assign product_name = product.title | json | replace: '</', '<\/' -%}
-    ,{"@type":"ListItem","position":{{ breadcrumb_position }},"name":{{ product_name }},"item":{{ product_url }}}
-  {%- endcapture -%}
+      {%- if settings.breadcrumb_show_collection and breadcrumb_collection != blank -%}
+        {%- assign collection_url = request.origin | append: breadcrumb_collection.url | json | replace: '</', '<\/' -%}
+        {%- assign collection_name = breadcrumb_collection.title | json | replace: '</', '<\/' -%}
+        ,{"@type":"ListItem","position":{{ breadcrumb_position }},"name":{{ collection_name }},"item":{{ collection_url }}}
+        {%- assign breadcrumb_position = breadcrumb_position | plus: 1 -%}
+      {%- endif -%}
+      {%- assign product_url = request.origin | append: product.url | json | replace: '</', '<\/' -%}
+      {%- assign product_name = product.title | json | replace: '</', '<\/' -%}
+      ,{"@type":"ListItem","position":{{ breadcrumb_position }},"name":{{ product_name }},"item":{{ product_url }}}
+    {%- endcapture -%}
 
-  <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{{ breadcrumb_list_items | strip }}]}
-  </script>
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{{ breadcrumb_list_items | strip }}]}
+    </script>
+  {%- endif -%}
 {% endif %}
 <div
   class="product-information section section--{{ content_width }} spacing-style{% if show_breadcrumbs %} disable-section-top-offset{% endif %}{% if has_resolved_color %} color-custom-{{ section_id }}{% endif %} relative"

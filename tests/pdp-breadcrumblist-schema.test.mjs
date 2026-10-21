@@ -66,6 +66,33 @@ test('BreadcrumbList sits inside the same show_breadcrumbs guard as the visible 
   assert.doesNotMatch(betweenListAndSchema, /\{%\s*endif\s*%\}/, 'no {% endif %} may appear between the visible breadcrumb and its schema -- both must close on the same show_breadcrumbs guard');
 });
 
+/*
+ * Codex, PR #272: featured-product-information.liquid's schema defines none of the
+ * breadcrumb_* settings this snippet reads, so on that caller `settings` is the section's own
+ * (breadcrumb-less) object -- and show_breadcrumbs's own `if show_breadcrumbs == nil / assign
+ * show_breadcrumbs = true` coalesce makes it true there regardless. Inferring the schema's gate
+ * from show_breadcrumbs would therefore emit a BreadcrumbList with an empty "name" (nil
+ * breadcrumb_root_label) the moment a merchant drops featured-product-information onto a page
+ * from the editor -- latent today only because no template references that section, which the
+ * duplicate-emission test above already covers for a different reason.
+ *
+ * Fix is an explicit opt-in rather than inferring from show_breadcrumbs: the schema is gated on
+ * a separate emit_breadcrumb_schema param that only product-information.liquid passes.
+ */
+test('BreadcrumbList schema requires an explicit emit_breadcrumb_schema opt-in, nested inside show_breadcrumbs', () => {
+  const gateStart = code.indexOf('{%- if emit_breadcrumb_schema -%}', breadcrumbGuardStart);
+  assert.ok(gateStart > -1, 'the schema must be gated on an explicit emit_breadcrumb_schema param');
+  assert.ok(gateStart > breadcrumbGuardStart, 'the emit_breadcrumb_schema gate must sit after the show_breadcrumbs guard opens, not replace it -- both conditions must hold');
+  assert.ok(gateStart < schemaStart, 'the emit_breadcrumb_schema check must wrap the capture, not follow it');
+});
+
+test('only product-information.liquid passes emit_breadcrumb_schema; featured-product-information.liquid does not', () => {
+  const productInfoSection = read('sections/product-information.liquid');
+  const featuredSection = read('sections/featured-product-information.liquid');
+  assert.match(productInfoSection, /emit_breadcrumb_schema:\s*true/, 'sections/product-information.liquid must explicitly opt in');
+  assert.doesNotMatch(featuredSection, /emit_breadcrumb_schema/, 'sections/featured-product-information.liquid must not pass emit_breadcrumb_schema at all -- its settings have no breadcrumb_root_label, so the schema would emit an empty "name" if it ever rendered');
+});
+
 test('the collection crumb is included under the exact same condition in both the visible list and the schema', () => {
   assert.match(visibleBreadcrumb, /\{%\s*if settings\.breadcrumb_show_collection and breadcrumb_collection != blank\s*%\}/, 'the visible <ol> must still gate the collection crumb on breadcrumb_show_collection and breadcrumb_collection != blank');
   assert.match(schemaBlock, /\{%-\s*if settings\.breadcrumb_show_collection and breadcrumb_collection != blank\s*-%\}/, 'the schema must gate the collection ListItem on the identical condition, or the two can disagree about whether a collection crumb exists');
