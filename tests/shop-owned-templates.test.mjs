@@ -128,7 +128,6 @@ test('index.json keeps the editor-made homepage sections', () => {
     'slideshow_nBcaMx',
     'club_benefits_937XiA',
     'section_LpJJ4p',
-    'story_video_LN6zzn',
   ]) {
     assert.ok(sections[id], `editor-made section ${id} is missing`);
     assert.ok(order.includes(id), `editor-made section ${id} is not in order`);
@@ -154,9 +153,19 @@ test('index.json keeps the editor-made homepage sections', () => {
   // this list on 2026-10-14 and have since been switched back on in the editor;
   // product_highlight is now the home of the In Sequence campaign. The list
   // failing on that change is the mechanism working, not a stale test.
+  //
+  // 2026-10-21: club_benefits_QGRDdd and story_video_LN6zzn left this list
+  // because they were DELETED, not re-enabled. Both were disabled duplicates
+  // of a section that is live on the page -- club_benefits_937XiA and
+  // story_video_URBFL6 -- and index.json was sitting at Shopify's hard ceiling
+  // of 25 sections, which refuses the whole file rather than dropping the
+  // extra. Freeing those two slots is what let the Water For Good campaign
+  // banner onto the homepage. Their settings are recoverable from the commit
+  // that removed them. club_invite_QLL4T3 and club_invite_TGPaF8 duplicate
+  // each other rather than anything live, so choosing a survivor is a content
+  // call and both were left alone.
   assert.deepEqual(disabledPaths(sections), [
     'club_benefits',
-    'club_benefits_QGRDdd',
     'club_invite_QLL4T3',
     'club_invite_TGPaF8',
     'collection_carousel_GRkRhJ.collection_f8jkdP',
@@ -168,11 +177,16 @@ test('index.json keeps the editor-made homepage sections', () => {
     'raspberry_candy',
     'slideshow_nBcaMx.slide_8Ar7Nq',
     'special_release',
-    'story_video_LN6zzn',
   ], 'the set of disabled homepage sections and blocks changed');
 
-  // The WFG counter is the one deliberate addition, second on the page.
-  assert.equal(order[1], 'wfg_donation_counter');
+  // The WFG campaign is the deliberate addition: the banner explains the
+  // campaign and links to the article, the counter shows the total and links
+  // to the participating coffees. They render as a pair, banner first, exactly
+  // as they do on the legacy theme. tests/homepage-wfg-campaign.test.mjs holds
+  // the adjacency and the two destinations.
+  assert.equal(order[1], 'wfg_campaign_banner');
+  assert.equal(sections.wfg_campaign_banner.type, 'ona-campaign-banner');
+  assert.equal(order[2], 'wfg_donation_counter');
   assert.equal(sections.wfg_donation_counter.type, 'ona-donation-counter');
 });
 
