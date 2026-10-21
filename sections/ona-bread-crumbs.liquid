@@ -90,9 +90,22 @@
   </script>
 {%- endif -%}
 
+{%- comment -%}
+  Schema's `enabled_on` restricts this section to page templates. Without it (the prior state --
+  no `enabled_on` key at all, Navigation-category preset) this is addable from the theme editor to
+  ANY template, including product/collection/blog ones where `page` is nil. On those, `page.url` is
+  nil so the current-page `item` collapses to a bare origin, and with current_label also blank
+  `page.title` is nil so `"name":null` -- both the visible <li> above and the schema break the same
+  way (Codex, PR #272 round 5). Verified this restriction breaks nothing live: the only template
+  that references this section is templates/page.private-courses-and-experiences.json (plus an
+  identical copy under docs/legacy-page-templates/, which the theme never reads).
+{%- endcomment -%}
 {% schema %}
 {
   "name": "Breadcrumbs",
+  "enabled_on": {
+    "templates": ["page"]
+  },
   "settings": [
     {
       "type": "text",

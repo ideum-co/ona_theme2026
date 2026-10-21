@@ -119,3 +119,19 @@ test('all names and urls are escaped against JSON metacharacters and premature <
   assert.match(afterGate, /current_name = current_crumb_label \| json \| replace: '<\/', '<\\\/'/, 'current_name must be escaped the same way');
   assert.match(afterGate, /current_url = request\.origin \| append: page\.url \| json \| replace: '<\/', '<\\\/'/, 'current_url must be escaped the same way');
 });
+
+test('section is restricted to page templates via enabled_on, so it can\'t land on a product/collection/blog template where page is nil', () => {
+  // Codex, PR #272 round 5: no enabled_on key at all (the prior state) plus a Navigation-category
+  // preset means this section is addable to any template from the theme editor. On a
+  // product/collection/blog template, `page` is nil, so `page.url` is nil (item collapses to a
+  // bare origin) and, with current_label blank, `page.title` is nil too ("name":null) -- the
+  // visible <li> and the schema break the same way. Verified against the live templates before
+  // adding this: the only reference anywhere is templates/page.private-courses-and-experiences.json
+  // (the copy under docs/legacy-page-templates/ is reference material the theme never reads), so
+  // restricting to "page" breaks nothing that exists today.
+  const schemaJsonStart = code.indexOf('{% schema %}');
+  const schemaJsonEnd = code.indexOf('{% endschema %}');
+  assert.ok(schemaJsonStart > -1 && schemaJsonEnd > schemaJsonStart, 'the schema tag must exist');
+  const schemaJson = JSON.parse(code.slice(schemaJsonStart + '{% schema %}'.length, schemaJsonEnd));
+  assert.deepEqual(schemaJson.enabled_on, { templates: ['page'] }, 'enabled_on must restrict this section to page templates');
+});

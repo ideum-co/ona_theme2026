@@ -217,12 +217,25 @@
     defense-in-depth rather than a required fix on this platform (Shopify's `json` filter already
     escapes `<` as the Unicode escape `\u003c` before replace runs, so no literal `<` ever reaches a product or
     collection title containing "</script>").
+
+    root_name defaults to 'Shop all' (matching the setting's own schema default,
+    sections/product-information.liquid's breadcrumb_root_label) rather than passing
+    settings.breadcrumb_root_label straight through. Both templates/product.json and
+    product.merch.json currently store "Shop all", so this is latent today -- but the setting is a
+    plain text field a merchant can clear to "" in the editor, and the root ListItem is position 1,
+    emitted unconditionally, with schema.org requiring `name`. A blank root doesn't degrade the
+    BreadcrumbList, it invalidates it, on every PDP at once (Codex, PR #272 round 5 -- caught by
+    the peer verifying it against the live setting rather than assuming the default always holds).
+    `| default` treats both nil and "" as falsy, so it covers the missing-setting and
+    cleared-to-blank cases the same way. This fixes the SCHEMA only. The visible root link at the
+    top of this file has the identical blank-label exposure and is intentionally left alone here --
+    see ONAIN-56, a deliberate separate scope call, not an oversight.
   {%- endcomment -%}
   {%- if emit_breadcrumb_schema -%}
     {%- capture breadcrumb_list_items -%}
       {%- assign breadcrumb_position = 1 -%}
       {%- assign root_url = request.origin | append: routes.all_products_collection_url | json | replace: '</', '<\/' -%}
-      {%- assign root_name = settings.breadcrumb_root_label | json | replace: '</', '<\/' -%}
+      {%- assign root_name = settings.breadcrumb_root_label | default: 'Shop all' | json | replace: '</', '<\/' -%}
       {"@type":"ListItem","position":{{ breadcrumb_position }},"name":{{ root_name }},"item":{{ root_url }}}
       {%- assign breadcrumb_position = breadcrumb_position | plus: 1 -%}
       {%- if settings.breadcrumb_show_collection and breadcrumb_collection != blank -%}

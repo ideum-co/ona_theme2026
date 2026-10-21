@@ -110,7 +110,11 @@ test('positions are sequential starting at 1, root first and the current product
 test('root, collection and product names/urls are all escaped against JSON metacharacters and premature </script> termination', () => {
   for (const varName of ['root', 'product']) {
     assert.match(schemaBlock, new RegExp(`${varName}_url = request\\.origin \\| append: [\\w.]+ \\| json \\| replace: '</', '<\\\\/'`), `${varName}_url must be escaped the same way as blocks/product-faqs.liquid`);
-    assert.match(schemaBlock, new RegExp(`${varName}_name = [\\w.]+ \\| json \\| replace: '</', '<\\\\/'`), `${varName}_name must be escaped the same way as blocks/product-faqs.liquid`);
+    // root_name carries an extra `| default: 'Shop all'` before `| json` (see the dedicated test
+    // below) -- this pattern allows an optional filter in between so it still proves escaping is
+    // present regardless of that, rather than hard-coding one variable's extra filter into a test
+    // meant to cover both root and product.
+    assert.match(schemaBlock, new RegExp(`${varName}_name = [\\w.]+( \\| default: '[^']*')? \\| json \\| replace: '</', '<\\\\/'`), `${varName}_name must be escaped the same way as blocks/product-faqs.liquid`);
   }
   assert.match(schemaBlock, /collection_url = request\.origin \| append: breadcrumb_collection\.url \| json \| replace: '<\/', '<\\\/'/, 'collection_url must be escaped the same way');
   assert.match(schemaBlock, /collection_name = breadcrumb_collection\.title \| json \| replace: '<\/', '<\\\/'/, 'collection_name must be escaped the same way');
@@ -119,6 +123,17 @@ test('root, collection and product names/urls are all escaped against JSON metac
 test('the root item links to routes.all_products_collection_url, same as the visible breadcrumb', () => {
   assert.match(visibleBreadcrumb, /routes\.all_products_collection_url/, 'the visible root crumb must still link to routes.all_products_collection_url');
   assert.match(schemaBlock, /root_url = request\.origin \| append: routes\.all_products_collection_url/, 'the schema root item must point at the same URL');
+});
+
+test('root_name falls back to "Shop all" rather than serialising a cleared-to-blank setting', () => {
+  // Codex, PR #272 round 5: breadcrumb_root_label is a plain text setting (schema default "Shop
+  // all") that a merchant can clear to "" in the editor. The root ListItem is position 1 and
+  // always emitted -- schema.org requires `name` -- so a blank root doesn't degrade the
+  // BreadcrumbList, it invalidates it, on every PDP at once. Latent today (both live product
+  // templates store "Shop all"), but `| default` costs nothing and closes it outright.
+  // Schema fix only -- the visible root link has the identical exposure and is deliberately left
+  // for ONAIN-56, not folded in here.
+  assert.match(schemaBlock, /root_name = settings\.breadcrumb_root_label \| default: 'Shop all' \| json \| replace: '<\/', '<\\\/'/, 'root_name must default to \'Shop all\' before escaping, matching the setting\'s own schema default');
 });
 
 test('BreadcrumbList is valid JSON for the common case (root + product, no collection)', () => {
