@@ -943,7 +943,14 @@ test('the inline <style> count is what the templates hold', () => {
         continue;
       }
       inline += 1;
-      bodies.set(settings.custom_liquid, (bodies.get(settings.custom_liquid) ?? 0) + 1);
+      /* Keyed on the styled value itself, not on one setting name: keying on `custom_liquid`
+         would collapse every block to a single `undefined` bucket if a style ever moved to a
+         different setting, quietly deflating the distinct-body count. */
+      const body = Object.entries(settings)
+        .filter(([, value]) => typeof value === 'string' && value.includes('<style'))
+        .map(([key, value]) => `${key}=${value}`)
+        .join('\u0000');
+      bodies.set(body, (bodies.get(body) ?? 0) + 1);
     }
   }
 
@@ -1241,10 +1248,15 @@ const between = (from, to) => doc.slice(doc.indexOf(from), doc.indexOf(to));
 
 const gappedSections = () => {
   const gaps = between('## Known gaps', '## Page by page');
+  /* Read every backticked ona-* name out of the row's SUBJECT cell, not just a name the row
+     happens to start with. Rows whose subject is descriptive -- "the Learn tiles
+     (`ona-brewguides-and-training`)", "the four wholesale anchor targets — ...", "the five
+     silent-embed sections — ..." -- were invisible to the old prefix match, so a section gapped
+     only by one of those counted as ungapped and could be claimed as a clean mapping. */
   const named = gaps
     .split('\n')
-    .filter((line) => /^\| `ona-[a-z0-9-]+`/.test(line))
-    .map((line) => line.match(/^\| `(ona-[a-z0-9-]+)`/)[1]);
+    .filter((line) => line.startsWith('|'))
+    .flatMap((line) => [...(line.split('|')[1] ?? '').matchAll(/`(ona-[a-z0-9-]+)`/g)].map((m) => m[1]));
 
   const compositeTable = between(
     '### The dominant shape is a composite',
@@ -1342,6 +1354,7 @@ test('no kit row offers a gapped section as an unqualified replacement', () => {
  */
 const PAGE_ROWS = [
   ['templates/page.wholesale.json', '| `/pages/wholesale` |'],
+  ['templates/page.learn.json', '| `/pages/learn` |'],
   ['templates/page.training.json', '| `/pages/barista-courses` |'],
   ['templates/page.about.json', '| `/pages/about` |'],
   ['templates/page.bookings.json', '| bookings ×3 |'],
@@ -1648,6 +1661,10 @@ test('the Learn tile gap tracks what snippets/group.liquid emits', () => {
   }
 
   assert.ok(gapRow, 'the group link is still unnamed, but the Learn tiles have no gap row');
+  /* Locating the row by its opening words and never reading it let the body be replaced with
+     "nothing blocking, actually." and still pass. */
+  assert.match(gapRow, /group-block__link/, 'the Learn gap row does not cite the markup it rests on');
+  assert.match(gapRow, /accessible name|aria-label|unnamed link/i, 'the Learn gap row no longer says what is lost');
   assert.ok(
     !doc.includes('the live tile exactly'),
     'the Learn row still claims the group reproduces the live tile exactly, while the anchor carries no accessible name'
@@ -1670,34 +1687,50 @@ test('the Learn tile gap tracks what snippets/group.liquid emits', () => {
  * so a third instance cannot be added without a gap row.
  */
 test('every live embed that renders nothing is recorded as a behaviour change', () => {
+  /* Six of the eight live instances are set on BLOCKS, not on the section, so a probe that
+     reads section-level settings finds two and reports the gap as half its real size. That is
+     what the first version did, and its own comment claimed a third instance could not be added
+     without a gap row. */
   const silent = [];
   for (const file of readdirSync(join(root, 'templates')).filter((name) => name.endsWith('.json'))) {
     const data = JSON.parse(stripBanner(readFileSync(join(root, 'templates', file), 'utf8')));
-    for (const section of Object.values(data.sections ?? {})) {
-      const settings = section.settings ?? {};
-      if (settings.media_type !== 'embed') continue;
-      if (String(settings.video_url ?? '').includes('vimeo')) continue;
-      const liquid = readFileSync(join(root, 'sections', `${section.type}.liquid`), 'utf8');
-      if (!/<div id="\{\{ player_id \}\}"[^>]*><\/div>/.test(liquid)) continue;
-      silent.push(section.type);
-    }
+    const walk = (node, owner) => {
+      const settings = node.settings ?? {};
+      const type = owner ?? node.type;
+      if (settings.media_type === 'embed' && !String(settings.video_url ?? '').includes('vimeo')) {
+        const liquid = readFileSync(join(root, 'sections', `${type}.liquid`), 'utf8');
+        if (/<div id="\{\{ player_id \}\}"[^>]*><\/div>/.test(liquid)) silent.push(type);
+      }
+      for (const child of Object.values(node.blocks ?? {})) walk(child, type);
+    };
+    for (const section of Object.values(data.sections ?? {})) walk(section, undefined);
   }
 
   const handled = readdirSync(join(root, 'assets'))
     .filter((name) => name.endsWith('.js'))
-    .some((name) => /play-video|iframe_api|YT\.Player|player_id/.test(readFileSync(join(root, 'assets', name), 'utf8')));
+    /* (?<!auto) so assets/autoplay-video.js, which exists and is unrelated, cannot trip this. */
+    .some((name) => /(?<!auto)play-video|iframe_api|YT\.Player|player_id/.test(readFileSync(join(root, 'assets', name), 'utf8')));
 
   if (handled) {
     assert.fail('a script now drives the legacy embeds; the "nothing plays" gap row no longer holds');
   }
 
-  assert.ok(silent.length >= 2, `only ${silent.length} silent embed instances found; the probe is broken`);
+  assert.ok(silent.length >= 8, `only ${silent.length} silent embed instances found; the probe is broken`);
+
+  /* Matched against the whitespace-normalised document: the first version keyed on the exact
+     line wrap of the deleted claim, so restoring it as one unwrapped line passed. */
   assert.ok(
-    !doc.includes('Same layout, same\nmedia'),
+    !doc.replace(/\s+/g, ' ').includes('Same layout, same media'),
     'the component-1 paragraph still promises the same media for sections whose video does not play'
   );
 
-  const gapRows = doc.split('\n').filter((line) => /^\|/.test(line) && /behaviour change/i.test(line) && /autoplay/.test(line));
+  /* Scoped to the gap table. Read over the whole document, the /pages/wholesale plan row --
+     which lists every section on the page -- was one phrase away from answering for the row
+     that decides. */
+  const gapsOnly = between('## Known gaps', '## Page by page');
+  const gapRows = gapsOnly
+    .split('\n')
+    .filter((line) => /^\|/.test(line) && /behaviour change/i.test(line) && /autoplay/.test(line));
   const unrecorded = [...new Set(silent)].filter(
     (name) => !gapRows.some((row) => row.includes(`\`${name}\``))
   );
@@ -1715,8 +1748,10 @@ test('every live embed that renders nothing is recorded as a behaviour change', 
  */
 test('every in-page anchor owned by a section setting is recorded as a blocker', () => {
   const HEX = /^#[0-9a-f]{3,8}$/i;
-  const owners = new Map();
-  for (const [file, parsed] of eachTemplate()) {
+  /* Pairs, not a map keyed by type: the same section type can own different anchors in two
+     templates, and a map would keep only the last. */
+  const owners = new Set();
+  for (const [, parsed] of eachTemplate()) {
     const sections = Object.values(parsed.sections ?? {});
     const byAnchor = new Map();
     for (const section of sections) {
@@ -1727,7 +1762,7 @@ test('every in-page anchor owned by a section setting is recorded as a blocker',
       for (const value of Object.values(node.settings ?? {})) {
         if (typeof value !== 'string' || !value.startsWith('#') || HEX.test(value)) continue;
         const target = byAnchor.get(value.slice(1));
-        if (target) owners.set(target, value);
+        if (target) owners.add(`${target}\u0000${value.slice(1)}`);
       }
     }
   }
@@ -1740,23 +1775,36 @@ test('every in-page anchor owned by a section setting is recorded as a blocker',
   const anchorSetting = (schema.settings ?? []).find((setting) => /^(id|anchor|section_id)$/.test(setting.id ?? ''));
   assert.equal(anchorSetting, undefined, 'sections/section.liquid now has an anchor setting; the anchor gap row is stale');
 
-  /* Scoped to the gap table, and each section has to appear beside the anchor it actually owns.
-     "Mentioned in some row containing the word anchor" was satisfied by the wholesale plan row,
-     which lists every section on the page -- a row that names everything answers nothing. */
-  const gaps = doc.slice(doc.indexOf('## Known gaps'), doc.indexOf('\n## ', doc.indexOf('## Known gaps') + 1));
+  /* The document has to state the OWNERSHIP, not merely mention both names somewhere in one
+     row. Two earlier versions were satisfied by a row that happened to contain every section
+     and every anchor -- first the wholesale plan row, then the gap row itself -- under which a
+     mis-paired "#supported → ona-exclusive-access" would read as correct and send an
+     implementer to rewrite the wrong link. So the row carries explicit `#anchor` → `section`
+     arrows and this reads them back. */
+  const gaps = between('## Known gaps', '## Page by page');
   const gapRows = gaps.split('\n').filter((line) => /^\|/.test(line));
   assert.ok(gapRows.length > 5, `only ${gapRows.length} gap rows found; the probe is broken`);
-  const unrecorded = [...owners].filter(
-    ([name, anchor]) => !gapRows.some((row) => row.includes(`\`${name}\``) && row.includes(anchor))
+
+  const stated = new Set(
+    [...gaps.matchAll(/`#([\w-]+)`\s*→\s*`(ona-[a-z0-9-]+)`/g)].map((m) => `${m[2]}\u0000${m[1]}`)
+  );
+  assert.ok(stated.size >= 4, `the gap table states ${stated.size} anchor→section pairs; the probe is broken`);
+
+  const show = (pair) => pair.replace('\u0000', ' owns #');
+  assert.deepEqual(
+    [...owners].filter((pair) => !stated.has(pair)).map(show),
+    [],
+    'these live anchor/section pairs are not stated in the gap table'
   );
   assert.deepEqual(
-    unrecorded.map(([name, anchor]) => `${name} ${anchor}`),
+    [...stated].filter((pair) => !owners.has(pair)).map(show),
     [],
-    'these sections own a live in-page anchor that no gap row records beside the anchor itself'
+    'the gap table states anchor/section pairs that are not what the templates actually hold'
   );
 
   /* The section has to actually emit the setting, or the finding rests on nothing. */
-  for (const name of owners.keys()) {
+  for (const pair of owners) {
+    const name = pair.split('\u0000')[0];
     const liquid = readFileSync(join(root, 'sections', `${name}.liquid`), 'utf8');
     assert.match(liquid, /id="\{\{ section\.settings\.id \}\}"/, `${name} no longer emits its id setting; the anchor row is stale`);
   }
@@ -1794,4 +1842,11 @@ test('the ona-training gap row is measured against the target the mapping gives 
   );
   assert.match(row, /`[^`]*accordion[^`]*`/, 'the row does not name the accordion the composition actually offers');
   assert.match(row, /`[^`]*button[^`]*`/, 'the row does not name the button the CTA maps to');
+  /* Naming the blocks is not the same as saying they work: "accordion and button cannot hold
+     this" satisfies the two matches above and means the opposite. */
+  assert.match(
+    row,
+    /component 1 holds both|a build, not a design problem/,
+    'the row names the blocks but no longer says the composition holds the interaction'
+  );
 });
