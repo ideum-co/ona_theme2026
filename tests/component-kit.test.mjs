@@ -1878,10 +1878,17 @@ test('every in-page anchor owned by a section setting is recorded as a blocker',
       : 'the gap row says the anchor is solved but sections/section.liquid has no anchor setting'
   );
   if (anchorSetting) {
+    /* `group` alone is too loose a marker -- the row names group blocks for other reasons, so
+       an alternation on it stayed green when the caveat itself was deleted. Require the claim. */
     assert.match(
       anchorRow,
-      /top-level `section`|`group`/,
-      'the solved row does not say the anchor is per-section, so collapsing the four into group blocks reads as safe'
+      /top-level `section`/,
+      'the solved row no longer says each target must stay its own top-level section'
+    );
+    assert.match(
+      anchorRow,
+      /`group`[^|]*(break|reach only)|(?:break|reach only)[^|]*`group`/,
+      'the solved row no longer says collapsing the four into group blocks breaks the links'
     );
   }
 
