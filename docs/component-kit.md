@@ -69,8 +69,8 @@ why the guard now keys on the full schema and checks membership.
 Beyond the exact matches are families that do one job through near-identical
 settings — `ona-training-image-text`, `-text-two-images`, `-text-image-bg`,
 `ona-wholesale-partnership`, `ona-expericences-content` and `ona-training` are
-all a heading, some copy and a piece of media, four of them with a video variant
-bolted on.
+all a heading, some copy and a piece of media, three of them with a video
+variant bolted on.
 
 **The layout fragments collapse to about eight components**, and Horizon
 already ships seven of the eight. A handful of sections are not layout at all,

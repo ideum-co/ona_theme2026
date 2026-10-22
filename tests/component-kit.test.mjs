@@ -529,6 +529,44 @@ test('the absent-components rationale does not revive the carousel mapping', () 
   );
 });
 
+/*
+ * The near-identical family sentence quotes how many of its six members carry a video variant.
+ * It said four; three do. The media table further down already says which -- it is the same
+ * drift as the media-slot count, a number repeated in prose with nothing reading it off the
+ * sections. Derived here from the schemas, because that is what "has a video variant" means:
+ * a section can expose video settings without the live template using them, so the live media
+ * column is the wrong source for this particular claim even though it agrees today.
+ */
+test('the video-variant count is derived from the family schemas', () => {
+  const sentence = between('Beyond the exact matches are families', '**The layout fragments collapse');
+  const tokens = [...sentence.matchAll(/`(-?[a-z0-9-]+)`/g)].map((match) => match[1]);
+  assert.equal(tokens.length, 6, `the family sentence names ${tokens.length} sections, not six`);
+
+  const files = readdirSync(join(root, 'sections')).filter((file) => file.endsWith('.liquid'));
+  const resolved = tokens.map((token) => {
+    if (!token.startsWith('-')) return token;
+    /* Abbreviated members like `-text-two-images` are written against the family stem. Resolve
+       them against the filesystem rather than assuming the stem, so a rename fails loudly. */
+    const matches = files.filter((file) => file.endsWith(`${token}.liquid`)).map((f) => f.slice(0, -'.liquid'.length));
+    assert.equal(matches.length, 1, `"${token}" resolves to ${matches.length} sections: ${matches.join(', ')}`);
+    return matches[0];
+  });
+
+  const withVideo = resolved.filter((name) => {
+    const source = readFileSync(join(root, 'sections', `${name}.liquid`), 'utf8');
+    const schema = source.match(/\{%-?\s*schema\s*-?%\}([\s\S]*?)\{%-?\s*endschema/);
+    const settings = schema ? JSON.parse(schema[1]) : {};
+    const ids = [...(settings.settings ?? []), ...(settings.blocks ?? []).flatMap((b) => b.settings ?? [])];
+    return ids.some((setting) => /video|embed|iframe|youtube/i.test(`${setting.id ?? ''} ${setting.type ?? ''}`));
+  });
+
+  assert.ok(withVideo.length > 0, 'no video-capable section found in the family; the probe is broken');
+  assert.ok(
+    new RegExp(`${NUMBER_WORDS[withVideo.length]} of them with a video\\s+variant`).test(sentence),
+    `the family sentence should say ${NUMBER_WORDS[withVideo.length]} carry a video variant, for ${withVideo.join(', ')}`
+  );
+});
+
 test('the duplication table still matches the schemas', () => {
   const groups = new Map();
 
