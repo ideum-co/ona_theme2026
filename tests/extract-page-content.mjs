@@ -139,30 +139,125 @@ export const CONTENT_KEYS = new Set([...LEGACY_CONTENT_KEYS, ...SCHEMA_CONTENT_K
 const CLAUSE =
   /^(?:block|section)\.settings\.([\w-]+)\s*(?:(==|!=)\s*(?:'([^']*)'|"([^"]*)"|(blank|true|false|empty)))?$/;
 
-const visibleIfFalse = (expression, settings, defaults) => {
-  const body = expression.replace(/^\s*\{\{\s*/, '').replace(/\s*\}\}\s*$/, '').trim();
-  if (body === 'false') return true;
-  /* `or` would need both sides false to hide; keeping to `and` means an unparsed `or` falls
-     through to "visible", which is the safe direction. */
-  if (/\bor\b/.test(body)) return false;
-
-  for (const part of body.split(/\s+and\s+/)) {
-    const match = CLAUSE.exec(part.trim());
-    if (!match) continue;
-    const [, key, operator, single, double, literal] = match;
-    const actual = Object.hasOwn(settings, key) ? settings[key] : defaults.get(key);
-    if (!operator) {
-      if (actual === false || actual === '' || actual == null) return true;
-      continue;
-    }
-    const expected = literal === 'blank' || literal === 'empty'
+/*
+ * Three-valued, because the point is to be sure. A clause this grammar does not cover
+ * evaluates to `null` (unknown), `and` and `or` propagate that, and only a definite `false`
+ * hides anything. Over-freezing costs a false alarm; under-freezing costs the content.
+ */
+const clauseValue = (part, settings, defaults) => {
+  const text = part.trim();
+  if (text === 'false') return false;
+  if (text === 'true') return true;
+  const match = CLAUSE.exec(text);
+  if (!match) return null;
+  const [, key, operator, single, double, literal] = match;
+  const actual = Object.hasOwn(settings, key) ? settings[key] : defaults.get(key);
+  const blankish = (value) => value === '' || value == null || value === false;
+  if (!operator) return !blankish(actual);
+  const expected =
+    literal === 'blank' || literal === 'empty'
       ? ''
       : literal === 'true' ? true : literal === 'false' ? false : (single ?? double);
-    const blankish = (value) => value === '' || value == null || value === false;
-    const equal = expected === '' ? blankish(actual) : actual === expected;
-    if (operator === '==' ? !equal : equal) return true;
+  const equal = expected === '' ? blankish(actual) : actual === expected;
+  return operator === '==' ? equal : !equal;
+};
+
+/* Liquid has no precedence: it folds right to left, so `a and b or c` is `a and (b or c)`.
+   Splitting on `or` first and `and` within reproduces that for the shapes here. */
+const evaluate = (body, settings, defaults) => {
+  const parts = body.split(/\s+or\s+/);
+  if (parts.length > 1) {
+    let result = false;
+    for (const part of parts) {
+      const value = evaluate(part, settings, defaults);
+      if (value === true) return true;
+      if (value === null) result = null;
+    }
+    return result;
   }
-  return false;
+  const conjuncts = body.split(/\s+and\s+/);
+  if (conjuncts.length > 1) {
+    let result = true;
+    for (const conjunct of conjuncts) {
+      const value = evaluate(conjunct, settings, defaults);
+      if (value === false) return false;
+      if (value === null) result = null;
+    }
+    return result;
+  }
+  return clauseValue(body, settings, defaults);
+};
+
+const conditionFalse = (expression, settings, defaults) =>
+  evaluate(expression.replace(/^\s*\{\{\s*/, '').replace(/\s*\}\}\s*$/, '').trim(), settings, defaults) === false;
+
+const visibleIfFalse = conditionFalse;
+
+/*
+ * The legacy sections do not declare `visible_if`; they branch in Liquid. `ona-supported`
+ * renders `block.settings.video_url` only inside
+ * `{% if block.settings.media_type == 'embed' or block.settings.media_type == 'upload' %}`,
+ * and wholesale has a block on `media_type: "image"` still carrying a YouTube URL from an
+ * earlier edit. Frozen as required, that phantom would fail a rebuild that faithfully carries
+ * the image and drops the dead link.
+ *
+ * So: for each setting a section's markup mentions, collect the `{% if %}` conditions enclosing
+ * every mention. The setting is hidden only when every single mention sits under a condition
+ * that is definitely false. A mention anywhere unguarded, or under something unparsed, keeps it
+ * required -- and a setting the markup never mentions is never hidden on this evidence.
+ *
+ * `{% else %}` drops the branch condition rather than negating it: an else-branch mention is
+ * not governed by the if, and guessing the negation could hide something real. `{% else if %}`
+ * is deliberately treated as `{% else %}`, which is what Liquid itself does with it -- the
+ * theme has two of those typos and this must read the page the parser builds.
+ */
+const guardCache = new Map();
+
+const guardsFor = (type, kind) => {
+  const cacheKey = `${kind}:${type}`;
+  if (guardCache.has(cacheKey)) return guardCache.get(cacheKey);
+
+  const source = sourceOf(type, kind);
+  const guards = new Map();
+  if (!source) {
+    guardCache.set(cacheKey, guards);
+    return guards;
+  }
+  const body = source.replace(/\{%\s*schema\s*%\}[\s\S]*?\{%\s*endschema\s*%\}/g, '');
+
+  const stack = [];
+  const TAG = /\{%-?\s*(if|unless|elsif|else\s+if|else|endif|endunless)\b([^%]*?)-?%\}|(?:block|section)\.settings\.([\w-]+)/g;
+  for (const match of body.matchAll(TAG)) {
+    const [, tag, argument, key] = match;
+    if (key !== undefined) {
+      if (!guards.has(key)) guards.set(key, []);
+      guards.get(key).push([...stack]);
+      continue;
+    }
+    if (tag === 'if') stack.push(argument.trim());
+    else if (tag === 'unless') stack.push(null);
+    else if (tag === 'endif' || tag === 'endunless') stack.pop();
+    else stack[stack.length - 1] = null; /* elsif, else, and Liquid's reading of `else if` */
+  }
+
+  guardCache.set(cacheKey, guards);
+  return guards;
+};
+
+/*
+ * A legacy section's blocks are declared in its own schema and rendered in its own Liquid --
+ * `ona-supported`'s items have no `blocks/*.liquid` of their own. So the markup that decides
+ * whether one of their settings renders is the *section's*, and a block with no file falls back
+ * to the nearest ancestor that has one.
+ */
+const hiddenByMarkup = (type, kind, key, settings, defaults, owner) => {
+  const source = sourceOf(type, kind) ? { type, kind } : owner;
+  if (!source) return false;
+  const occurrences = guardsFor(source.type, source.kind).get(key);
+  if (!occurrences || occurrences.length === 0) return false;
+  return occurrences.every((conditions) =>
+    conditions.some((condition) => condition !== null && conditionFalse(condition, settings, defaults))
+  );
 };
 
 /* The ids a component renders itself, via `content_for 'block', ... id: '<id>'`. These children
@@ -218,7 +313,7 @@ export function extract(templatePath) {
   const chrome = [];
   const disabled = [];
 
-  const visit = (node, path, live, kind) => {
+  const visit = (node, path, live, kind, owner) => {
     const settings = node.settings ?? {};
     const schema = node.type ? schemaOf(node.type, kind) : null;
     const defaults = new Map((schema?.settings ?? []).filter((e) => e?.id).map((e) => [e.id, e.default]));
@@ -234,7 +329,9 @@ export function extract(templatePath) {
       /* Chrome first: deriving content keys from schemas would otherwise claim `overlay` and
          `play_icon` on type alone. */
       const shown =
-        live && !(conditions.has(key) && visibleIfFalse(conditions.get(key), settings, defaults));
+        live &&
+        !(conditions.has(key) && visibleIfFalse(conditions.get(key), settings, defaults)) &&
+        !(node.type && hiddenByMarkup(node.type, kind, key, settings, defaults, owner));
       const bucket = CHROME_KEYS.has(key) ? chrome : CONTENT_KEYS.has(key) ? (shown ? required : disabled) : null;
       if (!bucket) continue;
 
@@ -257,13 +354,13 @@ export function extract(templatePath) {
     for (const [childKey, child] of Object.entries(node.blocks ?? {})) {
       const rendered =
         !child.disabled && (ordered === null || ordered.has(childKey) || placed.has(childKey));
-      visit(child, `${path}/${childKey}`, live && rendered, 'block');
+      visit(child, `${path}/${childKey}`, live && rendered, 'block', sourceOf(node.type, kind) ? { type: node.type, kind } : owner);
     }
   };
 
   for (const [key, section] of Object.entries(parsed.sections ?? {})) {
     const live = !section.disabled;
-    visit(section, `${key}(${section.type})`, live, 'section');
+    visit(section, `${key}(${section.type})`, live, 'section', null);
     /* Settings are not the only place this page keeps content. `ona-gust-r` has an empty
        settings object and renders the entire wholesale enquiry form -- heading, field labels,
        submit button -- as literals in its Liquid, and the Monday-form CTAs in the partnership,

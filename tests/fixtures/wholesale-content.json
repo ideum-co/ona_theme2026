@@ -1,6 +1,6 @@
 {
   "source": "templates/page.wholesale.json",
-  "generated_from": "5b413822475f8c9d3128202fb41050cd7538cb13",
+  "generated_from": "f80865e12ca17401d2f83bc252ad3cab539bca49",
   "required": [
     {
       "where": "wholesale_partnership(ona-wholesale-partnership)",
@@ -26,11 +26,6 @@
       "where": "wholesale_partnership(ona-wholesale-partnership)",
       "key": "image",
       "value": "shopify://shop_images/rostery-desktop.webp"
-    },
-    {
-      "where": "wholesale_partnership(ona-wholesale-partnership)",
-      "key": "video",
-      "value": "shopify://files/videos/Become a wholesale partner video.mov"
     },
     {
       "where": "wholesale_partnership(ona-wholesale-partnership)",
@@ -461,11 +456,6 @@
       "where": "supported(ona-supported)/5d892d58-745a-4dfd-93e9-15ca94869c88",
       "key": "image",
       "value": "shopify://shop_images/hugh-k-2.png"
-    },
-    {
-      "where": "supported(ona-supported)/5d892d58-745a-4dfd-93e9-15ca94869c88",
-      "key": "video_url",
-      "value": "https://youtu.be/WCNi3BFGLX0?si=M1FhiXlpLbjxgP-f"
     },
     {
       "where": "supported(ona-supported)/slider_YKhwYT",
@@ -927,6 +917,11 @@
   ],
   "disabled": [
     {
+      "where": "wholesale_partnership(ona-wholesale-partnership)",
+      "key": "video",
+      "value": "shopify://files/videos/Become a wholesale partner video.mov"
+    },
+    {
       "where": "sourcing(ona-sourcing)/88a78ac7-62e1-4735-81c5-ca1868a196fb",
       "key": "image",
       "value": "shopify://shop_images/wholesale-11-2_a80c3ce2-3add-43fe-85d0-4b974d4187c0.png"
@@ -1005,6 +1000,11 @@
       "where": "sourcing(ona-sourcing)/a86ac57b-2d07-4709-ad5e-01198b53077b",
       "key": "subtitle",
       "value": "TWMBA(RWANDA)"
+    },
+    {
+      "where": "supported(ona-supported)/5d892d58-745a-4dfd-93e9-15ca94869c88",
+      "key": "video_url",
+      "value": "https://youtu.be/WCNi3BFGLX0?si=M1FhiXlpLbjxgP-f"
     },
     {
       "where": "exclusive_access(ona-exclusive-access)/b64d1d98-84d3-4265-a7c0-01386acae25a",
