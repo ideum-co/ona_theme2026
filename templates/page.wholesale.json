@@ -3,6 +3,7 @@
     "wholesale_partnership": {
       "type": "ona-wholesale-partnership",
       "settings": {
+        "flip_columns": true,
         "main_title": "Become a wholesale partner",
         "title": "JOIN OUR COMMUNITY",
         "subtitle2": "A wholesale partnership with us means elevating your café's specialty coffee experience.",
@@ -241,6 +242,7 @@
     "wholesale_sourcing_v4": {
       "type": "ona-wholesale-sourcing-v4",
       "settings": {
+        "flip_columns": true,
         "id": "",
         "image": "shopify://shop_images/00205708-low.jpg",
         "title": "",
@@ -402,6 +404,7 @@
     "wholesale_testimonial": {
       "type": "ona-wholesale-testimonial",
       "settings": {
+        "flip_columns": true,
         "id": "testimomnial-block",
         "title": "Café Partners Testimonials",
         "subtitle": "",
@@ -571,6 +574,7 @@
     "wholesale_brands": {
       "type": "ona-wholesale-brands",
       "settings": {
+        "flip_columns": true,
         "band_background": "#ebe4d4",
         "id": "",
         "title": "Brands we work with",

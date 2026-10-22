@@ -1,6 +1,6 @@
 {% render 'ona-band', section: section %}
 <script src="{{ 'ona-slider.js' | asset_url }}" type="module"></script>
-<section class="add-image-and-text unique-testimonial-block testimonial_video_section section-full-large bg-red wowo no-padding show-image-slider fadeIn section-relative-image" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
+<section class="add-image-and-text unique-testimonial-block testimonial_video_section section-full-large bg-red wowo no-padding show-image-slider fadeIn section-relative-image{% if section.settings.flip_columns %} invert-columns{% endif %}" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
     <div class="container">
         <div class="content">
             <ona-slider class="ona-slider">
@@ -161,6 +161,13 @@
     "en": "Testimonials"
   },
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "flip_columns",
+      "label": "Image on the right",
+      "info": "Swaps the two columns above the mobile breakpoint, so a run of sections can alternate instead of stacking every image on the same side.",
+      "default": false
+    },
     {
       "type": "header",
       "content": "Band"

@@ -1,5 +1,5 @@
 {% render 'ona-band', section: section %}
-<section class="add-image-and-text  wholesale-brands wowo fadeInUp" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
+<section class="add-image-and-text  wholesale-brands wowo fadeInUp{% if section.settings.flip_columns %} invert-columns{% endif %}" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
     <div class="container">
         <div class="content">            
             <div class="text wowo fadeInUp">
@@ -101,6 +101,13 @@
     "en": "Brands"
   },
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "flip_columns",
+      "label": "Image on the right",
+      "info": "Swaps the two columns above the mobile breakpoint, so a run of sections can alternate instead of stacking every image on the same side.",
+      "default": false
+    },
     {
       "type": "header",
       "content": "Band"

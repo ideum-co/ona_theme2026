@@ -1,5 +1,5 @@
 {% render 'ona-band', section: section %}
-<section class="add-image-and-text-slider section-full-large" id="{{ section.settings.id }}">
+<section class="add-image-and-text-slider section-full-large{% if section.settings.flip_columns %} invert-columns{% endif %}" id="{{ section.settings.id }}">
 
     <div class="content container">
         <div class="img show-icon wowo fadeIn">
@@ -51,6 +51,13 @@
     "en": "Sourcing"
   },
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "flip_columns",
+      "label": "Image on the right",
+      "info": "Swaps the two columns above the mobile breakpoint, so a run of sections can alternate instead of stacking every image on the same side.",
+      "default": false
+    },
     {
       "type": "header",
       "content": "Band"
