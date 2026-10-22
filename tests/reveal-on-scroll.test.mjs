@@ -63,3 +63,33 @@ test('no [data-reveal] content is ever hidden without JS or under reduced motion
     assert.match(m[1], /reveal-ready/, `a [data-reveal] hidden rule is not gated on .reveal-ready: "${m[1]}"`);
   }
 });
+
+test('the editorial variant staggers its children and never hides its own wrapper', () => {
+  // The editorial wrapper carries [data-reveal] only so the engine observes it; it
+  // must be reset to visible, or the plain rule above would fade the whole section
+  // instead of staggering the media and content inside it.
+  const resetRule = baseCss.match(
+    /\.reveal-ready \[data-reveal\]\.reveal--editorial \{[^}]*\}/,
+  );
+  assert.ok(resetRule, 'the editorial wrapper is reset');
+  assert.match(resetRule[0], /opacity:\s*1/, 'the editorial wrapper itself stays visible');
+
+  // Its children (media frame + content) are what animate, and both are gated on
+  // .reveal-ready + prefers-reduced-motion like everything else.
+  assert.match(
+    baseCss,
+    /\.reveal-ready \[data-reveal\]\.reveal--editorial \.media-block[\s\S]*?opacity:\s*0/,
+    'the media frame has a hidden start state',
+  );
+  assert.match(
+    baseCss,
+    /\.reveal-ready \[data-reveal\]\.reveal--editorial \.media-with-content__content[\s\S]*?transition-delay/,
+    'the content follows the media on a delay (stagger)',
+  );
+
+  // The media opt-in is per section (default off) and wires the class + attribute.
+  const section = read('sections/media-with-content.liquid');
+  assert.match(section, /"id":\s*"motion_reveal"[\s\S]*?"default":\s*false/, 'the reveal is opt-in, off by default');
+  assert.match(section, /section\.settings\.motion_reveal[\s\S]*?reveal--editorial/, 'the opt-in adds the editorial class');
+  assert.match(section, /section\.settings\.motion_reveal\s*%\}data-reveal/, 'the opt-in adds the data-reveal hook');
+});
