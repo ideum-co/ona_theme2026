@@ -1,6 +1,6 @@
 {
   "source": "templates/page.wholesale.json",
-  "generated_from": "d7bb946ed565dda1ffc62bc06759f197a3759679",
+  "generated_from": "7dc5326d33592d53d212d63123edaf5144307f3d",
   "required": [
     {
       "where": "wholesale_partnership(ona-wholesale-partnership)",
@@ -20,7 +20,7 @@
     {
       "where": "wholesale_partnership(ona-wholesale-partnership)",
       "key": "content",
-      "value": "Join us for a purposeful and meaningful coffee partnership fuelled by connection and constant evolution through world-class coffee training and support. As a café partner, you'll have exclusive access to an exceptional range of quality coffee selections—one of the widest in the specialty market."
+      "value": "Join us for a purposeful and meaningful coffee partnership fuelled by connection and constant evolution through world-class coffee training and support.\nAs a café partner, you'll have exclusive access to an exceptional range of quality coffee selections—one of the widest in the specialty market."
     },
     {
       "where": "wholesale_partnership(ona-wholesale-partnership)",
@@ -38,6 +38,16 @@
       "value": "https://www.youtube.com/watch?v=42flR1Iwun4"
     },
     {
+      "where": "wholesale_partnership(ona-wholesale-partnership)",
+      "key": "liquid",
+      "value": "Get In Touch"
+    },
+    {
+      "where": "wholesale_partnership(ona-wholesale-partnership)",
+      "key": "liquid@href",
+      "value": "https://forms.monday.com/forms/6b1a3a5478c16210a1dae4ae5b3f86dc?r=use1"
+    },
+    {
       "where": "wholesale_sourcing_v2(ona-wholesale-sourcing-v2)",
       "key": "image",
       "value": "shopify://shop_images/ONA_pewpewstudio_240625__245_LR.jpg"
@@ -50,7 +60,7 @@
     {
       "where": "wholesale_sourcing_v2(ona-wholesale-sourcing-v2)",
       "key": "content",
-      "value": "With over 150 retailers and cafés across Australia, ONA Coffee is ready to help you serve something remarkable. As one of Australia's leading wholesale coffee distributors, ONA Coffee proudly offers a diverse and dynamic range of wholesale coffee beans to suit every café style, customer base and brewing method. Whether you're after bold espresso blends, vibrant single origins or filter-roasted standouts, our curated selection ensures you’ll always have access to fresh, flavour-driven coffee. From sourcing to roasting and delivery, our approach is built on quality, consistency and traceability, making us the trusted coffee wholesale dealers for hundreds of cafés nationwide. You can count on us to supply excellent coffee with the flexibility, support and knowledge that sets your venue apart. The best way to experience our coffee is to taste it for yourself — see how it fits your menu and meets your standards. Find a location or flagship store near you today."
+      "value": "With over 150 retailers and cafés across Australia, ONA Coffee is ready to help you serve something remarkable.\nAs one of Australia's leading wholesale coffee distributors, ONA Coffee proudly offers a diverse and dynamic range of wholesale coffee beans to suit every café style, customer base and brewing method. Whether you're after bold espresso blends, vibrant single origins or filter-roasted standouts, our curated selection ensures you’ll always have access to fresh, flavour-driven coffee.\nFrom sourcing to roasting and delivery, our approach is built on quality, consistency and traceability, making us the trusted coffee wholesale dealers for hundreds of cafés nationwide. You can count on us to supply excellent coffee with the flexibility, support and knowledge that sets your venue apart.\nThe best way to experience our coffee is to taste it for yourself — see how it fits your menu and meets your standards. Find a location or flagship store near you today."
     },
     {
       "where": "wholesale_sourcing_v2(ona-wholesale-sourcing-v2)",
@@ -190,7 +200,7 @@
     {
       "where": "training(ona-training)/0aa8bb1c-edcf-4f19-a895-faf0284848c2",
       "key": "content",
-      "value": "Our one-of-a-kind 'Excellence Program' covers best-practice foundational principles, all the way to competition-level, boundary-pushing innovations to elevate your knowledge and distinguish you as a leader in the coffee industry. This three-stage coffee training system meets your team exactly where they are and takes them further. Here's how our step-by-step training system gives café teams a clear path forward and ensures your coffee service grows stronger at every level: Stage 1: Foundation covers essential skills for baristas just starting out. Stage 2: Progressive dives deeper into specialty techniques like frozen coffee, filter brewing and advanced workflow. Stage 3: Professional unlocks boundary-pushing, competition-level methods that raise your café’s profile and elevate what’s possible behind the bar."
+      "value": "Our one-of-a-kind 'Excellence Program' covers best-practice foundational principles, all the way to competition-level, boundary-pushing innovations to elevate your knowledge and distinguish you as a leader in the coffee industry.\nThis three-stage coffee training system meets your team exactly where they are and takes them further. Here's how our step-by-step training system gives café teams a clear path forward and ensures your coffee service grows stronger at every level:\nStage 1: Foundation covers essential skills for baristas just starting out.\nStage 2: Progressive dives deeper into specialty techniques like frozen coffee, filter brewing and advanced workflow.\nStage 3: Professional unlocks boundary-pushing, competition-level methods that raise your café’s profile and elevate what’s possible behind the bar."
     },
     {
       "where": "training(ona-training)/2e827d35-3bcf-4dc8-8599-9f29284efa1d",
@@ -200,7 +210,17 @@
     {
       "where": "training(ona-training)/2e827d35-3bcf-4dc8-8599-9f29284efa1d",
       "key": "content",
-      "value": "Explore innovation with ONA Coffee's Research and Development Program. Led by our expert sales team, we examine new and established coffee topics. We rigorously test current practices, explore new areas and share valuable insights. Here's how we turn research into real-world impact: Innovation that fuels growth — Our R&D Program drives innovation across everything we teach and do. Each month, we rigorously test current best practices, explore emerging ideas and feed those findings directly into our training and Masterclasses. This ensures every wholesale coffee partner has access to industry-leading support and the most up-to-date thinking in coffee today. Masterclasses — In 2024, we relaunched our Masterclasses, which are in-person events planned exclusively for our café partners. These immersive sessions go beyond the everyday to explore advanced techniques, flavour development and the broader culture of specialty coffee. It’s also a chance to connect, cup and learn together with others in the ONA community at our flagship venues."
+      "value": "Explore innovation with ONA Coffee's Research and Development Program. Led by our expert sales team, we examine new and established coffee topics. We rigorously test current practices, explore new areas and share valuable insights. Here's how we turn research into real-world impact:\nInnovation that fuels growth — Our R&D Program drives innovation across everything we teach and do. Each month, we rigorously test current best practices, explore emerging ideas and feed those findings directly into our training and Masterclasses. This ensures every wholesale coffee partner has access to industry-leading support and the most up-to-date thinking in coffee today.\nMasterclasses — In 2024, we relaunched our Masterclasses, which are in-person events planned exclusively for our café partners. These immersive sessions go beyond the everyday to explore advanced techniques, flavour development and the broader culture of specialty coffee. It’s also a chance to connect, cup and learn together with others in the ONA community at our flagship venues."
+    },
+    {
+      "where": "training(ona-training)",
+      "key": "liquid",
+      "value": "Get In Touch"
+    },
+    {
+      "where": "training(ona-training)",
+      "key": "liquid@href",
+      "value": "https://forms.monday.com/forms/6b1a3a5478c16210a1dae4ae5b3f86dc?r=use1"
     },
     {
       "where": "wholesale_sourcing_v3(ona-wholesale-sourcing-v3)",
@@ -215,7 +235,7 @@
     {
       "where": "wholesale_sourcing_v3(ona-wholesale-sourcing-v3)",
       "key": "content",
-      "value": "Access to the Excellence Program, Masterclasses and R&D insights is available only to our wholesale partners, making our offering one of the most comprehensive and future-forward in the specialty coffee industry. If you're a café owner, barista or someone who simply lives and breathes coffee, you’ll find purpose, progression and community in a partnership with ONA."
+      "value": "Access to the Excellence Program, Masterclasses and R&D insights is available only to our wholesale partners, making our offering one of the most comprehensive and future-forward in the specialty coffee industry.\nIf you're a café owner, barista or someone who simply lives and breathes coffee, you’ll find purpose, progression and community in a partnership with ONA."
     },
     {
       "where": "unique_coffees(ona-unique-coffees)",
@@ -415,7 +435,7 @@
     {
       "where": "sourcing(ona-sourcing)",
       "key": "content",
-      "value": "Sasa Sestic's well-known work at the farm level, amplified globally, has set deep roots at its origin, fostering connections that have given rise to some of the most innovative coffees in the world. With the visionary leadership and expertise of Sasa Sestic and Sam Corra, we're committed to cultivating the highest quality coffees and partnerships. As leading wholesale coffee dealers, we seek out coffee producers who share a collective vision for shaping the future of specialty coffee."
+      "value": "Sasa Sestic's well-known work at the farm level, amplified globally, has set deep roots at its origin, fostering connections that have given rise to some of the most innovative coffees in the world.\nWith the visionary leadership and expertise of Sasa Sestic and Sam Corra, we're committed to cultivating the highest quality coffees and partnerships. As leading wholesale coffee dealers, we seek out coffee producers who share a collective vision for shaping the future of specialty coffee."
     },
     {
       "where": "supported(ona-supported)",
@@ -505,7 +525,7 @@
     {
       "where": "wholesale_sourcing_v5(ona-wholesale-sourcing-v5)",
       "key": "content",
-      "value": "At ONA Coffee, we believe being great coffee wholesalers means offering more than just exceptional beans — it’s about empowering every café we work with to grow, innovate and lead. That’s why we’ve developed one of the most comprehensive coffee education ecosystems in Australia, available only to our wholesale coffee partners. Here’s why our wholesale clients keep choosing us as their coffee supplier of choice: We give back to the coffee community through ongoing education, events and long-term partnerships. We push the boundaries with advanced training and forward-thinking techniques that elevate every aspect of your coffee program. We innovate with purpose, pioneering methods like frozen specialty coffee and driving change through our R&D program. We stay current and challenge norms, rigorously testing new ideas while ensuring best practices are always upheld. We offer one of the most curated coffee selections in the industry, including rare single origins, seasonal rotations and reserve lots. We grow café teams systematically with our step-by-step Excellence Program tailored to every experience level. We support your business holistically, from barista development and equipment advice to marketing and technical support. We create meaningful connections through Masterclasses, flagship café events and personal account management."
+      "value": "At ONA Coffee, we believe being great coffee wholesalers means offering more than just exceptional beans — it’s about empowering every café we work with to grow, innovate and lead. That’s why we’ve developed one of the most comprehensive coffee education ecosystems in Australia, available only to our wholesale coffee partners.\nHere’s why our wholesale clients keep choosing us as their coffee supplier of choice:\nWe give back to the coffee community through ongoing education, events and long-term partnerships.\nWe push the boundaries with advanced training and forward-thinking techniques that elevate every aspect of your coffee program.\nWe innovate with purpose, pioneering methods like frozen specialty coffee and driving change through our R&D program.\nWe stay current and challenge norms, rigorously testing new ideas while ensuring best practices are always upheld.\nWe offer one of the most curated coffee selections in the industry, including rare single origins, seasonal rotations and reserve lots.\nWe grow café teams systematically with our step-by-step Excellence Program tailored to every experience level.\nWe support your business holistically, from barista development and equipment advice to marketing and technical support.\nWe create meaningful connections through Masterclasses, flagship café events and personal account management."
     },
     {
       "where": "wholesale_testimonial(ona-wholesale-testimonial)",
@@ -583,6 +603,31 @@
       "value": "The value of offering a wide range of coffee"
     },
     {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)",
+      "key": "liquid",
+      "value": "Episode"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)",
+      "key": "liquid",
+      "value": "Get In Touch"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)",
+      "key": "liquid",
+      "value": "Episode Select"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)",
+      "key": "liquid",
+      "value": "Ep ."
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)",
+      "key": "liquid@href",
+      "value": "https://forms.monday.com/forms/6b1a3a5478c16210a1dae4ae5b3f86dc?r=use1"
+    },
+    {
       "where": "cafe_testimonial(ona-cafe-testimonial)",
       "key": "id",
       "value": "cafe-testimonials"
@@ -600,7 +645,7 @@
     {
       "where": "cafe_testimonial(ona-cafe-testimonial)/block_DQmeeF",
       "key": "content",
-      "value": "We are delighted to have partner with Ona Coffee. a brand that not only enhances our coffee offerings but also symbolises a commitment to excellence in the art of brewing. The support we received from Ona is invaluable, elevating our focus on delivering exceptional coffee experiences in this area of Canberra."
+      "value": "We are delighted to have partner with Ona Coffee. a brand that not only enhances our coffee offerings but also symbolises a commitment to excellence in the art of brewing.\nThe support we received from Ona is invaluable, elevating our focus on delivering exceptional coffee experiences in this area of Canberra."
     },
     {
       "where": "cafe_testimonial(ona-cafe-testimonial)/block_DQmeeF",
@@ -615,7 +660,7 @@
     {
       "where": "cafe_testimonial(ona-cafe-testimonial)/block_Mm8pzk",
       "key": "content",
-      "value": "Choosing Ona Coffee for Cafe Faducci over the past five years, has been one of the best decisions we've made. Their commitment to sourcing the finest beans and their unwavering dedication to quality is evident in every cup we serve. Our customers continually rave about the rich, complex flavours of Ona Coffee, make it a cornerstone of our cafe's success."
+      "value": "Choosing Ona Coffee for Cafe Faducci over the past five years, has been one of the best decisions we've made.\nTheir commitment to sourcing the finest beans and their unwavering dedication to quality is evident in every cup we serve.\nOur customers continually rave about the rich, complex flavours of Ona Coffee, make it a cornerstone of our cafe's success."
     },
     {
       "where": "cafe_testimonial(ona-cafe-testimonial)/block_Mm8pzk",
@@ -665,7 +710,7 @@
     {
       "where": "exclusive_access(ona-exclusive-access)",
       "key": "content",
-      "value": "As a wholesale partner, you receive exclusive access to the latest coffee trends, news, findings, and educational content. 50+ café focused video content Research and development reports Free passes for events and masterclasses Special releases and merchandise"
+      "value": "As a wholesale partner, you receive exclusive access to the latest coffee trends, news, findings, and educational content.\n50+ café focused video content\nResearch and development reports\nFree passes for events and masterclasses\nSpecial releases and merchandise"
     },
     {
       "where": "exclusive_access(ona-exclusive-access)/d4523970-1abb-4bba-becf-7e9e1903cda0",
@@ -690,7 +735,62 @@
     {
       "where": "wholesale_sourcing_v6(ona-wholesale-sourcing-v6)",
       "key": "content",
-      "value": "Hey there! We're all about meaningful partnerships, so we have something exciting for you. How about featuring our coffee as a guest in your shop for a one-month trial? You'll receive full wholesale benefits and dive into our fantastic coffee range. We're sure you'll love ONA Coffee, and we're excited about the possibility of partnering with your café. Ready to explore world-class coffee together? Let us know! You’ll get a true taste of what sets us apart as coffee beans wholesale suppliers — not just in the cup but in the care, service and support we bring to the table."
+      "value": "Hey there!\nWe're all about meaningful partnerships, so we have something exciting for you. How about featuring our coffee as a guest in your shop for a one-month trial? You'll receive full wholesale benefits and dive into our fantastic coffee range. We're sure you'll love ONA Coffee, and we're excited about the possibility of partnering with your café. Ready to explore world-class coffee together? Let us know! You’ll get a true taste of what sets us apart as coffee beans wholesale suppliers — not just in the cup but in the care, service and support we bring to the table."
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Get in touch"
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Thank you. Your enquiry has been sent."
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Name"
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Email"
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Business name"
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "How can we help?"
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Send enquiry"
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Join our community"
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "A wholesale partnership with us means elevating your cafe's specialty coffee experience."
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Join us for a purposeful and meaningful coffee partnership fuelled by connection and constant evolution through world-class coffee training and support."
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "As a cafe partner, you'll have exclusive access to an exceptional range of quality coffee selections."
     },
     {
       "where": "wholesale_brands(ona-wholesale-brands)",

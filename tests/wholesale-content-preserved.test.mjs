@@ -1,11 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { extract } from './extract-page-content.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+/* sha256 of the frozen fixture's content, pinned here so regenerating the fixture cannot
+   silently move the baseline. See the note in the baseline test below. */
+const FROZEN_DIGEST = 'b293c344441c8ad7046911da6962fa24583b8a5b58491bfb0785eb231cc2b7ba';
+
 const fixture = JSON.parse(readFileSync(join(root, 'tests/fixtures/wholesale-content.json'), 'utf8'));
 
 /*
@@ -57,9 +62,14 @@ test('every piece of wholesale copy, media and destination survives the rebuild'
   const haystack = new Set(haystackWords.flatMap(shingles));
   const haystackText = haystackWords.map((list) => list.join(' ')).join(' \u0000 ');
 
+  /* Split on structural boundaries as well as terminal punctuation. `normalise` turns the end
+     of a list item or paragraph into a newline, because bullets usually carry no full stop:
+     without this, `exclusive_access.content`'s four bullets are one sentence, and moving each
+     into its own Horizon block fails for wanting a shingle that spans two of them -- a loss
+     reported where nothing was lost. */
   const sentences = (text) =>
     text
-      .split(/(?<=[.!?])\s+/)
+      .split(/\n+|(?<=[.!?])\s+/)
       .map((part) => part.trim())
       .filter(Boolean);
 
@@ -96,7 +106,7 @@ test('every piece of wholesale copy, media and destination survives the rebuild'
  * drops below it and fails here instead.
  */
 test('the wholesale baseline has not been quietly weakened', () => {
-  const FROZEN_COUNT = 157;
+  const FROZEN_COUNT = 177;
   assert.ok(
     fixture.required.length >= FROZEN_COUNT,
     `the fixture now holds ${fixture.required.length} required values, down from ${FROZEN_COUNT}; ` +
@@ -104,4 +114,20 @@ test('the wholesale baseline has not been quietly weakened', () => {
   );
   assert.match(fixture.generated_from ?? '', /^[0-9a-f]{40}$/, 'the fixture does not record the commit it was taken from');
   assert.equal(fixture.source, 'templates/page.wholesale.json', 'the fixture was generated from the wrong template');
+
+  /* The count and the sha shape are both survivable. Delete a paragraph from inside an existing
+     setting and regenerate: the entry count is unchanged, the new sha is still forty hex
+     characters, both checks above pass, and the primary test then compares the page against the
+     weakened fixture and finds nothing missing. So the baseline is pinned by its CONTENT. This
+     digest lives in the test, not in the fixture, so regenerating cannot update it -- changing
+     it is a deliberate edit to this file, in the PR that justifies it. */
+  const digest = createHash('sha256')
+    .update(JSON.stringify(['required', 'chrome', 'disabled'].map((bucket) => (fixture[bucket] ?? []).map((item) => `${item.where}\u0000${item.key}\u0000${item.value}`))))
+    .digest('hex');
+  assert.equal(
+    digest,
+    FROZEN_DIGEST,
+    'the fixture content no longer matches the frozen baseline. If the page genuinely lost or gained ' +
+      'content, say so in the PR and update FROZEN_DIGEST deliberately -- do not regenerate to go green.'
+  );
 });

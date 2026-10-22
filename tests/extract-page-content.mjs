@@ -27,15 +27,66 @@ export const stripBanner = (text) => text.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '')
 
 /* Rich text fields hold markup; the information is the words and the destinations, not the tags.
    Hrefs are pulled out separately so a link buried in a paragraph still counts as content. */
+const BOUNDARY = /<\/(?:li|p|h[1-6]|div|td|th|tr|blockquote)>|<br\s*\/?>/gi;
+
 export const normalise = (value) =>
   value
+    /* Structural boundaries first. Four bullets with no full stops collapse into one sentence
+       if every tag becomes a space, and then moving each bullet into its own block reads as a
+       loss because the comparison wants a shingle spanning two of them. A newline here keeps
+       each item its own unit without inventing punctuation. */
+    .replace(BOUNDARY, '\n')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
-    .replace(/\s+/g, ' ')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\s*\n\s*/g, '\n')
+    .replace(/\n+/g, '\n')
     .trim();
 
 const hrefsIn = (value) => [...value.matchAll(/(?:href|src)="([^"]+)"/g)].map((match) => match[1]);
+
+/* Visible text and destinations written directly into a section's Liquid, as opposed to coming
+   from the template's settings. Everything that is not rendered prose is removed first: the
+   schema, styles, scripts, comments and every Liquid tag and output. What is left is the text
+   a reader sees regardless of how the template is configured. */
+const LIQUID_DIR = new URL('../sections/', import.meta.url);
+
+export function literalsIn(type) {
+  let source;
+  try {
+    source = readFileSync(new URL(`${type}.liquid`, LIQUID_DIR), 'utf8');
+  } catch {
+    return [];
+  }
+
+  const hrefs = [...source.matchAll(/(?:href|action)="(\/[^"{]*|https?:\/\/[^"{]*)"/g)]
+    .map((match) => match[1])
+    .filter((href) => !href.startsWith('javascript:'));
+
+  const stripped = source
+    .replace(/\{%-?\s*schema\s*-?%\}[\s\S]*?\{%-?\s*endschema\s*-?%\}/g, ' ')
+    .replace(/\{%-?\s*(style|stylesheet|javascript)\s*-?%\}[\s\S]*?\{%-?\s*end\1\s*-?%\}/g, ' ')
+    .replace(/<(style|script)[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, ' ')
+    .replace(/\{%-?\s*doc\s*-?%\}[\s\S]*?\{%-?\s*enddoc\s*-?%\}/g, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/\{\{[\s\S]*?\}\}/g, ' ')
+    .replace(/\{%[\s\S]*?%\}/g, ' ');
+
+  const text = [];
+  for (const chunk of stripped.split(/<[^>]*>/)) {
+    const value = chunk.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+    /* Needs a letter and more than a stray word fragment, or CSS leftovers and single
+       punctuation marks become "content" that must survive forever. */
+    if (value.length >= 3 && /[A-Za-z]{2}/.test(value)) text.push(value);
+  }
+
+  return [
+    ...[...new Set(text)].map((value) => ({ key: 'liquid', value })),
+    ...[...new Set(hrefs)].map((value) => ({ key: 'liquid@href', value })),
+  ];
+}
 
 export function extract(templatePath) {
   const parsed = JSON.parse(stripBanner(readFileSync(templatePath, 'utf8')));
@@ -58,13 +109,30 @@ export function extract(templatePath) {
       for (const href of hrefsIn(trimmed)) bucket.push({ where: path, key: `${key}@href`, value: href });
     }
 
+    /* `disabled` is not the only way a block stops rendering. A block that stays in `blocks`
+       but leaves `block_order` is not rendered either, and counting it as live means the
+       preservation check passes while its title and copy disappear. Only applied where the
+       parent actually declares an order -- Horizon has static blocks that legitimately sit
+       outside one. */
+    const order = node.block_order;
+    const ordered = Array.isArray(order) ? new Set(order) : null;
     for (const [childKey, child] of Object.entries(node.blocks ?? {})) {
-      visit(child, `${path}/${childKey}`, live && !child.disabled);
+      const rendered = !child.disabled && (ordered === null || ordered.has(childKey));
+      visit(child, `${path}/${childKey}`, live && rendered);
     }
   };
 
   for (const [key, section] of Object.entries(parsed.sections ?? {})) {
-    visit(section, `${key}(${section.type})`, !section.disabled);
+    const live = !section.disabled;
+    visit(section, `${key}(${section.type})`, live);
+    /* Settings are not the only place this page keeps content. `ona-gust-r` has an empty
+       settings object and renders the entire wholesale enquiry form -- heading, field labels,
+       submit button -- as literals in its Liquid, and the Monday-form CTAs in the partnership,
+       training and testimonial sections are literals too. Read from the template alone, the
+       whole form could be deleted and nothing here would notice. */
+    for (const literal of literalsIn(section.type)) {
+      (live ? required : disabled).push({ where: `${key}(${section.type})`, key: literal.key, value: literal.value });
+    }
   }
 
   return { required, chrome, disabled };
