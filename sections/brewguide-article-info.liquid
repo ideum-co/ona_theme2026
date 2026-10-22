@@ -62,9 +62,35 @@
     if tastes_like != blank or roast != blank
       assign has_info = true
     endif
+  -%}
 
+  {%- comment -%}
+    Codex, PR #282: spec_count > 0 only means both lists have that many entries, not that any
+    row actually survives the label/value blank guard below -- if every value happened to be
+    blank or whitespace, spec_count would still be > 0, has_recipe would be set, and the page
+    would render a standalone "Brew guide" heading over an empty <dl>. Captured and tested
+    directly here instead, same pattern as blocks/product-faqs.liquid's faq_items capture: one
+    test against the markup actually produced, not a count that can't see into it.
+  {%- endcomment -%}
+  {%- capture spec_rows -%}
+    {%- if spec_count > 0 -%}
+      {%- assign last_index = spec_count | minus: 1 -%}
+      {%- for index in (0..last_index) -%}
+        {%- assign label = spec_labels[index] | strip -%}
+        {%- assign value = spec_values[index] | strip -%}
+        {%- if label != blank and value != blank -%}
+          <div class="brewguide-article-recipe__row">
+            <dt class="brewguide-article-recipe__label">{{ label | upcase }}</dt>
+            <dd class="brewguide-article-recipe__value">{{ value }}</dd>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+  {%- endcapture -%}
+
+  {%- liquid
     assign has_recipe = false
-    if guide_intro != blank or spec_count > 0
+    if guide_intro != blank or spec_rows != blank
       assign has_recipe = true
     endif
 
@@ -106,20 +132,8 @@
           {%- if guide_intro != blank -%}
             <div class="brewguide-article-recipe__intro rte">{{ guide_intro }}</div>
           {%- endif -%}
-          {%- if spec_count > 0 -%}
-            {%- assign last_index = spec_count | minus: 1 -%}
-            <dl class="brewguide-article-recipe__spec">
-              {%- for index in (0..last_index) -%}
-                {%- assign label = spec_labels[index] | strip -%}
-                {%- assign value = spec_values[index] | strip -%}
-                {%- if label != blank and value != blank -%}
-                  <div class="brewguide-article-recipe__row">
-                    <dt class="brewguide-article-recipe__label">{{ label | upcase }}</dt>
-                    <dd class="brewguide-article-recipe__value">{{ value }}</dd>
-                  </div>
-                {%- endif -%}
-              {%- endfor -%}
-            </dl>
+          {%- if spec_rows != blank -%}
+            <dl class="brewguide-article-recipe__spec">{{ spec_rows }}</dl>
           {%- endif -%}
         </div>
       {%- endif -%}

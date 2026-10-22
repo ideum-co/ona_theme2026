@@ -44,8 +44,24 @@ test('the whole section is wrapped in .section (Horizon\'s page-width grid) only
 });
 
 test('the recipe block only renders when there is an intro or at least one spec pair, matching the pruning-safe pattern in blocks/product-brew-guide.liquid', () => {
-  assert.match(code, /assign has_recipe = false\s*\n\s*if guide_intro != blank or spec_count > 0\s*\n\s*assign has_recipe = true/, 'has_recipe must only be set when there is an intro or at least one spec pair');
+  assert.match(code, /assign has_recipe = false\s*\n\s*if guide_intro != blank or spec_rows != blank\s*\n\s*assign has_recipe = true/, 'has_recipe must only be set when there is an intro or the captured spec_rows markup is non-blank');
   assert.match(code, /\{%-\s*if has_recipe\s*-%\}/, 'the recipe block must be gated on has_recipe, not render an empty "Brew guide" heading over nothing');
+});
+
+test('has_recipe is gated on the CAPTURED spec rows, not a raw count that can\'t see whether any row survived the blank guard', () => {
+  // Codex, PR #282: spec_count > 0 only proves both lists have that many entries, not that any
+  // individual label/value pair is non-blank -- if every value happened to be blank or
+  // whitespace, spec_count would still be > 0 while the capture below produces nothing, which
+  // would have rendered a "Brew guide" heading over an empty <dl>. Same fix shape as
+  // blocks/product-faqs.liquid's faq_items capture: test the markup actually produced, not a
+  // count that can't see into it.
+  const captureStart = code.indexOf('{%- capture spec_rows -%}');
+  assert.ok(captureStart > -1, 'spec_rows must be captured before has_recipe is decided');
+  const captureEnd = code.indexOf('{%- endcapture -%}', captureStart);
+  assert.ok(captureEnd > captureStart, 'the capture must be closed');
+  const hasRecipeIndex = code.indexOf('assign has_recipe = false', captureEnd);
+  assert.ok(hasRecipeIndex > captureEnd, 'has_recipe must be decided after spec_rows is captured, not before (reading spec_rows before the capture closes would see last render\'s stale value or nothing)');
+  assert.doesNotMatch(code, /if guide_intro != blank or spec_count > 0/, 'must not fall back to deciding has_recipe from the raw count');
 });
 
 test('spec_labels and spec_values are paired only as far as both lists go, same discipline as the product-level brew guide', () => {
