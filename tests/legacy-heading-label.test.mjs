@@ -58,27 +58,59 @@ const labels = (() => {
 const selects = (name, suffix = '') => declarationsFor(name, suffix) !== null;
 
 /*
- * Every rule that paints a non-empty eyebrow, in source order.
+ * Every rule in the stylesheet that targets this class, in cascade order.
  *
- * The layout and contrast checks used to read the single base `.subtitle` rule and nothing
- * else, so appending a later, more specific `#MainContent .add-image-and-text-slider
- * .subtitle { opacity: 0.6; }` muted those eyebrows below the bar with all four tests green
- * (Codex, #300). What a reader sees is the cascade, so the cascade is what gets measured.
+ * Three separate checks here each reached for the one rule they expected and measured that:
+ * the contrast check read the base `.subtitle` rule, so a later
+ * `#MainContent .add-image-and-text-slider .subtitle { opacity: 0.6; }` muted those eyebrows
+ * with everything green; the empty-state check read the first matching rule, so a second
+ * `.subtitle:empty { display: block; }` won in the browser and passed here; the layout check
+ * asked whether any rule said `display: block`, so a later `display: inline` passed too
+ * (Codex, #300). What the reader sees is the declaration that wins, so these all resolve the
+ * cascade -- specificity first, then source order -- and read the winner.
  */
-const rulesFor = (name) => {
-  const pattern = new RegExp(`([^{}]*\\.${name.replace(/-/g, '\\-')}(?![\\w-])[^{}]*)\\{([^}]*)\\}`, 'g');
-  return [...css.matchAll(pattern)]
-    .filter(([, selector]) => !/:empty/.test(selector))
-    .map(([, selector, declarations]) => ({ selector: selector.trim().replace(/\s+/g, ' '), declarations }));
+const specificity = (selector) => {
+  const ids = (selector.match(/#[\w-]+/g) ?? []).length;
+  const classes = (selector.match(/\.[\w-]+|\[[^\]]*\]|:(?!:)[a-z-]+(?:\([^)]*\))?/gi) ?? []).length;
+  const elements = (
+    selector.replace(/[#.][\w-]+|\[[^\]]*\]|::?[a-z-]+(?:\([^)]*\))?/gi, ' ').match(/[a-z][\w-]*/gi) ?? []
+  ).length;
+  return ids * 10000 + classes * 100 + elements;
 };
 
-/* The body of the first rule whose selector matches, or null. */
-function declarationsFor(name, suffix = '') {
-  const found = css.match(
-    new RegExp(`\\.${name.replace(/-/g, '\\-')}(?![\\w-])[^{,]*${suffix}[^{]*\\{([^}]*)\\}`)
-  );
-  return found ? found[1] : null;
-}
+const rulesFor = (name) => {
+  const target = new RegExp(`\\.${name.replace(/-/g, '\\-')}(?![\\w-])`);
+  const found = [];
+  let at = 0;
+  for (const [, selectorList, declarations] of css.matchAll(/([^{}]+)\{([^}]*)\}/g)) {
+    at += 1;
+    for (const branch of selectorList.split(',')) {
+      if (!target.test(branch)) continue;
+      /* `!important` reorders the cascade in a way none of this models, so it fails rather
+         than being silently mis-resolved. Nothing in the stylesheet uses it today. */
+      assert.ok(
+        !/!important/.test(declarations),
+        `.${name} is styled with !important ("${branch.trim()}"), which this cascade model ` +
+          'does not resolve -- extend it rather than trusting the result'
+      );
+      found.push({
+        selector: branch.trim().replace(/\s+/g, ' '),
+        declarations,
+        empty: /:empty/.test(branch),
+        weight: specificity(branch),
+        at,
+      });
+    }
+  }
+  return found.sort((a, b) => a.weight - b.weight || a.at - b.at);
+};
+
+/* The rules that apply to a label with text in it. An `:empty` rule is not one of them. */
+const whenFilled = (name) => rulesFor(name).filter((rule) => !rule.empty);
+/* An empty element matches the base rules as well as the `:empty` ones. */
+const whenEmpty = (name) => rulesFor(name);
+
+const merge = (rules) => rules.map((rule) => rule.declarations).join(';');
 
 test('the eyebrow above a heading is a class the stylesheet actually styles', () => {
   assert.ok(labels.size > 0, 'no section puts a labelled element above a heading any more');
@@ -88,7 +120,7 @@ test('the eyebrow above a heading is a class the stylesheet actually styles', ()
        eyebrow class carrying only the hide rule passed while the label a shopper actually
        reads got nothing (Codex, #300). Only rules that paint the non-empty element count. */
     assert.ok(
-      rulesFor(name).length > 0,
+      whenFilled(name).length > 0,
       `.${name} introduces the heading in ${sections.size} section(s) ` +
         `(${[...sections].sort().slice(0, 3).join(', ')}...) and no rule in ` +
         'assets/legacy-page-layout.css selects it, so it renders as plain body copy'
@@ -98,37 +130,43 @@ test('the eyebrow above a heading is a class the stylesheet actually styles', ()
 
 /* `display:none` removes the box; so does a `content-visibility`-less zero-everything, but
    nothing here does that, so the rule is the plain one. */
-const REMOVES_BOX = /display\s*:\s*none/;
+const REMOVES_BOX = 'none';
 
 test('an eyebrow with nothing in it takes up no room', () => {
   for (const [name, sections] of labels) {
     /* The element ships whether or not its setting has a value -- four of the seven on
        /pages/wholesale render empty -- and an empty inline box still occupies a line box. */
-    const rule = declarationsFor(name, ':empty');
+    const applicable = whenEmpty(name);
     assert.ok(
-      rule !== null,
+      applicable.some((rule) => rule.empty),
       `.${name} is rendered unconditionally by ${[...sections].sort()[0]}, so it can be empty, ` +
         'but no rule hides it when it is'
     );
-    /* Asking only whether a matching selector exists lets `.subtitle:empty { display: block }`
-       through with every test green and the empty eyebrows still holding a line (Codex, #300).
-       The declaration is what removes the box, so the declaration is what gets checked. */
-    assert.match(
-      rule,
+    /* Not "an :empty rule exists" and not "the first match hides it": a second
+       `.subtitle:empty { display: block; }` wins in the browser and used to pass here
+       (Codex, #300). The winner is what decides whether the box is there. */
+    const winner = lastValue(merge(applicable), 'display');
+    assert.equal(
+      (winner ?? '').trim(),
       REMOVES_BOX,
-      `.${name}:empty is styled but not hidden -- its rule is "{${rule.trim()}}", which still ` +
-        'leaves an empty eyebrow occupying a line'
+      `.${name} when empty resolves to display:${winner ?? '<unset>'} across ` +
+        `${JSON.stringify(applicable.map((rule) => rule.selector))}, so an empty eyebrow ` +
+        'still occupies a line'
     );
   }
 });
 
 test('the eyebrow sits on its own line above the heading', () => {
   for (const [name] of labels) {
-    const applicable = rulesFor(name);
-    assert.ok(
-      applicable.some(({ declarations }) => /display\s*:\s*block/.test(declarations)),
-      `a span is inline by default, so without an explicit display .${name} runs into the ` +
-        `heading on the same line -- its rules are ${JSON.stringify(applicable.map((r) => r.selector))}`
+    const applicable = whenFilled(name);
+    /* `.some()` passed while a later `display: inline` won in the browser (Codex, #300). */
+    const winner = lastValue(merge(applicable), 'display');
+    assert.equal(
+      (winner ?? '').trim(),
+      'block',
+      `a span is inline by default, so .${name} needs to resolve to display:block -- across ` +
+        `${JSON.stringify(applicable.map((rule) => rule.selector))} it resolves to ` +
+        `${winner ?? '<unset>'}, and the eyebrow runs into the heading on the same line`
     );
   }
 });
@@ -271,12 +309,14 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
   const where = grounds();
 
   for (const [name] of labels) {
-    const applicable = rulesFor(name);
+    const applicable = whenFilled(name);
     assert.ok(applicable.length > 0, `no rule paints .${name}`);
 
-    /* Walked in source order, carrying the declarations forward: the state after each rule is
-       a state the label is really in, and every one of them has to clear the bar. Reading
-       only the base rule let a later override through (Codex, #300). */
+    /* Walked in cascade order, carrying the declarations forward. Deliberately conservative:
+       a rule that applies to only some eyebrows -- `.add-image-and-text-slider .subtitle` --
+       makes both the state with it and the state without it real, so every prefix has to
+       clear the bar. A rule that mutes one section's eyebrow fails even though the rest are
+       fine, which is the intent: no eyebrow anywhere goes under 4.5:1. */
     let carried = '';
     for (const rule of applicable) {
       carried += `;${rule.declarations}`;
