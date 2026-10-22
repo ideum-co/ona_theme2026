@@ -19,7 +19,28 @@ const decomment = (text) => text.replace(/\/\*[\s\S]*?\*\//g, ' ');
  * way it is in the markup, since a value it emits is not a selector.
  */
 const sheets = (() => {
-  const out = [decomment(readFileSync(join(root, 'assets/legacy-page-layout.css'), 'utf8'))];
+  /* Every stylesheet the layout loads, read off the layout rather than listed here, so a
+     new global sheet is covered the day it is added. base.css was missing, and because the
+     eyebrow rule does not reset `opacity`, a `.subtitle { opacity: .6 }` there rendered
+     every label under the bar with all four tests green (Codex, #300). */
+    const loaded = [];
+  for (const file of ['snippets/stylesheets.liquid', 'layout/theme.liquid']) {
+    let source;
+    try {
+      source = readFileSync(join(root, file), 'utf8');
+    } catch {
+      continue;
+    }
+    for (const [, asset] of source.matchAll(/'([\w.-]+\.css)'\s*\|\s*asset_url\s*\|\s*stylesheet_tag/g)) {
+      if (!loaded.includes(asset)) loaded.push(asset);
+    }
+  }
+  assert.ok(
+    loaded.includes('legacy-page-layout.css'),
+    'the layout no longer loads legacy-page-layout.css the way this scan reads it'
+  );
+
+  const out = loaded.map((asset) => decomment(readFileSync(join(root, 'assets', asset), 'utf8')));
   for (const dir of ['sections', 'snippets']) {
     for (const file of readdirSync(join(root, dir))) {
       if (!file.endsWith('.liquid')) continue;
@@ -268,6 +289,11 @@ const rulesFor = (name) => {
       /* Descendant combinators only, and not the spaces inside `:is(a, b)`. */
       const compounds = (branch.trim().match(/(?:[^\s(]+(?:\([^)]*\))?)+/g) ?? []).filter(Boolean);
       const own = compounds.findIndex((compound) => target.test(compound));
+      /* Compounds after the label mean the rule targets a descendant of it, not the label:
+         `#MainContent .subtitle span { display: block }` cannot change the eyebrow's own
+         display, and discarding the trailing compound credited it with doing so, at a
+         specificity that masked a real regression (Codex, #300). */
+      if (own !== compounds.length - 1) continue;
       const label = compounds[own];
       /* `:not(:empty)` selects a label that HAS text. Reading it as an empty-state rule threw
          the declaration away, so `:not(:empty) { opacity: 0.6 }` muted every visible eyebrow
