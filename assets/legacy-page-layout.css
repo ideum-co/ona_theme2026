@@ -268,6 +268,24 @@
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider) > .content.container > * { min-width:0; }
 
 /*
+ * Restore the column flip.
+ *
+ * `invert-columns`, `img-r` and `img-right` came across from the old theme on five sections --
+ * ona-training, ona-unique-coffees, ona-supported, ona-exclusive-access and
+ * ona-traning-supported -- and have had no rule behind them anywhere in this theme since the
+ * migration. So every two-column section renders image-left and the page reads as one block
+ * repeated down the page. This is the original design returning, not a new one: the markup has
+ * been asking for it the whole time.
+ *
+ * Desktop only. At 749px the grid collapses to a single column, where the image belongs above
+ * the text whichever side it took on a wide screen -- flipping there would push it below.
+ */
+@media (min-width:750px) {
+  #MainContent :is(.invert-columns,.img-r,.img-right) > .container > .content > .img,
+  #MainContent :is(.invert-columns,.img-r,.img-right) > .content.container > .img { order:2; }
+}
+
+/*
  * The play button is a real <img> in the ported markup, not production's
  * ::before, so base.css's img{width:100%} painted a 150px source at 605px
  * (4.0x) and pushed it out of the frame. `:has(> .play-video)` gives the
