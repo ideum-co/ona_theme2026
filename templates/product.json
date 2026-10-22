@@ -9,6 +9,14 @@
  */
 {
   "sections": {
+    "product_origin_detail": {
+      "type": "product-origin-detail",
+      "settings": {}
+    },
+    "product_producer_quote": {
+      "type": "product-producer-quote",
+      "settings": {}
+    },
     "main": {
       "type": "product-information",
       "blocks": {
@@ -2004,6 +2012,8 @@
     "story_video_VUwQ6f",
     "product_dna_trxBBN",
     "product_media_with_text_Vy9RW6",
+    "product_origin_detail",
+    "product_producer_quote",
     "section_EhyeAD",
     "story",
     "brew_guide",
