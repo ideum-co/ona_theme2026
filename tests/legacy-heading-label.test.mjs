@@ -137,29 +137,71 @@ const contrast = (a, b) => {
 /* Opacity below 1 is the foreground composited over the ground, which is what a muted token is. */
 const over = (fore, ground, alpha) => fore.map((value, at) => alpha * value + (1 - alpha) * ground[at]);
 
+/*
+ * What the eyebrow is actually painted in.
+ *
+ * The first version of this test rejected three substrings in the rule's `color` and then
+ * computed the ratio of whichever palette extreme *would* have worked -- so `opacity: 0.6`,
+ * `rgb(var(--color-foreground-rgb) / 0.6)` or a low-contrast literal all passed while the
+ * rendered label failed (Codex, #300). Resolve the declaration, then measure that.
+ */
+const opacityToken = (name) => {
+  const tokens = readFileSync(join(root, 'snippets/theme-styles-variables.liquid'), 'utf8');
+  const found = tokens.match(new RegExp(`--opacity-${name}-text:\\s*([0-9.]+)`));
+  assert.ok(found, `cannot read --opacity-${name}-text`);
+  return Number(found[1]);
+};
+
+const painted = (declarations) => {
+  /* An element's own opacity multiplies whatever colour it ends up with. */
+  const faded = declarations.match(/(?:^|;)\s*opacity\s*:\s*([0-9.]+)/);
+  let alpha = faded ? Number(faded[1]) : 1;
+
+  const declared = declarations.match(/(?:^|;)\s*color\s*:\s*([^;]+)/);
+  if (!declared) return { alpha, literal: null, how: 'inherited' };
+  const value = declared[1].trim();
+
+  const hex = value.match(/#([0-9a-f]{6})\b/i);
+  if (hex) return { alpha, literal: [1, 3, 5].map((at) => parseInt(`#${hex[1]}`.slice(at, at + 2), 16)), how: value };
+
+  const slashed = value.match(/\/\s*([0-9.]+)\s*\)/);
+  if (slashed) alpha *= Number(slashed[1]);
+  if (/--opacity-muted-text/.test(value)) alpha *= opacityToken('muted');
+  if (/--opacity-subdued-text/.test(value)) alpha *= opacityToken('subdued');
+  if (/--color-foreground-muted/.test(value)) alpha *= opacityToken('muted');
+  if (/--color-foreground-subdued/.test(value)) alpha *= opacityToken('subdued');
+
+  const inherits =
+    /currentColor|inherit|--color-foreground(?![\w-])|--color-foreground-rgb|--color-foreground-muted|--color-foreground-subdued|--palette-(darkest|lightest)/.test(
+      value
+    );
+  assert.ok(
+    inherits,
+    `cannot work out what colour the eyebrow is painted in from "${value}" -- extend this ` +
+      'resolver rather than leaving the contrast unchecked'
+  );
+  return { alpha, literal: null, how: value };
+};
+
 test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
   const rule = css.match(/#MainContent\s+\.subtitle\s*\{([^}]*)\}/);
   assert.ok(rule, 'cannot find the .subtitle rule');
-
-  const declared = rule[1].match(/(?:^|;)\s*color\s*:\s*([^;]+)/);
-  assert.ok(
-    !declared || !/muted|subdued|opacity/.test(declared[1]),
-    `the eyebrow sets color: ${declared?.[1].trim()}. A token that reduces the foreground's ` +
-      'opacity cannot clear 4.5:1 on this palette at this size'
-  );
-
   assert.ok(palette.foreground && palette.background, 'cannot read the palette');
+
+  const { alpha, literal, how } = painted(rule[1]);
+
   for (const [where, ground] of grounds()) {
-    /* Unbanded or light-banded, the eyebrow inherits the page foreground; on a dark band the
-       band snippet flips it to the lightest palette colour. Either way it is a palette extreme
-       at full opacity, so the darker of the two against this ground is the case to check. */
-    const best = [palette.foreground, palette.background]
-      .map((hex) => contrast(rgb(hex), rgb(ground)))
-      .sort((a, b) => b - a)[0];
+    const ink = rgb(ground);
+    /* Inherited, the eyebrow takes the section's foreground, and the band snippet has already
+       chosen the palette extreme that contrasts best with the band. */
+    const inherited = [palette.foreground, palette.background]
+      .map(rgb)
+      .sort((a, b) => contrast(b, ink) - contrast(a, ink))[0];
+    const ratio = contrast(over(literal ?? inherited, ink, alpha), ink);
     assert.ok(
-      best >= 4.5,
-      `${where} is ${ground}, and the best the palette can do for text on it is ` +
-        `${best.toFixed(2)}:1 -- under 4.5:1`
+      ratio >= 4.5,
+      `${where} is ${ground}, and the eyebrow (${how}${alpha < 1 ? ` at ${alpha} opacity` : ''}) ` +
+        `lands at ${ratio.toFixed(2)}:1 on it -- under 4.5:1`
     );
   }
 });
