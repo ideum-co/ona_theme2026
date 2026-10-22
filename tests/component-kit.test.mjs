@@ -1703,3 +1703,84 @@ test('every live embed that renders nothing is recorded as a behaviour change', 
   );
   assert.deepEqual(unrecorded, [], 'these silent embed sections have no gap row calling the swap a behaviour change');
 });
+
+/*
+ * The wholesale page navigates to itself: `ona-icon-and-content` links to four `#anchors`, and
+ * each is the `id` *setting* of another section on the same page, emitted on its wrapper.
+ * Horizon's `section` has no anchor setting, so replacing any of those four breaks a link on the
+ * same page -- a blocker independent of each section's own gap, and one the kit did not record
+ * (Codex, #247). The population is derived from the templates, so a fifth anchor cannot be
+ * added without a gap row, and the probe ignores anchors that resolve some other way (the
+ * homepage's `#coffee-quiz` is a hardcoded id in `sections/coffee-quiz.liquid`, not a setting).
+ */
+test('every in-page anchor owned by a section setting is recorded as a blocker', () => {
+  const HEX = /^#[0-9a-f]{3,8}$/i;
+  const owners = new Map();
+  for (const [file, parsed] of eachTemplate()) {
+    const sections = Object.values(parsed.sections ?? {});
+    const byAnchor = new Map();
+    for (const section of sections) {
+      const anchor = (section.settings ?? {}).id;
+      if (typeof anchor === 'string' && anchor) byAnchor.set(anchor, section.type);
+    }
+    for (const node of everyNode(parsed.sections)) {
+      for (const value of Object.values(node.settings ?? {})) {
+        if (typeof value !== 'string' || !value.startsWith('#') || HEX.test(value)) continue;
+        const target = byAnchor.get(value.slice(1));
+        if (target) owners.set(target, `${file} ${value}`);
+      }
+    }
+  }
+
+  assert.ok(owners.size >= 4, `only ${owners.size} setting-owned anchors found; the probe is broken`);
+
+  /* If the replacement ever gains an anchor setting, this row is the stale thing, not the theme. */
+  const target = readFileSync(join(root, 'sections/section.liquid'), 'utf8');
+  const schema = JSON.parse(target.match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/)[1]);
+  const anchorSetting = (schema.settings ?? []).find((setting) => /^(id|anchor|section_id)$/.test(setting.id ?? ''));
+  assert.equal(anchorSetting, undefined, 'sections/section.liquid now has an anchor setting; the anchor gap row is stale');
+
+  const anchorRows = doc.split('\n').filter((line) => /^\|/.test(line) && /anchor/i.test(line));
+  const unrecorded = [...owners.keys()].filter((name) => !anchorRows.some((row) => row.includes(`\`${name}\``)));
+  assert.deepEqual(unrecorded, [], 'these sections own a live in-page anchor that no gap row records');
+
+  /* The section has to actually emit the setting, or the finding rests on nothing. */
+  for (const name of owners.keys()) {
+    const liquid = readFileSync(join(root, 'sections', `${name}.liquid`), 'utf8');
+    assert.match(liquid, /id="\{\{ section\.settings\.id \}\}"/, `${name} no longer emits its id setting; the anchor row is stale`);
+  }
+});
+
+/*
+ * The ona-training gap row judged the section against `media-with-content` while the mapping
+ * above sends it to component 1, and concluded its accordion and CTA had no target. They do
+ * (Codex, #247). A gap row that overstates sends the implementer to design functionality the
+ * theme already ships, so this checks the parts exist and that the row says so.
+ */
+test('the ona-training gap row is measured against the target the mapping gives it', () => {
+  const schemaOf = (file) =>
+    JSON.parse(readFileSync(join(root, file), 'utf8').match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/)[1]);
+
+  const accepts = (file) => (schemaOf(file).blocks ?? []).some((entry) => entry.type === '@theme');
+  assert.ok(accepts('sections/section.liquid'), 'section no longer accepts @theme; the probe is broken');
+  assert.ok(accepts('blocks/group.liquid'), 'group no longer accepts @theme; the probe is broken');
+
+  const accordion = schemaOf('blocks/accordion.liquid');
+  assert.ok(existsSync(join(root, 'blocks/accordion.liquid')), 'accordion is gone');
+  assert.ok((accordion.presets ?? []).length > 0, 'accordion has no preset, so it is not offered in Add block');
+  assert.ok(
+    (accordion.blocks ?? []).some((entry) => entry.type === '_accordion-row'),
+    'accordion no longer takes _accordion-row children'
+  );
+  const button = schemaOf('blocks/button.liquid').settings.map((setting) => setting.id);
+  assert.ok(button.includes('link') && button.includes('label'), 'button lost its link or label; the CTA has no target after all');
+
+  const row = doc.split('\n').find((line) => line.startsWith('| `ona-training` (wholesale) |'));
+  assert.ok(row, 'the ona-training gap row is gone');
+  assert.ok(
+    !/A `media-with-content` text slot drops both/.test(row),
+    'the ona-training row still measures the section against media-with-content, not the component it is mapped to'
+  );
+  assert.match(row, /`[^`]*accordion[^`]*`/, 'the row does not name the accordion the composition actually offers');
+  assert.match(row, /`[^`]*button[^`]*`/, 'the row does not name the button the CTA maps to');
+});
