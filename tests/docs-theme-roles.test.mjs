@@ -67,4 +67,14 @@ test('compare-themes.sh refuses to guess which theme is live', () => {
   assert.match(script, /LIVE_ID="\$\{LIVE_ID:-\}"/, 'LIVE_ID should have no default at all');
   assert.match(script, /LIVE_ID is not set/, 'the script should say so rather than guess');
   assert.match(script, /LIVE_ID" == "\$NEW_ID/, 'the script should refuse to compare a theme with itself');
+
+  /* NEW_ID cannot keep a default either. The published theme today is the id NEW_ID used to
+     default to, so an operator who does what the "not set" message tells them -- set LIVE_ID to
+     the published theme -- lands on LIVE_ID == NEW_ID and the script exits with nothing run.
+     The two guards have to leave a way through, not close on each other. */
+  assert.match(script, /NEW_ID="\$\{NEW_ID:-\}"/, 'NEW_ID defaults again; with LIVE_ID required, a default here makes the documented recovery exit on the equality guard');
+  assert.ok(
+    !new RegExp(`NEW_ID="\\$\\{NEW_ID:-${LIVE}\\}"`).test(script),
+    'NEW_ID defaults to the published theme, which is the one value that cannot be the candidate'
+  );
 });

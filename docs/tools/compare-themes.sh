@@ -15,19 +15,27 @@
 
 set -uo pipefail
 
-# Both ids must be given deliberately. This script was written when the
-# published theme was 160815546559 and ona_theme2026 was the candidate; since
-# the go-live, 154676789439 IS the published theme, so defaulting LIVE_ID to
-# the old id would compare production against an unpublished preview and
-# report the preview as the baseline. Resolve MAIN at run time instead.
+# Both ids must be given deliberately, and neither has a default. This script
+# was written when the published theme was 160815546559 and ona_theme2026 was
+# the candidate; since the go-live, 154676789439 IS the published theme, so
+# defaulting LIVE_ID to the old id would compare production against an
+# unpublished preview and report the preview as the baseline.
+#
+# NEW_ID has no default either, and not only for symmetry: the published theme
+# today IS 154676789439, so keeping it as the candidate default sends anyone
+# who follows the "LIVE_ID is not set" message -- which prints the published id
+# -- straight into the LIVE_ID == NEW_ID guard with no way through. Resolve
+# both at run time instead: 154676789439 is MAIN today, and the candidate is
+# whatever preview you are actually testing.
 LIVE_ID="${LIVE_ID:-}"
-NEW_ID="${NEW_ID:-154676789439}"
+NEW_ID="${NEW_ID:-}"
 BASE="https://onacoffee.com.au"
 
-if [[ -z "$LIVE_ID" ]]; then
-  echo "LIVE_ID is not set. The published theme is:" >&2
+if [[ -z "$LIVE_ID" || -z "$NEW_ID" ]]; then
+  echo "LIVE_ID is not set, or NEW_ID is not set: both are required." >&2
+  echo "The published theme is:" >&2
   curl -s "$BASE" | grep -o 'Shopify.theme = {[^}]*}' >&2 || true
-  echo "Set LIVE_ID=<theme id> explicitly (it is no longer safe to default)." >&2
+  echo "Run as: LIVE_ID=<published id> NEW_ID=<candidate id> bash $0 [outdir]" >&2
   exit 2
 fi
 if [[ "$LIVE_ID" == "$NEW_ID" ]]; then
