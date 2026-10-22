@@ -11,13 +11,19 @@ const schemaOf = (file) =>
   JSON.parse(read(file).match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/)[1]);
 
 /*
- * What an href="#..." can actually reach. HTML5 ids may start with a digit -- `2026-training` is
- * a working anchor -- so the old "must begin with a letter" rule was HTML4's and would have
- * blocked a legitimate value. What genuinely breaks a fragment link: whitespace, a leading `#`
- * (the typo the setting's info text warns about), and any character `| escape` rewrites, because
- * the rendered id then no longer equals what the merchant typed and the link misses silently.
+ * What an href="#..." can actually reach.
+ *
+ * Almost nothing is excluded. An HTML id may start with a digit, and `| escape` is transparent
+ * rather than lossy -- `research&development` is emitted as `id="research&amp;development"`, the
+ * parser decodes it, and the DOM id is the string the merchant typed, so a matching fragment
+ * works. The only real constraint is ASCII whitespace.
+ *
+ * The leading `#` is rejected for a different reason, and not because HTML forbids it: the info
+ * text tells the merchant to leave it off, and an id of `#complete-training` needs
+ * `href="##complete-training"` to reach it, so every link written the documented way misses. A
+ * `#` later in the value is fine -- the fragment is everything after the first one.
  */
-const FRAGMENT = /^[^\s#"'<>&]+$/;
+const FRAGMENT = /^[^\s#][^\s]*$/;
 
 /*
  * /pages/wholesale navigates to itself -- `ona-icon-and-content` links to four #anchors, and
@@ -86,6 +92,23 @@ test('the section renders an anchor only when one is set', () => {
  * inertness this PR rests on, and the count at the end measures it instead of asserting it in a
  * comment. The rebuild makes all three real.
  */
+/*
+ * Which section types emit a copy of their `id` setting, and under what prefix. Derived from the
+ * markup: five sections render `id="slider-{{ section.settings.id }}"` as well as the bare id,
+ * and the rest render only the bare one. Reserving `slider-<id>` for every legacy section would
+ * block an anchor that collides with nothing -- `ona-training` owns `complete-training` on
+ * wholesale and emits no `slider-complete-training`.
+ */
+const EMITS = new Map(
+  readdirSync(join(root, 'sections'))
+    .filter((name) => name.endsWith('.liquid'))
+    .map((name) => [
+      name.replace(/\.liquid$/, ''),
+      [...new Set([...read(join('sections', name)).matchAll(/id="([^"{]*)\{\{\s*section\.settings\.id\s*\}\}"/g)].map((m) => m[1]))],
+    ])
+    .filter(([, prefixes]) => prefixes.length > 0)
+);
+
 const idsIn = (file) => {
   const parsed = JSON.parse(stripBanner(read(file)));
   const anchors = [];
@@ -95,7 +118,9 @@ const idsIn = (file) => {
     const anchor = settings.anchor;
     if (anchor != null && String(anchor).trim() !== '') anchors.push({ key, anchor });
     const id = settings.id;
-    if (typeof id === 'string' && id.trim() !== '') taken.push([id, `${file} ${key} id`], [`slider-${id}`, `${file} ${key} slider`]);
+    if (typeof id === 'string' && id.trim() !== '') {
+      for (const prefix of EMITS.get(section.type) ?? []) taken.push([`${prefix}${id}`, `${file} ${key} ${prefix || 'id'}`]);
+    }
   }
   return { anchors, taken };
 };
@@ -109,12 +134,19 @@ test('every stored anchor is reachable and unique on the page it renders on', ()
   const templates = readdirSync(join(root, 'templates')).filter((name) => name.endsWith('.json')).map((name) => join('templates', name));
   const everywhere = groups.map((file) => [file, idsIn(file)]);
 
+  /* The layout wraps every template, and its own ids -- `MainContent`, `header-group` -- are on
+     the page before a section renders. An anchor duplicating one sends `#MainContent` to the
+     wrapper instead of the section. (password.liquid is deliberately not here: it serves the
+     password page, which has no template JSON, so its ids are not on these pages.) */
+  const fromLayout = [...read('layout/theme.liquid').matchAll(/id="([A-Za-z][-\w]*)"/g)].map((m) => [m[1], 'layout/theme.liquid']);
+  assert.ok(fromLayout.length >= 2, `the layout emits ${fromLayout.length} static ids; the probe is broken`);
+
   const unreachable = [];
   const collisions = [];
   let set = 0;
   for (const file of templates) {
     const page = [[file, idsIn(file)], ...everywhere];
-    const taken = new Map();
+    const taken = new Map(fromLayout);
     for (const [, { taken: ids }] of page) for (const [id, where] of ids) if (!taken.has(id)) taken.set(id, where);
 
     for (const [owner, { anchors }] of page) {
