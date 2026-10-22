@@ -3,9 +3,16 @@
   photo. Purely decorative, so it is hidden from assistive technology and takes no focus.
 
   Every shape here is lifted verbatim from the legacy section that draws it today -- same
-  viewBox, same path data, same colour -- so a converted section looks the same as the one it
-  replaces. `tests/decorative-shape.test.mjs` compares each one against its source file and
-  fails on any drift, which is why the path data below should never be edited by hand.
+  viewBox, same intrinsic size, same path data, same colour -- so a converted section looks the
+  same as the one it replaces. `tests/decorative-shape.test.mjs` compares each one against its
+  source file and fails on any drift, which is why none of this should be edited by hand.
+
+  The intrinsic size matters and is easy to lose. An inline `<svg>` with only a viewBox is a
+  replaced element with a default 300px width, and `max-width` caps it rather than stretching
+  it -- so dropping the `width`/`height` the careers and training shapes carry would shrink
+  them from 457px and 477px to about 300px against a photo that stretches to its container.
+  Two of the six have those attributes and four do not; both states are reproduced, because
+  either one is what its section draws today.
 
   Despite the legacy class name `animated-svg`, nothing animates: `.start`, `.medium` and
   `.end` have no rule in any stylesheet and no script touches them, so all three paths paint in
@@ -16,6 +23,9 @@
 {%- enddoc -%}
 
 {%- liquid
+  assign shape_width = blank
+  assign shape_height = blank
+
   case shape
     when 'sourcing'
       assign view_box = '0 0 402.06 268.72'
@@ -29,9 +39,13 @@
     when 'careers'
       assign view_box = '0 0 457 372'
       assign shape_fill = '#D0994D'
+      assign shape_width = '457'
+      assign shape_height = '372'
     when 'training'
       assign view_box = '0 0 477 428'
       assign shape_fill = '#D0994D'
+      assign shape_width = '477'
+      assign shape_height = '428'
     when 'enquiry'
       assign view_box = '0 0 823.5 736.6'
       assign shape_fill = '#BDD6E6'
@@ -49,6 +63,10 @@
     class="decorative-shape"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="{{ view_box }}"
+    {%- if shape_width != blank %}
+      width="{{ shape_width }}"
+      height="{{ shape_height }}"
+    {%- endif %}
     aria-hidden="true"
     focusable="false"
   >

@@ -1899,13 +1899,16 @@ test('every in-page anchor owned by a section setting is recorded as a blocker',
     readFileSync(join(root, 'blocks/image.liquid'), 'utf8').match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/)[1]
   );
   const shapeSetting = (imageSchema.settings ?? []).find((setting) => setting.id === 'decorative_shape');
+  const carriersWithShape = readdirSync(join(root, 'sections'))
+    .filter((file) => file.endsWith('.liquid'))
+    .filter((file) => readFileSync(join(root, 'sections', file), 'utf8').includes('animated-svg'));
   const blobRow = between('## Known gaps', '## Page by page')
     .split('\n')
     .filter((line) => /^\|/.test(line))
     .find((row) => /animated-svg/.test(row.split('|')[1] ?? '')) ?? '';
   assert.ok(blobRow, 'the decorative-layer gap row is gone');
   assert.equal(
-    /\*\*Solved\*\*/.test(blobRow),
+    /\*\*Solved\b/.test(blobRow),
     shapeSetting !== undefined,
     shapeSetting
       ? 'blocks/image.liquid carries a decorative shape but the gap row still reads as an open blocker'
@@ -1919,6 +1922,34 @@ test('every in-page anchor owned by a section setting is recorded as a blocker',
       /component 1/,
       'the solved row no longer says the conversion target moves to component 1'
     );
+
+    /* And the exception. An image block cannot carry the layer for a section with no image,
+       so the row has to name the ones that are still blocked rather than claim all 15. The
+       count is measured, not quoted, so adding an image to ona-content moves it on its own. */
+    const imageless = readdirSync(join(root, 'sections'))
+      .filter((file) => file.endsWith('.liquid'))
+      .filter((file) => readFileSync(join(root, 'sections', file), 'utf8').includes('animated-svg'))
+      .filter((file) => !/<img\b|"type":\s*"image_picker"/.test(readFileSync(join(root, 'sections', file), 'utf8')))
+      .map((file) => file.replace(/\.liquid$/, ''));
+    assert.ok(imageless.length >= 1, 'every .animated-svg section now has an image; the exception probe is broken');
+    assert.match(
+      blobRow,
+      new RegExp(`Solved for ${carriersWithShape.length - imageless.length} of the ${carriersWithShape.length}`),
+      `the row does not say how many of the ${carriersWithShape.length} are solved; ${imageless.length} carry no image for the shape to attach to`
+    );
+    /* Naming it ANYWHERE in the row is not enough -- the row already lists `ona-content` among
+       the sections that share a colour, so a plain `includes` stayed green when the exception
+       clause itself was deleted. The name has to sit next to the claim that it is blocked. */
+    for (const section of imageless) {
+      const named = new RegExp(
+        `\`${section}\`[^.|]{0,90}(?:blocked|exception)|(?:blocked|exception)[^.|]{0,90}\`${section}\``
+      );
+      assert.match(
+        blobRow,
+        named,
+        `${section} carries the layer and has no image, so an image block cannot hold it -- the row has to name it as still blocked, not merely mention it`
+      );
+    }
   }
 
   /* The document has to state the OWNERSHIP, not merely mention both names somewhere in one

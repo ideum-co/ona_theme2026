@@ -52,10 +52,13 @@ const legacy = (file) => {
   const svg = read(file).match(/<svg[^>]*animated-svg[\s\S]*?<\/svg>/)[0];
   const fills = new Set([...svg.matchAll(/<path[^>]*?\sfill="([^"]+)"/g)].map((match) => match[1]));
   assert.equal(fills.size, 1, `${file} draws its shape in ${fills.size} colours; this probe assumes one`);
+  const tag = svg.match(/<svg[^>]*>/)[0];
   return {
     viewBox: svg.match(/viewBox="([^"]+)"/)[1],
     paths: pathsIn(svg),
     fill: [...fills][0],
+    width: (tag.match(/\swidth="([^"]+)"/) ?? [, ''])[1],
+    height: (tag.match(/\sheight="([^"]+)"/) ?? [, ''])[1],
   };
 };
 
@@ -74,6 +77,40 @@ test('every shape is the one the legacy section draws, path for path', () => {
     /* In order, because these are stacked layers: reordering them is a different picture. */
     assert.deepEqual(pathsIn(branchOf(shape)), source.paths, `${shape}: path data drifted from ${SOURCES[shape]}`);
   }
+
+  /*
+   * The intrinsic size, which is the easiest thing here to lose and the hardest to notice. An
+   * inline <svg> with only a viewBox is a replaced element with a default 300px width, and the
+   * legacy rule (`assets/legacy-page-layout.css:349`) sets `max-width: 100%`, which caps
+   * rather than stretches -- `inset-inline: 0` does not stretch it either, because for an
+   * absolutely positioned replaced element `width: auto` resolves to the intrinsic width and
+   * the over-constrained `right` is dropped. So a shape with `width="457"` draws at 457 and
+   * one without draws at 300, and both are what their section draws today. Two of the six
+   * carry the attributes; dropping them shrank careers and training by ~35%.
+   */
+  const sized = [];
+  for (const [, shape] of cases) {
+    const source = legacy(SOURCES[shape]);
+    const branch = snippet.match(new RegExp(`when '${shape}'[\\s\\S]*?(?=\\s{4}when '|\\s{4}else)`))?.[0] ?? '';
+    const width = (branch.match(/assign shape_width = '([^']+)'/) ?? [, ''])[1];
+    const height = (branch.match(/assign shape_height = '([^']+)'/) ?? [, ''])[1];
+    if (width !== source.width || height !== source.height) {
+      sized.push(`${shape}: ${width || 'no width'}/${height || 'no height'}, but ${SOURCES[shape]} draws ${source.width || 'no width'}/${source.height || 'no height'}`);
+    }
+  }
+  assert.deepEqual(sized, [], 'these shapes no longer carry the intrinsic size their section draws them at');
+
+  /* And the attributes have to reach the markup, not just the variables. */
+  assert.match(
+    snippet,
+    /\{%-?\s*if shape_width != blank\s*%\}\s*width="\{\{ shape_width \}\}"\s*height="\{\{ shape_height \}\}"/,
+    'the intrinsic size is resolved but never emitted, so every shape falls back to the 300px default'
+  );
+
+  assert.ok(
+    cases.some(([, shape]) => legacy(SOURCES[shape]).width) && cases.some(([, shape]) => !legacy(SOURCES[shape]).width),
+    'every shape now has the same sizing, so the probe above no longer tests both states'
+  );
 
   /* The claim the whole snippet rests on. If a rule ever lands on these classes the paths stop
      being three copies of one colour, and lifting their union stops reproducing the section. */
