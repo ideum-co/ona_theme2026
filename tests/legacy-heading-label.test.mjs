@@ -152,12 +152,22 @@ const rulesFor = (name) => {
          with nothing failing (Codex, #300). The negation is stripped before the test. */
       const needsFilled = /:not\(\s*:empty\s*\)/.test(label);
       const needsEmpty = /:empty/.test(label.replace(/:not\([^)]*\)/g, ''));
+      /* Anything else on the label -- `:hover`, `:focus-visible`, `:first-child`, `::before`
+         -- only holds in that state, and treating such a rule as always applying let
+         `.subtitle:hover { display: block }` mask a default-state `display: inline`
+         (Codex, #300). A state is a qualifier like an at-rule, so it joins them. */
+      const states = (
+        label
+          .replace(/:not\(\s*:empty\s*\)/gi, '')
+          .replace(/:empty\b/gi, '')
+          .match(/::?[a-z-]+(?:\([^)]*\))?/gi) ?? []
+      ).map((state) => state.toLowerCase());
 
       found.push({
         selector: branch.trim().replace(/\s+/g, ' '),
         declarations,
         ancestors: compounds.slice(0, own),
-        conditions,
+        conditions: [...conditions, ...states],
         needsEmpty,
         needsFilled,
         weight: specificity(branch),
@@ -286,68 +296,90 @@ const presentIn = (compound, ancestry) => {
 const satisfiable = (conditions) => {
   let low = 0;
   let high = Infinity;
+  const fixed = new Map();
+
   for (const condition of conditions) {
-    for (const [, feature, value] of condition.matchAll(/\((min|max)-width\s*:\s*(\d+)px\)/g)) {
-      if (feature === 'min') low = Math.max(low, Number(value));
-      else high = Math.min(high, Number(value));
+    for (const [, bound, feature, value] of condition.matchAll(
+      /\(\s*(?:(min|max)-)?([a-z-]+)\s*:\s*([^)]+)\)/gi
+    )) {
+      const name = feature.toLowerCase();
+      if (name === 'width' && bound) {
+        const pixels = Number(String(value).replace(/px\s*$/i, '').trim());
+        /* A width this cannot read is a width this cannot intersect. */
+        if (Number.isNaN(pixels)) return false;
+        if (bound.toLowerCase() === 'min') low = Math.max(low, pixels);
+        else high = Math.min(high, pixels);
+        continue;
+      }
+      /* One feature cannot hold two values at once. This is how portrait and landscape are
+         kept apart without naming either: `satisfiable` only understood widths, so two
+         orientation rules were multiplied into a viewport that cannot exist (Codex, #300). */
+      const normalised = String(value).trim().toLowerCase();
+      const seen = fixed.get(name);
+      if (seen !== undefined && seen !== normalised) return false;
+      fixed.set(name, normalised);
     }
   }
   return low <= high;
 };
 
+/*
+ * A context is one real eyebrow, under one satisfiable combination of qualifiers.
+ *
+ * The previous shape took the powerset of the ancestors the rules mention, which invents
+ * elements: a base-only subset is not a thing that renders when every eyebrow sits under a
+ * section root that overrides it, so a perfectly accessible stylesheet failed on a state no
+ * page is ever in (Codex, #300). The elements come from the markup instead, and only the
+ * qualifiers -- at-rules and states -- are varied.
+ */
 const contextsFor = (name) => {
   const all = rulesFor(name);
   const ancestries = ancestriesFor(name);
   assert.ok(
     ancestries.length > 0,
-    `cannot find .${name} in any section's markup, so there is no way to tell which ancestor ` +
-      'combinations are real -- the contexts would be invented'
-  );
-
-  const constraints = [];
-  const seen = new Set();
-  for (const rule of all) {
-    const key = JSON.stringify([rule.ancestors, rule.conditions]);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    constraints.push(rule);
-  }
-  /* The powerset is exponential, so an unexpectedly branchy stylesheet stops the test rather
-     than quietly measuring a subset of the combinations. */
-  assert.ok(
-    constraints.length <= 12,
-    `.${name} is styled under ${constraints.length} distinct contexts, too many to enumerate ` +
-      'the combinations of -- narrow the model rather than leaving combinations unchecked'
+    `cannot find .${name} in any section's markup, so there is no way to tell which rules ` +
+      'reach it -- the contexts would be invented'
   );
 
   const out = [];
-  const built = new Set();
-  for (let mask = 1; mask < 1 << constraints.length; mask += 1) {
-    const chosen = constraints.filter((_, at) => mask & (1 << at));
-    const ancestors = [...new Set(chosen.flatMap((rule) => rule.ancestors))];
-    const conditions = [...new Set(chosen.flatMap((rule) => rule.conditions))];
-    if (!satisfiable(conditions)) continue;
+  for (const entry of ancestries) {
+    const reaches = all.filter((rule) =>
+      rule.ancestors.every((compound) => presentIn(compound, entry.chain))
+    );
+    if (reaches.length === 0) continue;
 
-    const here = ancestries.filter((entry) =>
-      ancestors.every((compound) => presentIn(compound, entry.chain))
+    const sets = [];
+    const seen = new Set();
+    for (const rule of reaches) {
+      const key = JSON.stringify(rule.conditions);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      sets.push(rule.conditions);
+    }
+    /* The powerset is exponential, so an unexpectedly branchy stylesheet stops the test
+       rather than quietly measuring a subset of the combinations. */
+    assert.ok(
+      sets.length <= 12,
+      `.${name} in ${entry.section} is styled under ${sets.length} distinct qualifier sets, ` +
+        'too many to enumerate the combinations of -- narrow the model rather than leaving ' +
+        'combinations unchecked'
     );
 
-    /* A rule applies here when everything it asks for is present here -- its ancestors, and
-       the at-rules it sits inside. An unconditional rule applies in every context; a media
-       rule only in the contexts that carry that condition. */
-    const applicable = all.filter(
-      (rule) =>
-        rule.ancestors.every((ancestor) => ancestors.includes(ancestor)) &&
-        rule.conditions.every((condition) => conditions.includes(condition))
-    );
-    if (applicable.length === 0) continue;
+    const built = new Set();
+    for (let mask = 0; mask < 1 << sets.length; mask += 1) {
+      const conditions = [
+        ...new Set(sets.filter((_, at) => mask & (1 << at)).flat()),
+      ];
+      if (!satisfiable(conditions)) continue;
 
-    /* One entry per element the union describes, because the inline style belongs to the
-       element rather than to the selector. */
-    for (const entry of here) {
-      const key = JSON.stringify([[...ancestors].sort(), [...conditions].sort(), entry.section]);
+      const key = JSON.stringify([...conditions].sort());
       if (built.has(key)) continue;
       built.add(key);
+
+      const applicable = reaches.filter((rule) =>
+        rule.conditions.every((condition) => conditions.includes(condition))
+      );
+      if (applicable.length === 0) continue;
 
       out.push({
         where: [entry.section, ...conditions].join(' inside '),
