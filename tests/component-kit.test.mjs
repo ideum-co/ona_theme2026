@@ -567,6 +567,51 @@ test('the video-variant count is derived from the family schemas', () => {
   );
 });
 
+/*
+ * The media table described ona-training-text-image-bg as an iframe "over a background image".
+ * It is two columns: the embed sits in the text column, the photo in the other, and nothing is
+ * layered. The row also missed that the "Watch videos" anchor above the embed is inert -- which
+ * matters the other way round from how it reads, because an implementer who believes there is a
+ * lightbox will try to rebuild one that never worked.
+ *
+ * Both halves are derived. The columns come from the Liquid; the inertness comes from the
+ * absence of any rule or handler for the three classes involved, which is a claim about the
+ * whole theme and so has to be re-checked rather than remembered -- the day someone styles
+ * .video-link, this document stops being true and should fail.
+ */
+test('the text-image-bg row describes the markup and the dead trigger', () => {
+  const file = join(root, 'sections', 'ona-training-text-image-bg.liquid');
+  const source = readFileSync(file, 'utf8');
+
+  /* Two sibling columns, not a layered background. */
+  assert.match(source, /<div class="text[^"]*">[\s\S]*?<div class="data-video">[\s\S]*?<\/div>[\s\S]*?<\/div>\s*<div class="image/,
+    'the embed and the image are no longer sibling columns; the media row needs rewriting');
+  assert.match(source, /href="javascript:void\(0\);"/, 'the Watch videos anchor changed; the row calls it inert');
+
+  /* Inert means: no rule in any stylesheet, no handler in any script, anywhere in the theme. */
+  const bodies = (dir, exts) =>
+    readdirSync(join(root, dir))
+      .filter((f) => exts.some((e) => f.endsWith(e)))
+      .map((f) => readFileSync(join(root, dir, f), 'utf8'));
+  const css = bodies('assets', ['.css']).join('\n');
+  const js = bodies('assets', ['.js']).join('\n');
+  assert.ok(css.length > 1000 && js.length > 1000, 'the asset probe read almost nothing; it is broken');
+
+  for (const klass of ['training-bg', 'video-link', 'a-link']) {
+    assert.ok(!new RegExp(`\\.${klass}\\b`).test(css), `.${klass} now has CSS; the row says it has none`);
+    assert.ok(!new RegExp(`\\.${klass}\\b`).test(js), `.${klass} is now scripted; the row says the anchor is inert`);
+  }
+
+  /* The comparison the note draws: .play-video is styled but equally unhandled. */
+  assert.ok(/\.play-video\b/.test(css), 'the note says .play-video has CSS in legacy-page-layout.css, and it no longer does');
+  assert.ok(!/play-video/.test(js), 'the note says .play-video has no handler, and it now does');
+
+  assert.ok(
+    /\*\*not\*\* a background image/.test(doc) && /the anchor is a removal, not behaviour to reproduce/.test(doc),
+    'the document no longer corrects the background-image reading or says the anchor is a removal'
+  );
+});
+
 test('the duplication table still matches the schemas', () => {
   const groups = new Map();
 

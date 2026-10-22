@@ -123,7 +123,7 @@ Shopify-hosted video — and five of the eight do not fit it:
 | `ona-expericences-content` | one image — but beside a live `{% form 'contact' %}`, see below | no |
 | `ona-training` | `media_type: embed`, a youtu.be URL | no — external |
 | `ona-wholesale-partnership` | `media_type: embed`, a YouTube watch URL | no — external |
-| `ona-training-text-image-bg` | a pasted `<iframe>` of a YouTube embed, over a background image | no — external, and two layers |
+| `ona-training-text-image-bg` | a pasted `<iframe>` in the text column, beside a plain `<img>` in the other — **not** a background image, and the `Watch videos` link above the embed is inert | no — external, and the embed sits beside the copy rather than in a media slot |
 | `ona-training-text-two-images` | `image` **and** `image2`, rendered together | no — two |
 
 Those five go to component 1 instead: a `section` holding a row `group`, with a
@@ -131,6 +131,21 @@ Those five go to component 1 instead: a `section` holding a row `group`, with a
 blocks on one side and a column `group` of text on the other. Same layout, same
 media, and it is still a merchant-editable block tree — which is stage 2's
 actual test.
+
+`ona-training-text-image-bg` needs a note of its own, because its name says
+`BG` and there is no background. `sections/ona-training-text-image-bg.liquid:6-11`
+renders the pasted `<iframe>` inside a `.data-video` div beneath a `Watch videos`
+anchor whose `href` is `javascript:void(0);`, and the image is a separate column
+at lines 13-15. The two sit side by side; nothing is layered over anything.
+
+The anchor is also dead. `.training-bg`, `.video-link` and `.a-link` have no rule
+in any stylesheet and no handler in any script, so the link does nothing and the
+embed renders inline rather than behind it. Component 1 carries what is actually
+there — a `video` block for the embed, an `image` block for the photo, both in
+one row `group` — and the anchor is a removal, not behaviour to reproduce. It is
+inert for the same reason as the `.play-video` anchors in five other sections,
+which have CSS in `assets/legacy-page-layout.css` but no handler either; this one
+has neither.
 
 Four of the five are media the slot cannot hold. `ona-expericences-content` is
 the fifth for a different reason: its one image *does* fit the slot, but the
