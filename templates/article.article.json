@@ -30,9 +30,10 @@
  * Shopify does not fall back from a named suffix to the default template when
  * the suffixed file is present but a *different* one is missing elsewhere; they
  * are two independent entry points into the same main-blog-post section, and the
- * brewguide-article-* blocks/sections are themselves gated on
- * article.blog.handle == 'brewguides', so this stays inert on any article this
- * template might ever end up serving outside that blog.
+ * brewguide-article-* blocks/sections are themselves gated on blog.handle == 'brewguides'
+ * (PR #287: article.blog.handle resolves blank in this theme's actual rendering, despite
+ * being documented Liquid -- use the global `blog` object instead), so this stays inert on
+ * any article this template might ever end up serving outside that blog.
  */
 {
   "sections": {
