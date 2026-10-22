@@ -261,32 +261,70 @@ test('the sourcing clones still render nothing from their blocks', () => {
 });
 
 /*
- * A section that contains a {% form %} or reads a metafield is doing something no generic
- * block does, so leaving one out of the plan is how a live form or a metafield-backed counter
- * gets quietly replaced by a text block. The set is derived from the Liquid, and each member
- * has to be accounted for somewhere -- either in the kit (ona-page-media-gallery is a
- * component) or in the section that says what the kit does not cover.
+ * A section that contains a {% form %}, reads a metafield, or loads its own script is doing
+ * something no generic block does -- those are the three probes the document names, so the
+ * test runs all three rather than the first two. Leaving one out of the plan is how a live
+ * form, a metafield-backed counter or a slider gets quietly replaced by a text block.
+ *
+ * Being accounted for means a row that decides the section: a row of the behavioural table, a
+ * Known gaps row that names it, or a row of the composite table (four script-backed sections
+ * are panel-plus-slider composites and share one collective gap row). Mere presence somewhere
+ * in the kit is not enough, and that is what this used to ask: every one of these sections is
+ * already named in the kit's mapping cells, so a form added to an already-mapped section --
+ * ona-inner-banner, say -- left the suite green. The later coverage test already guarantees the
+ * name appears somewhere; this one has to ask something that test does not.
  */
-test('every section carrying a form or a metafield is accounted for', () => {
-  const behavioural = readdirSync(join(root, 'sections'))
-    .filter((file) => file.startsWith('ona-') && file.endsWith('.liquid'))
-    .filter((file) => {
-      const source = readFileSync(join(root, 'sections', file), 'utf8');
-      return /\{%-?\s*form\s/.test(source) || /(?:shop|page|product)\.metafields/.test(source);
-    })
-    .map((file) => file.slice(0, -'.liquid'.length));
+test('every section carrying a form, a metafield or its own script is accounted for', () => {
+  const sections = readdirSync(join(root, 'sections')).filter(
+    (file) => file.startsWith('ona-') && file.endsWith('.liquid')
+  );
+  const sourceOf = (file) => readFileSync(join(root, 'sections', file), 'utf8');
+  const nameOf = (file) => file.slice(0, -'.liquid'.length);
 
-  assert.ok(behavioural.length > 0, 'the probe found no behavioural sections, so it is broken');
+  const posts = sections.filter((file) => /\{%-?\s*form\s/.test(sourceOf(file))).map(nameOf);
+  const reads = sections
+    .filter((file) => /(?:shop|page|product)\.metafields/.test(sourceOf(file)))
+    .map(nameOf);
+  const scripted = sections
+    .filter(
+      (file) =>
+        /\.js['"]\s*\|\s*asset_url/.test(sourceOf(file)) || /<script[^>]*src=/.test(sourceOf(file))
+    )
+    .map(nameOf);
 
-  const scope = doc.slice(doc.indexOf('## What the kit does not cover'), doc.indexOf('## Page by page'));
-  assert.ok(scope.length > 0, 'the kit no longer says what it does not cover');
+  for (const [label, found] of [['form', posts], ['metafield', reads], ['script', scripted]]) {
+    assert.ok(found.length > 0, `the ${label} probe found no sections, so it is broken`);
+  }
 
-  const kit = kitRows.map((row) => row.join(' ')).join('\n');
-  const unaccounted = behavioural.filter((name) => !scope.includes(name) && !kit.includes(name)).sort();
+  const behavioural = [...new Set([...posts, ...reads, ...scripted])].sort();
+
+  /* The lead-in quotes the size of the derived set, so a new behavioural section forces the
+     paragraph that disposes of them to be rewritten rather than quietly falling out of date. */
+  const scope = between('## What the kit does not cover', '## Known gaps');
+  assert.ok(
+    new RegExp(`Those three\\s+probes find \\*\\*${behavioural.length}\\*\\* sections`).test(scope),
+    `the lead-in should say the three probes find ${behavioural.length} sections`
+  );
+
+  /* Scoped to table rows, not to the span. A name mentioned in the surrounding prose is a
+     mention; a name in a row is a decision about that section, which is what being accounted
+     for means here. */
+  const rowsNaming = (text) =>
+    text
+      .split('\n')
+      .filter((line) => line.startsWith('|'))
+      .flatMap((line) => [...line.matchAll(/`(ona-[a-z0-9-]+)`/g)].map((match) => match[1]));
+
+  const gaps = between('## Known gaps', '## Page by page');
+  const compositeTable = between('### The dominant shape is a composite', 'Each renders a titled panel');
+  const decided = new Set([...rowsNaming(scope), ...rowsNaming(gaps), ...rowsNaming(compositeTable)]);
+  assert.ok(decided.size > 5, 'no decision rows were found at all, so the probe is broken');
+
+  const unaccounted = behavioural.filter((name) => !decided.has(name)).sort();
   assert.deepEqual(
     unaccounted,
     [],
-    'these sections carry a form or a metafield and appear in neither the kit nor its exclusions'
+    'these sections post a form, read a metafield or load a script, and no behavioural, gap or composite row decides them'
   );
 });
 

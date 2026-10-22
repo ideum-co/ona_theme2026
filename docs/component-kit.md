@@ -293,7 +293,10 @@ rather than losing it. Same for `ona-inner-banner`, which has the same schema.
 The kit is for **layout**. Some sections carry behaviour, and behaviour does
 not collapse into a generic block. They are findable rather than
 remembered — a section that contains a `{% form %}`, reads a metafield, or
-loads its own script is doing something a `text` block cannot:
+loads its own script is doing something a `text` block cannot. Those three
+probes find **16** sections. The eight whose behaviour needs a decision of its
+own are in the table; the paragraph after it says where the other eight are
+already answered:
 
 | Section | Behaviour | Target |
 | --- | --- | --- |
@@ -306,8 +309,20 @@ loads its own script is doing something a `text` block cannot:
 | `ona-bookings-top` (bookings) | **no iframe at all** — a breadcrumb list, then a two-column heading and intro read from `page.metafields.accentuate.title_bookings` and `content_bookings` | needs its own target, not the iframe's deferral — see [Known gaps](#known-gaps) |
 | `ona-campaign-banner` (homepage) | reads `shop.metafields.custom.donation_end_date` and renders the campaign line only when it has a value, next to its own scoped stylesheet | keep: it is the other half of the counter — both read metafields written by the same recompute job, and a `text` block cannot omit itself when the date is unset |
 
+The other eight are answered without a row of their own.
+`ona-page-media-gallery` reads a metafield and is already in [Known
+gaps](#known-gaps), named in the `ona-awards` row. The remaining seven only
+load a script, and a script is a mapping question rather than a keep — a
+component brings its own behaviour with it, so a slider that loads
+`ona-slider.js` needs a target, not an exemption. `ona-awards`,
+`ona-faq-lists` and `ona-training` have Known gaps rows of their own, and
+`ona-supported`, `ona-traning-supported`, `ona-expressions` and
+`ona-wholesale-testimonial` are four of the five panel-plus-slider composites,
+which carry one collective gap row.
+
 So the honest version of the collapse: the **layout** fragments go to eight
-components. Eight sections carry behaviour: three are `{% form 'contact' %}`
+components. Eight sections carry behaviour that needs a decision of its own:
+three are `{% form 'contact' %}`
 sections that **cannot** move to Horizon's `contact-form` as it stands — each
 posts a fixed `contact[subject]`, and `ona-gust-r` a `contact[business]` too,
 which the stock block has no setting for, so the block needs a subject setting
