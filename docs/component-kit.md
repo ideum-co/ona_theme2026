@@ -143,7 +143,7 @@ Three fit the media slot plainly — `ona-training-image-text`,
 an unblocked `media-with-content`. The other two carry the `.animated-svg`
 decorative layer (see [Known gaps](#known-gaps)). `ona-training-image-text` is
 also not a settings-only swap: `templates/page.training.json` gives it three
-enabled blocks, rendered by `sections/ona-training-image-text.liquid:30-36` as
+enabled blocks, rendered by `sections/ona-training-image-text.liquid:16-21` as
 a `<ul class="courses">` of Canberra / Sydney / Melbourne booking links. Those
 convert cleanly to `button` blocks in the content slot — unlike `ona-training`,
 whose three blocks are `faqs-toggle`s and earn their own gap row — but they
@@ -235,8 +235,13 @@ has to be written.
 | 8 | **a page-header section** — *to write* | eyebrow, heading, optional sub-copy, optional visually-hidden variant | `ona-page-title`, `ona-sr-heading` |
 
 Two components that looked like matches are deliberately absent. **`slideshow`**
-takes only `_slide` blocks, so it has no legacy target left once the composites
-go to `carousel`. **`marquee`** was rejected for animating where the logo wall
+takes only `_slide` blocks, and the only legacy sections it could have taken are
+the five panel-plus-slider composites — for which it is the wrong target, because
+the persistent panel would have to live inside a slide and would repeat or
+disappear as the slides change. They do not go to `carousel` either: row 4 above
+rules them out and they have **no verified target** at all (see
+[Known gaps](#known-gaps)). `slideshow` is absent because nothing is left for it,
+not because something better took its sections. **`marquee`** was rejected for animating where the logo wall
 was static; #253 animated the logo wall, so that objection is gone. It stays
 out for a different reason, measured on the files rather than assumed:
 `sections/marquee.liquid` takes `logo` blocks, but `blocks/logo.liquid` renders

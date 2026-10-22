@@ -456,6 +456,79 @@ test('the page-header contract keeps the dynamic title fallback', () => {
   );
 });
 
+/*
+ * The document's own thesis is "read the markup, not the schema" -- three mappings in its first
+ * draft were wrong because they were derived from {% schema %} rather than from what renders.
+ * It then cited sections/ona-training-image-text.liquid:30-36 as the proof that three booking
+ * links must be carried; lines 30-36 are the "Title" label inside that section's schema, and
+ * the <ul class="courses"> loop is at 16-21. The citation committed the error the section two
+ * headings later warns about, and an implementer following it to check what must survive would
+ * have found metadata.
+ *
+ * So every sections/*.liquid line citation is checked against the file's schema span. No
+ * citation in the document legitimately points into a schema, so there is no exception list --
+ * if one is ever needed, the right fix is to say in prose that the schema is what is meant.
+ */
+test('no Liquid citation points inside a schema block', () => {
+  const cites = [...doc.matchAll(/sections\/([a-z0-9.-]+\.liquid):(\d+)(?:-(\d+))?/g)].map((m) => ({
+    file: m[1],
+    from: Number(m[2]),
+    to: Number(m[3] ?? m[2]),
+  }));
+  assert.ok(cites.length > 5, `only ${cites.length} Liquid citations found; the probe is broken`);
+
+  const offenders = [];
+  for (const cite of cites) {
+    const path = join(root, 'sections', cite.file);
+    assert.ok(existsSync(path), `the document cites sections/${cite.file}, which does not exist`);
+    const lines = readFileSync(path, 'utf8').split('\n');
+    const opens = lines.findIndex((line) => /\{%-?\s*schema/.test(line)) + 1;
+    const closes = lines.findIndex((line) => /\{%-?\s*endschema/.test(line)) + 1;
+    if (!opens || !closes) continue;
+    if (cite.from >= opens && cite.to <= closes) {
+      offenders.push(`sections/${cite.file}:${cite.from}-${cite.to} (schema is ${opens}-${closes})`);
+    }
+    assert.ok(
+      cite.to <= lines.length,
+      `sections/${cite.file}:${cite.from}-${cite.to} runs past the end of the file (${lines.length} lines)`
+    );
+  }
+  assert.deepEqual(offenders, [], 'these citations point at schema metadata, not at rendered markup');
+});
+
+/*
+ * The paragraph on deliberately-absent components justified excluding slideshow by saying the
+ * composites "go to carousel". They do not: component row 4 rules carousel out for exactly
+ * those five sections, and the analysis above gives them no verified target. A rationale that
+ * contradicts the row it sits under is how a rejected conversion comes back -- an implementer
+ * reading only this paragraph learns that the composites have a home.
+ */
+test('the absent-components rationale does not revive the carousel mapping', () => {
+  /* Scoped to the slideshow sentence, not to the section. The first version of this guard ran
+     to the next heading, 192 lines on, and "no verified target" appears eight times in that
+     span -- seven of them about other pages, any one of which kept it green however the
+     slideshow rationale was worded. The claim has to be read where it is made. */
+  const absent = between('Two components that looked like matches are deliberately absent.', '**`marquee`**');
+  assert.ok(absent.length < 1000, `the slideshow rationale scope is ${absent.length} chars; it has stopped being one paragraph`);
+
+  const carouselRow = kitRows.find((row) => row.join(' ').includes('`carousel`'));
+  assert.ok(carouselRow, 'the kit no longer has a carousel row');
+  assert.match(
+    carouselRow.join(' '),
+    /\*\*Not\*\* the five panel-plus-slider sections/,
+    'the carousel row no longer rules out the composites, so this guard is checking nothing'
+  );
+
+  assert.ok(
+    !/composites\s+go to `carousel`/.test(absent),
+    'the absent-components paragraph says the composites go to carousel, which row 4 denies'
+  );
+  assert.ok(
+    /no verified target/.test(absent),
+    'the absent-components paragraph should say the composites have no verified target'
+  );
+});
+
 test('the duplication table still matches the schemas', () => {
   const groups = new Map();
 
