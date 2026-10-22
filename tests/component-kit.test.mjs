@@ -1578,10 +1578,25 @@ test('the wholesale plan carries both halves of the ona-gust-r gap', () => {
   const mentions = planRow.match(/`ona-gust-r`/g) ?? [];
   assert.equal(mentions.length, 1, `the wholesale row mentions ona-gust-r ${mentions.length} times; this guard assumes one`);
   const clause = planRow.slice(planRow.indexOf('`ona-gust-r`'));
+  /* This used to require the clause to call for a `two-column container`, which pinned a layout
+     the page does not have: the form wrapper closes at `sections/ona-gust-r.liquid:55` and the
+     promo is the sibling <section> at 57, stacked below it. Enforcing the old claim would have
+     made correcting the page fail the suite, so the guard now holds the two things that are
+     actually true -- the promo is separate, and what is left blocking is the form. */
+  assert.doesNotMatch(
+    clause,
+    /two-column container|beside the form/i,
+    'the wholesale plan still puts the promo beside the form; it is a sibling section stacked below it'
+  );
   assert.match(
     clause,
-    /two-column container/i,
-    'the wholesale plan still reduces ona-gust-r to its form fields; the gap row needs a container target too'
+    /subject and business fields/i,
+    'the wholesale plan no longer names the subject and business fields, which are what block this section'
+  );
+  assert.match(
+    clause,
+    /field set and validation/i,
+    'the wholesale plan no longer names the field set and validation gap'
   );
 });
 
