@@ -1585,3 +1585,99 @@ test('the behavioural count is the length of the table above it', () => {
     `the summary should say ${NUMBER_WORDS[rows.length]} sections carry behaviour, for ${rows.length} table rows`
   );
 });
+
+/*
+ * The Learn row claimed a `group` reproduces "the live tile exactly". It does not: the legacy
+ * tile wraps the heading and "Learn more" inside the anchor, which is where the link gets its
+ * accessible name, while `snippets/group.liquid` emits the anchor empty and as a sibling of the
+ * content (Codex, #247). Both halves are derived, so the doc follows the theme in both
+ * directions -- if the anchor ever wraps its children or gains a label, the gap row is the
+ * stale thing, not the snippet.
+ */
+test('the Learn tile gap tracks what snippets/group.liquid emits', () => {
+  const snippet = readFileSync(join(root, 'snippets/group.liquid'), 'utf8');
+  const anchor = snippet.match(/<a\b[\s\S]*?class="group-block__link"[\s\S]*?<\/a>/);
+  assert.ok(anchor, 'snippets/group.liquid no longer emits a group-block__link anchor; the probe is broken');
+
+  const legacy = readFileSync(join(root, 'sections/ona-brewguides-and-training.liquid'), 'utf8');
+  const legacyAnchor = legacy.match(/<a\b[^>]*class="list-box"[\s\S]*?<\/a>/);
+  assert.ok(legacyAnchor, 'the legacy tile no longer has a list-box anchor; the probe is broken');
+  assert.match(
+    legacyAnchor[0],
+    /block\.settings\.title/,
+    'the legacy tile anchor no longer wraps its heading; the contrast this gap rests on is gone'
+  );
+
+  const schema = readFileSync(join(root, 'blocks/group.liquid'), 'utf8');
+  const labelSetting = [...schema.matchAll(/"id":\s*"([^"]*label[^"]*)"/gi)].map((match) => match[1]);
+  const named = !/>\s*<\/a>\s*$/.test(anchor[0]) || /aria-label/.test(anchor[0]) || labelSetting.length > 0;
+
+  const gapRow = doc
+    .split('\n')
+    .find((line) => line.startsWith('| the Learn tiles (`ona-brewguides-and-training`)'));
+
+  if (named) {
+    assert.equal(
+      gapRow,
+      undefined,
+      `the group link can now be named (${labelSetting.join(', ') || 'the anchor wraps its content'}); the Learn gap row is stale`
+    );
+    return;
+  }
+
+  assert.ok(gapRow, 'the group link is still unnamed, but the Learn tiles have no gap row');
+  assert.ok(
+    !doc.includes('the live tile exactly'),
+    'the Learn row still claims the group reproduces the live tile exactly, while the anchor carries no accessible name'
+  );
+  const planRow = doc.split('\n').find((line) => line.startsWith('| `/pages/learn`'));
+  assert.ok(planRow, 'the Learn page plan row is gone; the probe is broken');
+  assert.match(
+    planRow,
+    /Known gaps/,
+    'the Learn plan row does not send the reader to the gap row that blocks its tile mapping'
+  );
+});
+
+/*
+ * `media_type: embed` reads like a working video and is not one: every non-Vimeo URL falls to an
+ * empty `<div>` that no script in the theme drives, so the live page shows a cover image and a
+ * dead play button. Mapping those sections to a `video` block starts a video that does not play
+ * today -- with `autoplay` already set in the template -- which is a behaviour change ONA has to
+ * decide on, not a reproduction (Codex, #247). The population is derived from the live templates
+ * so a third instance cannot be added without a gap row.
+ */
+test('every live embed that renders nothing is recorded as a behaviour change', () => {
+  const silent = [];
+  for (const file of readdirSync(join(root, 'templates')).filter((name) => name.endsWith('.json'))) {
+    const data = JSON.parse(stripBanner(readFileSync(join(root, 'templates', file), 'utf8')));
+    for (const section of Object.values(data.sections ?? {})) {
+      const settings = section.settings ?? {};
+      if (settings.media_type !== 'embed') continue;
+      if (String(settings.video_url ?? '').includes('vimeo')) continue;
+      const liquid = readFileSync(join(root, 'sections', `${section.type}.liquid`), 'utf8');
+      if (!/<div id="\{\{ player_id \}\}"[^>]*><\/div>/.test(liquid)) continue;
+      silent.push(section.type);
+    }
+  }
+
+  const handled = readdirSync(join(root, 'assets'))
+    .filter((name) => name.endsWith('.js'))
+    .some((name) => /play-video|iframe_api|YT\.Player|player_id/.test(readFileSync(join(root, 'assets', name), 'utf8')));
+
+  if (handled) {
+    assert.fail('a script now drives the legacy embeds; the "nothing plays" gap row no longer holds');
+  }
+
+  assert.ok(silent.length >= 2, `only ${silent.length} silent embed instances found; the probe is broken`);
+  assert.ok(
+    !doc.includes('Same layout, same\nmedia'),
+    'the component-1 paragraph still promises the same media for sections whose video does not play'
+  );
+
+  const gapRows = doc.split('\n').filter((line) => /^\|/.test(line) && /behaviour change/i.test(line) && /autoplay/.test(line));
+  const unrecorded = [...new Set(silent)].filter(
+    (name) => !gapRows.some((row) => row.includes(`\`${name}\``))
+  );
+  assert.deepEqual(unrecorded, [], 'these silent embed sections have no gap row calling the swap a behaviour change');
+});
