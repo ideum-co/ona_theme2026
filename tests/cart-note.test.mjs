@@ -94,25 +94,43 @@ test('a pending note write cannot be outrun by accelerated checkout', () => {
     'cart-note.js writes the note from more than one place; the debounced and flush paths should share one writer'
   );
 
-  /* The flag is set on <html> because <cart-note> is not an ancestor of the buttons. */
+  /* The hold has two halves, and CSS is only one of them. `pointer-events: none` suppresses
+     pointer hit-testing and nothing else, so a keyboard user could tab to Shop Pay and press
+     Enter on the stale note. `inert` takes the subtree out of focus, activation and the
+     accessibility tree. The flag on <html> drives the visual half; <cart-note> is not an
+     ancestor of the buttons, so neither can be scoped to it. */
   assert.match(
     script,
-    /document\.documentElement\.setAttribute\('data-cart-note-pending'/,
+    /document\.documentElement\.toggleAttribute\('data-cart-note-pending'/,
     'cart-note.js no longer marks a write as pending'
   );
   assert.match(
     script,
-    /document\.documentElement\.removeAttribute\('data-cart-note-pending'\)/,
-    'cart-note.js never clears the pending flag; the accelerated buttons would stay disabled'
-  );
-  assert.match(
-    script,
-    /finally\s*\{[\s\S]*?removeAttribute\('data-cart-note-pending'\)/,
-    'the pending flag is not cleared in a finally block, so a failed write would leave checkout stuck'
+    /querySelectorAll\('\.additional-checkout-buttons'\)[\s\S]{0,160}?toggleAttribute\('inert'/,
+    'the accelerated checkout buttons are not made inert while a write is in flight; CSS alone leaves them focusable and activatable by keyboard'
   );
   assert.match(
     summary,
     /:root\[data-cart-note-pending\][^{]*\.additional-checkout-buttons\s*\{[^}]*pointer-events:\s*none/,
     'nothing holds back the accelerated checkout buttons while a note write is in flight'
+  );
+  assert.match(
+    script,
+    /finally\s*\{[\s\S]*?#hold\(false\)/,
+    'the hold is not released in a finally block, so a failed write would leave checkout stuck'
+  );
+  /* And never indefinitely: being unable to check out at all is worse than losing the note. */
+  assert.match(script, /setTimeout\(\(\) => this\.#hold\(false\)/, 'nothing releases the hold if the write never settles');
+
+  /* A value recorded as written before the server took it is a note the shopper believes is
+     saved and is not: the next blur of an unchanged textarea would skip the retry and let them
+     leave with the previous server-side note. So the record happens after the response, which
+     is checked by position because it cannot be checked by name. */
+  const accepted = script.indexOf('this.#accepted = note');
+  const awaited = script.indexOf('await fetch(');
+  assert.ok(accepted > 0 && awaited > 0, 'cart-note.js no longer records an accepted note, or no longer fetches');
+  assert.ok(
+    accepted > awaited,
+    'the note is recorded as accepted before the fetch resolves; a failed write would then be treated as saved and never retried'
   );
 });
