@@ -138,7 +138,7 @@ const grounds = () => {
       continue;
     }
     for (const [key, section] of Object.entries(parsed.sections ?? {})) {
-      const band = section.settings?.band_background;
+      const band = section.settings?.background_color;
       if (typeof band === 'string' && /^#[0-9a-f]{6}$/i.test(band)) found.set(`${file} ${key}`, band);
     }
   }

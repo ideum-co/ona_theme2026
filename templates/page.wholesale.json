@@ -17,7 +17,7 @@
     "wholesale_sourcing_v2": {
       "type": "ona-wholesale-sourcing-v2",
       "settings": {
-        "band_background": "#ebe4d4",
+        "background_color": "#ebe4d4",
         "id": "",
         "image": "shopify://shop_images/ONA_pewpewstudio_240625__245_LR.jpg",
         "title": "Our Premium Wholesale Coffee Bean Supply",
@@ -85,7 +85,7 @@
     "training": {
       "type": "ona-training",
       "settings": {
-        "band_background": "#470a12",
+        "background_color": "#470a12",
         "id": "complete-training",
         "title": "Complete Training",
         "content": "<p>ONA Coffee goes above and beyond as a coffee bean wholesale supplier. When you choose our wholesale coffee beans, you gain access to world-class training programs that empower your team and elevate your café's coffee experience. Discover more about <a href=\"https://www.youtube.com/watch?v=dktspYuqEIg\"><span style=\"text-decoration:underline\">our programs</span></a> — exclusive to our wholesale clients.</p>",
@@ -127,7 +127,7 @@
     "wholesale_sourcing_v3": {
       "type": "ona-wholesale-sourcing-v3",
       "settings": {
-        "band_background": "#ebe4d4",
+        "background_color": "#ebe4d4",
         "id": "",
         "image": "shopify://shop_images/HA-Ona-110.jpg",
         "title": "",
@@ -186,7 +186,7 @@
     "expressions": {
       "type": "ona-expressions",
       "settings": {
-        "band_background": "#ebe4d4",
+        "background_color": "#ebe4d4",
         "id": "expersion-block-elements",
         "title": "Our coffee offering is designed to preserve their unique expressions.",
         "slider_autoplay": false
@@ -253,7 +253,7 @@
     "sourcing": {
       "type": "ona-sourcing",
       "settings": {
-        "band_background": "#ebe4d4",
+        "background_color": "#ebe4d4",
         "id": "sourcing-block-elements",
         "image": "shopify://shop_images/cover-farmers_0e185c64-9e79-43f4-adb9-a944da98e26f.png",
         "title": "SOURCING",
@@ -389,7 +389,7 @@
     "wholesale_sourcing_v5": {
       "type": "ona-wholesale-sourcing-v5",
       "settings": {
-        "band_background": "#ebe4d4",
+        "background_color": "#ebe4d4",
         "id": "",
         "image": "shopify://shop_images/4_a01b08af-a94c-4a7d-98a0-456a0361728d.jpg",
         "title": "",
@@ -464,7 +464,7 @@
     "cafe_testimonial": {
       "type": "ona-cafe-testimonial",
       "settings": {
-        "band_background": "#ebe4d4",
+        "background_color": "#ebe4d4",
         "id": "cafe-testimonials",
         "bottom_image": "shopify://shop_images/ONA_Bus.png"
       },
@@ -516,7 +516,7 @@
     "exclusive_access": {
       "type": "ona-exclusive-access",
       "settings": {
-        "band_background": "#470a12",
+        "background_color": "#470a12",
         "id": "exclusive-access",
         "title": "Exclusive Access",
         "content": "<p>As a wholesale partner, you receive exclusive access to the latest coffee trends, news, findings, and educational content.</p><ul><li> 50+ café focused video content  </li><li> Research and development reports</li><li>Free passes for events and masterclasses</li><li>Special releases and merchandise</li></ul>",
@@ -554,7 +554,7 @@
     "wholesale_sourcing_v6": {
       "type": "ona-wholesale-sourcing-v6",
       "settings": {
-        "band_background": "#ebe4d4",
+        "background_color": "#ebe4d4",
         "id": "",
         "image": "shopify://shop_images/6_c1997037-286a-426f-bc96-0af899e9a4f0.jpg",
         "title": "",
@@ -571,7 +571,7 @@
     "wholesale_brands": {
       "type": "ona-wholesale-brands",
       "settings": {
-        "band_background": "#ebe4d4",
+        "background_color": "#ebe4d4",
         "id": "",
         "title": "Brands we work with",
         "content": ""

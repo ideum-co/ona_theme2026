@@ -16,14 +16,15 @@
   `--color-primary-button-background`, which is the page foreground (#470a12) -- on a
   dark band that is maroon on maroon. The band inverts the pair against itself.
 
-  @param {section} section - The section being painted. Reads `section.settings.band_background`.
+  @param {section} section - The section being painted. Reads `section.settings.background_color`,
+  the same setting id and the same stock label every Horizon section uses for this.
 
   @example
   {% render 'ona-band', section: section %}
 {%- enddoc -%}
 
 {%- liquid
-  assign band = section.settings.band_background
+  assign band = section.settings.background_color
 
   if band != blank and band.alpha != 0
     assign band_brightness = band | color_brightness
@@ -51,6 +52,14 @@
     #shopify-section-{{ section.id }} {
       --color-background: {{ band }};
       --color-background-rgb: {{ band.rgb }};
+      /* `assets/base.css` paints every h1-h6 with `color: var(--color)`. Nothing in the theme
+         defines --color globally, so today an unset one is invalid-at-computed-value-time and
+         the headings fall through to the inherited colour, which happens to be right. That is
+         a coincidence, not a mechanism: the day anything defines --color at a wider scope,
+         every heading inside a band takes the page foreground and goes invisible on the maroon
+         ones. contrast-override sets it for exactly this reason, so this does too. */
+      --color: {{ band_text }};
+      --color-rgb: {{ band_text_rgb }};
       --color-foreground: {{ band_text }};
       --color-foreground-rgb: {{ band_text_rgb }};
       --color-foreground-muted: rgb({{ band_text_rgb }} / var(--opacity-muted-text));
