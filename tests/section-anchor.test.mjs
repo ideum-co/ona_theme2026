@@ -126,12 +126,21 @@ const EMITS = new Map(
  * instantiate the type -- is what keeps the collision set the ids of the *rendered page* rather
  * than the ids the JSON happens to configure.
  */
+/*
+ * `(?<![-\w])` is the whole difference between an id and a substring of one. `data-testid="..."`
+ * ends in `id="..."`, and there are 22 of them across `sections/`, so without the boundary
+ * `sections/hero.liquid`'s `data-testid="hero-picture-1"` reserves `hero-picture-1` and an
+ * anchor by that name collides with an element that does not exist. A test attribute must not
+ * cost a merchant a valid anchor.
+ */
+const ID_ATTRIBUTE = /(?<![-\w])id="([A-Za-z][-\w]*)"/g;
+
 const STATIC = new Map(
   readdirSync(join(root, 'sections'))
     .filter((name) => name.endsWith('.liquid'))
     .map((name) => [
       name.replace(/\.liquid$/, ''),
-      [...new Set([...read(join('sections', name)).matchAll(/id="([A-Za-z][-\w]*)"/g)].map((m) => m[1]))],
+      [...new Set([...read(join('sections', name)).matchAll(ID_ATTRIBUTE)].map((m) => m[1]))],
     ])
 );
 
@@ -165,7 +174,7 @@ test('every stored anchor is reachable and unique on the page it renders on', ()
      the page before a section renders. An anchor duplicating one sends `#MainContent` to the
      wrapper instead of the section. (password.liquid is deliberately not here: it serves the
      password page, which has no template JSON, so its ids are not on these pages.) */
-  const fromLayout = [...read('layout/theme.liquid').matchAll(/id="([A-Za-z][-\w]*)"/g)].map((m) => [m[1], 'layout/theme.liquid']);
+  const fromLayout = [...read('layout/theme.liquid').matchAll(ID_ATTRIBUTE)].map((m) => [m[1], 'layout/theme.liquid']);
   assert.ok(fromLayout.length >= 2, `the layout emits ${fromLayout.length} static ids; the probe is broken`);
 
   /* The groups reach every page, so their section types' own ids do too. Without this the set
