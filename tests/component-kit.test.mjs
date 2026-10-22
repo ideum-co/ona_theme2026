@@ -715,6 +715,19 @@ test('the contact-form gap rows record the validation mismatch', () => {
       );
     }
     assert.match(source, /<label for="ona-/, `${name} no longer has visible labels; the gap rows claim it does`);
+
+    /* What the visitor gets back after submitting. The legacy forms announce; contact-form
+       moves focus and reports one field. */
+    assert.match(
+      source,
+      /role="status"/,
+      `${name} no longer announces its success line in a live region; the gap rows claim it does`
+    );
+    assert.match(
+      source,
+      /role="alert"[\s\S]{0,80}default_errors/,
+      `${name} no longer renders every error through default_errors in an alert; the gap rows claim it does`
+    );
   }
 
   const horizon = readFileSync(join(root, 'blocks', 'contact-form.liquid'), 'utf8');
@@ -729,6 +742,20 @@ test('the contact-form gap rows record the validation mismatch', () => {
   assert.match(horizon, /type="tel"/, 'contact-form no longer has the phone field the gap rows cite');
   assert.match(horizon, /name="contact\[phone\]"/, 'contact-form no longer posts contact[phone]');
 
+  /* The response states. `default_errors` renders every error; contact-form never calls it and
+     prints the email field alone, so a missing name or message comes back with nothing shown. */
+  assert.ok(
+    !/default_errors/.test(horizon),
+    'contact-form now renders default_errors; the gap rows say it reports only the email error'
+  );
+  assert.match(horizon, /form\.errors\.messages\.email/, 'contact-form no longer reports the email error the gap rows cite');
+  assert.deepEqual(
+    horizon.match(/role="(?:status|alert)"/g) ?? [],
+    [],
+    'contact-form now has a live-region role; the gap rows say it announces nothing and moves focus instead'
+  );
+  assert.match(horizon, /autofocus/, 'contact-form no longer moves focus to its response; the gap rows cite that behaviour');
+
   /* Every one of the three rows states it, not just the shared paragraph. */
   const gaps = between('## Known gaps', '## Page by page');
   for (const name of legacy) {
@@ -737,6 +764,10 @@ test('the contact-form gap rows record the validation mismatch', () => {
     assert.ok(
       /\*\*The field set and validation differ too\*\*/.test(row),
       `the ${name} gap row no longer records the validation mismatch on its own`
+    );
+    assert.ok(
+      /\*\*The response states differ too\*\*/.test(row),
+      `the ${name} gap row no longer records the success/error mismatch on its own`
     );
   }
 
