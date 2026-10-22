@@ -808,6 +808,22 @@ test('the contact-form gap rows record the validation mismatch', () => {
     [],
     'these units raise the fixed subject as a blocker without the field-set and validation mismatch beside it'
   );
+
+  /* Same rule for the response states, and for the same reason: the gap rows recorded them while
+     the two page plans still ended their prerequisite list at the field set, so following the
+     plan would have cleared every listed blocker and still changed what a visitor sees after
+     submitting (Codex, #247). */
+  /* Matched on the tokens *or* the words, the same lesson the subject check learned above: the
+     table rows state the mismatch in prose ("only the email error", "no live-region role")
+     rather than naming `role="status"`, and keying on the tokens alone missed them. */
+  const quiet = prerequisite.filter(
+    (unit) => !/role="status"|role="alert"|default_errors|response state|live.region|only the email (error|field)/i.test(unit)
+  );
+  assert.deepEqual(
+    quiet.map((unit) => unit.split('\n')[0].slice(0, 70)),
+    [],
+    'these units raise the fixed subject as a blocker without the success/error mismatch beside it'
+  );
 });
 
 test('the duplication table still matches the schemas', () => {
