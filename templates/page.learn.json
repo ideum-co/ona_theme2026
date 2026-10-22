@@ -1,0 +1,38 @@
+{
+  "sections": {
+    "brewguides_and_training": {
+      "type": "ona-brewguides-and-training",
+      "settings": {},
+      "blocks": {
+        "773dbd16-6a6f-468b-870a-1716f9e2ce49": {
+          "type": "block",
+          "settings": {
+            "image": "shopify://shop_images/latte_art-1.jpg",
+            "url": "shopify://pages/barista-courses",
+            "title": "Barista Courses"
+          }
+        },
+        "3ef7cb88-2524-4cc5-8c47-c3bfa8e9726d": {
+          "type": "block",
+          "settings": {
+            "image": "shopify://shop_images/brewguides-1.jpg",
+            "url": "https://onacoffee.com.au/blogs/brewguides",
+            "title": "Brewguides"
+          }
+        }
+      },
+      "block_order": [
+        "773dbd16-6a6f-468b-870a-1716f9e2ce49",
+        "3ef7cb88-2524-4cc5-8c47-c3bfa8e9726d"
+      ]
+    },
+    "page_title": {
+      "type": "ona-page-title",
+      "settings": {}
+    }
+  },
+  "order": [
+    "page_title",
+    "brewguides_and_training"
+  ]
+}

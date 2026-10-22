@@ -3,9 +3,34 @@
   if block.settings.image_position == 'contain'
     assign unset_image_tag = true
   endif
+
+  # `hide_when_empty` is passed in by a parent block that wants empty media to disappear instead of
+  # falling back to a stock placeholder -- the product-bound "Product media with text". The standard
+  # "Media with text" renders this block without it, so its behaviour is unchanged: a placeholder
+  # shows whenever no media is set, as before. It arrives as a content_for argument, which the
+  # linter does not know about (like `article` elsewhere), so the check is silenced for this line.
+  # theme-check-disable UndefinedObject
+  assign hide_empty = hide_when_empty | default: false
+  # theme-check-enable UndefinedObject
+  assign has_media = false
+  if block.settings.media_type == 'image' and block.settings.image != blank
+    assign has_media = true
+  elsif block.settings.media_type == 'video' and block.settings.video != blank
+    assign has_media = true
+  endif
+  # When a parent asked to hide empty media, hide it in the theme editor too: once the image is
+  # bound to a dynamic source, a placeholder on a product that has none reads as broken rather than
+  # unset, and the block is still reachable from the layers panel to edit. The standard Media with
+  # text never passes the flag, so it keeps showing a placeholder as before.
+  assign show_media = true
+  if hide_empty and has_media == false
+    assign show_media = false
+  endif
 %}
 
-{% render 'media', unset_image_tag: unset_image_tag %}
+{% if show_media %}
+  {% render 'media', unset_image_tag: unset_image_tag %}
+{% endif %}
 
 {% schema %}
 {

@@ -1,0 +1,136 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ *
+ * Why this file exists as a copy of templates/article.json: every Brew Guides
+ * article actually linked to a live product (confirmed live via the Admin API
+ * templateSuffix field -- Kagumo AB, Kaliluni AA, Regional Aurea, Bridazul Lot 1,
+ * Janson Estate, Kiambu Regional C, Raspberry Candy Filter, Thageini Karibu, and
+ * more) carries template_suffix "article", which Shopify resolves to
+ * templates/article.article.json -- not the default templates/article.json.
+ * Without this file, those articles silently fell back to Horizon's bare
+ * main-blog-post layout (title/date/image/content only), which is why PR #282's
+ * fix to templates/article.json never appeared on any article actually in use,
+ * even though the underlying blocks/brewguide-article-tasting-info.liquid and
+ * sections/brewguide-article-info.liquid were correctly synced and the article's
+ * own accentuate.* data was confirmed correct.
+ *
+ * Only the Brew Guides blog uses template_suffix "article" -- confirmed by
+ * checking every other blog's articles (News: all use "news", resolving to the
+ * separate, untouched templates/article.news.json; Flagship stores: all use the
+ * default; Recipes and News (legacy "news-1") have no articles). The hundreds of
+ * retired/orphaned Brew Guides articles not linked to any current product use the
+ * default suffix too, so they already render from templates/article.json. Keep
+ * this file identical to templates/article.json -- both are needed because
+ * Shopify does not fall back from a named suffix to the default template when
+ * the suffixed file is present but a *different* one is missing elsewhere; they
+ * are two independent entry points into the same main-blog-post section, and the
+ * brewguide-article-* blocks/sections are themselves gated on blog.handle == 'brewguides'
+ * (PR #287: article.blog.handle resolves blank in this theme's actual rendering, despite
+ * being documented Liquid -- use the global `blog` object instead), so this stays inert on
+ * any article this template might ever end up serving outside that blog.
+ */
+{
+  "sections": {
+    "section": {
+      "type": "main-blog-post",
+      "blocks": {
+        "blog-post-title": {
+          "type": "text",
+          "name": "t:names.title",
+          "settings": {
+            "text": "<h1>{{ article.title }}</h1>",
+            "width": "100%",
+            "max_width": "normal",
+            "alignment": "center",
+            "type_preset": "h2",
+            "font": "var(--font-body--family)",
+            "font_size": "",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "blog-post-tasting-info": {
+          "type": "brewguide-article-tasting-info",
+          "settings": {}
+        },
+        "blog-post-details": {
+          "type": "_blog-post-info-text",
+          "name": "t:names.details",
+          "settings": {
+            "show_date": true,
+            "show_author": false,
+            "type_preset": "",
+            "alignment": "center",
+            "show_alignment": true,
+            "padding-block-start": 0,
+            "padding-block-end": 0
+          },
+          "blocks": {}
+        },
+        "blog-post-image": {
+          "type": "_blog-post-featured-image",
+          "name": "t:names.featured_image",
+          "settings": {
+            "image_ratio": "adapt",
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "blog-post-content": {
+          "type": "_blog-post-content",
+          "settings": {},
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "blog-post-title",
+        "blog-post-tasting-info",
+        "blog-post-details",
+        "blog-post-image",
+        "blog-post-content"
+      ],
+      "settings": {
+        "content_direction": "column",
+        "gap": 32,
+        "padding-block-start": 40,
+        "padding-block-end": 80
+      }
+    },
+    "brewguide-info": {
+      "type": "brewguide-article-info",
+      "settings": {}
+    }
+  },
+  "order": [
+    "section",
+    "brewguide-info"
+  ]
+}

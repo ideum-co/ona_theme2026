@@ -263,6 +263,21 @@
       "default": 0
     },
     {
+      "type": "checkbox",
+      "id": "mobile_text_scrim",
+      "label": "Darken behind mobile text",
+      "info": "A gradient from the bottom keeps light text readable over a light video or image. Mobile only.",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "mobile_scrim_color",
+      "label": "Scrim color",
+      "default": "#470a12",
+      "alpha": true,
+      "visible_if": "{{ section.settings.mobile_text_scrim }}"
+    },
+    {
       "type": "header",
       "content": "t:content.appearance"
     },
@@ -486,6 +501,16 @@
       "step": 1,
       "unit": "px",
       "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Anchor"
+    },
+    {
+      "type": "text",
+      "id": "anchor",
+      "label": "Anchor name",
+      "info": "Lets other links on the page jump here. Enter it without the #, e.g. complete-training, then link to #complete-training. Leave empty for no anchor."
     }
   ],
   "presets": [

@@ -5,11 +5,22 @@
 {% liquid
   assign block_settings = block.settings
   assign image = closest.article.image
+
+  # The cap below belongs to the shape actually being rendered, not the source
+  # file. A `landscape` or `portrait` ratio crops the image to that box, so a
+  # portrait source still paints a landscape banner and must not be capped --
+  # templates/article.news.json picks `landscape` and the Journal's 'Amazonian
+  # Canephoras' is a 1536x2049 source. Only `adapt` keeps the source's own
+  # shape, so only `adapt` can produce a portrait box.
+  assign renders_portrait = false
+  if block_settings.image_ratio == 'adapt' and image.aspect_ratio and image.aspect_ratio < 1
+    assign renders_portrait = true
+  endif
 %}
 
 {%- if image != blank -%}
   <div
-    class="blog-post-featured-image blog-post-featured-image--{{ block.id }} blog-post-featured-image--height-{{ block_settings.height }} spacing-style size-style"
+    class="blog-post-featured-image blog-post-featured-image--{{ block.id }} blog-post-featured-image--height-{{ block_settings.height }}{% if renders_portrait %} blog-post-featured-image--portrait{% endif %} spacing-style size-style"
     style="
       --ratio: {% case block_settings.image_ratio %}
         {% when 'landscape' %}16 / 9
@@ -72,6 +83,30 @@
     height: 100%;
     object-fit: cover;
     object-position: center center;
+  }
+
+  /*
+   * A portrait hero is not a banner.
+   *
+   * templates/article.json asked for `landscape`, so every brew guide's
+   * portrait bag -- they are uniformly ~612x1000 -- was forced into 16/9 and
+   * cropped: 503x823 of artwork rendered 1316x740 on
+   * /blogs/brewguides/bruma-colombia-washed, slicing the top and bottom off
+   * the bag. Switching the template to `adapt` stops the crop but then the
+   * same image fills the content width and becomes 1316x2153, taking the page
+   * from 1,049px to 2,461px.
+   *
+   * The old theme shows it small instead: 265x433 at its own 0.61 ratio, in a
+   * narrow column, whole page 1,171px. This caps a portrait hero near that
+   * size while leaving landscape heroes full width and untouched.
+   *
+   * A maximum, not a width: the block exposes desktop and mobile width
+   * settings, and `inline-size` would override `--width` and pin every
+   * portrait hero at 420px even where a merchant asked for less.
+   */
+  .blog-post-featured-image--portrait {
+    max-inline-size: 420px;
+    margin-inline: auto;
   }
 
   @media screen and (max-width: 749px) {

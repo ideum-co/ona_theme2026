@@ -23,6 +23,9 @@
 <div
   class="section section--{{ section.settings.section_width }} color-custom-{{ section_id }}"
   data-testid="ui-test-section"
+  {%- if section.settings.anchor != blank %}
+    id="{{ section.settings.anchor | escape }}"
+  {%- endif %}
  
   {% if request.visual_preview_mode %}
     data-shopify-visual-preview
@@ -31,6 +34,11 @@
   style="
     --ona-mobile-min-height: {{ section.settings.mobile_min_height | default: 600 }}px;
     --ona-mobile-content-top: {{ section.settings.mobile_content_top | default: 0 }}px;
+    {%- if section.settings.mobile_text_scrim and section.settings.background_media != 'none' and section.settings.background_media != blank %}
+      {%- assign scrim_color = section.settings.mobile_scrim_color | default: '#470a12' %}
+      --ona-mobile-scrim-start: {{ scrim_color }};
+      --ona-mobile-scrim-end: {{ scrim_color | color_modify: 'alpha', 0 }};
+    {%- endif %}
     {% if section.settings.section_height == 'custom' %}
       --section-min-height: {{ section.settings.section_height_custom }}svh;
     {% elsif section.settings.section_height == 'full-screen' %}
@@ -54,11 +62,24 @@
         %}
       </div>
       <div class="ona-responsive-background ona-responsive-background--mobile">
-        {% render 'background-media',
-          background_media: 'video',
-          background_video: section.settings.mobile_video | default: section.settings.video,
-          background_video_position: section.settings.mobile_video_position | default: 'contain'
-        %}
+        {%- comment -%}
+          `!= blank`, not `| default:`: the default filter does not recognise a populated video drop
+          as present, so it always fell through to the desktop clip - the mobile layer played the
+          desktop video even when a mobile one was set. story-video uses this same check for this.
+        {%- endcomment -%}
+        {% if section.settings.mobile_video != blank %}
+          {% render 'background-media',
+            background_media: 'video',
+            background_video: section.settings.mobile_video,
+            background_video_position: section.settings.mobile_video_position
+          %}
+        {% else %}
+          {% render 'background-media',
+            background_media: 'video',
+            background_video: section.settings.video,
+            background_video_position: section.settings.mobile_video_position
+          %}
+        {% endif %}
       </div>
     {% else %}
       {% render 'background-media',
@@ -67,6 +88,16 @@
         background_image_position: section.settings.background_image_position
       %}
     {% endif %}
+
+    {%- comment -%}
+      A mobile-only scrim behind the content: on a phone the text stacks over the media, and a light
+      video leaves light type unreadable. Last in the background so it sits over the video; the
+      content keeps its own stacking layer above it. Hidden on desktop, where the two sit side by
+      side and no scrim is needed.
+    {%- endcomment -%}
+    {%- if section.settings.mobile_text_scrim and section.settings.background_media != 'none' and section.settings.background_media != blank -%}
+      <div class="ona-mobile-scrim" aria-hidden="true"></div>
+    {%- endif -%}
   </div>
 
   <div
@@ -127,6 +158,11 @@
     grid-column: 1 / -1;
   }
 
+  /* Desktop lays the media and the text side by side, so no scrim. */
+  .ona-mobile-scrim {
+    display: none;
+  }
+
   .ona-responsive-background--mobile {
     display: none;
   }
@@ -139,6 +175,22 @@
     }
     .section:has(.ona-responsive-background--mobile) .section-content-wrapper {
       padding-block-start: var(--ona-mobile-content-top);
+    }
+
+    /* Darkest at the bottom, gone by the middle, so the lower text reads over a light video and the
+       top of the section stays clear. Fades to the same colour at zero alpha (not `transparent`) to
+       avoid the grey wash browsers interpolate through a straight `transparent` keyword. */
+    .ona-mobile-scrim {
+      display: block;
+      position: absolute;
+      inset: 0;
+      z-index: var(--layer-base);
+      pointer-events: none;
+      background: linear-gradient(
+        to top,
+        var(--ona-mobile-scrim-start, #470a12) 0%,
+        var(--ona-mobile-scrim-end, rgb(71 10 18 / 0)) 55%
+      );
     }
   }
 

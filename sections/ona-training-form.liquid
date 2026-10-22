@@ -1,0 +1,80 @@
+<section class="training-form">
+  <div class="container">
+    <div class="content">
+      <div class="left-box wowo fadeInUp">
+        <div class="img">
+          <svg class="animated-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 823.5 736.6">
+            <path class="start" fill-rule="evenodd" clip-rule="evenodd" d="M190.926 752.443C92.5124 578.553 140.942 363.306 303.974 250.005C555.104 75.4783 755.243 105.153 929.471 348.206C953.74 382.053 970.348 435.851 961.463 473.32C956.605 493.787 890.314 511.28 852.66 509.346C756.311 504.425 701.762 553.497 656.579 629.232C618.676 692.768 582.916 761.708 530.406 811.469C414.604 921.213 269.77 891.751 190.926 752.443" fill="#BDD6E6"/>
+            <path class="medium" d="M375.22,715.24C259.65,706.13,146.11,652.36,80.61,556.7c-69.69-101.79-110-241.44-54.78-351.77,51.67-103.27,193.54-101,301.63-141.62,80-30.06,154.18-72.78,238.91-61.44,97.75,13.08,209,39.91,254.49,127.45,44.73,86.19-9.57,186.13-44.75,276.65C746.12,483.11,703.2,550,637.67,600.6,559.09,661.22,474.16,723,375.22,715.24Z" fill="#BDD6E6"/>
+            <path class="end" d="M268.55,82.66c81.71-42.95,167.4-66.49,253-75.2,91.64-9.32,189-17.18,252.23,23.81,64.34,41.69,88.94,117.3,86.16,195.48-2.6,73-57.65,145.44-100.9,218.67C714,521.74,689,615.24,603,661.85c-85.84,46.48-173,10.52-260.71,9.29-80.89-1.13-171,17.59-231.93-16.19C46.22,619.45,16,554.21,5.06,484.37-6.23,412.18-1.35,331.62,48,256.46,96.76,182,182.89,127.7,268.55,82.66Z" fill="#BDD6E6"/>
+          </svg>
+          <img src="{{ section.settings.image | img_url: '1190x' }}" alt="" loading="lazy" decoding="async">
+        </div>
+      </div>
+      <div class="right-box wowo fadeInUp">
+        <h2>Enquire about barista training</h2>
+        {%- assign form_id = 'ona-training-' | append: section.id -%}
+        {%- comment -%}
+          SYNC HAZARD -- read before editing.
+
+          This is one of three files the Shopify GitHub integration has twice failed to
+          deliver to theme 154676789439. PR #175's copy was genuinely invalid (a filter
+          pipeline inside the form tag's argument list). PR #183's copy is valid: on
+          2026-10-19 these exact bytes were upserted to a scratch theme through the Admin
+          API and accepted, with a checksum matching the repository file. The integration
+          is not objecting to the content -- it skipped these three files and does not
+          revisit a file until its content changes again, which is what this comment is
+          for.
+
+          AFTER MERGING, COMPARE THE THEME'S checksumMd5 AGAINST md5sum OF THIS FILE. A
+          clean merge is not evidence the storefront received it; until those match, the
+          page still renders the literal app shortcode to customers.
+        {%- endcomment -%}
+        {% form 'contact', id: form_id, class: 'ona-legacy-contact-form' %}
+          <input type="hidden" name="contact[id]" value="{{ form_id }}">
+          {%- liquid
+            comment
+              Shopify exposes one form result to every contact form on the page, so an
+              unguarded success or error message appears on forms the customer never
+              submitted. Match on the posted contact[id], as blocks/contact-form.liquid does.
+            endcomment
+            assign form_matches = false
+            if form.id == form_id or form.id == blank
+              assign form_matches = true
+            endif
+          -%}
+          {% if form.posted_successfully? and form_matches %}
+            <p role="status">Thank you. Your enquiry has been sent.</p>
+          {% elsif form.errors and form_matches %}
+            <div role="alert">{{ form.errors | default_errors }}</div>
+          {% endif %}
+          <input type="hidden" name="contact[subject]" value="Barista training enquiry">
+          <label for="ona-training-name-{{ section.id }}">Name</label>
+          <input required type="text" id="ona-training-name-{{ section.id }}" name="contact[name]" autocomplete="name" value="{{ form.name | escape }}">
+          <label for="ona-training-email-{{ section.id }}">Email</label>
+          <input required type="email" id="ona-training-email-{{ section.id }}" name="contact[email]" autocomplete="email" value="{{ form.email | escape }}">
+          <label for="ona-training-message-{{ section.id }}">How can we help?</label>
+          <textarea required id="ona-training-message-{{ section.id }}" name="contact[body]" rows="5">{{ form.body | escape }}</textarea>
+          <button type="submit" class="button">Send enquiry</button>
+        {% endform %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": {
+    "en": "Training form"
+  },
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": {
+		"en": "Image"
+      }
+    }
+  ]
+}
+{% endschema %}

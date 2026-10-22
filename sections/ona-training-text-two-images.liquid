@@ -1,0 +1,59 @@
+<section class="training-intro">
+  <div class="container">
+    <div class="content">
+      <div class="left-box wowo fadeInUp">
+        <h2>{{ section.settings.title2 }}</h2>
+        {{ section.settings.content }}
+        <p><a href="{{ section.settings.url }}" class="a-link">Read more</a></p>
+      </div>
+      <div class="right-box wowo fadeInUp">
+        <div class="img-bg image-1" style="background-image: url('{{ section.settings.image | img_url: '782x' }}')"></div>
+        <div class="img-bg image-2" style="background-image: url('{{ section.settings.image2 | img_url: '532x' }}')"></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Text & images"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title2",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": {
+		"en": "Content"
+      }
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": {
+		"en": "Read more"
+      }
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": {
+		"en": "Image"
+      }
+    },
+    {
+      "type": "image_picker",
+      "id": "image2",
+      "label": {
+		"en": "Image"
+      }
+    }
+  ]
+}
+{% endschema %}

@@ -112,14 +112,14 @@
     {%- endcomment -%}
     {% unless product_sold_out %}
       {% if from_ok and to_ok and custom_tag_name[i] != blank and custom_tag_type[i] != 'blank' and product.available == true and custom_tag_type[i] != 'Sold Out' and custom_tag_type[i] != 'Low Stock' and custom_tag_type[i] != 'Sale' %}
-        <span class="custom_product_tags">{% if custom_tag_icon[i] %}{% # theme-check-disable-next-line RemoteAsset %}<img src="{{ custom_tag_icon[i] }}" alt="" width="24" height="24">{% endif %}<h5{% if custom_tag_color[i] %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
+        <span class="custom_product_tags">{% if custom_tag_icon[i] != blank %}{% # theme-check-disable-next-line RemoteAsset %}<img src="{{ custom_tag_icon[i] }}" alt="" width="24" height="24">{% endif %}<h5{% if custom_tag_color[i] != blank %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
       {% endif %}
     {% endunless %}
 
     {% if from_ok and to_ok and custom_tag_name[i] != blank and custom_tag_type[i] != 'blank' and custom_tag_type[i] == 'Low Stock' and lowstock_inventory_limit != '' and product.available == true and product.first_available_variant.inventory_quantity <= lowstock_inventory_limit and low_stock_found == true %}
-      <span class="custom_product_tags">{% if custom_tag_icon[i] %}{% # theme-check-disable-next-line RemoteAsset %}<img src="{{ custom_tag_icon[i] }}" alt="" width="24" height="24">{% endif %}<h5{% if custom_tag_color[i] %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
+      <span class="custom_product_tags">{% if custom_tag_icon[i] != blank %}{% # theme-check-disable-next-line RemoteAsset %}<img src="{{ custom_tag_icon[i] }}" alt="" width="24" height="24">{% endif %}<h5{% if custom_tag_color[i] != blank %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
     {% elsif from_ok and to_ok and custom_tag_name[i] != blank and custom_tag_type[i] != 'blank' and custom_tag_type[i] == 'Sold Out' and product.available == false and product_sold_out == true %}
-      <span class="custom_product_tags">{% if custom_tag_icon[i] %}{% # theme-check-disable-next-line RemoteAsset %}<img src="{{ custom_tag_icon[i] }}" alt="" width="24" height="24">{% endif %}<h5{% if custom_tag_color[i] %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
+      <span class="custom_product_tags">{% if custom_tag_icon[i] != blank %}{% # theme-check-disable-next-line RemoteAsset %}<img src="{{ custom_tag_icon[i] }}" alt="" width="24" height="24">{% endif %}<h5{% if custom_tag_color[i] != blank %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
       {% assign sold_out_badge_rendered = true %}
     {% endif %}
   {% endif %}

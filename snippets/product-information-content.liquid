@@ -7,9 +7,25 @@
   @param {product} product - Product object
   @param {string} section_id - Unique section ID
   @param {object} settings - Section settings object
+  @param {string} [resolved_background_color] - Background color already resolved by the caller
+    (e.g. a per-product metafield in product-information.liquid). Defaults to
+    settings.background_color when not passed, so featured-product-information's
+    unmodified call keeps its existing static-only behaviour.
+  @param {string} [resolved_text_color] - Text color companion to resolved_background_color,
+    same default-to-settings behaviour.
   @param {string} media_gallery - Captured HTML for the product media gallery block
   @param {string} product_details - Captured HTML for the product details block
   @param {string} additional_blocks - Captured HTML for additional section blocks
+  @param {boolean} [emit_breadcrumb_schema] - Explicit opt-in for the BreadcrumbList JSON-LD
+    below. Deliberately NOT inferred from show_breadcrumbs: featured-product-information.liquid's
+    schema defines none of the breadcrumb_* settings this file reads, so on that caller `settings`
+    is the section's own (breadcrumb-less) settings object, and show_breadcrumbs's own nil-coalesce
+    (see below) makes it true anyway -- rendering a visible trail with an empty root label today
+    (pre-existing, not introduced here) and would emit invalid structured data (an empty "name")
+    if this schema inferred its gate the same way. product-information.liquid passes true because
+    its settings genuinely have breadcrumb_root_label etc.; featured-product-information.liquid
+    does not pass this at all, so the schema stays off there even though the visible list still
+    renders with its existing (separately tracked) empty-root-label defect. Codex, PR #272.
 
   @example
   {% capture media_gallery %}
@@ -92,13 +108,34 @@
 %}
 
 {% liquid
-  if settings.background_color != blank
-    render 'contrast-override', background_color: settings.background_color, section_id: section_id
+  assign effective_background_color = resolved_background_color | default: settings.background_color
+  assign effective_text_color = resolved_text_color | default: settings.text_color
+
+  # True only when the caller resolved a per-product color that differs from the
+  # section's own static setting - i.e. product-information.liquid found a metafield.
+  # Drives the breadcrumb colors below: a per-product background needs breadcrumb text
+  # that contrasts against it too, not whatever fixed color the static background was
+  # tuned for.
+  assign using_resolved_product_color = false
+  if resolved_background_color != blank and resolved_background_color != settings.background_color
+    assign using_resolved_product_color = true
+  endif
+
+  # contrast-override itself supports a text-only path (no background), so this must
+  # not require a background to fire - a text_color-only override would otherwise
+  # silently do nothing, which is exactly the gap Codex's review caught here.
+  assign has_resolved_color = false
+  if effective_background_color != blank or effective_text_color != blank
+    assign has_resolved_color = true
+  endif
+
+  if has_resolved_color
+    render 'contrast-override', background_color: effective_background_color, text_color: effective_text_color, section_id: section_id
   endif
 %}
 
 <div
-  class="section-background{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %}"
+  class="section-background{% if has_resolved_color %} color-custom-{{ section_id }}{% endif %}"
 ></div>
 <div
   class="product-information__viewport"
@@ -109,15 +146,20 @@
 >
 {% if show_breadcrumbs %}
   <div
-    class="product-information__breadcrumb-row section section--{{ content_width }} spacing-style{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %} relative"
+    class="product-information__breadcrumb-row section section--{{ content_width }} spacing-style{% if has_resolved_color %} color-custom-{{ section_id }}{% endif %} relative"
     style="
       --padding-block-start: {{ settings.breadcrumb_padding_top }}px;
       --padding-block-end: {{ settings.breadcrumb_padding_bottom }}px;
       --product-breadcrumb-gap: {{ settings.breadcrumb_gap }}px;
       --product-breadcrumb-font-size: {{ settings.breadcrumb_font_size }}px;
       --product-breadcrumb-font-size-mobile: {{ settings.breadcrumb_font_size_mobile }}px;
-      --product-breadcrumb-text-color: {{ settings.breadcrumb_text_color | default: 'currentcolor' }};
-      --product-breadcrumb-link-color: {{ settings.breadcrumb_link_color | default: settings.breadcrumb_text_color | default: 'currentcolor' }};
+      {% if using_resolved_product_color %}
+        --product-breadcrumb-text-color: var(--color-foreground, currentcolor);
+        --product-breadcrumb-link-color: var(--color-foreground, currentcolor);
+      {% else %}
+        --product-breadcrumb-text-color: {{ settings.breadcrumb_text_color | default: 'currentcolor' }};
+        --product-breadcrumb-link-color: {{ settings.breadcrumb_link_color | default: settings.breadcrumb_text_color | default: 'currentcolor' }};
+      {% endif %}
     "
   >
     <nav
@@ -145,9 +187,79 @@
       </ol>
     </nav>
   </div>
+
+  {%- comment -%}
+  Resent 2026-10-22: this file's content reached `main` in b8045f8 (#272) but never reached the
+  theme -- that merge's push event was lost in GitHub's 2026-10-21 webhook incident. The sync
+  carries only the files changed by the commits it actually processes, so the three later merges
+  that day stepped straight over it and a no-op commit is the only way to resend it.
+    BreadcrumbList mirrors the &lt;ol&gt; above item for item -- same root/collection/product
+    sequence, same collection-presence condition (settings.breadcrumb_show_collection and
+    breadcrumb_collection != blank), so the schema can never list a trail the visitor doesn't
+    actually see. position is 1-based in display order; the "all products" root is always
+    position 1, the current product is always last.
+
+    Sitting inside the same {% if show_breadcrumbs %} guard as the visible &lt;ol&gt; (not a
+    separate condition) is deliberate: show_breadcrumbs is a per-section visibility setting, and
+    the schema inheriting it is correct coupling, not a gap -- unlike the collection FAQPage
+    block (sections/main-collection.liquid), which reads a setting from templates/collection.json
+    this file has no access to and needs tests/collection-faqs-section.test.mjs to pin instead.
+    Here the setting and the schema live in the same file, so no separate guard test is needed.
+
+    This snippet is shared by sections/product-information.liquid and
+    sections/featured-product-information.liquid. Checked every templates/product*.json file
+    before writing this (not just product.json and product.merch.json by name -- a product
+    template split by type is coming, and a hardcoded pair would stop protecting anything the day
+    a new one landed): each references product-information exactly once, and none reference
+    featured-product-information at all -- so there is no page today where this snippet renders
+    twice and emits two BreadcrumbList nodes. That is a fact about the current templates, not a
+    property of
+    this file, and would need re-checking if a template is added that uses both sections together.
+
+    Escaping matches blocks/product-faqs.liquid and sections/main-collection.liquid, including the
+    `| replace: '</', '<\/'` after `| json` -- see product-faqs.liquid's comment for why it's
+    defense-in-depth rather than a required fix on this platform (Shopify's `json` filter already
+    escapes `<` as the Unicode escape `\u003c` before replace runs, so no literal `<` ever reaches a product or
+    collection title containing "</script>").
+
+    root_name defaults to 'Shop all' (matching the setting's own schema default,
+    sections/product-information.liquid's breadcrumb_root_label) rather than passing
+    settings.breadcrumb_root_label straight through. Both templates/product.json and
+    product.merch.json currently store "Shop all", so this is latent today -- but the setting is a
+    plain text field a merchant can clear to "" in the editor, and the root ListItem is position 1,
+    emitted unconditionally, with schema.org requiring `name`. A blank root doesn't degrade the
+    BreadcrumbList, it invalidates it, on every PDP at once (Codex, PR #272 round 5 -- caught by
+    the peer verifying it against the live setting rather than assuming the default always holds).
+    `| default` treats both nil and "" as falsy, so it covers the missing-setting and
+    cleared-to-blank cases the same way. This fixes the SCHEMA only. The visible root link at the
+    top of this file has the identical blank-label exposure and is intentionally left alone here --
+    see ONAIN-56, a deliberate separate scope call, not an oversight.
+  {%- endcomment -%}
+  {%- if emit_breadcrumb_schema -%}
+    {%- capture breadcrumb_list_items -%}
+      {%- assign breadcrumb_position = 1 -%}
+      {%- assign root_url = request.origin | append: routes.all_products_collection_url | json | replace: '</', '<\/' -%}
+      {%- assign root_name = settings.breadcrumb_root_label | default: 'Shop all' | json | replace: '</', '<\/' -%}
+      {"@type":"ListItem","position":{{ breadcrumb_position }},"name":{{ root_name }},"item":{{ root_url }}}
+      {%- assign breadcrumb_position = breadcrumb_position | plus: 1 -%}
+      {%- if settings.breadcrumb_show_collection and breadcrumb_collection != blank -%}
+        {%- assign collection_url = request.origin | append: breadcrumb_collection.url | json | replace: '</', '<\/' -%}
+        {%- assign collection_name = breadcrumb_collection.title | json | replace: '</', '<\/' -%}
+        ,{"@type":"ListItem","position":{{ breadcrumb_position }},"name":{{ collection_name }},"item":{{ collection_url }}}
+        {%- assign breadcrumb_position = breadcrumb_position | plus: 1 -%}
+      {%- endif -%}
+      {%- assign product_url = request.origin | append: product.url | json | replace: '</', '<\/' -%}
+      {%- assign product_name = product.title | json | replace: '</', '<\/' -%}
+      ,{"@type":"ListItem","position":{{ breadcrumb_position }},"name":{{ product_name }},"item":{{ product_url }}}
+    {%- endcapture -%}
+
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{{ breadcrumb_list_items | strip }}]}
+    </script>
+  {%- endif -%}
 {% endif %}
 <div
-  class="product-information section section--{{ content_width }} spacing-style{% if show_breadcrumbs %} disable-section-top-offset{% endif %}{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %} relative"
+  class="product-information section section--{{ content_width }} spacing-style{% if show_breadcrumbs %} disable-section-top-offset{% endif %}{% if has_resolved_color %} color-custom-{{ section_id }}{% endif %} relative"
   style="
     {% render 'spacing-style', settings: settings %}
     --gap: {{ settings.gap }}px;
@@ -266,15 +378,15 @@
 
   /* Desktop styles */
   @media screen and (min-width: 750px) {
+    /* The product no longer locks to one viewport height with the details scrolling inside it --
+       that hid the Add to cart on products with a lot of information. It flows with the page, the
+       details show in full, and the gallery sticks (below) so it stays in view while you read. */
     .product-information__viewport {
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
       width: min(100%, var(--product-information-max-width));
-      height: 100vh;
-      height: 100svh;
       margin-inline: auto;
-      overflow: hidden;
     }
 
     .product-information__breadcrumb-row {
@@ -288,8 +400,6 @@
 
     .product-information__grid {
       grid-column: 2;
-      height: 100%;
-      min-height: 0;
     }
 
     /* Position when there is no media */
@@ -388,28 +498,23 @@
     .product-information__media slideshow-container,
     .product-information__media slideshow-slide {
       min-height: 0;
-      height: 100%;
     }
 
-    .product-information__grid:not(.product-information--media-none) > .product-details {
-      align-self: stretch;
-      min-height: 0;
-      max-height: 100%;
-      overflow-x: hidden;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      /* Keep independent scrolling without displaying a scrollbar. */
-      scrollbar-width: none;
-      -ms-overflow-style: none;
+    /* The gallery stays in view as the page scrolls past a long details column, capped to the
+       viewport so a tall image never runs off the top or bottom. */
+    .product-information__media {
+      position: sticky;
+      top: calc(var(--header-height, 0px) + 16px);
+      align-self: start;
+      max-height: calc(100svh - var(--header-height, 0px) - 32px);
+    }
 
-      &::-webkit-scrollbar {
-        display: none;
-      }
+    /* Details flow with the page instead of scrolling inside their own box. */
+    .product-information__grid:not(.product-information--media-none) > .product-details {
+      align-self: start;
     }
 
     .product-information__media .product-media-container:not(.dialog-zoomed-gallery *) {
-      height: 100%;
-      max-height: 100%;
       aspect-ratio: auto;
     }
 

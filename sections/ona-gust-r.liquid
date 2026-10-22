@@ -1,0 +1,96 @@
+<div class="wholesale-form pop-up-form">
+  <div class="form-box">
+    <div class="box">
+      <a href="javascript:void(0);" class="icon-close pop-up-form-close"></a>
+      <div class="title"></div>
+      <h2>Get in touch</h2>
+      {%- assign form_id = 'ona-wholesale-' | append: section.id -%}
+      {%- comment -%}
+        SYNC HAZARD -- read before editing.
+
+        This is one of three files the Shopify GitHub integration has twice failed to
+        deliver to theme 154676789439. PR #175's copy was genuinely invalid (a filter
+        pipeline inside the form tag's argument list). PR #183's copy is valid: on
+        2026-10-19 these exact bytes were upserted to a scratch theme through the Admin
+        API and accepted, with a checksum matching the repository file. The integration
+        is not objecting to the content -- it skipped these three files and does not
+        revisit a file until its content changes again, which is what this comment is
+        for.
+
+        AFTER MERGING, COMPARE THE THEME'S checksumMd5 AGAINST md5sum OF THIS FILE. A
+        clean merge is not evidence the storefront received it; until those match, the
+        page still renders the literal app shortcode to customers.
+      {%- endcomment -%}
+      {% form 'contact', id: form_id, class: 'ona-legacy-contact-form' %}
+        <input type="hidden" name="contact[id]" value="{{ form_id }}">
+        {%- liquid
+          comment
+            Shopify exposes one form result to every contact form on the page, so an
+            unguarded success or error message appears on forms the customer never
+            submitted. Match on the posted contact[id], as blocks/contact-form.liquid does.
+          endcomment
+          assign form_matches = false
+          if form.id == form_id or form.id == blank
+            assign form_matches = true
+          endif
+        -%}
+        {% if form.posted_successfully? and form_matches %}
+          <p role="status">Thank you. Your enquiry has been sent.</p>
+        {% elsif form.errors and form_matches %}
+          <div role="alert">{{ form.errors | default_errors }}</div>
+        {% endif %}
+        <input type="hidden" name="contact[subject]" value="Wholesale partnership enquiry">
+        <label for="ona-wholesale-name-{{ section.id }}">Name</label>
+        <input required type="text" id="ona-wholesale-name-{{ section.id }}" name="contact[name]" autocomplete="name" value="{{ form.name | escape }}">
+        <label for="ona-wholesale-email-{{ section.id }}">Email</label>
+        <input required type="email" id="ona-wholesale-email-{{ section.id }}" name="contact[email]" autocomplete="email" value="{{ form.email | escape }}">
+        <label for="ona-wholesale-business-{{ section.id }}">Business name</label>
+        <input type="text" id="ona-wholesale-business-{{ section.id }}" name="contact[business]" autocomplete="organization">
+        <label for="ona-wholesale-message-{{ section.id }}">How can we help?</label>
+        <textarea required id="ona-wholesale-message-{{ section.id }}" name="contact[body]" rows="5">{{ form.body | escape }}</textarea>
+        <button type="submit" class="button">Send enquiry</button>
+      {% endform %}
+    </div>
+  </div>
+</div>
+
+<section class="full-width-image-and-text section-relative-image guest-image-block" id="wholesale-video-section">
+  <div class="container">
+    <div class="guest-wrap" style="display:flex;flex-wrap:wrap;align-items:center;gap:40px;">
+      <div class="guest-media" style="flex:1 1 48%;min-width:300px;">
+        <div class="video-box" style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">
+          <iframe
+            src="https://www.youtube.com/embed/42flR1Iwun4"
+            title="YouTube video player"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            style="position:absolute;top:0;left:0;width:100%;height:100%;">
+          </iframe>
+        </div>
+      </div>
+
+      <div class="guest-content" style="flex:1 1 48%;min-width:300px;">
+        <p style="letter-spacing:3px;text-transform:uppercase;">Join our community</p>
+        <h2>A wholesale partnership with us means elevating your cafe's specialty coffee experience.</h2>
+        <p>Join us for a purposeful and meaningful coffee partnership fuelled by connection and constant evolution through world-class coffee training and support.</p>
+        <p>As a cafe partner, you'll have exclusive access to an exceptional range of quality coffee selections.</p>
+        <p>
+          <a href="javascript:void(0);" class="more-btn wholesale-roaster-form-btn">Get in touch</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Wholesale video",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Wholesale video"
+    }
+  ]
+}
+{% endschema %}

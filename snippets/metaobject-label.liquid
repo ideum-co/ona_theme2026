@@ -1,0 +1,25 @@
+{%- doc -%}
+  Outputs a display label for one badge value, whichever shape the metafield holds.
+
+  Handles a metaobject reference (uses a named field, then a common label field,
+  then the humanised handle) and a plain text value. Outputs nothing when empty.
+
+  @param {object} item - a metaobject reference or a plain value
+  @param {string} [field] - preferred metaobject field key for the label
+{%- enddoc -%}
+{%- liquid
+  assign label = ''
+  if field != blank
+    assign label = item[field]
+  endif
+  if label == blank
+    assign label = item.label | default: item.name | default: item.title
+  endif
+  if label == blank and item.system != blank
+    assign label = item.system.handle | replace: '-', ' ' | capitalize
+  endif
+  if label == blank
+    assign label = item
+  endif
+-%}
+{{- label -}}

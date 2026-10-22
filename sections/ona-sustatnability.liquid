@@ -1,0 +1,58 @@
+<div class="sustainability-top">
+  <div class="content">
+    <div class="left-box wowo fadeInUp">
+      <h2>{{ section.settings.title2 }}</h2>
+      <p>{{ section.settings.content }}</p>
+    </div>
+    <div class="product-slider wowo fadeInUp">
+      {% if section.blocks.size > 0 %}
+      {% for block in section.blocks %}
+      <div class="slider-list">
+        <img src="{{ block.settings.image | img_url: '' }}" alt="" loading="lazy" decoding="async">
+      </div>
+      {% endfor %}
+      {% endif %} 
+    </div>
+  </div>
+</div>
+{% schema %}
+{
+  "name": {
+    "en": "Sustatnability"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title2",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "content",
+      "label": {
+		"en": "Content"
+      }
+    }
+  ],
+  "max_blocks": 20,
+  "blocks": [
+    {
+      "type": "block",
+      "name": {
+        "en": "Block"
+      },
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": {
+            "en": "Image"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

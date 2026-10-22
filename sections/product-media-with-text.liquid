@@ -1,0 +1,80 @@
+{%- comment -%}
+  "Product media with text" as a top-level section, so it can be added in one click from "Add
+  section" and used outside the product tabs.
+
+  It renders the existing `product-media-with-text` block rather than restating the layout, so there
+  is a single component to maintain. The block binds its media to the product (e.g. the
+  custom.profile_image dynamic source) and hides the media when the product has none, leaving the
+  text full width -- no placeholder.
+
+  Width is handled here through the theme's own `.section` grid: "Page" keeps the block in the
+  central page-width column (the default), "Full" lets it span edge to edge. The block's own "Limit
+  content width" is a finer control that only caps the text column, not the whole section.
+{%- endcomment -%}
+<div
+  class="section section--{{ section.settings.section_width }} spacing-style"
+  style="{% render 'spacing-style', settings: section.settings %}"
+  {{ section.shopify_attributes }}
+>
+  {% content_for 'block', type: 'product-media-with-text', id: 'product-media-with-text' %}
+</div>
+
+{% schema %}
+{
+  "name": "Product media with text",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product media with text"
+    }
+  ]
+}
+{% endschema %}

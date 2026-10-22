@@ -7,7 +7,18 @@
 {%- assign image = article.image -%}
 
 {%- assign block_settings = block.settings -%}
-<div class="blog-post-card__image-container">
+
+{%- liquid
+  # Portrait product shots (coffee bags) are decapitated by object-fit: cover in
+  # a fixed-height frame, so "contain" shows the whole image on the card
+  # background instead. "fill" keeps the cropping cover default for editorial
+  # landscape photos.
+  assign image_fit = block_settings.image_fit
+  if image_fit == blank
+    assign image_fit = 'fill'
+  endif
+-%}
+<div class="blog-post-card__image-container blog-post-card__image-container--{{ image_fit }}">
   <a href="{{ article.url }}">
     <img
       srcset="
@@ -27,6 +38,7 @@
         border-style
         blog-post-card__image
         blog-post-card__image--{{ block_settings.height }}
+        blog-post-card__image--fit-{{ image_fit }}
       "
       style="{% render 'border-override', settings: block_settings %}"
     >
@@ -39,6 +51,18 @@
     object-fit: cover;
     object-position: center center;
     height: calc(var(--blog-post-card-img-height) * var(--blog-post-card-scale));
+  }
+
+  /* Show the whole image (e.g. portrait coffee-bag shots) inside the frame
+     instead of cropping it. The frame height stays fixed so cards in a row keep
+     a common baseline; the image letterboxes on the card background. */
+  .blog-post-card__image--fit-contain {
+    object-fit: contain;
+  }
+
+  .blog-post-card__image-container--contain {
+    display: flex;
+    justify-content: center;
   }
 
   .blog-post-card__image--small {
@@ -59,6 +83,23 @@
   "name": "t:names.image",
   "blocks": [],
   "settings": [
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "info": "Use \"Show whole image\" for portrait product shots (coffee bags) so they are not cropped.",
+      "options": [
+        {
+          "value": "fill",
+          "label": "Fill frame (crop)"
+        },
+        {
+          "value": "contain",
+          "label": "Show whole image"
+        }
+      ],
+      "default": "fill"
+    },
     {
       "type": "select",
       "id": "height",

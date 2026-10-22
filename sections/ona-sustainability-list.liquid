@@ -1,0 +1,60 @@
+<div class="sustainability-list wowo fadeInUp">
+  {% if section.blocks.size > 0 %}
+  {% for block in section.blocks %}
+    <div class="list">
+      <div class="img-bg" style="background-image: url('{{ block.settings.image | img_url: '826x' }}')"></div>
+      <div class="text">
+        <h3>{{ block.settings.title }}</h3>
+        {{ block.settings.content }}
+        <a href="{{ block.settings.url }}" class="a-link">Read More</a>
+      </div>
+    </div>
+  {% endfor %}
+  {% endif %} 
+</div>
+{% schema %}
+{
+  "name": {
+    "en": "List"
+  },
+  "max_blocks": 3,
+  "blocks": [
+    {
+      "type": "block",
+      "name": {
+        "en": "Block"
+      },
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": {
+            "en": "Image"
+          }
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": {
+            "en": "Content"
+          }
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": {
+            "en": "Button url"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

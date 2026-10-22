@@ -1,0 +1,115 @@
+{% assign block_settings = block.settings %}
+
+{%- comment -%}
+  One question. The markup mirrors blocks/_accordion-row.liquid so the FAQ page
+  gets the theme's own disclosure behaviour -- a native <details>, keyboard
+  operable, and expanded by find-in-page in current browsers -- instead of the
+  legacy .accordion-title / .icon-close markup the previous theme used, whose
+  CSS and click handler were never carried into this repo.
+
+  Printing is NOT one of the things a closed <details> handles for you; the
+  stylesheet below deals with it.
+{%- endcomment -%}
+
+{% capture faq_item_children %}
+  <details class="details ona-faq-item__details" data-testid="accordion-details" {{ block.shopify_attributes }}>
+    <summary class="details__header">
+      <h3 class="ona-faq-item__question">{{ block_settings.title | escape }}</h3>
+      <span class="svg-wrapper icon-caret icon-animated">
+        {{- 'icon-caret.svg' | inline_asset_content -}}
+      </span>
+      <span class="svg-wrapper icon-plus">
+        {{- 'icon-plus.svg' | inline_asset_content -}}
+      </span>
+    </summary>
+
+    <div class="details-content rte">
+      {{ block_settings.content }}
+    </div>
+  </details>
+{% endcapture %}
+{% render 'accordion-custom-component', children: faq_item_children %}
+
+{% stylesheet %}
+  /*
+   * The question is a heading so the FAQ page has a real document outline --
+   * h1 page title > h2 category > h3 question. Neither the live theme's
+   * <div class="accordion-title"> nor a bare <summary> gives one, and an
+   * outline is what both search engines and screen reader rotors navigate by.
+   *
+   * `font: inherit` hands typography back to .accordion .details__header, so
+   * this is purely semantic: the rendered result is identical to the plain
+   * text it replaced. min-inline-size lets a long question wrap instead of
+   * pushing the caret off the row -- a flex item defaults to min-width: auto.
+   */
+  .ona-faq-item__question {
+    margin: 0;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    min-inline-size: 0;
+  }
+
+  /*
+   * A printed FAQ must carry its answers. Every row starts closed, and nothing
+   * in the theme opens them for print -- there is no other @media print rule in
+   * the repo -- so /pages/faq printed as fourteen questions with nothing under
+   * them. Flagged by Codex on PR #192, against a comment above that had claimed
+   * <details> handled print by itself. It does not; find-in-page it does.
+   *
+   * Three mechanisms hide the content and all three need answering: the theme's
+   * own .details-content rule in snippets/accordion-custom-component.liquid,
+   * the ::details-content pseudo-element browsers now use, and the older UA
+   * rule that hides a closed details' non-summary children outright.
+   */
+  @media print {
+    /*
+     * These two must stay in SEPARATE rules. A selector list is invalid as a
+     * whole if any one selector in it is, so pairing the class with
+     * ::details-content means a browser that does not implement that
+     * pseudo-element throws the rule away -- taking the legacy override with
+     * it, in exactly the browsers that need it. Codex caught this in the first
+     * version of this fix, where the two shared one selector list.
+     */
+    .ona-faq-item__details .details-content {
+      block-size: auto;
+      opacity: 1;
+      overflow-y: visible;
+    }
+
+    .ona-faq-item__details::details-content {
+      block-size: auto;
+      opacity: 1;
+      overflow-y: visible;
+      content-visibility: visible;
+    }
+
+    .ona-faq-item__details:not([open]) > *:not(summary) {
+      display: block;
+    }
+
+    /* The caret and plus mean nothing on paper. */
+    .ona-faq-item__details .svg-wrapper {
+      display: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "FAQ item",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Question"
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": "Answer"
+    }
+  ]
+}
+{% endschema %}

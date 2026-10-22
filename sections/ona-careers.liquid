@@ -1,0 +1,66 @@
+<section class="careers">
+  <div class="container">
+    <div class="content">
+      <div class="left-box wowo fadeInUp">
+        <h2>{{ section.settings.title2 }}</h2>
+        <h3>{{ section.settings.subtitle }}</h3>
+        {{ section.settings.content }}
+        <p><a href="{{ section.settings.url }}" class="a-link">VIEW LISTING</a></p>
+      </div>
+      <div class="right-box wowo fadeInUp">
+        <div class="img">
+          <svg class="animated-svg" width="457" height="372" viewBox="0 0 457 372" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path class="start-2" fill-rule="evenodd" clip-rule="evenodd" d="M429.212 96.2132C467.627 176.916 473.94 256.701 397.932 326.242C339.671 379.547 267.9 381.335 191.927 356.797C111.394 330.786 50.7249 286.935 17.0122 219.055C-21.5492 141.405 5.56651 73.2219 97.1148 38.4983C146.67 19.7043 174.724 1.31121 255.408 0C347.779 5.5302 397.687 29.9953 429.212 96.2132Z" fill="#D0994D"/>
+            <path class="medium-2" fill-rule="evenodd" clip-rule="evenodd" d="M232.123 3.04665C274.713 8.18179 311.322 28.7903 345.138 52.6148C377.773 75.6067 404.412 103.224 422.134 136.913C442.103 174.877 467.413 216.935 452.509 256.733C437.63 296.461 388.111 314.364 347.785 335.437C311.58 354.356 273.98 370.587 232.123 371.895C189.137 373.238 148.079 361.597 110.464 342.853C68.3136 321.849 20.6763 299.654 4.97905 258.706C-10.7875 217.578 14.5506 174.6 30.1818 133.43C45.5587 92.9298 56.0173 47.3879 94.6916 22.4179C133.294 -2.50563 185.011 -2.63371 232.123 3.04665Z" fill="#D0994D"/>
+            <path class="end-2" fill-rule="evenodd" clip-rule="evenodd" d="M227.006 5.29744e-05C271.941 -0.0359855 312.128 18.3212 350.111 38.1009C390.668 59.221 437.65 79.7476 452.388 117.367C467.118 154.966 443.401 194.176 425.633 230.874C409.014 265.197 387.648 297.21 353.643 321.307C317.221 347.117 274.805 375.598 227.006 371.627C179.947 367.718 155.17 325.436 117.658 301.702C81.5764 278.873 30.6675 269.4 11.63 235.357C-8.15415 199.98 -0.193447 157.775 16.851 121.443C33.2826 86.4166 66.7609 59.8611 104.075 38.2982C140.841 17.0523 182.099 0.0360699 227.006 5.29744e-05Z" fill="#D0994D"/>
+          </svg>
+          <img src="{{ section.settings.image | img_url: '1270x' }}" alt="">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Carrers"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title2",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": {
+		"en": "Sub title"
+      }
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": {
+		"en": "Content"
+      }
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": {
+		"en": "Button url"
+      }
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": {
+		"en": "Image"
+      }
+    }
+  ]
+}
+{% endschema %}

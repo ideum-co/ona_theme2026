@@ -1,0 +1,165 @@
+<section class="add-image-and-text  wholesale-brands wowo fadeInUp" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
+    <div class="container">
+        <div class="content">            
+            <div class="text wowo fadeInUp">
+                <h2  class="align-center text-center">{{ section.settings.title }}</h2>
+            </div>            
+            <div class="img wowo brand-thumb brand-marquee fadeIn">
+                {%- capture brand_logos -%}
+                  {% for block in section.blocks %}
+                    <div class="brand-item">
+                       <a href="{{ block.settings.link }}" class="match-height">
+                           {%- assign wb_h = 150 | divided_by: block.settings.image.aspect_ratio | round -%}
+                           <img src="{{ block.settings.image | img_url: '150x' }}" alt="{{ block.settings.title }}" width="150" height="{{ wb_h }}" loading="lazy" decoding="async" />
+                       </a>
+                    </div>
+                  {% endfor %}
+                {%- endcapture -%}
+                <div class="brand-track">
+                  {{ brand_logos }}
+                  {%- comment -%} A second copy makes the scroll seamless; it is hidden from
+                  assistive tech and taken out of the tab order so the logos are announced once. {%- endcomment -%}
+                  <div class="brand-track__loop" aria-hidden="true" inert>{{ brand_logos }}</div>
+                </div>
+             </div>
+        </div>
+    </div>
+</section>
+
+{% stylesheet %}
+  /* Logos as a single-row marquee in the right half of the row. The legacy
+     wrap-and-centre layout for .brand-thumb lived in legacy-page-layout.css;
+     this overrides it for this section only (same #MainContent prefix, so the
+     specificity matches). */
+  #MainContent .wholesale-brands .brand-marquee {
+    --brand-gap: clamp(32px, 4vw, 64px);
+    display: block;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  }
+
+  #MainContent .wholesale-brands .brand-track {
+    display: flex;
+    flex-wrap: nowrap;
+    width: max-content;
+    align-items: center;
+    /*
+     * The spacing is a trailing margin on each item, NOT `gap` on this track.
+     * `.brand-track__loop` is `display: contents`, so the duplicated set's
+     * children become direct flex children here: 2N items with 2N-1 gaps.
+     * `translateX(-50%)` then moves N*item + (N-0.5)*gap, while a seamless
+     * loop needs N*item + N*gap -- the row jumped back half a gap on every
+     * cycle. Measured on the live page: gap 61.44px, track 553px, -50% =
+     * 276px against a real stride of 307px, a visible 31px snap every 26s.
+     * A trailing margin gives every item the same width + spacing, so half
+     * the track is exactly one set and the seam disappears.
+     */
+    animation: ona-brand-scroll 26s linear infinite;
+  }
+
+  #MainContent .wholesale-brands .brand-track__loop { display: contents; }
+
+  #MainContent .wholesale-brands .brand-marquee:hover .brand-track,
+  #MainContent .wholesale-brands .brand-marquee:focus-within .brand-track {
+    animation-play-state: paused;
+  }
+
+  #MainContent .wholesale-brands .brand-item {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-inline-end: var(--brand-gap);
+  }
+
+  #MainContent .wholesale-brands .brand-thumb img {
+    width: auto;
+    height: auto;
+    max-width: 150px;
+    max-height: 64px;
+    object-fit: contain;
+  }
+
+  @keyframes ona-brand-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* No auto-motion for people who ask for less; the row becomes a plain
+     swipeable strip instead. */
+  @media (prefers-reduced-motion: reduce) {
+    #MainContent .wholesale-brands .brand-marquee { overflow-x: auto; }
+    #MainContent .wholesale-brands .brand-track { animation: none; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": {
+    "en": "Brands"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "id",
+      "label": {
+        "en": "ID"
+      }
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "content",
+      "label": {
+		"en": "Content"
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "type": "block",
+      "name": {
+        "en": "Block"
+      },
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": {
+            "en": "Image"
+          }
+        },
+        {
+            "type": "url",
+            "id": "link",
+            "label": "Website URL"
+          }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": {
+        "en": "Brands"
+      },
+      "category": {
+        "en": "Text"
+      }
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,31 @@
+<section class="banner-top">
+    <div class="img-bg wowo zoomOut" style="background-image: url('{{ section.settings.image | img_url: '2732x' }}')"></div>
+    <div class="medium-container">
+        <div class="text wowo fadeInUp">
+            <h1>{{ section.settings.title2 }}</h1>
+        </div>
+    </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Inner banner"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title2",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": {
+		"en": "Image"
+      }
+    }
+  ]
+}
+{% endschema %}

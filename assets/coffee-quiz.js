@@ -227,6 +227,9 @@ export class CoffeeQuiz extends Component {
 
     if (!result || !match) return;
 
+    const title = result.querySelector('[data-title]');
+    if (title) title.textContent = match.title ?? '';
+
     const image = result.querySelector('[data-image]');
 
     if (image instanceof HTMLImageElement) {

@@ -11,10 +11,13 @@ Verbatim copies, pulled 2026-10-15, of the JSON templates on theme
 **`160335790271`** ("ONA - media block fix + press quotes hidden…"), the theme
 that was published until 2026-10-14 ~15:43Z.
 
-> ⚠️ **`160335790271` is NOT the rollback for the next release.** Do not restore
-> it on the strength of this README. The rollback named by
-> `docs/release-test-plan-2026-10-15.md` is **`160815546559`**, the theme
-> published right now, because `160335790271` is missing three things it has:
+> ⚠️ **Rollback: resolve it at the time, do not take it from here.** As of
+> 2026-10-22 the published theme is `154676789439` (`ona_theme2026/main`) and
+> both themes named below are `UNPUBLISHED`. What follows is the reasoning as
+> it stood on 2026-10-15, kept because it records what each theme carries.
+> `160335790271` was not the rollback then. The rollback named by
+> `docs/archive/2026-10-go-live/release-test-plan-2026-10-15.md` was **`160815546559`**, the theme
+> published at the time, because `160335790271` is missing three things it has:
 > the PR #46 PDP media CSS, the `ona-product-complementary` section in
 > `product.filtersub.json`, and the current **In Sequence** homepage banner copy.
 > `160335790271` is the *historical pre-cutover* theme and the source these
@@ -41,15 +44,18 @@ are the exact places that record differs from the repo. In particular, porting
 `page.wholesale.json` straight from `onacoffee_theme` would **re-enable
 `wholesale_sourcing_v6`**, which the editor had switched off.
 
-`docs/post-publish-review-2026-10-15.md` §2 records the consequence: while the
+`docs/archive/2026-10-go-live/post-publish-review-2026-10-15.md` §2 records the consequence: while the
 2026 theme was published, eight pages rendered a heading and nothing else,
 because their content lived in these templates.
 
-> **Not the case right now.** Theme `160815546559` was published on
-> 2026-10-14 at 22:00:42Z and it *has* these templates, so those pages render
-> normally on the storefront today. The archive matters for the **next**
-> attempt at publishing the 2026 theme: that is when these eight pages go
-> blank again unless the templates have been ported first.
+> **Resolved.** That next publish has happened — `154676789439` is `MAIN` as
+> of 2026-10-22 — and the templates were ported first, so the pages did not go
+> blank. Checked live on 2026-10-22: `/pages/wholesale` (25 sections),
+> `/pages/barista-courses` (16), `/pages/about` (13), `/pages/faq` (8) and
+> `/pages/private-courses-and-experiences` (9) all render their content.
+> `/pages/learn` renders a title and two cards by design, not by failure.
+> These copies stay as reference for the stage-2 rebuild, not as a porting
+> backlog.
 
 ## Provenance
 
@@ -88,9 +94,10 @@ source revision, not to verify these copies.
 
 ## Which pages each one served
 
-The "2026 theme" column is how each page rendered while `154676789439` was
-published — the state the port has to fix. On the storefront today, served by
-`160815546559`, they all render.
+The "2026 theme" column is how each page rendered during the **first**
+publish of `154676789439` on 2026-10-14, before the templates were ported —
+the state the port had to fix, and did. `154676789439` is published again and
+these pages render; see the note above for the 2026-10-22 check.
 
 | suffix | pages | on the 2026 theme |
 |---|---|---|

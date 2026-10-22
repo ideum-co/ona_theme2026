@@ -32,7 +32,7 @@
 
 <section
   class="donation-counter"
-  style="background-color: {{ section.settings.bg_color }};"
+  style="background-color: {{ section.settings.bg_color }}; --donation-button-background: {{ section.settings.button_bg_color }}; --donation-button-text: {{ section.settings.button_text_color }};"
   {{ section.shopify_attributes }}
 >
   <div class="donation-counter__inner">
@@ -73,7 +73,7 @@
 
     {%- if section.settings.learn_more_text != blank and section.settings.learn_more_url != blank -%}
       <div class="donation-counter__actions">
-        <a href="{{ section.settings.learn_more_url }}" class="donation-counter__cta">
+        <a href="{{ section.settings.learn_more_url }}" class="button donation-counter__cta">
           {{- section.settings.learn_more_text -}}
         </a>
       </div>
@@ -183,20 +183,10 @@
     gap: 15px;
   }
 
-  .donation-counter__cta {
-    font-family: var(--font-brand-display, 'Silk Serif', serif);
-    font-size: 43px;
-    line-height: 1.2;
-    color: #ffffff;
-    text-decoration-line: underline;
-    text-decoration-thickness: 2px;
-    text-underline-offset: 0.3em;
-    opacity: 1;
-    transition: opacity 0.2s ease;
-  }
-
-  .donation-counter__cta:hover {
-    opacity: 0.7;
+  /* Reuse the global theme button, overriding only its editable colours. */
+  .donation-counter__cta.button {
+    --button-background-color: var(--donation-button-background);
+    --button-color: var(--donation-button-text);
   }
 
   @media screen and (max-width: 749px) {
@@ -229,9 +219,6 @@
       letter-spacing: 2px;
     }
 
-    .donation-counter__cta {
-      font-size: 36px;
-    }
   }
 
   @media screen and (max-width: 480px) {
@@ -297,6 +284,22 @@
       "id": "subtitle",
       "label": "Subtitle text",
       "default": "Enjoy great coffee while helping fund clean water access."
+    },
+    {
+      "type": "header",
+      "content": "Button colors"
+    },
+    {
+      "type": "color",
+      "id": "button_bg_color",
+      "label": "Button background",
+      "default": "#f2f0eb"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text",
+      "default": "#441925"
     },
     {
       "type": "text",
