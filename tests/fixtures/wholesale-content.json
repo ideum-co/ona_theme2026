@@ -1,6 +1,6 @@
 {
   "source": "templates/page.wholesale.json",
-  "generated_from": "7dc5326d33592d53d212d63123edaf5144307f3d",
+  "generated_from": "b842c93caa7a8846a8c7906b2649b882ab703ef8",
   "required": [
     {
       "where": "wholesale_partnership(ona-wholesale-partnership)",

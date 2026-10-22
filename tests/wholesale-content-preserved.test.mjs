@@ -61,6 +61,8 @@ test('every piece of wholesale copy, media and destination survives the rebuild'
   const haystackWords = live.map((item) => words(item.value));
   const haystack = new Set(haystackWords.flatMap(shingles));
   const haystackText = haystackWords.map((list) => list.join(' ')).join(' \u0000 ');
+  /* Padded so a short sentence can be matched on token boundaries rather than as a substring. */
+  const haystackPadded = ` ${haystackText} `;
 
   /* Split on structural boundaries as well as terminal punctuation. `normalise` turns the end
      of a list item or paragraph into a newline, because bullets usually carry no full stop:
@@ -88,9 +90,13 @@ test('every piece of wholesale copy, media and destination survives the rebuild'
     for (const sentence of sentences(item.value)) {
       const list = words(sentence);
       if (!list.length) continue;
+      /* A raw substring match finds the token sequence inside a longer word: "Hey there!"
+         survives a change to "Whey there!" because the haystack still contains the characters
+         `hey there`. The haystack is a space-joined token stream, so padding both sides turns
+         the check into a token-boundary one without needing a regex per sentence. */
       const gone =
         list.length < SHINGLE
-          ? !haystackText.includes(list.join(' '))
+          ? !haystackPadded.includes(` ${list.join(' ')} `)
           : shingles(list).some((shingle) => !haystack.has(shingle));
       if (gone) lost.push(`${item.where} ${item.key}: lost "${sentence.slice(0, 90)}"`);
     }

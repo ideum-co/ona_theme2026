@@ -7,20 +7,36 @@
  *   node tests/extract-page-content.mjs templates/page.wholesale.json > tests/fixtures/wholesale-content.json
  * A value that leaves the page is a content decision and belongs in the PR that makes it.
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 
-/* Copy, media and destinations. Losing one of these loses information. */
-export const CONTENT_KEYS = new Set([
+/* Copy, media and destinations. Losing one of these loses information.
+ *
+ * The hand-written half covers the legacy `ona-*` sections this page is built from. It is a
+ * floor, not the list: the rebuild moves this content into Horizon components whose settings are
+ * named differently -- a CTA's copy becomes `blocks/button.liquid`'s `label`, an icon becomes
+ * `blocks/icon.liquid`'s `image_upload` -- and a key missing from here reads as content that
+ * left the page. SCHEMA_CONTENT_KEYS adds every setting in the theme whose declared type carries
+ * copy, media or a destination, so a value that moves into a documented target is still seen. */
+const LEGACY_CONTENT_KEYS = [
   'main_title', 'title', 'title2', 'subtitle', 'subtitle2', 'content', 'text', 'tips',
   'video_title', 'button_text',
   'image', 'image2', 'image3', 'bottom_image', 'icon', 'video',
   'link', 'url', 'button_url', 'video_url',
   'id',
+];
+
+/* Types whose value a reader notices. Everything else -- select, range, color, checkbox,
+   text_alignment -- is presentation the replacement brings its own version of. */
+const CONTENT_TYPES = new Set([
+  'text', 'textarea', 'richtext', 'inline_richtext', 'html', 'liquid',
+  'url', 'video_url', 'video', 'image_picker',
 ]);
 
 /* Player furniture and layout decoration: the replacement brings its own, so these are recorded
-   for the diff but not required to survive. */
+   for the diff but not required to survive. Checked before the content keys, because deriving
+   from schemas sweeps `overlay` and `play_icon` in on type alone and would silently promote
+   them. */
 export const CHROME_KEYS = new Set(['play_icon', 'overlay']);
 
 export const stripBanner = (text) => text.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '');
@@ -51,6 +67,106 @@ const hrefsIn = (value) => [...value.matchAll(/(?:href|src)="([^"]+)"/g)].map((m
    schema, styles, scripts, comments and every Liquid tag and output. What is left is the text
    a reader sees regardless of how the template is configured. */
 const LIQUID_DIR = new URL('../sections/', import.meta.url);
+const BLOCK_DIR = new URL('../blocks/', import.meta.url);
+
+const sourceOf = (type) => {
+  for (const dir of [LIQUID_DIR, BLOCK_DIR]) {
+    try {
+      return readFileSync(new URL(`${type}.liquid`, dir), 'utf8');
+    } catch {
+      /* not this directory */
+    }
+  }
+  return null;
+};
+
+const schemaOf = (type) => {
+  const source = sourceOf(type);
+  const match = source && source.match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/);
+  if (!match) return null;
+  try {
+    return JSON.parse(match[1]);
+  } catch {
+    return null;
+  }
+};
+
+/* Every setting in the theme whose type carries content, read from the schemas rather than
+   listed here, so a component the rebuild adopts is covered the day it lands. */
+const schemaSettings = () => {
+  const all = [];
+  for (const [dir, url] of [['sections', LIQUID_DIR], ['blocks', BLOCK_DIR]]) {
+    let names = [];
+    try {
+      names = readdirSync(url).filter((name) => name.endsWith('.liquid'));
+    } catch {
+      continue;
+    }
+    for (const name of names) {
+      const schema = schemaOf(name.replace(/\.liquid$/, ''));
+      for (const entry of schema?.settings ?? []) if (entry?.id) all.push([`${dir}/${name}`, entry]);
+    }
+  }
+  return all;
+};
+
+const SCHEMA_CONTENT_KEYS = new Set(
+  schemaSettings()
+    .filter(([, entry]) => CONTENT_TYPES.has(entry.type))
+    .map(([, entry]) => entry.id)
+);
+
+export const CONTENT_KEYS = new Set([...LEGACY_CONTENT_KEYS, ...SCHEMA_CONTENT_KEYS]);
+
+/*
+ * A setting can be stored and still not be on the page. `blocks/video.liquid` declares
+ * `video_url` with `visible_if: {{ block.settings.source == 'url' }}`, so a template left on the
+ * default `source: uploaded` carries a URL the visitor never sees. Freezing it would make a
+ * rebuild that drops it look like a loss, and -- worse -- would let the test pass while the
+ * uploaded video it actually shows goes missing.
+ *
+ * Only a condition this understands and can prove false hides a setting. Anything unparsed
+ * stays required: over-freezing costs a false alarm, under-freezing costs the content.
+ */
+const CLAUSE =
+  /^(?:block|section)\.settings\.([\w-]+)\s*(?:(==|!=)\s*(?:'([^']*)'|"([^"]*)"|(blank|true|false|empty)))?$/;
+
+const visibleIfFalse = (expression, settings, defaults) => {
+  const body = expression.replace(/^\s*\{\{\s*/, '').replace(/\s*\}\}\s*$/, '').trim();
+  if (body === 'false') return true;
+  /* `or` would need both sides false to hide; keeping to `and` means an unparsed `or` falls
+     through to "visible", which is the safe direction. */
+  if (/\bor\b/.test(body)) return false;
+
+  for (const part of body.split(/\s+and\s+/)) {
+    const match = CLAUSE.exec(part.trim());
+    if (!match) continue;
+    const [, key, operator, single, double, literal] = match;
+    const actual = Object.hasOwn(settings, key) ? settings[key] : defaults.get(key);
+    if (!operator) {
+      if (actual === false || actual === '' || actual == null) return true;
+      continue;
+    }
+    const expected = literal === 'blank' || literal === 'empty'
+      ? ''
+      : literal === 'true' ? true : literal === 'false' ? false : (single ?? double);
+    const blankish = (value) => value === '' || value == null || value === false;
+    const equal = expected === '' ? blankish(actual) : actual === expected;
+    if (operator === '==' ? !equal : equal) return true;
+  }
+  return false;
+};
+
+/* The ids a component renders itself, via `content_for 'block', ... id: '<id>'`. These children
+   are placed by the markup, not by `block_order`, so a parent with `block_order: []` still
+   renders them -- `blocks/media-with-text.liquid` draws `media` and `content` that way, and the
+   product templates store the visible image in exactly that static child. */
+const staticChildren = (type) => {
+  const source = sourceOf(type);
+  if (!source) return new Set();
+  return new Set([...source.matchAll(/content_for\s+'block'[^%]*?\bid:\s*'([^']+)'/g)].map((m) => m[1]));
+};
+
 
 export function literalsIn(type) {
   let source;
@@ -96,12 +212,22 @@ export function extract(templatePath) {
 
   const visit = (node, path, live) => {
     const settings = node.settings ?? {};
+    const schema = node.type ? schemaOf(node.type) : null;
+    const defaults = new Map((schema?.settings ?? []).filter((e) => e?.id).map((e) => [e.id, e.default]));
+    const conditions = new Map(
+      (schema?.settings ?? []).filter((e) => e?.id && e.visible_if).map((e) => [e.id, e.visible_if])
+    );
+
     for (const [key, value] of Object.entries(settings)) {
       if (typeof value !== 'string') continue;
       const trimmed = value.trim();
       if (!trimmed) continue;
 
-      const bucket = CONTENT_KEYS.has(key) ? (live ? required : disabled) : CHROME_KEYS.has(key) ? chrome : null;
+      /* Chrome first: deriving content keys from schemas would otherwise claim `overlay` and
+         `play_icon` on type alone. */
+      const shown =
+        live && !(conditions.has(key) && visibleIfFalse(conditions.get(key), settings, defaults));
+      const bucket = CHROME_KEYS.has(key) ? chrome : CONTENT_KEYS.has(key) ? (shown ? required : disabled) : null;
       if (!bucket) continue;
 
       const text = normalise(trimmed);
@@ -116,8 +242,13 @@ export function extract(templatePath) {
        outside one. */
     const order = node.block_order;
     const ordered = Array.isArray(order) ? new Set(order) : null;
+    /* `block_order` governs the dynamic children only. A component that places a child itself
+       renders it whatever the order says, so those ids are exempt -- otherwise every
+       `media-with-text` with `block_order: []` reads as having lost its image. */
+    const placed = node.type ? staticChildren(node.type) : new Set();
     for (const [childKey, child] of Object.entries(node.blocks ?? {})) {
-      const rendered = !child.disabled && (ordered === null || ordered.has(childKey));
+      const rendered =
+        !child.disabled && (ordered === null || ordered.has(childKey) || placed.has(childKey));
       visit(child, `${path}/${childKey}`, live && rendered);
     }
   };
