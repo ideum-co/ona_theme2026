@@ -832,6 +832,9 @@ const palette = (() => {
   return { background: colors.background, foreground: colors.foreground };
 })();
 
+/* The section types that render one of the derived eyebrows. */
+const eyebrowed = new Set([...labels.values()].flatMap((sections) => [...sections]));
+
 const grounds = () => {
   const found = new Map([['the page background', palette.background]]);
   for (const file of readdirSync(join(root, 'templates'))) {
@@ -845,9 +848,13 @@ const grounds = () => {
       continue;
     }
     for (const [key, section] of Object.entries(parsed.sections ?? {})) {
-      /* Both ids, because the band setting is being renamed to Horizon's own `background_color`
-         on a separate branch (#307) and these two can land in either order. Reading only one of
-         them would quietly measure nothing for as long as the other was in the templates. */
+      /* Only sections that render an eyebrow. The band setting is being renamed to Horizon's
+         own `background_color` on a separate branch (#307), and the two can land in either
+         order -- so this reads both ids. But `background_color` is Horizon's id too, and 256
+         Horizon-native sections across these templates already carry it; keying on the name
+         alone would measure the label against grounds it never sits on. The section type is
+         what says whether it does. */
+      if (!eyebrowed.has(section.type)) continue;
       const band = section.settings?.background_color ?? section.settings?.band_background;
       if (typeof band === 'string' && /^#[0-9a-f]{6}$/i.test(band)) found.set(`${file} ${key}`, band);
     }
