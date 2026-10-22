@@ -343,7 +343,7 @@ already answered:
 
 | Section | Behaviour | Target |
 | --- | --- | --- |
-| `ona-gust-r` (wholesale) | `{% form 'contact' %}` with a fixed subject and a business field | **not** `contact-form` as it stands — see [Known gaps](#known-gaps) |
+| `ona-gust-r` (wholesale) | `{% form 'contact' %}` with a fixed subject and a business field, and `name`, `email` and `body` `required` with visible labels | **not** `contact-form` as it stands — it marks none of those `required`, hides its labels and adds a phone field — see [Known gaps](#known-gaps) |
 | `ona-training-form` (training) | `{% form 'contact' %}` | same |
 | `ona-expericences-content` (private courses) | two columns: heading/image/lead/copy on the left, a working contact form on the right, posting a fixed `contact[subject]` | the two-column shell is `section` + two `group`s — **not** `media-with-content`, which has one media slot and one content slot. The form itself is **not** stock `contact-form`: its `name`, `email` and `body` are `required` with visible labels, which `contact-form` is not — see [Known gaps](#known-gaps) |
 | `ona-unique-coffees` (wholesale) | three named tabs that switch a three-image panel and its copy together, with `role="tabpanel"` and `aria-hidden` wiring | **nothing in Horizon does this.** `carousel` gives cards and dots, an `accordion` does not drive a separate panel. Keep the section, or write a tabs component — a decision, not a mapping |

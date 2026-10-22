@@ -764,8 +764,13 @@ test('the contact-form gap rows record the validation mismatch', () => {
   }
   if (buffer.length) units.push(buffer.join('\n'));
 
-  const prerequisite = units.filter((unit) => unit.includes('contact[subject]'));
-  assert.ok(prerequisite.length >= 3, `only ${prerequisite.length} units mention contact[subject]; the probe is broken`);
+  /* Keyed on the token name at first, which missed the wholesale row -- it raises the same
+     blocker in words ("the subject and business fields"). The population is any unit that
+     names one of the three forms and talks about the subject at all. */
+  const prerequisite = units.filter(
+    (unit) => legacy.some((name) => unit.includes(name)) && /subject/i.test(unit)
+  );
+  assert.ok(prerequisite.length >= 4, `only ${prerequisite.length} units raise the subject blocker; the probe is broken`);
   const silent = prerequisite.filter((unit) => !/required/.test(unit));
   assert.deepEqual(
     silent.map((unit) => unit.split('\n')[0].slice(0, 70)),
