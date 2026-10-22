@@ -425,7 +425,7 @@ So of 795 articles, **43 need a decision** and 752 are already handled.
    - PR #152 drops the three sections in `index.json` that had never been on the theme
      (`good_coffee_delivered`, `more_than_coffee`, `custom_liquid_RCcpAV` — repo-authored,
      disabled, rendering nothing; definitions parked in
-     `docs/index-json-parked-sections-2026-10-14.json`). That leaves **the homepage at
+     `docs/archive/2026-10-go-live/index-json-parked-sections-2026-10-14.json`). That leaves **the homepage at
      exactly 25 of 25**. Adding a section there now means removing one in the same change,
      and that is a hard platform limit, not a preference.
    - `tests/shop-owned-templates.test.mjs` now asserts both limits across every

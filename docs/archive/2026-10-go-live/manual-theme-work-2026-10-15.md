@@ -89,7 +89,7 @@ Three further slides in the same section are `disabled`.
 | pre-cutover theme `160335790271` | In Sequence, enabled, **older copy**: `explore Ethiopian coffee through four processing methods` |
 | `onacoffee_theme` `origin/main` | **Afterpay slide, `disabled: true`** — stale |
 | `ona_theme2026` (this repo) | **no `ona-banner-slider` section exists**; no `in-sequence` or `Inseq*` reference anywhere in the tree |
-| `docs/live-theme-160815546559/index.json` | refreshed 2026-10-15, byte-verified against the theme |
+| `docs/archive/2026-10-go-live/live-theme-160815546559/index.json` | refreshed 2026-10-15, byte-verified against the theme |
 
 Two consequences worth stating plainly:
 

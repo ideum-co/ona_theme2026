@@ -10,11 +10,17 @@ Stage 1 is implemented; stages 2–4 are planned and not started.
 `/blogs/brewguides` holds **747 articles**. The 2026 theme served **50**, and
 that was the end of the road.
 
-| | live (160815546559) | theme2026, before |
+| | then-live (160815546559) | theme2026, before |
 |---|---|---|
 | shown | 26, paginated | **50** |
 | `?page=2` | the next 26 | **the identical 50** |
 | sections | `main` + read-more + FAQ | `main` only |
+
+> **Those roles have swapped.** `160815546559` was published when this was
+> measured; as of 2026-10-22 it is `UNPUBLISHED` and `154676789439`
+> (`ona_theme2026/main`) is `MAIN`. The "theme2026" column is production now,
+> so the stage-1 fix below shipped to the live store. See
+> `docs/archive/2026-10-go-live/README.md`.
 
 Pages 2, 5, 15 and 16 each returned the same 50 articles — overlap 50, nothing
 new. **697 guides were reachable only by direct URL or the sitemap**, with no

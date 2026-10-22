@@ -73,7 +73,7 @@ Learn and Private Courses are placeholders, not migrations. The source content i
 The CSS exists and is correctly scoped — `legacy-page-layout.css` loads only for the six
 migrated suffixes, `home-mobile-overflow.css` only on `index`. Both land on the theme.
 **But it only reaches 34 of the 43 migrated sections, and the gaps are visible ones.** That is
-its own document: `docs/responsive-mobile-review-2026-10-16.md`. Read it before the next pass.
+its own document: `docs/archive/2026-10-go-live/responsive-mobile-review-2026-10-16.md`. Read it before the next pass.
 
 > **Homepage:** enlaces de navegación y CTAs — Coffee Club, Barista Courses, About, Coffee Quiz
 
@@ -256,4 +256,4 @@ the homepage hero · the PDP media gallery · the cart drawer · whether #177 ac
 overflow · the migrated pages at 375px and in the 750–989px tablet band · a real test purchase
 confirmed in GA4 with revenue and session attribution intact.
 
-The checklist for that pass is `docs/responsive-mobile-review-2026-10-16.md`.
+The checklist for that pass is `docs/archive/2026-10-go-live/responsive-mobile-review-2026-10-16.md`.

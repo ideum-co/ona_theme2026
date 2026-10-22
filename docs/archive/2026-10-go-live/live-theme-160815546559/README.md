@@ -40,7 +40,7 @@ before treating it as cosmetic.
 
 Re-audited 2026-10-15. Every file on this theme was written by the bulk copy at
 01:45–01:47Z on 2026-10-13 **except four**, and the audit of all four is in
-`docs/manual-theme-work-2026-10-15.md`. Three are accounted for in a repository.
+`docs/archive/2026-10-go-live/manual-theme-work-2026-10-15.md`. Three are accounted for in a repository.
 The fourth is `templates/index.json`, last edited **2026-10-15T01:01:41Z**, and
 the edit is the homepage's **In Sequence** banner:
 

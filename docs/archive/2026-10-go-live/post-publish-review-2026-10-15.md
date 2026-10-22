@@ -268,7 +268,7 @@ status, nothing in the admin, and an unchanged checksum is the only symptom.
 `tests/shop-owned-templates.test.mjs` guards the repo side of this.
 
 Three further sections are parked in
-`docs/index-json-parked-sections-2026-10-14.json` and are not on the theme at
+`docs/archive/2026-10-go-live/index-json-parked-sections-2026-10-14.json` and are not on the theme at
 all: `good_coffee_delivered`, `more_than_coffee`, `custom_liquid_RCcpAV`.
 
 ---
