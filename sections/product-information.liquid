@@ -1,4 +1,9 @@
 {%- liquid
+  # Resent 2026-10-22: this file's content reached `main` in b8045f8 (#272) but never reached the
+  # theme -- that merge's push event was lost in GitHub's 2026-10-21 webhook incident. The sync
+  # carries only the files changed by the commits it actually processes, so the three later
+  # merges that day stepped over it and a no-op commit is the only way to resend it.
+  #
   # Per-product color override, same pattern as sections/product-tabs.liquid and
   # sections/product-dna.liquid: a pair of metafields on the product (namespace + key
   # are section settings, so the convention is fixed once here and the team just fills
