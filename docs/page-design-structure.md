@@ -108,6 +108,14 @@ invisible to a reader. The test is whether a merchant can edit it in the theme
 editor afterwards; a ported `ona-*` section usually fails that, a Horizon
 `section`/`group`/`text` tree passes.
 
+**Which components, and what each legacy section maps onto, is
+[component-kit.md](component-kit.md).** Short version: the theme ships 46
+`ona-*` sections, every one of them is still referenced by a template, ten of
+them share one byte-for-byte identical schema, and the layout among them
+collapses to eight components — seven of which Horizon already ships. The
+sections that carry behaviour rather than layout are listed apart from the
+kit, because a form or a metafield reader does not become a `text` block.
+
 Precedent: `sections/ona-faq-layout.liquid` and
 `sections/ona-page-media-gallery.liquid` are Horizon-native and style themselves,
 so they need no shared sheet at all. That is the target shape.
