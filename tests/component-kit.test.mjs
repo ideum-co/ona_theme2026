@@ -612,6 +612,58 @@ test('the text-image-bg row describes the markup and the dead trigger', () => {
   );
 });
 
+/*
+ * The Learn row sent ona-brewguides-and-training to "_product-card-style tiles". Its two live
+ * tiles link to a page and a blog, and _product-card cannot express either: it reads only
+ * closest.product, and the card snippet hard-wires href to product.url and emits no link at
+ * all in the onboarding state a page template puts it in. Following that row loses both
+ * destinations -- a silent one, because the tiles would still render as placeholder cards.
+ *
+ * _card is the target that fits, and the point of checking it here is that the document's own
+ * thesis is you verify a block tree rather than assume it. So the test asserts what _card
+ * actually offers rather than trusting the prose: a background image, an arbitrary link, and
+ * text children.
+ */
+test('the Learn tiles map to a block that can link to a page', () => {
+  const learn = JSON.parse(stripBanner(readFileSync(join(root, 'templates', 'page.learn.json'), 'utf8')));
+  const tiles = Object.values(learn.sections)
+    .filter((section) => section.type === 'ona-brewguides-and-training')
+    .flatMap((section) => Object.values(section.blocks ?? {}))
+    .map((block) => (block.settings ?? {}).url)
+    .filter(Boolean);
+  assert.equal(tiles.length, 2, `the Learn section has ${tiles.length} linked tiles, not two`);
+  for (const url of tiles) {
+    assert.ok(
+      !/^shopify:\/\/products\//.test(url),
+      `a Learn tile now points at a product (${url}); the row's reasoning assumes neither does`
+    );
+  }
+
+  /* Why _product-card cannot carry them. */
+  const card = readFileSync(join(root, 'blocks', '_product-card.liquid'), 'utf8');
+  assert.match(card, /assign product = closest\.product/, '_product-card no longer sources closest.product; the row cites that it does');
+  const snippet = readFileSync(join(root, 'snippets', 'product-card.liquid'), 'utf8');
+  assert.match(snippet, /href="\{\{ product\.url \}\}"/, 'product-card no longer hard-wires product.url; the row cites that it does');
+  assert.match(snippet, /assign onboarding = true/, 'product-card no longer has an onboarding state; the row cites it');
+
+  /* What _card offers, read off its schema rather than taken from the prose. */
+  const cardSchema = JSON.parse(
+    readFileSync(join(root, 'blocks', '_card.liquid'), 'utf8').match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema/)[1]
+  );
+  const ids = new Map((cardSchema.settings ?? []).map((setting) => [setting.id, setting.type]));
+  assert.equal(ids.get('link'), 'url', '_card no longer has an arbitrary url link, which is the whole reason it is the target');
+  assert.equal(ids.get('background_image'), 'image_picker', '_card no longer takes a background image');
+  assert.ok(
+    (cardSchema.blocks ?? []).some((block) => block.type === 'text'),
+    '_card no longer accepts text children, so it cannot hold the tile heading'
+  );
+
+  const row = doc.split('\n').find((line) => line.startsWith('| `/pages/learn`'));
+  assert.ok(row, 'the Learn row is gone from the page plan');
+  assert.ok(/\*\*`_card`\*\*/.test(row), 'the Learn row no longer maps the tiles to _card');
+  assert.ok(/\*\*not\*\* `_product-card`/.test(row), 'the Learn row no longer rules out _product-card');
+});
+
 test('the duplication table still matches the schemas', () => {
   const groups = new Map();
 
