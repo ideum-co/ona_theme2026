@@ -130,7 +130,7 @@ const rulesFor = (name) => {
   const target = new RegExp(`\\.${escaped}(?![\\w-])`);
   const found = [];
   for (const { conditions, selectorList, declarations, at } of flat) {
-    for (const branch of selectorList.split(',')) {
+    for (const branch of splitSelectors(selectorList)) {
       if (!target.test(branch)) continue;
       /* `!important` reorders the cascade in a way none of this models, so it fails rather
          than being silently mis-resolved. Nothing in the stylesheet uses it today. */
@@ -143,7 +143,8 @@ const rulesFor = (name) => {
       /* The ancestors the rule asks for, and what it asks of the label itself. A rule applies
          wherever another one does when everything it asks for is also present there, which is
          what keeps two mutually exclusive sections from resolving as one element. */
-      const compounds = branch.trim().split(/\s+/).filter(Boolean);
+      /* Descendant combinators only, and not the spaces inside `:is(a, b)`. */
+      const compounds = (branch.trim().match(/(?:[^\s(]+(?:\([^)]*\))?)+/g) ?? []).filter(Boolean);
       const own = compounds.findIndex((compound) => target.test(compound));
       const label = compounds[own];
       /* `:not(:empty)` selects a label that HAS text. Reading it as an empty-state rule threw
@@ -183,6 +184,31 @@ const rulesFor = (name) => {
  * label carries is generated instead -- minus the combinations no viewport can satisfy,
  * since this stylesheet pairs `max-width:749px` with `min-width:750px`.
  */
+/*
+ * Split a selector list on its real commas.
+ *
+ * `split(',')` tore `:is(.add-image-and-text, .not-rendered)` in half and kept only the
+ * branch that matches nothing, so an override written that way muted the partnership
+ * eyebrow with all four tests green (Codex, #300). This stylesheet already uses `:is()`.
+ */
+const splitSelectors = (list) => {
+  const out = [];
+  let depth = 0;
+  let current = '';
+  for (const character of list) {
+    if (character === '(') depth += 1;
+    else if (character === ')') depth -= 1;
+    if (character === ',' && depth === 0) {
+      out.push(current);
+      current = '';
+      continue;
+    }
+    current += character;
+  }
+  out.push(current);
+  return out.filter((branch) => branch.trim() !== '');
+};
+
 const VOID_TAGS = new Set([
   'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param',
   'source', 'track', 'wbr',
@@ -233,9 +259,29 @@ const ancestriesFor = (name) => {
   return found;
 };
 
-/* A compound selector is present in a chain when every part of it is. */
-const presentIn = (compound, ancestry) =>
-  (compound.match(/[#.][\w-]+/g) ?? []).every((part) => ancestry.has(part));
+/*
+ * A compound selector is present in a chain when every part of it is -- except that `:is()`
+ * and `:where()` are alternations, where one branch is enough, and `:not()` is the reverse.
+ * Treating `:is(.add-image-and-text, .not-rendered)` as a list of required classes would
+ * have missed the branch that really matches.
+ */
+const partsOf = (text) => text.match(/[#.][\w-]+/g) ?? [];
+
+const presentIn = (compound, ancestry) => {
+  const anyOf = [...compound.matchAll(/:(?:is|where)\(([^)]*)\)/gi)];
+  const noneOf = [...compound.matchAll(/:not\(([^)]*)\)/gi)];
+  const bare = compound.replace(/:(?:is|where|not)\([^)]*\)/gi, '');
+
+  return (
+    partsOf(bare).every((part) => ancestry.has(part)) &&
+    anyOf.every((match) =>
+      splitSelectors(match[1]).some((branch) => partsOf(branch).every((part) => ancestry.has(part)))
+    ) &&
+    noneOf.every((match) =>
+      splitSelectors(match[1]).every((branch) => !partsOf(branch).every((part) => ancestry.has(part)))
+    )
+  );
+};
 
 const satisfiable = (conditions) => {
   let low = 0;
