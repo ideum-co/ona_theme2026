@@ -145,7 +145,12 @@ const isDead = (ranges, index) => ranges.some(([from, to]) => index >= from && i
  * for `research development`, which is not on the page. The value is accepted everywhere and
  * reachable nowhere, so it is rejected here rather than silently shipped.
  */
-const FRAGMENT = /^[^\s#][^\s]*$/;
+/* ASCII whitespace, spelled out. JavaScript's `\s` also matches NBSP, the ideographic space
+   and the rest of Unicode's whitespace, none of which HTML forbids in an id -- so `\s` here
+   rejected `cafe\u00a0training` as unreachable although a fragment carrying the same NBSP
+   resolves to it. Copied international text is exactly where that turns up. */
+const ASCII_SPACE = '[ \\t\\n\\f\\r]';
+const FRAGMENT = new RegExp(`^(?!${ASCII_SPACE}|#)(?:(?!${ASCII_SPACE}).)*$`, 'su');
 const PERCENT_ESCAPE = /%[0-9A-Fa-f]{2}/;
 const reachable = (anchor) => FRAGMENT.test(anchor) && !PERCENT_ESCAPE.test(anchor);
 
@@ -260,6 +265,20 @@ const ID_ATTRIBUTE = /(?<![-\w])id="([A-Za-z][-\w]*)"/g;
 const LITERAL_ID = /(?<![-\w])id="\{\{-?\s*'([^']+)'((?:[^}]*?))-?\}\}"/g;
 
 /*
+ * And an id can be a variable a caller filled with a literal. `blocks/filters.liquid:455`
+ * renders `theme-drawer-header` with `heading_id: 'filters-drawer-heading'`, and
+ * `snippets/theme-drawer-header.liquid:24` writes `id="{{ heading_id }}"`. Following the
+ * snippet's filename and nothing else drops the argument, so that id was on the page and free
+ * for an anchor at the same time.
+ */
+const VARIABLE_ID = /(?<![-\w])id="\{\{-?\s*([a-z_][\w]*)((?:[^}]*?))-?\}\}"/gi;
+
+/* A render tag with its arguments. `[^%]|%(?!\})` walks to the tag's own `%}` rather than to
+   the first `%` in it, so a filter or a modulo inside an argument does not cut it short. */
+const RENDER = /\{%-?\s*(?:render|include)\s+'([^']+)'((?:[^%]|%(?!\}))*)-?%\}/g;
+const LITERAL_ARG = /\b([a-z_][\w]*)\s*:\s*'([^']*)'/gi;
+
+/*
  * The filters that cannot change a non-blank literal: `default:` is a no-op on one, and
  * `escape` and `strip` leave an id-shaped string alone. Anything else -- `handle`, `append`,
  * `md5` -- renders a different string, and guessing it would reserve a name that is not on the
@@ -267,7 +286,7 @@ const LITERAL_ID = /(?<![-\w])id="\{\{-?\s*'([^']+)'((?:[^}]*?))-?\}\}"/g;
  * fails on them, because a constant id that quietly stops being reserved is the bug this
  * whole addition exists to fix.
  */
-const INERT_FILTERS = /^(?:\s*\|\s*(?:escape|strip)\s*|\s*\|\s*default:\s*(?:'[^']*'|"[^"]*")\s*)*$/;
+const INERT_FILTERS = /^\s*(?:\|\s*(?:escape|strip)\s*|\|\s*default:\s*(?:'[^']*'|"[^"]*")\s*)*$/;
 
 const maybeRead = (file) => {
   try {
@@ -287,9 +306,12 @@ const maybeRead = (file) => {
  * name collides with something real while this test says it is free. Snippets render snippets,
  * so the walk is transitive, with `seen` for the cycles.
  */
-const emitted = (file, seen = new Set()) => {
-  if (seen.has(file)) return [];
-  seen.add(file);
+const emitted = (file, bindings = new Map(), seen = new Set()) => {
+  /* Keyed on the arguments too: the same snippet rendered twice with different literals emits
+     different ids, and a plain filename key would drop the second one as a cycle. */
+  const visit = `${file}\u0000${[...bindings].sort().map((pair) => pair.join('=')).join(',')}`;
+  if (seen.has(visit)) return [];
+  seen.add(visit);
   const source = maybeRead(file);
   if (source === null) return [];
   /* Whatever sits in a branch this commit's settings close off is not on the page, and an id
@@ -300,9 +322,15 @@ const emitted = (file, seen = new Set()) => {
   for (const match of source.matchAll(LITERAL_ID)) {
     if (live(match) && INERT_FILTERS.test(match[2])) ids.push(match[1]);
   }
-  for (const match of source.matchAll(/\{%-?\s*(?:render|include)\s+'([^']+)'/g)) {
+  for (const match of source.matchAll(VARIABLE_ID)) {
+    if (live(match) && bindings.has(match[1]) && INERT_FILTERS.test(match[2])) ids.push(bindings.get(match[1]));
+  }
+  for (const match of source.matchAll(RENDER)) {
     if (!live(match)) continue;
-    ids.push(...emitted(join('snippets', `${match[1]}.liquid`), seen));
+    /* Only literal arguments travel. A variable or an expression resolves at render time and
+       guessing it would reserve a name that is not on the page. */
+    const passed = new Map([...(match[2] ?? '').matchAll(LITERAL_ARG)].map((arg) => [arg[1], arg[2]]));
+    ids.push(...emitted(join('snippets', `${match[1]}.liquid`), passed, seen));
   }
   return ids;
 };
@@ -387,6 +415,31 @@ test('every stored anchor is reachable and unique on the page it renders on', ()
     }
     return wrappers.get(layoutFile);
   };
+
+  /* An id a caller passed in as a literal is reserved like any other. `templates/collection
+     .json` enables a `filters` block, `blocks/filters.liquid:455` renders
+     `theme-drawer-header` with `heading_id: 'filters-drawer-heading'`, and the snippet writes
+     it out -- so it is on that page and must not be free for an anchor. */
+  assert.ok(
+    idsFor('templates/collection.json').taken.some(([id]) => id === 'filters-drawer-heading'),
+    'filters-drawer-heading is not reserved on the collection page; a literal render argument is being dropped'
+  );
+
+  /* The `data-testid` trap applies to every form the id can take, and the theme has no
+     `data-testid="{{ someVariable }}"` today -- so this one is checked on the pattern rather
+     than on a file, which is the only way to keep it from being a comment. */
+  assert.equal([...'<i id="{{ heading_id }}">'.matchAll(VARIABLE_ID)].length, 1, 'a variable id is no longer recognised');
+  assert.equal(
+    [...'<i data-testid="{{ heading_id }}">'.matchAll(VARIABLE_ID)].length,
+    0,
+    'data-testid is being read as an id; a test attribute would cost a merchant a valid anchor'
+  );
+
+  /* Whitespace is ASCII-only, both ways round. An id may not contain a space or a tab; it may
+     contain a non-breaking space, and a fragment carrying the same NBSP resolves to it. */
+  assert.ok(!reachable('cafe training'), 'an anchor with a space is being treated as reachable');
+  assert.ok(!reachable('cafe\ttraining'), 'an anchor with a tab is being treated as reachable');
+  assert.ok(reachable('cafe\u00a0training'), 'an anchor with a non-breaking space is rejected, but HTML allows it and the fragment resolves');
 
   const theme = wrapper('layout/theme.liquid');
   assert.ok(theme.groups.length >= 2, `the theme layout names ${theme.groups.length} section groups; the probe is broken`);
