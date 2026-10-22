@@ -25,7 +25,12 @@ const fixture = JSON.parse(readFileSync(join(root, 'tests/fixtures/wholesale-con
  */
 test('every piece of wholesale copy, media and destination survives the rebuild', () => {
   const now = extract(join(root, 'templates/page.wholesale.json'));
-  const live = [...now.required, ...now.chrome, ...now.disabled];
+
+  /* Only what Shopify still RENDERS counts as kept. `extract` sorts values a merchant disabled
+     into their own bucket, and an earlier version added that bucket back into the haystack --
+     which meant marking a live section `disabled`, the easiest mistake to make while moving
+     sections around, read as "nothing lost" while the page showed none of it. */
+  const live = [...now.required, ...now.chrome];
 
   /* Atomic values -- an image ref, a video url, an anchor, a short heading -- are tokens. They
      move intact or not at all, so they are matched exactly. */
@@ -33,24 +38,30 @@ test('every piece of wholesale copy, media and destination survives the rebuild'
 
   /* Prose does not survive as a whole field value, and should not have to: the rebuild splits
      one legacy `content` into separate text blocks and merges others, which is the point of the
-     exercise. Counting words was the first attempt and was far too slack -- on a page where
-     "wholesale", "coffee" and "support" recur in every section, a whole dropped sentence stayed
-     inside the page's total word budget and the control caught it passing.
+     exercise. Two earlier attempts were both too slack and both were caught by a control:
+     counting words let a whole sentence go, because every section on a wholesale page says
+     "wholesale", "coffee" and "support"; a 90% shingle floor then let an 18-word sentence go
+     from a long enough paragraph, which is exactly the loss this file exists to catch.
 
-     So prose is matched as five-word shingles against every shingle on the page. A sentence
-     moved or a paragraph split at a word boundary loses only the few shingles spanning the
-     seam; a dropped sentence loses all of its own, which takes coverage below the floor. */
+     So the unit is the SENTENCE, with no allowance. Every sentence of the frozen page must
+     survive whole, somewhere on the page. A paragraph may be split between its sentences or
+     merged into another block and still pass; a sentence may not lose its tail. */
   const SHINGLE = 5;
-  const FLOOR = 0.9;
   const words = (text) => text.toLowerCase().match(/[\p{L}\p{N}']+/gu) ?? [];
-  const shingles = (text) => {
-    const list = words(text);
-    if (list.length < SHINGLE) return [];
-    return Array.from({ length: list.length - SHINGLE + 1 }, (_, i) => list.slice(i, i + SHINGLE).join(' '));
-  };
+  const shingles = (list) =>
+    list.length < SHINGLE
+      ? []
+      : Array.from({ length: list.length - SHINGLE + 1 }, (_, i) => list.slice(i, i + SHINGLE).join(' '));
 
-  const haystack = new Set();
-  for (const item of live) for (const shingle of shingles(item.value)) haystack.add(shingle);
+  const haystackWords = live.map((item) => words(item.value));
+  const haystack = new Set(haystackWords.flatMap(shingles));
+  const haystackText = haystackWords.map((list) => list.join(' ')).join(' \u0000 ');
+
+  const sentences = (text) =>
+    text
+      .split(/(?<=[.!?])\s+/)
+      .map((part) => part.trim())
+      .filter(Boolean);
 
   const isAtomic = (item) =>
     /^(shopify:\/\/|https?:\/\/|#|mailto:|\/)/.test(item.value) ||
@@ -64,19 +75,18 @@ test('every piece of wholesale copy, media and destination survives the rebuild'
       if (!atoms.has(item.value)) lost.push(`${item.where} ${item.key}: ${item.value.slice(0, 80)}`);
       continue;
     }
-    const mine = shingles(item.value);
-    if (!mine.length) continue;
-    const gone = mine.filter((shingle) => !haystack.has(shingle));
-    const coverage = 1 - gone.length / mine.length;
-    if (coverage < FLOOR) {
-      lost.push(
-        `${item.where} ${item.key}: ${Math.round(coverage * 100)}% of its wording remains ` +
-          `(missing e.g. "${gone[0]}")`
-      );
+    for (const sentence of sentences(item.value)) {
+      const list = words(sentence);
+      if (!list.length) continue;
+      const gone =
+        list.length < SHINGLE
+          ? !haystackText.includes(list.join(' '))
+          : shingles(list).some((shingle) => !haystack.has(shingle));
+      if (gone) lost.push(`${item.where} ${item.key}: lost "${sentence.slice(0, 90)}"`);
     }
   }
 
-  assert.deepEqual(lost, [], `${lost.length} content values from the pre-rebuild page are no longer on it`);
+  assert.deepEqual(lost, [], `${lost.length} sentences or values from the pre-rebuild page are no longer on it`);
 });
 
 /*
