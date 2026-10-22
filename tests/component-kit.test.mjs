@@ -1785,10 +1785,20 @@ test('every in-page anchor owned by a section setting is recorded as a blocker',
   const gapRows = gaps.split('\n').filter((line) => /^\|/.test(line));
   assert.ok(gapRows.length > 5, `only ${gapRows.length} gap rows found; the probe is broken`);
 
-  const stated = new Set(
-    [...gaps.matchAll(/`#([\w-]+)`\s*→\s*`(ona-[a-z0-9-]+)`/g)].map((m) => `${m[2]}\u0000${m[1]}`)
+  /* From the row that is ABOUT the anchors, not from anywhere in the table. Scanning the whole
+     table let the dedicated row be deleted and its arrows reappear as a trailing clause on the
+     unrelated .animated-svg row -- where the information technically survives and the finding
+     does not, since nobody rebuilding ona-supported reads the decorative-layer row. */
+  const anchorRows = gapRows.filter((row) => /anchor/i.test(row.split('|')[1] ?? ''));
+  assert.equal(
+    anchorRows.length,
+    1,
+    `${anchorRows.length} gap rows are about anchors; the pairs belong in exactly one row of their own`
   );
-  assert.ok(stated.size >= 4, `the gap table states ${stated.size} anchor→section pairs; the probe is broken`);
+  const stated = new Set(
+    [...anchorRows[0].matchAll(/`#([\w-]+)`\s*→\s*`(ona-[a-z0-9-]+)`/g)].map((m) => `${m[2]}\u0000${m[1]}`)
+  );
+  assert.ok(stated.size >= 4, `the anchor row states ${stated.size} anchor→section pairs; the probe is broken`);
 
   const show = (pair) => pair.replace('\u0000', ' owns #');
   assert.deepEqual(
