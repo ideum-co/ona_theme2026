@@ -56,6 +56,35 @@ test('no doc outside the archive leaves the former live theme uncorrected', () =
  * diffs production against an unpublished preview and reports the preview as the baseline --
  * a wrong answer rather than an error, which is the worse failure. It must refuse instead.
  */
+/*
+ * The role guard above asks only that a doc naming the former theme also names the current one
+ * as MAIN. `branching-and-release.md` satisfied that and still told an operator, in its branch
+ * table, that `154676789439` was unpublished and a merge reached nobody -- the one sentence
+ * that turns a production deployment into a safe-looking merge.
+ *
+ * This checks that row and nothing else. A prose scan was tried first and dropped: across
+ * docs/ it could not tell "X is unpublished" from "X is no longer unpublished", and four of
+ * its five hits were corrections being flagged as the thing they corrected. A guard that cries
+ * wolf on every doc gets deleted or ignored, and it would fail PRs that touch none of this.
+ * The branch table is where an operator checks what a merge does, so that is what is pinned.
+ */
+test('the branch table says what a merge to main actually does', () => {
+  const guide = readFileSync(join(root, 'docs/branching-and-release.md'), 'utf8');
+  const row = guide.split('\n').find((line) => /^\|\s*`main`\s*\|/.test(line));
+  assert.ok(row, 'the branch table has no `main` row; this guard assumed one');
+  assert.ok(row.includes(LIVE), `the \`main\` row does not name theme ${LIVE}`);
+  assert.doesNotMatch(
+    row,
+    /unpublished|no customer|reaches no/i,
+    'the `main` row calls the published theme unpublished; a merge to main is a deployment to the live store'
+  );
+  assert.match(
+    row,
+    /live store|published theme|MAIN/,
+    'the `main` row does not say that merging deploys to the live store'
+  );
+});
+
 test('compare-themes.sh refuses to guess which theme is live', () => {
   const script = readFileSync(join(root, 'docs/tools/compare-themes.sh'), 'utf8');
 

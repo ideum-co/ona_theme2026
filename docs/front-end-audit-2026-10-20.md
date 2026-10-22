@@ -1,7 +1,9 @@
 # Front-end preview audit — 2026-10-20
 
-Audit of **theme 154676789439** (`ona_theme2026/main`, unpublished preview),
-against the then-live theme 160815546559 where a comparison was useful.
+Audit of **theme 154676789439** (`ona_theme2026/main`), against the then-live
+theme 160815546559 where a comparison was useful. On 2026-10-20 the audited
+theme was an unpublished preview; it is MAIN today, so read the note below
+before treating anything here as describing a preview.
 
 > **Roles have swapped since this audit.** As of 2026-10-22 the audited theme
 > `154676789439` is `MAIN` — it is what `onacoffee.com.au` serves — and

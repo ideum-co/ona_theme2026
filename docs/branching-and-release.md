@@ -23,14 +23,26 @@ point is that no one *chose* to deploy it.
 
 `staging` exists so that merging and deploying become two different decisions.
 
-> **Update, 2026-10-14 22:00:42Z — and this makes the case rather than weakening
-> it.** A third publish put theme **`160815546559`** ("PREVIEW - product media
-> fills column (PR #46)") live, so `154676789439` is unpublished again and a
-> merge to `main` no longer reaches customers *today*. Two unannounced publishes
-> in thirty hours is precisely the problem: the storefront changed twice without
-> a decision either time. Keep working on `staging` — the moment
-> `154676789439` is published again, `main` is production again, and nobody will
-> send a reminder. See `docs/archive/2026-10-go-live/post-publish-review-2026-10-15.md` §13.
+> **Superseded — read the next paragraph before acting on this one.**
+>
+> *2026-10-14 22:00:42Z.* A third publish put theme **`160815546559`**
+> ("PREVIEW - product media fills column (PR #46)") live, so `154676789439` was
+> unpublished again and a merge to `main` did not reach customers *that day*.
+> Two unannounced publishes in thirty hours is precisely the problem: the
+> storefront changed twice without a decision either time. See
+> `docs/archive/2026-10-go-live/post-publish-review-2026-10-15.md` §13.
+
+> **Current, as of 2026-10-22.** `154676789439` is **MAIN** — it is the
+> published theme, confirmed from the storefront
+> (`Shopify.theme = {"id":154676789439,...,"role":"main"}`). **A merge to `main`
+> is a deployment to the live store.** The paragraph above is the record of a
+> window that closed; it is not the state today. The warning it ends on turned
+> out to be the right one, and nobody did send a reminder — so check the role
+> rather than any document, this one included:
+>
+> ```bash
+> curl -s https://onacoffee.com.au | grep -o 'Shopify.theme = {[^}]*}'
+> ```
 
 ---
 
@@ -71,7 +83,7 @@ point is that no one *chose* to deploy it.
 
 | branch | what it is | deploys to |
 |---|---|---|
-| `main` | the branch the 2026 theme tracks | theme `154676789439` — **unpublished again as of 2026-10-14 22:00:42Z**, so a merge currently reaches a theme no customer sees |
+| `main` | the branch the 2026 theme tracks | theme `154676789439` — **MAIN, the published theme, as of 2026-10-22**. A merge here deploys to the live store. |
 | `staging-v2` | the integration branch. Everything lands here first. | a staging theme — see §3 |
 | `feat/*`, `fix/*`, `docs/*` | one change each | nothing |
 
