@@ -777,12 +777,21 @@ test('no kit row offers a gapped section as an unqualified replacement', () => {
   const unqualified = [];
   for (const row of kit.split('\n').filter((line) => /^\| \d+ \|/.test(line))) {
     const replaces = cells(row).at(-2) ?? '';
-    /* Clause, not cell. A marker earlier in the same cell says nothing about a name added to
-       the end of it. Sentence and semicolon boundaries are what separate one claim from the
-       next in these cells; em-dash asides stay with the claim they qualify. */
-    for (const clause of replaces.split(/(?<=\.)\s+|;\s+/)) {
-      if (TREATED.test(clause)) continue;
-      const named = [...clause.matchAll(/`(ona-[a-z0-9-]+)`/g)].map((match) => match[1]);
+    /* Segment, not clause, and not cell. Both looser versions of this failed the same way:
+       a marker somewhere in the scanned span exempts every name in it, so appending one more
+       name to a span that is already marked slips through. Cell-level let `ona-awards` be
+       added anywhere in rows 2, 5 or 6; clause-level still let it be added before the period
+       of a marked sentence (Codex, #247). Commas bound a name's own claim, so they split too.
+
+       Em dashes deliberately do not: rows 2 and 5 write the marker as an aside after one
+       (``ona-cafe-testimonial` — **blocked**`), and splitting there would separate every
+       marker from its name. The cost of this is that the marker must stay adjacent to the
+       name it qualifies -- `ona-faq-lists`, blocked per instance` fails where
+       `**`ona-faq-lists` is blocked, per instance**` passes. That is the intended pressure:
+       a reader scanning one row should not have to carry a qualifier across a comma. */
+    for (const segment of replaces.split(/(?<=\.)\s+|;\s+|,\s+/)) {
+      if (TREATED.test(segment)) continue;
+      const named = [...segment.matchAll(/`(ona-[a-z0-9-]+)`/g)].map((match) => match[1]);
       unqualified.push(...named.filter((name) => gapped.has(name)));
     }
   }
@@ -791,6 +800,79 @@ test('no kit row offers a gapped section as an unqualified replacement', () => {
     unqualified,
     [],
     `these sections have a Known-gaps row but are offered as a plain replacement in the kit table: ${unqualified.join(', ')}`
+  );
+});
+
+/*
+ * Two page-plan rows omitted a gapped section that is live on the page: `/pages/barista-courses`
+ * left out `ona-training-form` (blocked by its fixed contact subject, not only by the blob) and
+ * the bookings row left out `ona-faq-lists` -- the very instance the kit row had just flagged as
+ * never checked (Codex, #247). Both were found by reading, which is the wrong way to find them:
+ * the page plan is derivable from the templates, so derive it.
+ *
+ * PAGE_ROWS is explicit because a page's URL is not in the repository -- Shopify maps page to
+ * template by templateSuffix, which is shop-side. The enumeration risk that creates is closed
+ * below: every page template carrying a gapped live section must appear here, so a new one
+ * cannot be quietly left out of the plan by being left out of this table.
+ */
+const PAGE_ROWS = [
+  ['templates/page.wholesale.json', '| `/pages/wholesale` |'],
+  ['templates/page.training.json', '| `/pages/barista-courses` |'],
+  ['templates/page.about.json', '| `/pages/about` |'],
+  ['templates/page.bookings.json', '| bookings ×3 |'],
+  ['templates/page.private-courses-and-experiences.json', '| `/pages/private-courses-and-experiences` |']
+];
+
+test('every page plan names the gapped sections live on that page', () => {
+  const between = (from, to) => doc.slice(doc.indexOf(from), doc.indexOf(to));
+  const gaps = between('## Known gaps', '## Page by page');
+  const gapped = new Set(
+    gaps
+      .split('\n')
+      .filter((line) => /^\| `ona-[a-z0-9-]+`/.test(line))
+      .map((line) => line.match(/^\| `(ona-[a-z0-9-]+)`/)[1])
+  );
+  assert.ok(gapped.size > 5, `only ${gapped.size} gap rows found; the probe is broken`);
+
+  /* Live means in `order` and not disabled -- a parked section is not work this page owes. */
+  const liveGapped = (file) => {
+    const parsed = JSON.parse(stripBanner(readFileSync(join(root, file), 'utf8')));
+    const order = new Set(parsed.order ?? []);
+    return [
+      ...new Set(
+        Object.entries(parsed.sections ?? {})
+          .filter(([id, section]) => order.has(id) && !section.disabled && gapped.has(section.type))
+          .map(([, section]) => section.type)
+      )
+    ].sort();
+  };
+
+  /* The table has to cover every page template that owes work, or omitting a row from the
+     table would hide the same omission this test exists to catch. */
+  const owes = readdirSync(join(root, 'templates'))
+    .filter((file) => /^page\..+\.json$/.test(file))
+    .map((file) => join('templates', file))
+    .filter((file) => liveGapped(file).length);
+  const listed = new Set(PAGE_ROWS.map(([file]) => file));
+  assert.deepEqual(
+    owes.filter((file) => !listed.has(file)),
+    [],
+    'these page templates carry a gapped live section but are not in PAGE_ROWS, so their plan row is unchecked'
+  );
+
+  const missing = [];
+  for (const [file, marker] of PAGE_ROWS) {
+    const row = doc.split('\n').find((line) => line.startsWith(marker));
+    assert.ok(row, `the page-plan row ${marker} is gone or renamed`);
+    for (const name of liveGapped(file)) {
+      if (!row.includes(`\`${name}\``)) missing.push(`${marker} omits ${name}`);
+    }
+  }
+
+  assert.deepEqual(
+    missing,
+    [],
+    `these pages run a section with a declared gap that their plan row does not mention: ${missing.join('; ')}`
   );
 });
 
