@@ -78,13 +78,58 @@ const specificity = (selector) => {
   return ids * 10000 + classes * 100 + elements;
 };
 
+/*
+ * The stylesheet flattened into rules, carrying whatever at-rules each one sits inside.
+ *
+ * A flat `selector { ... }` regex cannot see into a nested block: it matched `@media(...)`
+ * as the selector and swallowed the rules inside as declarations, so an eyebrow declaration
+ * in a media query was invisible to every check here and
+ * `@media(max-width:749px){ .subtitle{opacity:.6} }` muted the mobile eyebrow with the suite
+ * green (Codex, #300). There are nine media blocks in this stylesheet.
+ */
+const flatten = (text) => {
+  const out = [];
+  let order = 0;
+
+  const walk = (body, conditions) => {
+    let at = 0;
+    while (at < body.length) {
+      const open = body.indexOf('{', at);
+      if (open === -1) break;
+      let depth = 1;
+      let close = open + 1;
+      for (; close < body.length && depth > 0; close += 1) {
+        if (body[close] === '{') depth += 1;
+        else if (body[close] === '}') depth -= 1;
+      }
+      const prelude = body.slice(at, open).trim();
+      const inner = body.slice(open + 1, close - 1);
+
+      if (prelude.startsWith('@')) {
+        /* Conditional groups hold rules; @font-face and @keyframes hold declarations, and
+           nothing in them can target a label. */
+        if (/^@(media|supports|layer|container|scope)\b/i.test(prelude)) {
+          walk(inner, [...conditions, prelude.replace(/\s+/g, ' ')]);
+        }
+      } else if (prelude) {
+        order += 1;
+        out.push({ conditions, selectorList: prelude, declarations: inner, at: order });
+      }
+      at = close;
+    }
+  };
+
+  walk(text, []);
+  return out;
+};
+
+const flat = flatten(css);
+
 const rulesFor = (name) => {
   const escaped = name.replace(/-/g, '\\-');
   const target = new RegExp(`\\.${escaped}(?![\\w-])`);
   const found = [];
-  let at = 0;
-  for (const [, selectorList, declarations] of css.matchAll(/([^{}]+)\{([^}]*)\}/g)) {
-    at += 1;
+  for (const { conditions, selectorList, declarations, at } of flat) {
     for (const branch of selectorList.split(',')) {
       if (!target.test(branch)) continue;
       /* `!important` reorders the cascade in a way none of this models, so it fails rather
@@ -111,6 +156,7 @@ const rulesFor = (name) => {
         selector: branch.trim().replace(/\s+/g, ' '),
         declarations,
         ancestors: compounds.slice(0, own),
+        conditions,
         needsEmpty,
         needsFilled,
         weight: specificity(branch),
@@ -135,12 +181,21 @@ const contextsFor = (name) => {
   const seen = new Set();
   const out = [];
   for (const rule of all) {
-    const key = rule.ancestors.join(' ');
+    const key = JSON.stringify([rule.ancestors, rule.conditions]);
     if (seen.has(key)) continue;
     seen.add(key);
-    const applicable = all.filter((other) => other.ancestors.every((a) => rule.ancestors.includes(a)));
+    /* A rule applies here when everything it asks for is present here -- its ancestors, and
+       the at-rules it sits inside. An unconditional rule applies in every context; a media
+       rule only in the contexts that carry that media condition. */
+    const applicable = all.filter(
+      (other) =>
+        other.ancestors.every((ancestor) => rule.ancestors.includes(ancestor)) &&
+        other.conditions.every((condition) => rule.conditions.includes(condition))
+    );
     out.push({
-      where: rule.ancestors.length ? rule.ancestors.join(' ') : 'any legacy page',
+      where:
+        [rule.ancestors.join(' ') || 'any legacy page', ...rule.conditions].join(' inside ') ||
+        'any legacy page',
       filled: applicable.filter((other) => !other.needsEmpty),
       empty: applicable.filter((other) => !other.needsFilled),
     });
