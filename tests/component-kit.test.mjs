@@ -432,15 +432,34 @@ test('the custom type_preset count is what the templates hold', () => {
   const quoted = breakdown.map(([preset, n]) => `\`${preset}\` ${n}`).join(', ');
   assert.ok(doc.includes(`most common preset (${quoted})`), `the breakdown should read: ${quoted}`);
   assert.match(doc, new RegExp(`the ${custom} \`custom\` presets`), `step 6 does not say ${custom}`);
+
+  /* The rule an implementer works from said "covers 77 blocks" while the inventory above it
+     split the same 77 into 70 blocks and 7 sections, so following the rule leaves the
+     section-level presets untouched (Codex, #247). The rule has to name both populations. */
+  assert.match(
+    doc,
+    new RegExp(
+      `covers ${custom} settings — ${custom - sectionLevel} on blocks and ${sectionLevel} on sections`
+    ),
+    `the token rule should say ${custom} settings, ${custom - sectionLevel} on blocks and ${sectionLevel} on sections`
+  );
 });
 
 test('the inline <style> count is what the templates hold', () => {
   let inline = 0;
+  /* The occurrence count alone understates the work: it was read as "one block duplicated four
+     ways", when the four product templates each hold four *different* styled blocks. Distinct
+     bodies are the number of decisions; occurrences are only how many places they land in. */
+  const bodies = new Map();
   for (const [, parsed] of eachTemplate()) {
     for (const settings of everySettings(parsed.sections)) {
-      if (Object.values(settings).some((value) => typeof value === 'string' && value.includes('<style'))) {
-        inline += 1;
-      }
+      const styled = Object.values(settings).filter(
+        (value) => typeof value === 'string' && value.includes('<style')
+      );
+      if (!styled.length) continue;
+      inline += 1;
+      const body = styled.join('\\u0000');
+      bodies.set(body, (bodies.get(body) ?? 0) + 1);
     }
   }
 
@@ -451,6 +470,13 @@ test('the inline <style> count is what the templates hold', () => {
     `the drift list does not say ${inline} inline <style> blocks`
   );
   assert.match(doc, new RegExp(`The ${inline} inline \`<style>\` blocks`), `step 7 does not say ${inline}`);
+
+  assert.ok(bodies.size > 1, `the distinct-body probe collapsed to ${bodies.size}; it is broken`);
+  assert.match(
+    doc,
+    new RegExp(`the ${inline}\\s+occurrences are \\*\\*${NUMBER_WORDS[bodies.size]} distinct styled blocks\\*\\*`),
+    `the drift list should say ${NUMBER_WORDS[bodies.size]} distinct styled blocks for ${inline} occurrences`
+  );
 });
 
 /*
@@ -648,30 +674,88 @@ test('every ona-* section has a mapping or a declared gap', () => {
 
   assert.ok(sections.length > 40, `only ${sections.length} ona-* sections found; the probe is broken`);
 
-  /* Scope. A name in the verification preamble proves only that the section exists, which the
-     filesystem already said. Guidance starts where the analysis does. */
-  const guidance = doc.slice(doc.indexOf('## What the reviews actually found'));
-  assert.ok(guidance.length > 5000, 'the analysis sections are no longer where this expects');
+  /* Scope. This used to start at '## What the reviews actually found', which swept in the
+     duplicate-schema table and the composite inventory -- tables that record what a section
+     *is*, not what it converts to. `ona-supported` is backticked in both, so deleting its real
+     guidance left this test green (Codex, #247). Coverage now comes only from the rows that
+     carry guidance: the kit's Replaces column, the exclusion prose under the kit table, the
+     media-slot table and the mapping that closes it, the not-covered table, the gap rows and
+     the page plan. */
+  const between = (from, to) => doc.slice(doc.indexOf(from), doc.indexOf(to));
+  const kit = between('## The kit', '### Why `media-with-content` carries the weight');
+  const kitTableRows = kit.split('\n').filter((line) => line.startsWith('| '));
+  const replaces = kitTableRows.map((line) => line.split('|').at(-2) ?? '').join('\n');
+  const lastRow = kitTableRows.at(-1);
+  const exclusion = kit.slice(kit.lastIndexOf(lastRow) + lastRow.length);
+
+  const guidance = [
+    replaces,
+    exclusion,
+    between('### The media slot holds less than the sections do', '### Read the markup, not the schema'),
+    between('## What the kit does not cover', '## Known gaps'),
+    between('## Known gaps', '## Page by page'),
+    between('## Page by page', '## The tokens that make it one design')
+  ].join('\n');
+
+  assert.ok(guidance.length > 5000, 'the guidance sections are no longer where this expects');
+  assert.ok(
+    !guidance.includes('| Persistent panel |'),
+    'the composite inventory is back inside the coverage scope; it describes sections, it does not map them'
+  );
 
   /* Boundary. `ona-training` is a prefix of `ona-training-form`, `ona-training-iframe` and four
      more, so a plain substring search lets an unmapped section be "covered" by a longer name
      that happens to start the same way. Match the backticked token the document writes. */
   const named = new Set([...guidance.matchAll(/`([a-z0-9-]+)`/g)].map((match) => match[1]));
 
-  /* The document is allowed to treat the sourcing clones collectively -- it does, in the kit
-     row and the gap row -- but then the collective claim is the thing to check: the phrase has
-     to be there and the group has to be the size it says. */
+  /* Two groups the document is allowed to treat collectively. Each is checked the same way: the
+     collective phrase has to be present in the guidance, and the group has to be the size the
+     phrase claims. */
   const clones = sections.filter((name) => /^ona-(wholesale-|traning-)?sourcing(-v\d+)?$/.test(name));
   assert.equal(clones.length, 10, 'the sourcing clone group is no longer ten sections');
-  assert.ok(guidance.includes('ten sourcing clones'), 'the kit no longer names the sourcing clones as a group');
   assert.ok(guidance.includes('the **10** `*-sourcing-v*` clones'), 'the kit row no longer states the group size');
+  assert.ok(doc.includes('ten sourcing clones'), 'the order of work no longer names the sourcing clones as a group');
 
-  const covered = new Set([...named, ...clones]);
+  /* The five panel-plus-slider composites carry one collective gap row rather than five of
+     their own, so the composite table is what says who is in the group -- and the gap row has
+     to agree on its size. */
+  const compositeTable = between(
+    '### The dominant shape is a composite',
+    '### The media slot holds less than the sections do'
+  );
+  const composites = [...compositeTable.matchAll(/^\| `(ona-[a-z0-9-]+)` \|/gm)].map((match) => match[1]);
+  assert.equal(composites.length, 5, `the composite table lists ${composites.length} sections, not five`);
+  assert.ok(
+    guidance.includes('the five panel-plus-slider composites'),
+    'Known gaps no longer carries the collective row for the panel-plus-slider composites'
+  );
+
+  const covered = new Set([...named, ...clones, ...composites]);
   const missing = sections.filter((name) => !covered.has(name)).sort();
   assert.deepEqual(
     missing,
     [],
     `these sections have no mapping and no declared gap in docs/component-kit.md: ${missing.join(', ')}`
+  );
+});
+
+/*
+ * The kit row and the gap row described the same dependency differently: the gap row recorded
+ * #246 as merged and the café-name dependency satisfied, while the kit row still listed #246 as
+ * a blocker, which sends an implementer to redo finished work (Codex, #247). Two places, one
+ * fact -- so check they agree rather than fixing only the one that was read.
+ */
+test('the kit row and the gap row agree on the cafe-name dependency', () => {
+  assert.ok(
+    doc.includes('The café-name dependency is now **satisfied**: #246 has merged'),
+    'the gap row no longer records #246 as merged'
+  );
+
+  const kitRow = doc.split('\n').find((line) => line.startsWith('| 5 | `press-quotes`'));
+  assert.ok(kitRow, 'the press-quotes kit row is gone or renumbered');
+  assert.ok(
+    !/needs #246/.test(kitRow),
+    'the kit row still lists #246 as a blocker although the gap row records it as merged'
   );
 });
 

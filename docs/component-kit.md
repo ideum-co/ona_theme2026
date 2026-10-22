@@ -205,9 +205,12 @@ templates:
   ×3, `index.json` ×1, and ×4 in each of `product.json`,
   `product.equipment.json`, `product.merch.json` and `product.non-coffee.json`.
   Two of the four in `product.json` are superseded by #243. The three product
-  variants #276 added each carry their own copy of the same four, so this is
-  one block duplicated four ways rather than twenty separate decisions — fix
-  it once and the other three follow.
+  variants #276 added each carry their own copy of the same four, so the 20
+  occurrences are **eight distinct styled blocks**: four live in the product
+  templates and are replicated across all four of them, `collection.json`
+  contributes three more and `index.json` one. Fixing one of the product four
+  fixes it in four places — the other seven are separate decisions, not
+  copies (Codex, #247).
 
 ## The kit
 
@@ -220,7 +223,7 @@ has to be written.
 | 2 | `media-with-content` | one fixed media slot + a content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones, and `ona-training-image-text` — **all 11 blocked** on the decorative-layer decision: every one renders an `.animated-svg` blob this target drops (see [Known gaps](#known-gaps)). Nothing here is convertible until that is settled |
 | 3 | `hero` | full-bleed media with blocks over it: desktop and custom mobile media, overlay, `section_height`, `fetchpriority` on the image itself. Already on the homepage. | `ona-training-banner`, `ona-inner-banner` |
 | 4 | `carousel` | a static `group` header **above** a row of `_card`s. Both are direct children of `.section`, which puts them in the same grid column on separate rows — it is a header-over-cards layout, not a side-by-side one. | card rows. **Not** the five panel-plus-slider sections: their panel sits beside the slider |
-| 5 | `press-quotes` | quote carousel: logo, quote, attribution, arrows when blocks outnumber columns | `ona-cafe-testimonial` — **blocked**: needs #246 for the café names, the #253 carousel layout, and a section-level image slot for the bus #278 added (see [Known gaps](#known-gaps)) |
+| 5 | `press-quotes` | quote carousel: logo, quote, attribution, arrows when blocks outnumber columns | `ona-cafe-testimonial` — **blocked**: #246 has merged, so the café names are satisfied; what is left is the #253 carousel layout and a section-level image slot for the bus #278 added (see [Known gaps](#known-gaps)) |
 | 6 | `ona-faq-layout` | already Horizon-native, styles itself, takes `_faq-category` blocks | `ona-faq-lists`, the FAQ half of `ona-expressions` |
 | 7 | `ona-page-media-gallery` | already Horizon-native, styles itself | ad-hoc image grids |
 | 8 | **a page-header section** — *to write* | eyebrow, heading, optional sub-copy, optional visually-hidden variant | `ona-page-title`, `ona-sr-heading` |
@@ -387,8 +390,9 @@ component still diverge if each restates its own sizes.
 
 1. **Type comes from the preset, not a literal.** `type_preset` is one of
    `h1…h6`, `paragraph`, `rte`. `custom` is for a genuine one-off and currently
-   covers 77 blocks — that number should fall, not grow. No `font_size` in a
-   template.
+   covers 77 settings — 70 on blocks and 7 on sections, so a cleanup that walks
+   only blocks stops seven short. That number should fall, not grow. No
+   `font_size` in a template.
 2. **Spacing comes from a short scale.** Pick one from the 15 values in use —
    the obvious ladder is **0 / 24 / 48 / 72 / 96 / 120** — and move every
    section's `padding-block-*` onto it. With no gaps between sections, this
