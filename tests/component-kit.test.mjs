@@ -388,12 +388,14 @@ const everySettings = function* (sections) {
 };
 
 test('the custom type_preset count is what the templates hold', () => {
-  let custom = 0;
+  const counts = new Map();
   for (const [, parsed] of eachTemplate()) {
     for (const settings of everySettings(parsed.sections)) {
-      if (settings.type_preset === 'custom') custom += 1;
+      const preset = settings.type_preset;
+      if (preset) counts.set(preset, (counts.get(preset) ?? 0) + 1);
     }
   }
+  const custom = counts.get('custom') ?? 0;
 
   assert.ok(custom > 0, 'the probe found no custom presets, so it is broken');
   assert.match(
@@ -401,6 +403,19 @@ test('the custom type_preset count is what the templates hold', () => {
     new RegExp(`\\*\\*${custom} blocks sit on \`type_preset: "custom"\`\\*\\*`),
     `the drift list does not say ${custom} custom presets`
   );
+
+  /* The whole breakdown is quoted, not just the custom total, and guarding one number of six
+     is how `rte` sat at 22 against an actual 18 through two rounds of correcting this very
+     paragraph. Presets appear on section settings as well as nested blocks, and only `custom`
+     and `rte` occur in both -- which is precisely why a probe that walks one population twice
+     inflates those two and leaves the rest looking right. */
+  const breakdown = [...counts.entries()]
+    .filter(([preset]) => preset !== 'custom')
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 5);
+
+  const quoted = breakdown.map(([preset, n]) => `\`${preset}\` ${n}`).join(', ');
+  assert.ok(doc.includes(`most common preset (${quoted})`), `the breakdown should read: ${quoted}`);
   assert.match(doc, new RegExp(`the ${custom} \`custom\` presets`), `step 6 does not say ${custom}`);
 });
 
