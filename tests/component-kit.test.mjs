@@ -613,18 +613,31 @@ test('the text-image-bg row describes the markup and the dead trigger', () => {
 });
 
 /*
- * The Learn row sent ona-brewguides-and-training to "_product-card-style tiles". Its two live
- * tiles link to a page and a blog, and _product-card cannot express either: it reads only
- * closest.product, and the card snippet hard-wires href to product.url and emits no link at
- * all in the onboarding state a page template puts it in. Following that row loses both
- * destinations -- a silent one, because the tiles would still render as placeholder cards.
+ * The Learn row has been wrong twice, in two different ways, and the second way is the one
+ * worth guarding.
  *
- * _card is the target that fits, and the point of checking it here is that the document's own
- * thesis is you verify a block tree rather than assume it. So the test asserts what _card
- * actually offers rather than trusting the prose: a background image, an arbitrary link, and
- * text children.
+ * First it sent ona-brewguides-and-training to _product-card. Its two live tiles link to a page
+ * and a blog, and _product-card reads only closest.product while the card snippet hard-wires
+ * href to product.url and emits no link at all in the onboarding state a page template puts it
+ * in -- so both destinations vanish while the tiles still render as placeholders.
+ *
+ * Then it sent them to _card, which has exactly the right settings and is still wrong: the
+ * leading underscore marks a private type. blocks/product-tab.liquid:7-8 states the convention
+ * in this theme's own words -- a private type is not offered in "Add block" -- and the only
+ * parent admitting _card is _carousel-content. A merchant could not build the tree, and
+ * merchant-editable is the test stage 2 is held to, so a correct-looking block tree that cannot
+ * be assembled in the editor fails for the same reason a ported ona-* section does.
+ *
+ * So the target has to be checked for reachability, not just for settings. group is public,
+ * carries the link, the background image and the overlay, and takes @theme children.
  */
-test('the Learn tiles map to a block that can link to a page', () => {
+test('the Learn tiles map to a block a merchant can actually add', () => {
+  const schemaOf = (dir, name) => {
+    const src = readFileSync(join(root, dir, `${name}.liquid`), 'utf8');
+    const match = src.match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema/);
+    return match ? JSON.parse(match[1]) : null;
+  };
+
   const learn = JSON.parse(stripBanner(readFileSync(join(root, 'templates', 'page.learn.json'), 'utf8')));
   const tiles = Object.values(learn.sections)
     .filter((section) => section.type === 'ona-brewguides-and-training')
@@ -633,35 +646,47 @@ test('the Learn tiles map to a block that can link to a page', () => {
     .filter(Boolean);
   assert.equal(tiles.length, 2, `the Learn section has ${tiles.length} linked tiles, not two`);
   for (const url of tiles) {
-    assert.ok(
-      !/^shopify:\/\/products\//.test(url),
-      `a Learn tile now points at a product (${url}); the row's reasoning assumes neither does`
-    );
+    assert.ok(!/^shopify:\/\/products\//.test(url), `a Learn tile now points at a product (${url})`);
   }
 
-  /* Why _product-card cannot carry them. */
-  const card = readFileSync(join(root, 'blocks', '_product-card.liquid'), 'utf8');
-  assert.match(card, /assign product = closest\.product/, '_product-card no longer sources closest.product; the row cites that it does');
+  /* Why not _product-card. */
+  assert.match(readFileSync(join(root, 'blocks', '_product-card.liquid'), 'utf8'), /assign product = closest\.product/,
+    '_product-card no longer sources closest.product; the row cites that it does');
   const snippet = readFileSync(join(root, 'snippets', 'product-card.liquid'), 'utf8');
-  assert.match(snippet, /href="\{\{ product\.url \}\}"/, 'product-card no longer hard-wires product.url; the row cites that it does');
-  assert.match(snippet, /assign onboarding = true/, 'product-card no longer has an onboarding state; the row cites it');
+  assert.match(snippet, /href="\{\{ product\.url \}\}"/, 'product-card no longer hard-wires product.url');
+  assert.match(snippet, /assign onboarding = true/, 'product-card no longer has an onboarding state');
 
-  /* What _card offers, read off its schema rather than taken from the prose. */
-  const cardSchema = JSON.parse(
-    readFileSync(join(root, 'blocks', '_card.liquid'), 'utf8').match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema/)[1]
-  );
-  const ids = new Map((cardSchema.settings ?? []).map((setting) => [setting.id, setting.type]));
-  assert.equal(ids.get('link'), 'url', '_card no longer has an arbitrary url link, which is the whole reason it is the target');
-  assert.equal(ids.get('background_image'), 'image_picker', '_card no longer takes a background image');
-  assert.ok(
-    (cardSchema.blocks ?? []).some((block) => block.type === 'text'),
-    '_card no longer accepts text children, so it cannot hold the tile heading'
-  );
+  /* Why not _card: private, and reachable from one parent only. */
+  assert.match(readFileSync(join(root, 'blocks', 'product-tab.liquid'), 'utf8'),
+    /a private type \(an underscore prefix\) is not offered in "Add block"/,
+    'the theme no longer states the private-type convention the row relies on');
+  const admits = [...readdirSync(join(root, 'blocks')), ...readdirSync(join(root, 'sections'))]
+    .filter((file) => file.endsWith('.liquid'));
+  const cardParents = admits.filter((file) => {
+    const dir = existsSync(join(root, 'blocks', file)) ? 'blocks' : 'sections';
+    const schema = schemaOf(dir, file.slice(0, -'.liquid'.length));
+    return (schema?.blocks ?? []).some((block) => block.type === '_card');
+  });
+  assert.deepEqual(cardParents, ['_carousel-content.liquid'],
+    `_card is now admitted by ${cardParents.join(', ')}; the row says only _carousel-content does`);
+
+  /* The target: public, and carrying the tile. */
+  const group = schemaOf('blocks', 'group');
+  const ids = new Map((group.settings ?? []).map((setting) => [setting.id, setting.type]));
+  assert.equal(ids.get('link'), 'url', 'group no longer has an arbitrary url link');
+  assert.equal(ids.get('background_image'), 'image_picker', 'group no longer takes a background image');
+  assert.equal(ids.get('toggle_overlay'), 'checkbox', 'group no longer has the overlay the .a-box needs');
+  assert.ok((group.blocks ?? []).some((block) => block.type === '@theme'),
+    'group no longer accepts @theme children, so it cannot hold the tile heading');
+  assert.ok((group.presets ?? []).length > 0, 'group has no preset, so it is not offered in Add block');
+  assert.ok(!(group.blocks ?? []).some((block) => block.type === '_card'),
+    'group now admits _card, so the row reasoning needs revisiting');
 
   const row = doc.split('\n').find((line) => line.startsWith('| `/pages/learn`'));
   assert.ok(row, 'the Learn row is gone from the page plan');
-  assert.ok(/\*\*`_card`\*\*/.test(row), 'the Learn row no longer maps the tiles to _card');
-  assert.ok(/\*\*not\*\* `_product-card`/.test(row), 'the Learn row no longer rules out _product-card');
+  assert.ok(/one `group` per tile/.test(row), 'the Learn row no longer maps the tiles to group');
+  assert.ok(/\*\*Not\*\* `_product-card`/.test(row) && /\*\*Not\*\* `_card` either/.test(row),
+    'the Learn row no longer rules out both rejected cards');
 });
 
 test('the duplication table still matches the schemas', () => {
