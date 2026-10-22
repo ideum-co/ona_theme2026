@@ -69,8 +69,16 @@ const hrefsIn = (value) => [...value.matchAll(/(?:href|src)="([^"]+)"/g)].map((m
 const LIQUID_DIR = new URL('../sections/', import.meta.url);
 const BLOCK_DIR = new URL('../blocks/', import.meta.url);
 
-const sourceOf = (type) => {
-  for (const dir of [LIQUID_DIR, BLOCK_DIR]) {
+/*
+ * A type name alone does not say which file renders it. `product-media-with-text` exists twice:
+ * `sections/product-media-with-text.liquid` places one static child, the block of the same name,
+ * and `blocks/product-media-with-text.liquid` places `media` and `content` inside it. Reading
+ * the section file for the nested node hides exactly the children the block renders, so the
+ * node's kind -- top level is a section, anything nested is a block -- picks the directory.
+ */
+const sourceOf = (type, kind) => {
+  const dirs = kind === 'section' ? [LIQUID_DIR, BLOCK_DIR] : [BLOCK_DIR, LIQUID_DIR];
+  for (const dir of dirs) {
     try {
       return readFileSync(new URL(`${type}.liquid`, dir), 'utf8');
     } catch {
@@ -80,8 +88,8 @@ const sourceOf = (type) => {
   return null;
 };
 
-const schemaOf = (type) => {
-  const source = sourceOf(type);
+const schemaOf = (type, kind) => {
+  const source = sourceOf(type, kind);
   const match = source && source.match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/);
   if (!match) return null;
   try {
@@ -103,7 +111,7 @@ const schemaSettings = () => {
       continue;
     }
     for (const name of names) {
-      const schema = schemaOf(name.replace(/\.liquid$/, ''));
+      const schema = schemaOf(name.replace(/\.liquid$/, ''), dir === 'sections' ? 'section' : 'block');
       for (const entry of schema?.settings ?? []) if (entry?.id) all.push([`${dir}/${name}`, entry]);
     }
   }
@@ -161,8 +169,8 @@ const visibleIfFalse = (expression, settings, defaults) => {
    are placed by the markup, not by `block_order`, so a parent with `block_order: []` still
    renders them -- `blocks/media-with-text.liquid` draws `media` and `content` that way, and the
    product templates store the visible image in exactly that static child. */
-const staticChildren = (type) => {
-  const source = sourceOf(type);
+const staticChildren = (type, kind) => {
+  const source = sourceOf(type, kind);
   if (!source) return new Set();
   return new Set([...source.matchAll(/content_for\s+'block'[^%]*?\bid:\s*'([^']+)'/g)].map((m) => m[1]));
 };
@@ -210,9 +218,9 @@ export function extract(templatePath) {
   const chrome = [];
   const disabled = [];
 
-  const visit = (node, path, live) => {
+  const visit = (node, path, live, kind) => {
     const settings = node.settings ?? {};
-    const schema = node.type ? schemaOf(node.type) : null;
+    const schema = node.type ? schemaOf(node.type, kind) : null;
     const defaults = new Map((schema?.settings ?? []).filter((e) => e?.id).map((e) => [e.id, e.default]));
     const conditions = new Map(
       (schema?.settings ?? []).filter((e) => e?.id && e.visible_if).map((e) => [e.id, e.visible_if])
@@ -245,17 +253,17 @@ export function extract(templatePath) {
     /* `block_order` governs the dynamic children only. A component that places a child itself
        renders it whatever the order says, so those ids are exempt -- otherwise every
        `media-with-text` with `block_order: []` reads as having lost its image. */
-    const placed = node.type ? staticChildren(node.type) : new Set();
+    const placed = node.type ? staticChildren(node.type, kind) : new Set();
     for (const [childKey, child] of Object.entries(node.blocks ?? {})) {
       const rendered =
         !child.disabled && (ordered === null || ordered.has(childKey) || placed.has(childKey));
-      visit(child, `${path}/${childKey}`, live && rendered);
+      visit(child, `${path}/${childKey}`, live && rendered, 'block');
     }
   };
 
   for (const [key, section] of Object.entries(parsed.sections ?? {})) {
     const live = !section.disabled;
-    visit(section, `${key}(${section.type})`, live);
+    visit(section, `${key}(${section.type})`, live, 'section');
     /* Settings are not the only place this page keeps content. `ona-gust-r` has an empty
        settings object and renders the entire wholesale enquiry form -- heading, field labels,
        submit button -- as literals in its Liquid, and the Monday-form CTAs in the partnership,
