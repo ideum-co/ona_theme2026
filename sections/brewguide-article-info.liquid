@@ -75,7 +75,7 @@
         {%- assign value = spec_values[index] | strip -%}
         {%- if label != blank and value != blank -%}
           <div class="brewguide-article-recipe__row">
-            <dt class="brewguide-article-recipe__label">{{ label | upcase }}</dt>
+            <dt class="brewguide-article-recipe__label">{{ label }}</dt>
             <dd class="brewguide-article-recipe__value">{{ value }}</dd>
           </div>
         {%- endif -%}

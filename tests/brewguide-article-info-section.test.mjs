@@ -77,6 +77,16 @@ test('a spec row with a blank label or blank value is skipped, not emitted with 
   assert.match(code, /\{%-\s*if label != blank and value != blank\s*-%\}/, 'each spec row must be guarded on both label and value being non-blank before it is emitted');
 });
 
+test('the label is not double-uppercased -- CSS text-transform already handles it', () => {
+  // Raised in an independent review of PR #282: {{ label | upcase }} plus
+  // .brewguide-article-recipe__label's own text-transform: uppercase did the same thing twice.
+  // Harmless visually, but blocks/product-brew-guide.liquid (this file's own stated source
+  // pattern) relies on the CSS transform alone, and the Liquid-side uppercase changes what a
+  // screen reader or copy-paste sees from the underlying text.
+  assert.doesNotMatch(code, /\{\{ label \| upcase \}\}/, 'must not uppercase the label in Liquid when the CSS class already does it');
+  assert.match(code, /\{\{ label \}\}/, 'must render the label plain, letting .brewguide-article-recipe__label\'s text-transform: uppercase do the visual work');
+});
+
 test('the cross-sell does a direct product lookup, not a loop over every product in the catalog', () => {
   assert.doesNotMatch(code, /for product in collections\.all\.products/, 'must not reproduce the old O(n) collections.all scan the legacy section used');
   assert.match(code, /assign cross_sell_product = all_products\[cross_sell_handle\]/, 'must use a direct all_products[handle] lookup instead');

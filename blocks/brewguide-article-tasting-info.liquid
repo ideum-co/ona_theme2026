@@ -48,25 +48,26 @@
   -%}
 
   {%- if has_info -%}
-    <div class="brewguide-article-info" {{ block.shopify_attributes }}>
+    <dl class="brewguide-article-info" {{ block.shopify_attributes }}>
       {%- if tastes_like != blank -%}
         <div class="brewguide-article-info__row">
-          <span class="brewguide-article-info__label">Tastes like</span>
-          <span class="brewguide-article-info__value">{{ tastes_like }}</span>
+          <dt class="brewguide-article-info__label">Tastes like</dt>
+          <dd class="brewguide-article-info__value">{{ tastes_like }}</dd>
         </div>
       {%- endif -%}
       {%- if roast != blank -%}
         <div class="brewguide-article-info__row">
-          <span class="brewguide-article-info__label">Roast</span>
-          <span class="brewguide-article-info__value">{{ roast }}</span>
+          <dt class="brewguide-article-info__label">Roast</dt>
+          <dd class="brewguide-article-info__value">{{ roast }}</dd>
         </div>
       {%- endif -%}
-    </div>
+    </dl>
   {%- endif -%}
 {%- endif -%}
 
 {% stylesheet %}
   .brewguide-article-info {
+    margin: 0;
     display: grid;
     gap: var(--gap-sm);
     width: 100%;
@@ -84,6 +85,10 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     font-weight: 600;
+  }
+
+  .brewguide-article-info__value {
+    margin: 0;
   }
 {% endstylesheet %}
 
