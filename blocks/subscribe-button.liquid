@@ -107,8 +107,15 @@
               name="quantity"
               value="{% if variant.quantity_rule.min %}{{ variant.quantity_rule.min }}{% else %}1{% endif %}"
             >
+            {%- comment -%}
+              Precompute the label: Liquid does not allow a filter (`| default:`) inside a
+              `render` tag argument -- doing so is a parse error ("Expected end_of_string but
+              found pipe"), which makes this block fail to compile and, in turn, makes every
+              template that uses the `subscribe` block invalid. Assign first, then pass it.
+            {%- endcomment -%}
+            {%- assign subscribe_submit_label = block_settings.submit_label | default: 'Add to cart' -%}
             {%- render 'add-to-cart-button',
-              add_to_cart_text: block_settings.submit_label | default: 'Add to cart',
+              add_to_cart_text: subscribe_submit_label,
               class: 'subscribe-block__submit add-to-cart-button',
               can_add_to_cart: variant.available,
               show_icon: false,
