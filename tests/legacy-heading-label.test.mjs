@@ -252,9 +252,12 @@ const flatten = (text) => {
   return out;
 };
 
-const flat = sheets.flatMap((sheet) =>
-  flatten(sheet.text).map((rule) => ({ ...rule, origin: sheet.origin })),
-);
+/* One source order across every sheet. flatten() counts from zero per sheet, and sorting the
+   combined rules by that per-sheet number put a section's `{% style %}` before the asset it
+   actually loads after, so a later rule resolved as the earlier one (Codex, #300). */
+const flat = sheets
+  .flatMap((sheet) => flatten(sheet.text).map((rule) => ({ ...rule, origin: sheet.origin })))
+  .map((rule, index) => ({ ...rule, at: index + 1 }));
 
 /*
  * Every rule in the sheets, as compounds.
@@ -305,6 +308,17 @@ const ancestorEffects = (chain, conditions, live) => {
         matchesPath(rule.path, chain, index),
     );
     if (applicable.length === 0) continue;
+
+    /* The rejection in rulesFor() only covers selectors naming the label, so an ancestor's
+       `opacity: .6 !important` was overridden here by a later `opacity: 1` the browser
+       ignores (Codex, #300). Ancestor rules that reach the label get the same treatment. */
+    for (const rule of applicable) {
+      assert.ok(
+        !/!important/.test(rule.declarations),
+        `an ancestor of the label is styled with !important ("${rule.selector}"), which this ` +
+          'cascade model does not resolve -- extend it rather than trusting the result'
+      );
+    }
 
     const body = merge(applicable);
     const faded = lastValue(body, 'opacity');
@@ -474,6 +488,11 @@ const ancestriesFor = (name) => {
         continue;
       }
       const classes = (attributes.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/).filter(Boolean);
+      /* `[data-x]` was treated as always matching, so a selector qualified by an attribute
+         the element does not carry was credited to every eyebrow (Codex, #300). */
+      const attrs = [...attributes.matchAll(/([\w-]+)(?:="([^"]*)")?/g)].flatMap(([, key, value]) =>
+        value === undefined ? [`[${key}]`] : [`[${key}]`, `[${key}="${value}"]`]
+      );
       if (classes.includes(name)) {
         /* An inline `style` outranks every rule in the stylesheet, and reading only the
            classes off this element meant `style="display:inline;opacity:.6"` on the
@@ -491,14 +510,16 @@ const ancestriesFor = (name) => {
              cancel a real regression (Codex, #300). */
           chain: [
             new Set(['#MainContent']),
-            ...open.map((entry) => new Set([entry.element, ...entry.classes.map((c) => `.${c}`)])),
-            new Set([element, ...classes.map((c) => `.${c}`)]),
+            ...open.map(
+              (entry) => new Set([entry.element, ...entry.classes.map((c) => `.${c}`), ...entry.attrs])
+            ),
+            new Set([element, ...classes.map((c) => `.${c}`), ...attrs]),
           ],
           inline: attributes.match(/style="([^"]*)"/)?.[1] ?? '',
           section: file.slice(0, -'.liquid'.length),
         });
       }
-      if (!VOID_TAGS.has(element) && !/\/\s*$/.test(attributes)) open.push({ element, classes });
+      if (!VOID_TAGS.has(element) && !/\/\s*$/.test(attributes)) open.push({ element, classes, attrs });
     }
   }
   return found;
@@ -541,6 +562,15 @@ const matchesElement = (compound, element) => {
   const bare = compound.replace(/:(?:is|where|not)\([^)]*\)/gi, '');
 
   return (
+    (bare.match(/\[[^\]]*\]/g) ?? [])
+      .map((token) =>
+        token.replace(
+          /\[\s*([\w-]+)\s*(?:([~^|$*]?=)\s*["']?([^\]"']*)["']?\s*)?\]/,
+          (whole, key, operator, value) =>
+            operator === '=' ? `[${key}="${value}"]` : operator ? whole : `[${key}]`
+        )
+      )
+      .every((token) => element.has(token)) &&
     partsOf(bare).every((part) => element.has(part)) &&
     tagsOf(bare).every((tag) => element.has(tag)) &&
     anyOf.every((match) =>
