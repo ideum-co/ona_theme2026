@@ -3,6 +3,43 @@ import { debounce, fetchConfig } from '@theme/utilities';
 import { cartPerformance } from '@theme/performance';
 import { CartErrorEvent, CartNoteUpdateEvent } from '@shopify/events';
 
+const PENDING = 'data-cart-note-pending';
+
+/**
+ * Whether a note write is in flight. The flag lives on <html> because the accelerated checkout
+ * buttons are rendered outside <cart-note>, so nothing closer reaches both.
+ */
+const noteIsPending = () => document.documentElement.hasAttribute(PENDING);
+
+/*
+ * The hold, as something a cart morph cannot undo.
+ *
+ * `inert` is set at runtime on markup Shopify renders, and `assets/morph.js` reconciles
+ * attributes against the server's copy -- so another cart mutation finishing mid-write (a
+ * quantity change right after the shopper leaves the textarea) strips it, and the buttons go
+ * back to being keyboard-activatable while the note is still in flight. This listener is on
+ * the document, which no morph reaches, and it reads the same flag the CSS reads, so the
+ * three halves of the hold cannot drift apart. It also puts `inert` back, since a morph that
+ * removed it has just told us it is gone.
+ *
+ * Module scope, so it registers once however many carts are on the page.
+ */
+for (const type of ['click', 'keydown']) {
+  document.addEventListener(
+    type,
+    (event) => {
+      if (!noteIsPending()) return;
+      const held = event.target instanceof Element ? event.target.closest('.additional-checkout-buttons') : null;
+      if (!held) return;
+      if (type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      event.stopPropagation();
+      held.toggleAttribute('inert', true);
+    },
+    { capture: true }
+  );
+}
+
 /**
  * A custom element that displays a cart note.
  */
@@ -31,13 +68,16 @@ class CartNote extends Component {
    *
    * They are found by selector because they are not inside <cart-note>: Shopify renders them
    * from `content_for_additional_checkout_buttons` further up cart-summary.liquid, so there is
-   * no shared ancestor to scope this to. The flag goes on <html> for the same reason.
+   * no shared ancestor to scope this to. The flag goes on <html> for the same reason -- and
+   * because a cart morph can strip `inert` off Shopify's markup, the document listener above
+   * is what actually holds the buttons. This is the half that keeps them out of the tab order
+   * and the accessibility tree while it survives.
    *
    * @param {boolean} pending
    */
   #hold = (pending) => {
     clearTimeout(this.#release);
-    document.documentElement.toggleAttribute('data-cart-note-pending', pending);
+    document.documentElement.toggleAttribute(PENDING, pending);
     for (const node of document.querySelectorAll('.additional-checkout-buttons')) {
       node.toggleAttribute('inert', pending);
     }

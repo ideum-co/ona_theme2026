@@ -101,13 +101,38 @@ test('a pending note write cannot be outrun by accelerated checkout', () => {
      ancestor of the buttons, so neither can be scoped to it. */
   assert.match(
     script,
-    /document\.documentElement\.toggleAttribute\('data-cart-note-pending'/,
+    /const PENDING = 'data-cart-note-pending'[\s\S]*?documentElement\.toggleAttribute\(PENDING, pending\)/,
     'cart-note.js no longer marks a write as pending'
   );
   assert.match(
     script,
     /querySelectorAll\('\.additional-checkout-buttons'\)[\s\S]{0,160}?toggleAttribute\('inert'/,
     'the accelerated checkout buttons are not made inert while a write is in flight; CSS alone leaves them focusable and activatable by keyboard'
+  );
+
+  /* And `inert` alone is not enough either. It is set at runtime on markup Shopify renders,
+     and assets/morph.js reconciles attributes against the server's copy -- so a cart mutation
+     finishing mid-write strips it. The listener that actually holds the buttons is on the
+     document, where no morph reaches, and it reads the same flag the CSS reads. */
+  assert.match(
+    script,
+    /document\.addEventListener\([\s\S]{0,400}?noteIsPending\(\)[\s\S]{0,400}?closest\('\.additional-checkout-buttons'\)[\s\S]{0,400}?preventDefault\(\)/,
+    'nothing stops activation at the document level, so a cart morph that strips inert reopens the race'
+  );
+  assert.match(
+    script,
+    /\{ capture: true \}/,
+    'the activation guard is not registered in the capture phase, so the control handles the event first'
+  );
+  assert.match(
+    script,
+    /closest\('\.additional-checkout-buttons'\)[\s\S]{0,400}?toggleAttribute\('inert', true\)/,
+    'the guard does not put inert back after a morph has removed it'
+  );
+  assert.match(
+    script,
+    /for \(const type of \['click', 'keydown'\]\)/,
+    'the guard no longer covers both activation routes; Enter on a link does not always arrive as a click first'
   );
   assert.match(
     summary,
