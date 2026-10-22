@@ -1,6 +1,6 @@
 {% render 'ona-band', section: section %}
 <script src="{{ 'ona-slider.js' | asset_url }}" type="module"></script>
-<section class="add-image-and-text unique-testimonial-block testimonial_video_section section-full-large bg-red wowo no-padding show-image-slider fadeIn section-relative-image{% if section.settings.flip_columns %} invert-columns{% endif %}" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
+<section class="add-image-and-text unique-testimonial-block testimonial_video_section section-full-large bg-red wowo no-padding show-image-slider fadeIn section-relative-image{% if section.settings.media_position == 'right' %} invert-columns{% endif %}" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
     <div class="container">
         <div class="content">
             <ona-slider class="ona-slider">
@@ -162,11 +162,20 @@
   },
   "settings": [
     {
-      "type": "checkbox",
-      "id": "flip_columns",
-      "label": "Image on the right",
-      "info": "Swaps the two columns above the mobile breakpoint, so a run of sections can alternate instead of stacking every image on the same side.",
-      "default": false
+      "type": "select",
+      "id": "media_position",
+      "label": "t:settings.media_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "left"
     },
     {
       "type": "header",

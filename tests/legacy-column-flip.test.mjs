@@ -18,7 +18,8 @@ const sections = readdirSync(join(root, 'sections'))
 
 /*
  * A flip class can sit behind a setting, as
- * `class="... {% if section.settings.flip_columns %} invert-columns{% endif %}"`. Splitting the
+ * `class="... {% if section.settings.media_position == 'right' %} invert-columns{% endif %}"`.
+ * Splitting the
  * raw attribute glues the class to the tag delimiter -- `invert-columns{%` -- so the section
  * drops out of `flipping` and every coverage check below silently skips it. The Liquid goes
  * before the split, not after.
