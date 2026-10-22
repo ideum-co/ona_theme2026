@@ -9,6 +9,10 @@
  */
 {
   "sections": {
+    "brewguide-tasting-info": {
+      "type": "brewguide-article-tasting-info",
+      "settings": {}
+    },
     "section": {
       "type": "main-blog-post",
       "blocks": {
@@ -97,6 +101,7 @@
     }
   },
   "order": [
+    "brewguide-tasting-info",
     "section",
     "brewguide-info"
   ]

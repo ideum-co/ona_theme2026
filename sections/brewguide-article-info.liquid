@@ -1,7 +1,10 @@
 {%- doc -%}
-  Restores the content the 2026 theme migration dropped from individual Brew Guides blog
-  articles: the Tastes Like / Roast info near the title, the full brew recipe (intro + spec
-  table), and the "running low on this coffee?" cross-sell back to the matching product.
+  Restores content the 2026 theme migration dropped from individual Brew Guides blog articles:
+  the full brew recipe (intro + spec table) and the "running low on this coffee?" cross-sell
+  back to the matching product. The Tastes Like / Roast info that used to sit near the title is
+  a separate section, sections/brewguide-article-tasting-info.liquid, placed earlier in
+  templates/article.json's order -- this section renders after the full article body
+  (main-blog-post), where the old recipe block and cross-sell sat too.
 
   Source: sections/article-template.liquid in Shopify theme 147471433919 ("ONA - OLD
   11/26/2025"), the last pre-cutover snapshot -- a straight content port adapted to this
@@ -13,8 +16,6 @@
   on News/Journal/other blogs that share templates/article.json.
 
   Metafield types, see reference_shopify_json_string_metafield_no_value:
-    - accentuate.tastes_like         string                      -> no .value, read directly
-    - accentuate.roast                string                      -> no .value, read directly
     - accentuate.content_brew_guide   string (raw HTML)            -> no .value, read directly
     - accentuate.title_item           json_string (array)          -> no .value, read directly
     - accentuate.content_item         json_string (array)          -> no .value, read directly
@@ -35,8 +36,6 @@
 
 {%- if is_brewguide_article -%}
   {%- liquid
-    assign tastes_like = article.metafields.accentuate.tastes_like
-    assign roast = article.metafields.accentuate.roast
     assign guide_intro = article.metafields.accentuate.content_brew_guide
     assign spec_labels = article.metafields.accentuate.title_item
     assign spec_values = article.metafields.accentuate.content_item
@@ -56,11 +55,6 @@
     assign cross_sell_product = blank
     if cross_sell_handle != blank
       assign cross_sell_product = all_products[cross_sell_handle]
-    endif
-
-    assign has_info = false
-    if tastes_like != blank or roast != blank
-      assign has_info = true
     endif
   -%}
 
@@ -95,7 +89,7 @@
     endif
 
     assign has_any_content = false
-    if has_info or has_recipe or cross_sell_product != blank
+    if has_recipe or cross_sell_product != blank
       assign has_any_content = true
     endif
   -%}
@@ -109,23 +103,6 @@
       templates/article.json, so it needs its own instance of that wrapper.
     {%- endcomment -%}
     <div class="section">
-      {%- if has_info -%}
-        <div class="brewguide-article-info">
-          {%- if tastes_like != blank -%}
-            <div class="brewguide-article-info__row">
-              <span class="brewguide-article-info__label">Tastes like</span>
-              <span class="brewguide-article-info__value">{{ tastes_like }}</span>
-            </div>
-          {%- endif -%}
-          {%- if roast != blank -%}
-            <div class="brewguide-article-info__row">
-              <span class="brewguide-article-info__label">Roast</span>
-              <span class="brewguide-article-info__value">{{ roast }}</span>
-            </div>
-          {%- endif -%}
-        </div>
-      {%- endif -%}
-
       {%- if has_recipe -%}
         <div class="brewguide-article-recipe">
           <h2 class="brewguide-article-recipe__heading">Brew guide</h2>
@@ -161,26 +138,6 @@
 {%- endif -%}
 
 {% stylesheet %}
-  .brewguide-article-info {
-    display: grid;
-    gap: var(--gap-sm);
-    margin-block-end: var(--margin-xl);
-  }
-
-  .brewguide-article-info__row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--gap-sm);
-    align-items: baseline;
-  }
-
-  .brewguide-article-info__label {
-    font-size: var(--font-h6--size);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-weight: 600;
-  }
-
   .brewguide-article-recipe {
     display: grid;
     gap: var(--gap-lg);

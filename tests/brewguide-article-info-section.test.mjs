@@ -17,11 +17,15 @@ const source = read('sections/brewguide-article-info.liquid');
  */
 const code = source.replace(/\{%-?\s*doc\s*-?%\}[\s\S]*?\{%-?\s*enddoc\s*-?%\}/g, '');
 
-test('templates/article.json wires in the new section, after the existing one', () => {
+test('templates/article.json wires in this section, after the existing main-blog-post one', () => {
   const template = JSON.parse(read('templates/article.json').replace(/^\/\*[\s\S]*?\*\/\s*/, ''));
   assert.ok(template.sections['brewguide-info'], 'templates/article.json must define a brewguide-info section entry');
   assert.equal(template.sections['brewguide-info'].type, 'brewguide-article-info', 'the entry must use this section\'s type');
-  assert.deepEqual(template.order, ['section', 'brewguide-info'], 'the new section must render after the existing main-blog-post section, not replace or precede it');
+  assert.deepEqual(
+    template.order,
+    ['brewguide-tasting-info', 'section', 'brewguide-info'],
+    'this section (recipe + cross-sell) must render after main-blog-post, same position the old recipe block and cross-sell held; the separate tasting-info section (see tests/brewguide-article-tasting-info-section.test.mjs) renders before it, near the title'
+  );
 });
 
 test('every piece is gated on article.blog.handle == \'brewguides\', so News/Journal articles stay untouched', () => {
@@ -31,15 +35,12 @@ test('every piece is gated on article.blog.handle == \'brewguides\', so News/Jou
   assert.ok(ifBrewguideIndex > gateIndex, 'the blog-handle check must set the flag the rendering is gated on');
 });
 
-test('tastes like / roast info only renders when at least one of the two has a value', () => {
-  assert.match(code, /assign has_info = false\s*\n\s*if tastes_like != blank or roast != blank\s*\n\s*assign has_info = true/, 'has_info must only be set when accentuate.tastes_like or accentuate.roast is non-blank');
-  assert.match(code, /\{%-\s*if has_info\s*-%\}/, 'the info block must be gated on has_info, not render unconditionally');
-  assert.match(code, /\{%-\s*if tastes_like != blank\s*-%\}/, 'tastes_like row must be independently guarded');
-  assert.match(code, /\{%-\s*if roast != blank\s*-%\}/, 'roast row must be independently guarded, so one being blank does not hide the other');
-});
-
 test('the whole section is wrapped in .section (Horizon\'s page-width grid) only when there is something to show', () => {
-  assert.match(code, /assign has_any_content = false\s*\n\s*if has_info or has_recipe or cross_sell_product != blank\s*\n\s*assign has_any_content = true/, 'has_any_content must be true only when at least one of the three pieces will render');
+  // Codex, PR #282 round 2: this section used to also carry the Tastes Like / Roast info, now
+  // split into sections/brewguide-article-tasting-info.liquid so it can render near the title
+  // instead of after the full article body. has_any_content is now just recipe-or-cross-sell.
+  assert.doesNotMatch(code, /has_info/, 'the tastes-like/roast info and its has_info flag moved to sections/brewguide-article-tasting-info.liquid -- this file must not still reference it');
+  assert.match(code, /assign has_any_content = false\s*\n\s*if has_recipe or cross_sell_product != blank\s*\n\s*assign has_any_content = true/, 'has_any_content must be true only when the recipe or the cross-sell will render');
   assert.match(code, /\{%-\s*if has_any_content\s*-%\}[\s\S]*?<div class="section">/, 'the .section wrapper must be gated on has_any_content, never emitted empty');
 });
 
