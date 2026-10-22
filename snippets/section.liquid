@@ -23,6 +23,9 @@
 <div
   class="section section--{{ section.settings.section_width }} color-custom-{{ section_id }}"
   data-testid="ui-test-section"
+  {%- if section.settings.anchor != blank %}
+    id="{{ section.settings.anchor | escape }}"
+  {%- endif %}
  
   {% if request.visual_preview_mode %}
     data-shopify-visual-preview
