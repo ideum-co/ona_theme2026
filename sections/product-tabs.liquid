@@ -8,7 +8,7 @@
   assign product_resource = closest.product | default: product
 
   assign background_color = settings.background_color
-  assign text_color = settings.text_color
+  assign explicit_text_color = settings.text_color
 
   if settings.color_source == 'product'
     assign namespace = settings.color_namespace | strip
@@ -22,10 +22,15 @@
       endif
     endif
 
+    # Con colores por producto, el ajuste de texto de la seccion deja de ser una eleccion: es un
+    # unico valor frente a tantos fondos como productos, y ese emparejamiento accidental es
+    # exactamente lo que el sistema de contraste existe para evitar. Aqui solo cuenta como
+    # explicito el metacampo del propio producto; sin el, decide el contraste.
+    assign explicit_text_color = ''
     if namespace != blank and text_key != blank
       assign product_text = product_resource.metafields[namespace][text_key].value
       if product_text != blank
-        assign text_color = product_text
+        assign explicit_text_color = product_text
       endif
     endif
   endif
@@ -38,6 +43,33 @@
   # always behave as tabs.
 -%}
 
+{%- comment -%}
+  El fondo lo pone el producto; el color del texto no lo ponia nadie. Hasta ahora esta seccion
+  escribia sus propias custom properties y por eso era la unica superficie con color del tema que
+  no pasaba por snippets/contrast-override.liquid: 55 secciones heredan esa regla y product-tabs
+  no. El efecto en main se veia en los dos extremos. Con fondo claro -- 32 de los 37 productos con
+  custom.pdp_background_color no llegan a AA contra #F5F4E9 y 13 ni a 3:1 -- las etiquetas quedaban
+  ilegibles. Sin fondo -- los ~54 productos sin metacampo: todo el equipo y el merchandising -- la
+  seccion no pintaba fondo alguno y el texto crema caia sobre la pagina crema: contraste 1.01,
+  medido en vivo en /products/hario-v60-dripper-clear-plastic, donde la pestana y el panel entero
+  desaparecian. Un valor vacio es una custom property valida, asi que `--product-tabs-background: ;`
+  no fallaba: invalidaba en silencio el `background` que la leia.
+
+  Delegar en el snippet en vez de repetir su regla aqui deja una sola implementacion del contraste
+  en el tema, no dos que puedan separarse. El snippet emite el juego completo de tokens
+  (--color-foreground, --color y sus variantes rgb) sobre la seccion y sobre los .text-block que
+  contiene, asi que los paneles heredan el color correcto sin que esta seccion sepa nada de ellos.
+  Sin fondo no emite nada y el texto cae en el color de la pagina, que es lo correcto para un
+  producto sin vestir.
+
+  Como color explicito se le pasa solo el metacampo del producto: ver la nota de arriba.
+{%- endcomment -%}
+{%- render 'contrast-override',
+  background_color: background_color,
+  text_color: explicit_text_color,
+  section_id: section.id
+-%}
+
 <script
   src="{{ 'product-tabs.js' | asset_url }}"
   type="module"
@@ -45,10 +77,11 @@
 ></script>
 
 <product-tabs-component
-  class="product-tabs spacing-style"
+  class="product-tabs spacing-style color-custom-{{ section.id }}"
   style="
-    --product-tabs-background: {{ background_color }};
-    --product-tabs-color: {{ text_color }};
+    {%- if background_color != blank %}
+      --product-tabs-background: {{ background_color }};
+    {%- endif %}
     --product-tabs-label-size: {{ settings.label_size }}px;
     {%- if settings.label_size_mobile > 0 %}
       --product-tabs-label-size-mobile: {{ settings.label_size_mobile }}px;
@@ -133,14 +166,93 @@
       const label = panels[index]?.getAttribute('data-tab-label')?.trim();
       if (label) tab.textContent = label;
     });
+
+    /*
+     * Drop any tab whose panel renders nothing -- a Brew Guide on a coffee with
+     * no brew data, say -- taking the button and the panel together.
+     *
+     * The test has to be the rendered content, not the Liquid. Child blocks
+     * always emit a wrapper: blocks/custom-liquid.liquid outputs a <div>
+     * unconditionally, and blocks/product-metafield-text.liquid outputs a
+     * hidden, aria-hidden div for a blank value. A Liquid `capture` of the
+     * children is therefore never blank, and the tab would never be removed --
+     * which is exactly how the first pass failed.
+     *
+     * textContent rather than innerText: this runs during parse, before layout,
+     * and innerText would force one. Both wrappers above contain no text at all
+     * when they have nothing to show, so textContent is enough to tell.
+     *
+     * Order matters. This runs before the deferred module connects, so the
+     * component builds its refs from the pruned DOM and still sees one button
+     * per panel. Removing only one of a pair would leave the counts mismatched,
+     * which is the condition the component treats as "cannot pair these" and
+     * bails on, stacking every panel visible.
+     */
+    /*
+     * Deliberately conservative: a panel counts as empty only when it has no
+     * text AND none of these embeds. The list is a whitelist, which cannot be
+     * exhaustive -- but the two outcomes are not symmetric. Keeping a tab that
+     * turned out to be empty costs an empty tab; removing one that was not
+     * costs the customer content they can no longer reach. So anything
+     * uncertain keeps its tab.
+     */
+    const EMBEDS = 'img, picture, video, audio, iframe, svg, canvas, object, embed, model-viewer';
+    const isEmpty = (panel) => !panel.querySelector(EMBEDS) && panel.textContent.trim() === '';
+
+    const prune = () => {
+      const strip = section.querySelector('.product-tabs__strip');
+      const panelList = section.querySelectorAll('.product-tabs__panels > .product-tabs__panel');
+      const tabList = strip?.querySelectorAll(':scope > .product-tabs__tab') ?? [];
+      if (!strip || panelList.length !== tabList.length) return;
+
+      const empties = [...panelList].reduce((acc, panel, index) => {
+        if (isEmpty(panel)) acc.push(index);
+        return acc;
+      }, []);
+
+      // A strip of one is still a heading for the content under it.
+      if (!empties.length || empties.length >= panelList.length) return;
+
+      for (const index of empties.reverse()) {
+        panelList[index].remove();
+        tabList[index]?.remove();
+      }
+
+      /*
+       * Each button carries its index in `on:click="/select/N"`, baked in at
+       * render. After a removal the survivors still hold their original N, so
+       * the new first button would open the second panel. Renumber them.
+       */
+      strip
+        .querySelectorAll(':scope > .product-tabs__tab')
+        .forEach((tab, index) => tab.setAttribute('on:click', `/select/${index}`));
+    };
+
+    prune();
+
+    /*
+     * Combined listings swap products without a page load: variant-picker.js
+     * calls updateMain(), which morphs a new <main> into the document rather
+     * than re-running this script. The replacement markup arrives unpruned, so
+     * a product with no brew data would show the Brew Guide tab again. Watching
+     * the panel container covers that without the component needing to know.
+     */
+    const panelHost = section.querySelector('.product-tabs__panels');
+    if (panelHost && globalThis.MutationObserver) {
+      new MutationObserver(() => prune()).observe(panelHost, { childList: true });
+    }
   })();
 </script>
 
 {% stylesheet %}
+  /*
+   * El color lo pone contrast-override sobre .color-custom-<id>, que es este mismo elemento, asi
+   * que aqui no se declara: una segunda declaracion solo podria contradecirlo. Sin fondo la
+   * custom property no se emite y el fallback deja la seccion transparente sobre la pagina.
+   */
   .product-tabs {
     display: block;
-    background: var(--product-tabs-background);
-    color: var(--product-tabs-color, inherit);
+    background: var(--product-tabs-background, transparent);
   }
 
   .product-tabs__inner {

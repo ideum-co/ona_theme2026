@@ -24,6 +24,7 @@ const SUFFIXES_IN_USE = [
   'faq',
   'faq-subscriptions',
   'learn',
+  'llms',
   'location',
   'private-courses-and-experiences',
   'privacy',
@@ -34,12 +35,23 @@ const SUFFIXES_IN_USE = [
 ];
 
 /*
- * Deliberately absent, and absent from the legacy theme too, so the fallback is
- * not a regression: `maintenance` and `llms` render ~212px and two words on
- * BOTH themes, and `html-sitemap` is on an unpublished page. Listing them here
- * stops someone "fixing" the gap without checking that there is one.
+ * `maintenance` is absent on purpose; `html-sitemap` is on an unpublished page.
+ *
+ * `llms` used to be on this list, on the stated grounds that it was "absent
+ * from the legacy theme too". That was checked against theme 160815546559,
+ * which is itself an unfinished Horizon port rather than the theme that was
+ * live. The genuine pre-Horizon theme, 147508887743, carries BOTH
+ * templates/page.llms.liquid (4,062 bytes) and templates/page.maintenance.liquid
+ * (383 bytes), so the fallback was a regression after all -- and because both
+ * Shopify pages have an empty body, the fallback serves nothing whatsoever.
+ *
+ * `maintenance` stays off for a different and verified reason: its template is
+ * a single full-bleed image, `maintenance-page-2.jpg`, which is not among this
+ * theme's assets. Porting the template without the asset would render a broken
+ * image on an unlinked, dormant page -- worse than the empty fallback. Bring
+ * the asset across first.
  */
-const DELIBERATELY_ABSENT = ['maintenance', 'llms', 'html-sitemap'];
+const DELIBERATELY_ABSENT = ['maintenance', 'html-sitemap'];
 
 test('every page template suffix the shop uses has a template', () => {
   const missing = SUFFIXES_IN_USE.filter(
@@ -111,4 +123,49 @@ test('the gallery images are marked decorative rather than repeating the page ti
   assert.ok(img, 'the gallery must render an image');
   assert.match(img[0], /\balt=""/, 'gallery images are decorative');
   assert.doesNotMatch(img[0], /alt="\{\{\s*page\.title/, 'the page title is not alternative text for five different photographs');
+});
+
+test('the llms index is served by the template, not by an empty page body', () => {
+  /*
+   * The Shopify page `llms` has an empty body, so nothing a crawler reads comes
+   * from page content -- it all has to be in the template. Falling back to
+   * templates/page.json served four characters: an <h1> reading "llms".
+   *
+   * `{% layout none %}` matters as much as the content: wrapped in the theme
+   * layout this becomes a normal page with a header, a footer and the cart
+   * drawer, which is not what an llms.txt index is for.
+   */
+  const tpl = read('templates/page.llms.liquid');
+
+  assert.match(tpl, /\{% layout none %\}/, 'the index must be served without the theme layout');
+  assert.doesNotMatch(tpl, /page\.content|\{\{\s*page\.body/, 'the page body is empty; the content belongs in the template');
+
+  // The hubs it exists to point at, and the shape llms.txt readers expect.
+  for (const needle of [
+    '# onacoffee.com.au',
+    '/pages/about',
+    '/pages/locations',
+    '/pages/contact',
+    '/pages/wholesale',
+    '/pages/privacy',
+    '/pages/faq',
+    '/blogs/news',
+    '/blogs/brewguides',
+    '/collections/filter',
+    '/collections/espresso',
+    '/collections/coffee-subscriptions',
+  ]) {
+    assert.ok(tpl.includes(needle), `the llms index must still list ${needle}`);
+  }
+
+  /*
+   * It tells models to prefer hubs over individual items, so it must not
+   * contradict itself by linking any single product or article.
+   */
+  assert.doesNotMatch(tpl, /onacoffee\.com\.au\/products\//, 'the index tells models to avoid product URLs');
+  assert.doesNotMatch(tpl, /\/blogs\/[a-z-]+\/[a-z-]+/, 'the index tells models to reference blog hubs, not articles');
+  // And must not send them anywhere transactional or account-bound.
+  for (const forbidden of ['/cart', '/checkout', '/account']) {
+    assert.ok(!tpl.includes(`onacoffee.com.au${forbidden}`), `the index must not point at ${forbidden}`);
+  }
 });

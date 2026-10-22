@@ -43,7 +43,7 @@
     {% paginate blog.articles by section.settings.articles_per_page %}
     <div
       ref="grid"
-      class="blog-posts-container"
+      class="blog-posts-container blog-posts-container--{{ section.settings.card_layout | default: 'featured' }}"
     >
       {% liquid
         assign items_on_page = blog.articles.size
@@ -55,6 +55,17 @@
           assign scale = 0.6
           assign is_horizontal = false
 
+          # A catalogue, not a journal: every card the same size, like a
+          # collection grid. `brewguides` carries 747 articles, and the
+          # featured sizing below turns that into a mosaic.
+          assign uniform = false
+          if section.settings.card_layout == 'uniform'
+            assign uniform = true
+            assign col_span = 2
+            assign scale = 1
+          endif
+
+          unless uniform
           case items_on_page
             when 1
               # Single post: full width hero
@@ -103,6 +114,7 @@
                 assign scale = 0.6
               endif
           endcase
+          endunless
         %}
         {% style %}
           [data-blog-index="{{ section.id }}-{{ forloop.index }}"] {
@@ -174,6 +186,19 @@
     border: none;
     padding: 0;
   }
+
+  /*
+   * The cropping itself is Victor's, in blocks/_blog-post-image.liquid (#214):
+   * an `image_fit` setting whose `contain` option stops a portrait bag being
+   * decapitated by `object-fit: cover` in a fixed-height frame. This template
+   * turns it on rather than restating the rule here -- one owner for that
+   * decision, and it stays editable in the theme editor.
+   *
+   * The hero variant is a journal device; a catalogue row is never horizontal.
+   */
+  .blog-posts-container--uniform .blog-post-item--horizontal {
+    display: block;
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -224,6 +249,17 @@
       "step": 6,
       "default": 24,
       "info": "Liquid caps an unpaginated blog at 50 articles and ignores the page parameter, so this must stay set."
+    },
+    {
+      "type": "select",
+      "id": "card_layout",
+      "label": "Card layout",
+      "info": "Uniform shows every article at the same size with the whole image visible, like a collection grid.",
+      "options": [
+        { "value": "featured", "label": "Featured (hero + mixed sizes)" },
+        { "value": "uniform", "label": "Uniform grid" }
+      ],
+      "default": "featured"
     },
     {
       "type": "color",

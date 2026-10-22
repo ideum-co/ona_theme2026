@@ -1,4 +1,4 @@
-<section class="add-image-and-text-slider section-full-large" id="{{ section.settings.id }}">
+<section class="add-image-and-text-slider section-full-large cafe-reviews" id="{{ section.settings.id }}">
     <div class="add-images-slider wowo fadeInUp">
         {% for block in section.blocks %}
         <div class="slider-block">
@@ -19,7 +19,75 @@
         </div>
         {% endfor %}
     </div>
+    {%- if section.settings.bottom_image != blank -%}
+      <div class="cafe-reviews__bus">
+        {%- assign bus = section.settings.bottom_image -%}
+        {%- assign bus_h = 600 | divided_by: bus.aspect_ratio | round -%}
+        <img src="{{ bus | img_url: '600x' }}" width="600" height="{{ bus_h }}" alt="{{ bus.alt | escape }}" loading="lazy" decoding="async">
+      </div>
+    {%- endif -%}
 </section>
+
+{% stylesheet %}
+  /* Partner reviews as a three-up carousel. The legacy grid for .add-images-slider
+     lives in legacy-page-layout.css and is shared with other sections, so this
+     overrides it only under .cafe-reviews (same #MainContent prefix to match
+     specificity). Three cards show at a time; scroll-snap pages through the rest. */
+  #MainContent .cafe-reviews .add-images-slider {
+    display: flex;
+    grid-template-columns: none;
+    flex-wrap: nowrap;
+    gap: clamp(24px, 4vw, 56px);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--legacy-page-gutter, 16px);
+    padding-block-end: 14px;
+    scrollbar-width: thin;
+    overscroll-behavior-inline: contain;
+  }
+
+  #MainContent .cafe-reviews .add-images-slider > .slider-block {
+    flex: 0 0 calc((100% - 2 * clamp(24px, 4vw, 56px)) / 3);
+    min-width: 0;
+    scroll-snap-align: start;
+    text-align: center;
+  }
+
+  #MainContent .cafe-reviews .slider-block blockquote { margin-inline: 0; }
+  #MainContent .cafe-reviews .slider-block cite { display: block; margin-block-start: 14px; }
+
+  @media (max-width: 989px) {
+    #MainContent .cafe-reviews .add-images-slider > .slider-block {
+      flex-basis: calc((100% - clamp(24px, 4vw, 56px)) / 2);
+    }
+  }
+
+  @media (max-width: 749px) {
+    #MainContent .cafe-reviews .add-images-slider > .slider-block { flex-basis: 84%; }
+  }
+
+  /* Decorative bus, centred on the section's bottom edge so it straddles the join
+     to the next section. The carousel clips its own overflow (.add-images-slider),
+     not the section, so the bus sits outside it and is never cut off. */
+  #MainContent .cafe-reviews { position: relative; }
+
+  #MainContent .cafe-reviews__bus {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translate(-50%, 50%);
+    inline-size: clamp(180px, 22vw, 320px);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  #MainContent .cafe-reviews__bus img {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+  }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": {
@@ -32,6 +100,12 @@
       "label": {
         "en": "ID"
       }
+    },
+    {
+      "type": "image_picker",
+      "id": "bottom_image",
+      "label": "Bottom decoration image",
+      "info": "Sits centred on the section's bottom edge (e.g. the ONA bus). Leave empty to hide."
     }
   ],
   "blocks": [

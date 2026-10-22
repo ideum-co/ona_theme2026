@@ -341,6 +341,23 @@
   {% endif %}
 {% endcapture %}
 
+{%- comment -%}
+  sameAs ties this Organization node to ONA's own profiles elsewhere on the web, so Google's
+  Knowledge Graph and LLM-based answer engines can resolve "ONA Coffee" as one entity instead of
+  several unconnected mentions. Hard-coded rather than pulled from the footer's social links at
+  render time: the footer renders those as plain icon links with no stable Liquid accessor Codex
+  could point at (no section setting, no metafield), so capturing them as a snippet constant is the
+  honest version of the alternative, not a shortcut past it. Sourced from the live footer on
+  2026-10-21 -- update here if the footer's links ever change.
+{%- endcomment -%}
+{%- capture organization_same_as -%}
+  [
+    "https://www.facebook.com/onacoffee/",
+    "https://www.instagram.com/onacoffee/",
+    "https://www.youtube.com/channel/UCvwLJ4owqt_I2QqqC2OE0_A"
+  ]
+{%- endcapture -%}
+
 <script type="application/ld+json">
   {
     "@context": "http://schema.org",
@@ -349,6 +366,7 @@
     {% if settings.logo %}
       "logo": {{ settings.logo | image_url: width: 500 | prepend: "https:" | json }},
     {% endif %}
+    "sameAs": {{ organization_same_as }},
     "url": {{ request.origin | append: page.url | json }}
   }
 </script>

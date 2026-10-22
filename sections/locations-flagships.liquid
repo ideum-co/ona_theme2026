@@ -68,6 +68,27 @@
         data-current-page="{{ paginate.current_page }}"
         data-next-page-url="{{ paginate.next.url | escape }}"
       >
+        {%- comment -%}
+          The old theme's locations-content put the venue names in a left column
+          and swapped the gallery and details beside them -- clicking a name was
+          how you moved between ONA's own venues. The Horizon port rendered every
+          venue expanded instead, which lost that.
+
+          The nav is intentionally empty here. LocationsFlagshipsLoader calls
+          list.replaceChildren() once it has aggregated venues from every
+          paginated page, so any buttons rendered here would point at panels that
+          no longer exist, and a per-page Liquid counter would emit duplicate ids
+          across pages. <locations-flagships-tabs> builds the buttons from the
+          cards instead and rebuilds them whenever the list changes.
+        {%- endcomment -%}
+        <locations-flagships-tabs class="locations-flagships__tabs">
+          <div
+            class="locations-flagships__nav"
+            role="tablist"
+            aria-label="{{ section.settings.heading | default: 'Flagship stores' | escape }}"
+            data-flagship-nav
+          ></div>
+
         <div class="locations-flagships__list" data-flagship-list>
       {%- for location in all_locations -%}
         {%- liquid
@@ -116,6 +137,13 @@
             endif
           -%}
 
+          {%- comment -%}
+            No role="tabpanel" here. Without JavaScript, or with fewer than two
+            venues, no tabs are created and the component stays unenhanced -- a
+            card carrying tabpanel semantics would then be a panel with no
+            controlling tab and no accessible name. The element adds the role
+            when it builds the tablist, and strips it again when it stands down.
+          {%- endcomment -%}
           <article
             class="locations-flagships__card"
             data-flagship-card
@@ -224,6 +252,7 @@
         {%- endif -%}
           {%- endfor -%}
         </div>
+        </locations-flagships-tabs>
         <p data-flagships-status role="status" aria-live="polite"></p>
         {%- if paginate.pages > 1 -%}
           <nav aria-label="Flagship location pages" data-flagships-fallback-pagination>
@@ -266,7 +295,7 @@
 
   .locations-flagships__heading {
     margin: 0;
-    font-size: clamp(2rem, 5vw, 4.5rem);
+    font-size: var(--font-h2--size, 3rem);
     line-height: 1;
   }
 
@@ -289,6 +318,68 @@
   .locations-flagships__list {
     display: grid;
     gap: clamp(3rem, 8vw, 8rem);
+  }
+
+  /*
+   * The venue tablist. Hidden until the custom element connects, because
+   * without JavaScript every card stays visible and a row of buttons that
+   * switch nothing would be worse than no buttons at all.
+   */
+  .locations-flagships__nav {
+    display: none;
+  }
+
+  .locations-flagships__tabs.is-enhanced .locations-flagships__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(1rem, 3vw, 2.5rem);
+    margin-block-end: clamp(2rem, 5vw, 4rem);
+    border-block-end: 1px solid currentcolor;
+  }
+
+  /*
+   * Square, uppercase and wide-tracked: the treatment the previous ONA theme
+   * used for these names, and the one Onyx uses for its secondary headings.
+   */
+  .locations-flagships__nav-item {
+    padding: 0 0 clamp(0.75rem, 2vw, 1.25rem);
+    border: 0;
+    border-block-end: 2px solid transparent;
+    border-radius: 0;
+    background: none;
+    font-family: inherit;
+    font-size: var(--font-size--sm, 0.875rem);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: inherit;
+    opacity: 0.55;
+    cursor: pointer;
+    transition: opacity 0.2s ease, border-color 0.2s ease;
+  }
+
+  .locations-flagships__nav-item:hover,
+  .locations-flagships__nav-item:focus-visible {
+    opacity: 1;
+  }
+
+  .locations-flagships__nav-item.is-active {
+    opacity: 1;
+    border-block-end-color: currentcolor;
+  }
+
+  /* One venue at a time, but only once the tablist is actually driving it. */
+  .locations-flagships__tabs.is-enhanced .locations-flagships__card {
+    display: none;
+  }
+
+  .locations-flagships__tabs.is-enhanced .locations-flagships__card.is-active {
+    display: grid;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .locations-flagships__nav-item {
+      transition: none;
+    }
   }
 
   .locations-flagships__card {
@@ -399,7 +490,7 @@
 
   .locations-flagships__title {
     margin-block-end: 1.25rem;
-    font-size: clamp(1.75rem, 4vw, 3.5rem);
+    font-size: var(--font-h3--size, 2rem);
     line-height: 1;
   }
 

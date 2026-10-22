@@ -89,15 +89,13 @@
             "pdp_product_summary": {
               "type": "pdp-product-summary",
               "settings": {
-                "badge_1": "Staple Range",
-                "badge_2": "Best with Milk",
                 "description": "<p>Caramel, biscuits, nuts and spices</p>",
                 "show_rating": true,
                 "rating_value": 5,
                 "rating_count": 0,
+                "badge_namespace": "filters",
+                "badge_key": "brew_method",
                 "namespace": "accentuate",
-                "badge_1_key": "range",
-                "badge_2_key": "roast",
                 "description_key": "tastes_like",
                 "badge_size": 18,
                 "title_size": 64,
@@ -156,7 +154,7 @@
               "type": "buy-buttons",
               "settings": {
                 "stacking": true,
-                "text_color": "",
+                "text_color": "{{ settings.color_palette.background }}",
                 "show_pickup_availability": false,
                 "gift_card_form": true,
                 "recipient_button_style": "default",
@@ -430,12 +428,12 @@
         "breadcrumb_root_label": "Shop all",
         "breadcrumb_show_collection": true,
         "breadcrumb_separator": "›",
-        "breadcrumb_text_color": "{{ settings.color_palette.background }}",
+        "breadcrumb_text_color": "{{ product.metafields.custom.product_color.value }}",
         "breadcrumb_link_color": "",
         "breadcrumb_font_size": 14,
         "breadcrumb_font_size_mobile": 12,
         "breadcrumb_gap": 8,
-        "breadcrumb_padding_top": 24,
+        "breadcrumb_padding_top": 48,
         "breadcrumb_padding_bottom": 24,
         "content_width": "content-center-aligned",
         "desktop_media_position": "left",
@@ -445,7 +443,7 @@
         "limit_details_width": false,
         "gap": 32,
         "enable_sticky_add_to_cart": true,
-        "background_color": "{{ settings.color_palette.color1 }}",
+        "background_color": "{{ product.metafields.custom.product_color.value }}",
         "padding-block-start": 0,
         "padding-block-end": 0
       }
@@ -517,8 +515,8 @@
           },
           "blocks": {
             "media_with_text_NwxVtm": {
-              "type": "media-with-text",
-              "name": "Media with text",
+              "type": "product-media-with-text",
+              "name": "Product media with text",
               "settings": {
                 "media_position": "right",
                 "media_width_ratio": 0,
@@ -541,7 +539,7 @@
                   "static": true,
                   "settings": {
                     "media_type": "image",
-                    "image": "shopify://shop_images/maple.webp",
+                    "image": "{{ closest.product.metafields.custom.profile_image.value }}",
                     "link": "",
                     "video_loop": true,
                     "video_autoplay": false,
@@ -575,7 +573,7 @@
                         "letter_spacing": "normal",
                         "case": "none",
                         "wrap": "pretty",
-                        "text_color": "{{ settings.color_palette.background }}",
+                        "text_color": "",
                         "background": false,
                         "background_color": "#00000026",
                         "corner_radius": 0,
@@ -590,7 +588,7 @@
                       "type": "text",
                       "name": "t:names.heading",
                       "settings": {
-                        "text": "<p>Caramel, biscuts, nuts and spices</p>",
+                        "text": "<p>{{ closest.product.metafields.custom.tastes_like.value }}</p>",
                         "width": "fit-content",
                         "max_width": "normal",
                         "alignment": "left",
@@ -601,7 +599,7 @@
                         "letter_spacing": "normal",
                         "case": "none",
                         "wrap": "pretty",
-                        "text_color": "{{ settings.color_palette.background }}",
+                        "text_color": "",
                         "background": false,
                         "background_color": "#00000026",
                         "corner_radius": 0,
@@ -616,7 +614,7 @@
                       "type": "text",
                       "name": "t:names.text",
                       "settings": {
-                        "text": "<p>The maple tree's enduring strength speaks to our commitment to nature and sustainability.<br/><br/>Maple was created to be a traditional style milk coffee, perfect for everyday drinking. It is a bold, full-bodied coffee with flavours of caramel, mal, nut and spices.</p>",
+                        "text": "{{ closest.product.metafields.custom.profile_intro | metafield_tag }}",
                         "width": "fit-content",
                         "max_width": "normal",
                         "alignment": "left",
@@ -627,7 +625,7 @@
                         "letter_spacing": "normal",
                         "case": "none",
                         "wrap": "pretty",
-                        "text_color": "{{ settings.color_palette.background }}",
+                        "text_color": "",
                         "background": false,
                         "background_color": "#00000026",
                         "corner_radius": 0,
@@ -682,11 +680,20 @@
         },
         "product_tab_4tzPxX": {
           "type": "product-tab",
-          "disabled": true,
           "settings": {
             "label": "Brew Guide"
           },
-          "blocks": {}
+          "blocks": {
+            "brew_guide_Qm4rTp": {
+              "type": "product-brew-guide",
+              "settings": {
+                "link_label": "Full brewing guide"
+              }
+            }
+          },
+          "block_order": [
+            "brew_guide_Qm4rTp"
+          ]
         },
         "product_tab_dFwTTp": {
           "type": "product-tab",
@@ -707,11 +714,48 @@
           "block_order": [
             "judge_me_reviews_review_widget_LLV6L8"
           ]
+        },
+        "product_tab_origin_Hq2Lvn": {
+          "type": "product-tab",
+          "settings": {
+            "label": "Origin"
+          },
+          "blocks": {
+            "origin_story_Rt7Kcs": {
+              "type": "product-origin-story",
+              "settings": {
+                "origin_heading": "Origin",
+                "sourcing_heading": "Sourcing"
+              }
+            }
+          },
+          "block_order": [
+            "origin_story_Rt7Kcs"
+          ]
+        },
+        "product_tab_faqs_Jv4Wmd": {
+          "type": "product-tab",
+          "settings": {
+            "label": "FAQs"
+          },
+          "blocks": {
+            "product_faqs_Zb9Nxe": {
+              "type": "product-faqs",
+              "settings": {
+                "heading": ""
+              }
+            }
+          },
+          "block_order": [
+            "product_faqs_Zb9Nxe"
+          ]
         }
       },
       "block_order": [
         "product_tab_ePcCkQ",
+        "product_tab_origin_Hq2Lvn",
         "product_tab_4tzPxX",
+        "product_tab_faqs_Jv4Wmd",
         "product_tab_dFwTTp"
       ],
       "name": "Product tabs",
@@ -733,7 +777,7 @@
         "color_namespace": "custom",
         "background_color_key": "pdp_background_color",
         "text_color_key": "pdp_text_color",
-        "background_color": "{{ settings.color_palette.color1 }}",
+        "background_color": "{{ product.metafields.custom.product_color.value }}",
         "text_color": "#f5f4e9",
         "active_label_color": "",
         "padding-block-start": 64,
@@ -742,10 +786,11 @@
     },
     "story_video_VUwQ6f": {
       "type": "story-video",
+      "disabled": true,
       "name": "t:names.story_video",
       "settings": {
         "heading_tag": "h3",
-        "heading": "Over the years, Maple has become one of ONA's most familiar coffees.",
+        "heading": "{{ product.metafields.custom.title_video.value }}",
         "heading_size": 44,
         "type_preset": "custom",
         "font": "var(--font-body--family)",
@@ -754,7 +799,7 @@
         "letter_spacing": "normal",
         "case": "none",
         "wrap": "pretty",
-        "body": "<p>While the origins change with the seasons, the goal remains the same:<br/>Creating a coffee that feels unmistakably like Maple.</p>",
+        "body": "{{ product.metafields.custom.description_video | metafield_tag }}",
         "body_type_preset": "rte",
         "body_font": "var(--font-body--family)",
         "body_font_size": "1rem",
@@ -781,6 +826,8 @@
         "video_loop": true,
         "alt": "",
         "aspect_ratio": "16/9",
+        "hide_video_mobile": false,
+        "video_overhang_mobile": 0,
         "video_max_width": 1280,
         "video_overhang": 0,
         "play_background": "{{ settings.color_palette.foreground }}",
@@ -933,7 +980,7 @@
               "type": "text",
               "name": "t:names.heading",
               "settings": {
-                "text": "<p>Who's Maple For?</p>",
+                "text": "<p>Who's {{ closest.product.title }} For?</p>",
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",
@@ -958,7 +1005,7 @@
             "text_zQ8akq": {
               "type": "text",
               "settings": {
-                "text": "<p><strong>THE MILK COFFEE LOVER</strong><br/>Rich, sweet and balanced in a flat white, latte or cappuccino.</p>",
+                "text": "<p><strong>{{ closest.product.metafields.custom.who_is_for.value.title_1.value }}</strong></p>{{ closest.product.metafields.custom.who_is_for.value.description_1 | metafield_tag }}",
                 "width": "fit-content",
                 "max_width": "narrow",
                 "alignment": "left",
@@ -983,7 +1030,7 @@
             "text_HJf4ey": {
               "type": "text",
               "settings": {
-                "text": "<p><strong>THE EVERYDAY DRINKER</strong><br/>Comfortable enough for your morning routine, interesting enough to keep coming back to.</p>",
+                "text": "<p><strong>{{ closest.product.metafields.custom.who_is_for.value.title_2.value }}</strong></p>{{ closest.product.metafields.custom.who_is_for.value.description_2 | metafield_tag }}",
                 "width": "fit-content",
                 "max_width": "narrow",
                 "alignment": "left",
@@ -1008,7 +1055,7 @@
             "text_yMFHFk": {
               "type": "text",
               "settings": {
-                "text": "<p>THE HOME BARISTA<br/>A forgiving, versatile blend that works beautifully as espresso.</p>",
+                "text": "<p><strong>{{ closest.product.metafields.custom.who_is_for.value.title_3.value }}</strong></p>{{ closest.product.metafields.custom.who_is_for.value.description_3 | metafield_tag }}",
                 "width": "fit-content",
                 "max_width": "narrow",
                 "alignment": "left",
@@ -1067,7 +1114,7 @@
         "image_xbbFa6": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/guide.webp",
+            "image": "{{ closest.product.metafields.custom.who_is_for_image.value }}",
             "link": "",
             "image_ratio": "adapt",
             "width": "custom",
@@ -1107,8 +1154,13 @@
         "max_width": 1360,
         "section_height": "large",
         "section_height_custom": 50,
+        "mobile_min_height": 600,
+        "mobile_content_top": 0,
+        "mobile_text_scrim": true,
+        "mobile_scrim_color": "#470a12",
         "background_media": "none",
         "background_color": "",
+        "mobile_video_position": "contain",
         "video_position": "cover",
         "background_image_position": "cover",
         "toggle_overlay": false,
@@ -1122,7 +1174,8 @@
         "border_radius": 0,
         "padding-block-start": 40,
         "padding-block-end": 40
-      }
+      },
+      "disabled": true
     },
     "story": {
       "type": "section",
@@ -1154,8 +1207,13 @@
         "max_width": 1280,
         "section_height": "",
         "section_height_custom": 50,
+        "mobile_min_height": 600,
+        "mobile_content_top": 0,
+        "mobile_text_scrim": true,
+        "mobile_scrim_color": "#470a12",
         "background_media": "none",
         "background_color": "",
+        "mobile_video_position": "contain",
         "video_position": "cover",
         "background_image_position": "cover",
         "toggle_overlay": false,
@@ -1201,8 +1259,13 @@
         "max_width": 1280,
         "section_height": "",
         "section_height_custom": 50,
+        "mobile_min_height": 600,
+        "mobile_content_top": 0,
+        "mobile_text_scrim": true,
+        "mobile_scrim_color": "#470a12",
         "background_media": "none",
         "background_color": "",
+        "mobile_video_position": "contain",
         "video_position": "cover",
         "background_image_position": "cover",
         "toggle_overlay": false,
@@ -1248,8 +1311,13 @@
         "max_width": 1280,
         "section_height": "",
         "section_height_custom": 50,
+        "mobile_min_height": 600,
+        "mobile_content_top": 0,
+        "mobile_text_scrim": true,
+        "mobile_scrim_color": "#470a12",
         "background_media": "none",
         "background_color": "",
+        "mobile_video_position": "contain",
         "video_position": "cover",
         "background_image_position": "cover",
         "toggle_overlay": false,
@@ -1617,7 +1685,7 @@
         "text": "Not sure just yet?",
         "heading_tag": "h2",
         "button_label": "Try our coffee quiz",
-        "button_link": "",
+        "button_link": "#coffee-quiz",
         "content_alignment": "center",
         "content_max_width": 1200,
         "content_gap": 64,
@@ -1643,6 +1711,290 @@
         "padding_inline": 40,
         "padding_inline_mobile": 20
       }
+    },
+    "coffee_quiz_VLVDpw": {
+      "type": "coffee-quiz",
+      "blocks": {
+        "question_PMArax": {
+          "type": "question",
+          "settings": {
+            "heading": "How <em>do you</em> brew?",
+            "subtext": "How do you make your coffee?",
+            "options": "Espresso\nPour Over/ Filter\nFrench Press\nAeroPress\nStovetop / Moka Pot\nAutomatic Machine\nI'm not sure"
+          }
+        },
+        "question_d64qCb": {
+          "type": "question",
+          "settings": {
+            "heading": "How do you <em>drink it</em>?",
+            "subtext": "How do you usually enjoy your coffee?",
+            "options": "Black\nWith milk\nBoth\nIced\nIt depends"
+          }
+        },
+        "question_YmtRnF": {
+          "type": "question",
+          "settings": {
+            "heading": "What sounds <em>best</em>?",
+            "subtext": "What flavours sound best to you?",
+            "options": "🍫 Chocolatey & nutty | ugly-sweater\n🍯 Sweet & caramel-like | maple\n🍓 Fruity & juicy | raspberry-candy\n🌸 Floral & delicate | raspberry-candy\n🍊 Bright & citrusy | raspberry-candy\n🍇 Rich & wine-like | ugly-sweater"
+          }
+        },
+        "question_mrmT7e": {
+          "type": "question",
+          "settings": {
+            "heading": "How <em>adventurous</em> are you?",
+            "subtext": "How adventurous do you like your coffee?",
+            "options": "Keep it familiar | maple\nSomewhere in the middle | maple\nTake me somewhere new | raspberry-candy"
+          }
+        },
+        "question_rCbpfQ": {
+          "type": "question",
+          "settings": {
+            "heading": "What <em>matters most</em>?",
+            "subtext": "What matters most in your next coffee?",
+            "options": "Something easy to drink every day | maple\nSomething sweet & balanced | maple\nSomething bright & fruity | raspberry-candy\nSomething complex & interesting | ugly-sweater\nSomething special / limited | raspberry-candy\nI just want the best one!"
+          }
+        },
+        "question_XfGTAf": {
+          "type": "question",
+          "settings": {
+            "heading": "What are you <em>shopping for</em>?",
+            "subtext": "What are you shopping for?",
+            "options": "My everyday coffee\nSomething for the weekend\nA coffee to explore\nA gift\nNot sure yet"
+          }
+        },
+        "match_N9kf4K": {
+          "type": "match",
+          "settings": {
+            "tag": "raspberry-candy",
+            "product": "",
+            "title": "Raspberry Candy",
+            "description": "Bright and juicy with notes of raspberry, caramel and milk chocolate.",
+            "reasons": "Sweet & fruit-forward\nApproachable but interesting\nONA's signature release"
+          }
+        },
+        "match_qJUyJf": {
+          "type": "match",
+          "settings": {
+            "tag": "ugly-sweater",
+            "product": "",
+            "title": "Ugly Sweater",
+            "description": "A cosy, unconventional blend with notes of milk chocolate and hazelnut.",
+            "reasons": "Great with milk\nRich & comforting\nA little unconventional"
+          }
+        },
+        "match_GYPHb7": {
+          "type": "match",
+          "settings": {
+            "tag": "maple",
+            "product": "",
+            "title": "Maple",
+            "description": "A balanced, easy-drinking everyday coffee with warm caramel sweetness.",
+            "reasons": "Classic & balanced\nEasy to drink every day\nA dependable favourite"
+          }
+        }
+      },
+      "block_order": [
+        "question_PMArax",
+        "question_d64qCb",
+        "question_YmtRnF",
+        "question_mrmT7e",
+        "question_rCbpfQ",
+        "question_XfGTAf",
+        "match_N9kf4K",
+        "match_qJUyJf",
+        "match_GYPHb7"
+      ],
+      "name": "t:names.coffee_quiz",
+      "settings": {
+        "title": "Find your coffee quiz",
+        "step_label": "Question [current] of [total]",
+        "next_label": "Next Question",
+        "last_label": "See my match",
+        "reveal_heading": "Your <em>coffee match</em> is taking shape...",
+        "reveal_duration": 3,
+        "bag_svg": "",
+        "result_heading": "We think <em>you'll love</em>...",
+        "reasons_label": "Why we picked it:",
+        "add_to_cart_label": "Add to cart",
+        "subscribe_label": "Subscribe",
+        "explore_prompt": "Want to see more?",
+        "explore_label": "Explore all our coffees",
+        "explore_link": "",
+        "background_color": "#6b1235",
+        "text_color": "#f5f4ea",
+        "accent_background": "#f5f4ea",
+        "accent_color": "#6b1235"
+      }
+    },
+    "product_media_with_text_Vy9RW6": {
+      "type": "product-media-with-text",
+      "blocks": {
+        "product-media-with-text": {
+          "type": "product-media-with-text",
+          "static": true,
+          "settings": {
+            "media_position": "left",
+            "media_width_ratio": 50,
+            "media_height": "60svh",
+            "gap": 0,
+            "content_distribution": "together",
+            "limit_content_width": true,
+            "max_width": 1360,
+            "content_padding_custom": true,
+            "content_padding_inline": 24,
+            "content_padding_block_start": 64,
+            "content_padding_block_end": 64,
+            "mobile_content_first": false,
+            "mobile_text_center": false,
+            "mobile_padding_inline": 0
+          },
+          "blocks": {
+            "media": {
+              "type": "_media-without-appearance",
+              "static": true,
+              "settings": {
+                "media_type": "image",
+                "image": "{{ closest.product.metafields.custom.who_is_for_image.value }}",
+                "link": "",
+                "video_loop": true,
+                "video_autoplay": false,
+                "image_position": "cover",
+                "image_position_mobile": "contain",
+                "video_position": "cover"
+              },
+              "blocks": {}
+            },
+            "content": {
+              "type": "_content-without-appearance",
+              "static": true,
+              "settings": {
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 24
+              },
+              "blocks": {
+                "text_j6GiMy": {
+                  "type": "text",
+                  "name": "t:names.heading",
+                  "settings": {
+                    "text": "<h3>Who's {{ closest.product.title }} For?</h3>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "h1",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "text_eTRcaH": {
+                  "type": "text",
+                  "name": "t:names.text",
+                  "settings": {
+                    "text": "<p><strong>{{ closest.product.metafields.custom.who_is_for.value.title_1.value }}</strong></p>{{ closest.product.metafields.custom.who_is_for.value.description_1 | metafield_tag }}",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "custom",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1.25rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "text_xK4dLY": {
+                  "type": "text",
+                  "name": "t:names.text",
+                  "settings": {
+                    "text": "<p><strong>{{ closest.product.metafields.custom.who_is_for.value.title_2.value }}</strong></p>{{ closest.product.metafields.custom.who_is_for.value.description_2 | metafield_tag }}",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "custom",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1.25rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "text_8K87Fg": {
+                  "type": "text",
+                  "name": "t:names.text",
+                  "settings": {
+                    "text": "<p><strong>{{ closest.product.metafields.custom.who_is_for.value.title_3.value }}</strong></p>{{ closest.product.metafields.custom.who_is_for.value.description_3 | metafield_tag }}<p></p>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "custom",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1.25rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "text_j6GiMy",
+                "text_eTRcaH",
+                "text_xK4dLY",
+                "text_8K87Fg"
+              ]
+            }
+          },
+          "block_order": []
+        }
+      },
+      "name": "Product media with text",
+      "settings": {
+        "padding-block-start": 64,
+        "padding-block-end": 64
+      }
     }
   },
   "order": [
@@ -1651,11 +2003,15 @@
     "product_tabs_fW4maV",
     "story_video_VUwQ6f",
     "product_dna_trxBBN",
+    "product_media_with_text_Vy9RW6",
     "section_EhyeAD",
     "story",
     "brew_guide",
     "faqs",
     "product_recommendations_qggXJq",
-    "inline_cta_8ann9f"
+    "inline_cta_8ann9f",
+    "coffee_quiz_VLVDpw"
   ]
 }
+
+

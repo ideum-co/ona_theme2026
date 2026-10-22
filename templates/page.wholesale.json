@@ -458,7 +458,8 @@
     "cafe_testimonial": {
       "type": "ona-cafe-testimonial",
       "settings": {
-        "id": "cafe-testimonials"
+        "id": "cafe-testimonials",
+        "bottom_image": "shopify://shop_images/ONA_Bus.png"
       },
       "blocks": {
         "block_DQmeeF": {
@@ -511,7 +512,7 @@
         "id": "exclusive-access",
         "title": "Exclusive Access",
         "content": "<p>As a wholesale partner, you receive exclusive access to the latest coffee trends, news, findings, and educational content.</p><ul><li> 50+ café focused video content  </li><li> Research and development reports</li><li>Free passes for events and masterclasses</li><li>Special releases and merchandise</li></ul>",
-        "overlay": "shopify://shop_images/ONA_Bus.png",
+        "overlay": "",
         "slider_autoplay": true
       },
       "blocks": {
@@ -593,7 +594,7 @@
         "block_3VYWUW": {
           "type": "block",
           "settings": {
-            "title": "Test",
+            "title": "Mahlkönig",
             "image": "shopify://shop_images/mahlkonig-logo.png",
             "link": "https://www.mahlkoenig.com/"
           }

@@ -10,19 +10,62 @@
  * none of #204's rules. Merged is not deployed -- check the file's updatedAt on
  * the theme, not just the merge.
  */
+/*
+ * Type comes from the theme's scale, not from this sheet.
+ *
+ * These sections were ported with their own invented clamps -- maxima of 80px,
+ * 76px, 60px, 58px, 43px, 36px and 18px, none of which exist in the theme.
+ * Measured on /pages/locations: a section heading rendered 72px against a page
+ * <h1> of 48px, so the hierarchy was inverted, and every legacy page sat at a
+ * different scale from the homepage.
+ *
+ * Horizon generates --font-h1--size .. --font-h6--size and
+ * --font-paragraph--size from the theme's typography settings, so referencing
+ * them means these pages follow the same scale as everything else and move with
+ * it. The fallbacks are each token's own maximum: if a variable were missing the
+ * declaration would otherwise be dropped and the heading would inherit body
+ * size.
+ */
 /* Legacy ONA page templates: responsive layout while retaining original editorial blocks.
    Loaded only for the six migrated page suffixes. */
-#MainContent { --legacy-page-gutter: clamp(20px, 5vw, 72px); --legacy-page-gap: clamp(48px, 7vw, 110px); }
+/*
+ * Gutter and measure are Horizon's own, by inheritance.
+ *
+ * layout/theme.liquid renders <body class="page-width-{{ settings.page_width }}">,
+ * and assets/base.css declares --page-margin and --page-content-width on those
+ * classes. Custom properties inherit, so every element on the page -- legacy
+ * markup included -- already has Horizon's live values. Measured on
+ * /pages/faq: #MainContent and the legacy .container both resolve
+ * --page-margin to 40px and --page-content-width to 90rem.
+ *
+ * The first pass at this restated 16px/40px and pinned the measure to
+ * --narrow-page-width, on the belief that legacy markup sits outside the
+ * .page-width-* element and cannot inherit. It does not -- the class is on
+ * <body>. Restating meant duplicating Horizon's 750px breakpoint, and pinning
+ * to `narrow` meant these pages would silently stop matching the moment
+ * settings.page_width moved to normal or wide.
+ *
+ * Referencing instead: the gutter steps when Horizon's steps, and the measure
+ * follows whichever page width the theme is set to. The literals are fallbacks
+ * for the case where the body class resolves to something with no rule behind
+ * it -- without them a missing variable makes min() invalid and drops the rule,
+ * giving a full-bleed page, which is worse than a stale measure.
+ */
+#MainContent {
+  --legacy-page-gutter: var(--page-margin, 16px);
+  --legacy-page-measure: var(--page-content-width, var(--narrow-page-width, 90rem));
+  --legacy-page-gap: clamp(48px, 7vw, 110px);
+}
 #MainContent > .shopify-section { min-width:0; }
-#MainContent :is(.medium-container,.container) { width:min(100% - 2 * var(--legacy-page-gutter), 1280px); max-width:1280px; margin-inline:auto; }
+#MainContent :is(.medium-container,.container) { width:min(100% - 2 * var(--legacy-page-gutter), var(--legacy-page-measure)); margin-inline:auto; }
 #MainContent :is(.about,.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) { position:relative; padding-block:var(--legacy-page-gap); }
 #MainContent :is(.about,.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) :is(h1,h2,h3,p) { overflow-wrap:break-word; }
-#MainContent :is(.about,.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) h2 { font-family:var(--font-heading--family,serif); font-size:clamp(30px,4.5vw,60px); line-height:1.1; margin:0 0 20px; }
-#MainContent :is(.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) h3 { font-size:clamp(20px,2.2vw,32px); line-height:1.35; margin:0 0 16px; }
-#MainContent :is(.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) p { font-size:clamp(15px,1.1vw,18px); line-height:1.65; margin:0 0 18px; }
+#MainContent :is(.about,.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) h2 { font-family:var(--font-heading--family,serif); font-size:var(--font-h2--size, 3rem); line-height:1.1; margin:0 0 20px; }
+#MainContent :is(.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) h3 { font-size:var(--font-h3--size, 2rem); line-height:1.35; margin:0 0 16px; }
+#MainContent :is(.our-philoshophy,.awards,.careers,.sustainability-top,.sustainability-list) p { font-size:var(--font-paragraph--size, 0.875rem); line-height:1.65; margin:0 0 18px; }
 #MainContent :is(.our-philoshophy,.awards,.careers,.sustainability-top) :is(.content,.medium-container) { min-width:0; }
 #MainContent .about .medium-container { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.5fr); align-items:start; gap:clamp(24px,4vw,70px); }
-#MainContent .about .right-box h3 { font-family:var(--font-heading--family,serif); font-weight:400; font-size:clamp(24px,3vw,43px); line-height:1.3; margin:0; }
+#MainContent .about .right-box h3 { font-family:var(--font-heading--family,serif); font-weight:400; font-size:var(--font-h3--size, 2rem); line-height:1.3; margin:0; }
 #MainContent .about .animated-svg { position:absolute; z-index:0; width:min(50vw,450px); max-height:380px; inset-inline-start:5%; inset-block-start:0; pointer-events:none; opacity:.6; }
 #MainContent .about .medium-container { position:relative; z-index:1; }
 #MainContent .our-philoshophy .content,
@@ -34,25 +77,27 @@
 #MainContent .sustainability-top img { display:block; width:100%; height:auto; }
 #MainContent .awards table { width:100%; border-collapse:collapse; }
 #MainContent .awards td { padding:12px 8px; border-bottom:1px solid currentColor; }
-#MainContent .sustainability-top .content { width:min(100% - 2 * var(--legacy-page-gutter),1280px); margin-inline:auto; }
-#MainContent .sustainability-list { display:grid; gap:clamp(28px,4vw,64px); width:min(100% - 2 * var(--legacy-page-gutter),1280px); margin-inline:auto; }
+#MainContent .sustainability-top .content { width:min(100% - 2 * var(--legacy-page-gutter),var(--legacy-page-measure)); margin-inline:auto; }
+#MainContent .sustainability-list { display:grid; gap:clamp(28px,4vw,64px); width:min(100% - 2 * var(--legacy-page-gutter),var(--legacy-page-measure)); margin-inline:auto; }
 #MainContent .sustainability-list .list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:32px; align-items:center; }
 #MainContent .sustainability-list .img-bg { min-height:280px; background-size:cover; background-position:center; }
 #MainContent .banner-top { position:relative; min-height:clamp(240px,35vw,520px); display:flex; align-items:center; isolation:isolate; padding-block:50px; overflow:hidden; }
 #MainContent .banner-top .img-bg { position:absolute; inset:0; background-position:center; background-size:cover; z-index:-1; }
 #MainContent .banner-top .medium-container { position:relative; }
-#MainContent .banner-top h1 { font-size:clamp(34px,5.5vw,76px); line-height:1.1; max-width:900px; margin:0; }
+#MainContent .banner-top h1 { font-size:var(--font-h1--size, 3.5rem); line-height:1.1; max-width:900px; margin:0; }
 #MainContent .animated-svg { max-width:100%; height:auto; }
 #MainContent img { max-width:100%; }
 @media(max-width:749px){
- #MainContent { --legacy-page-gutter:20px; --legacy-page-gap:52px; }
+ /* --legacy-page-gutter is Horizon's --page-margin and is already 16px below
+    750px; only the vertical rhythm tightens here. */
+ #MainContent { --legacy-page-gap:52px; }
  #MainContent .about .medium-container,
  #MainContent .our-philoshophy .content,
  #MainContent .awards .content,
  #MainContent .careers .content,
  #MainContent .sustainability-list .list { grid-template-columns:minmax(0,1fr); gap:24px; }
  #MainContent .about .animated-svg { width:min(80vw,320px); opacity:.45; }
- #MainContent .about .right-box h3 { font-size:clamp(25px,6.5vw,36px); line-height:1.27; }
+ #MainContent .about .right-box h3 { line-height:1.27; }
  #MainContent .banner-top { min-height:250px; }
  #MainContent .sustainability-list .img-bg { min-height:220px; }
 }
@@ -64,14 +109,14 @@
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.two-columns-title-intro,.training-bookings) > .container > .content,
 #MainContent .training > .container { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(24px,5vw,70px); align-items:center; }
 #MainContent .training-bookings .content { align-items:start; }
-#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings,.learn-list) h2 { font-size:clamp(30px,4vw,58px); line-height:1.14; margin:0 0 20px; }
-#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings) h3 { font-size:clamp(20px,2.3vw,32px); line-height:1.4; margin:0 0 18px; }
-#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings) p { font-size:clamp(15px,1.2vw,18px); line-height:1.65; }
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings,.learn-list) h2 { font-size:var(--font-h2--size, 3rem); line-height:1.14; margin:0 0 20px; }
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings) h3 { font-size:var(--font-h3--size, 2rem); line-height:1.4; margin:0 0 18px; }
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings) p { font-size:var(--font-paragraph--size, 0.875rem); line-height:1.65; }
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.training-bookings) :is(img,video,iframe) { max-width:100%; }
 #MainContent .banner-detail-top { position:relative; isolation:isolate; display:flex; align-items:center; min-height:clamp(260px,38vw,540px); }
 #MainContent .banner-detail-top .img-bg { position:absolute; inset:0; z-index:-1; background-size:cover; background-position:center; }
 #MainContent .banner-detail-top .mobile-show { display:none; }
-#MainContent .banner-detail-top h1 { font-size:clamp(36px,6vw,80px); line-height:1.1; }
+#MainContent .banner-detail-top h1 { font-size:var(--font-h1--size, 3.5rem); line-height:1.1; }
 #MainContent .learn-list > .container > .content { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:32px; }
 #MainContent .learn-list .img-bg { background-size:cover; background-position:center; aspect-ratio:4/3; }
 #MainContent .learn-list .a-box { padding-block:20px; }
@@ -79,7 +124,7 @@
 #MainContent .bread-crumbs-content ul { display:flex; flex-wrap:wrap; gap:12px; list-style:none; padding:0; }
 #MainContent .product-search iframe { max-width:100%; width:100%; }
 #MainContent .training-bookings .form { padding:clamp(20px,3vw,40px); }
-#MainContent .add-image-and-text-slider .add-images-slider { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; width:min(100% - 2 * var(--legacy-page-gutter),1280px); margin-inline:auto; }
+#MainContent .add-image-and-text-slider .add-images-slider { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; width:min(100% - 2 * var(--legacy-page-gutter),var(--legacy-page-measure)); margin-inline:auto; }
 @media(max-width:749px) {
  #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.two-columns-title-intro,.training-bookings) > .container > .content,
  #MainContent .training > .container,
@@ -96,6 +141,58 @@
 #MainContent .ona-legacy-contact-form :is(input,textarea) { display:block; width:100%; min-width:0; border:1px solid currentColor; background:transparent; color:inherit; border-radius:0; padding:12px; font:inherit; }
 #MainContent .ona-legacy-contact-form textarea { resize:vertical; }
 #MainContent .ona-legacy-contact-form button { margin-block-start:12px; justify-self:start; }
+
+/*
+ * Wholesale enquiry form wrapper.
+ *
+ * The markup is a pop-up (`.wholesale-form.pop-up-form` > `.form-box` > `.box`)
+ * whose open/close script lives in the legacy theme's main.js, which this theme
+ * does not carry -- so it renders inline instead of as a modal. Nothing
+ * constrained the wrapper, so the form (max-width:100%, above) filled the whole
+ * viewport, with the heading and fields flush to the window. Present it as a
+ * centred enquiry section with a readable measure -- deliberately narrower than
+ * --legacy-page-measure, so it uses max-width (not the shared min() cap) and the
+ * section carries the gutter.
+ */
+#MainContent .wholesale-form { padding-block: var(--legacy-page-gap); padding-inline: var(--legacy-page-gutter); }
+#MainContent .wholesale-form .box { max-width: 620px; margin-inline: auto; }
+#MainContent .wholesale-form .box > h2 { font-family: var(--font-heading--family, serif); font-weight:400; font-size:var(--font-h2--size, 3rem); line-height:1.12; margin:0 0 24px; }
+#MainContent .wholesale-form .pop-up-form-close { display:none; } /* the modal close control has no place inline */
+#MainContent .wholesale-form .title:empty { display:none; }
+
+/*
+ * Legacy CTA links styled as buttons. `.more-btn` (and the enquiry trigger
+ * `.wholesale-roaster-form-btn`) were plain maroon text with no background,
+ * padding or box -- their button styles were in main.css. Reuse the theme's own
+ * primary-button tokens so they match every other button and follow the section
+ * colour scheme.
+ */
+#MainContent :is(.more-btn, .wholesale-roaster-form-btn) {
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:14px 28px;
+  background-color: var(--color-primary-button-background);
+  color: var(--color-primary-button-text);
+  border: 1px solid var(--color-primary-button-border, transparent);
+  border-radius:0; text-decoration:none; cursor:pointer;
+  font-size:15px; line-height:1; letter-spacing:.02em;
+  transition: background-color .15s ease, color .15s ease;
+}
+#MainContent :is(.more-btn, .wholesale-roaster-form-btn):hover {
+  background-color: var(--color-primary-button-hover-background);
+  color: var(--color-primary-button-hover-text);
+}
+
+/*
+ * Testimonial video sections: hide the legacy episode dropdown.
+ *
+ * `.video_select_wrap > .filter-select` is a custom dropdown whose open/close
+ * and video-switching script was in the legacy main.js, which this theme does
+ * not carry -- so its <ul> rendered all four episodes as raw native buttons and
+ * nothing happened on click. The track is already enhanced into a working
+ * slider with Episode 1-4 tabs above the video, so this control is a broken
+ * duplicate. Hide it rather than leave unstyled, dead buttons on the page.
+ */
+#MainContent .testimonial_video_section .video_select_wrap { display:none; }
 
 /* Training intro images need an intrinsic box; background-only divs are otherwise zero-height. */
 #MainContent .training-intro { padding-block:var(--legacy-page-gap); }
@@ -130,7 +227,7 @@
  * max 170px wide. `width: auto` is the part that matters -- without it the
  * base.css rule wins and max-width alone cannot pull the image back.
  */
-#MainContent .col-4-icons .container { width:min(100% - 2 * var(--legacy-page-gutter),1280px); margin-inline:auto; }
+#MainContent .col-4-icons .container { width:min(100% - 2 * var(--legacy-page-gutter),var(--legacy-page-measure)); margin-inline:auto; }
 #MainContent .col-4-icons .content { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:clamp(20px,3vw,40px); align-items:start; }
 #MainContent .col-4-icons .content .block { margin:0; padding:0; }
 #MainContent .col-4-icons .box { display:grid; justify-items:center; gap:clamp(16px,2vw,40px); text-align:center; }
@@ -189,3 +286,106 @@
 @media(max-width:749px){
  #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.two-columns-title-intro,.training-bookings) > .content.container { grid-template-columns:minmax(0,1fr); gap:28px; }
 }
+
+/*
+ * The decorative blob belongs BEHIND the photo, not above it in flow.
+ *
+ * The ported sections put an `svg.animated-svg` -- a mustard organic shape --
+ * as a sibling of the photo inside `.img`. With no rule it laid out as a
+ * normal block, so the column became blob + photo stacked, and the blob read
+ * as a giant orange rectangle above the image. That is what made these pages
+ * look broken: it is on eight sections (traning-sourcing and its v2-v4,
+ * careers, awards, training-image-text, training-form, wholesale-sourcing
+ * v2-v4), which is most of the legacy pages.
+ *
+ * Production's values, read off theme 160815546559 on /pages/barista-courses:
+ *
+ *   .img.show-icon   display:flex; position:relative          784x1139
+ *   .animated-svg    position:absolute; inset 0 0 auto; z-index:1   784x524
+ *   img              position:relative; z-index:2            784x1139
+ *
+ * It goes BEHIND everything in its wrapper, not merely behind the photo.
+ *
+ * Production places each blob individually: on the real pre-Horizon theme
+ * (147508887743, Debut 17.13.0) the same decoration is `top:-90px;left:994px`
+ * in one section, `top:526px;left:169px` in another and `top:509px;left:-138px`
+ * in a third, often hanging outside its own box. There is no faithful generic
+ * placement to copy, so this rule does the one thing that matters -- take the
+ * blob out of flow so it stops inflating the page -- and keeps it behind the
+ * content.
+ *
+ * An earlier version used `z-index: 1` plus `z-index: 2` on the image. That
+ * holds where the wrapper has only a blob and a photo, but `.awards .left-box`
+ * on /pages/about puts an h2 and h3 BEFORE the slider and only images were
+ * being raised, so the solid blob painted over the headings. Codex, #213.
+ * Measured on /pages/about, headings overlapped by a blob in front of them:
+ * 1 before any fix -> 3 with z-index 1 -> 1 with z-index -1. The negative
+ * index adds no coverage the page did not already have, and the height is
+ * identical either way. Screenshot confirms the Awards heading is legible and
+ * the blob still paints behind it.
+ *
+ * The wrapper is matched by SHAPE, not by class name. A first version keyed
+ * on `.img`, and missed two other wrappers the same sections use --
+ * `ona-training-image-text` nests the pair in `.image-box`, and /pages/about
+ * puts the awards blob straight in `.left-box`. Those blobs stayed in flow
+ * and the page barely moved. Codex, #213.
+ *
+ * `:has(> .animated-svg):has(img)` is the shape every one of them shares: a
+ * wrapper holding the blob AND something with an image. The `:has(img)` half
+ * matters -- /pages/about also has a blob whose wrapper has no image, and
+ * taking that one out of flow would collapse its wrapper to zero height.
+ *
+ * Measured by injecting this into the live pages, images forced to load, from
+ * a page that actually loads this stylesheet (the first attempt injected into
+ * /blogs/brewguides, which does not, so the numbers were taken without it):
+ *
+ *                           before    .img only    by shape
+ *   /pages/barista-courses  13,710px   10,948px    10,520px   svgs in flow 6 -> 1 -> 0
+ *   /pages/about             7,242px    6,870px     6,384px                2 -> 1 -> 0
+ *   /pages/wholesale        25,431px   23,539px    23,539px                6 -> 0 -> 0
+ *   learn, private-courses: unchanged (they carry no .animated-svg)
+ */
+#MainContent :has(> .animated-svg):has(img) { position: relative; }
+#MainContent :has(> .animated-svg):has(img) > .animated-svg { position: absolute; inset-block-start: 0; inset-inline: 0; z-index: -1; max-width: 100%; height: auto; }
+
+/*
+ * "Unique coffees": one coffee at a time, as the old theme showed it.
+ *
+ * The ported markup carries the pieces of a slider the legacy theme drove with
+ * slick -- one `.slider-block` of three images per coffee, plus one handle per
+ * coffee. slick is not in this theme, so every block rendered at once: nine
+ * images stacked, and the section measured 9,110px on /pages/wholesale, 39% of
+ * the whole page, against the old theme's 475px.
+ *
+ * The real pre-Horizon theme (147508887743, Debut 17.13.0) overlays the blocks
+ * and cross-fades: wrapper 637x332 `position:relative`, each block 637x312 at
+ * `left: 0 / -637px / -1274px` with `opacity: 1 / 0 / 0`, three images in a
+ * flex row inside. Same result here with a grid stack, which does not depend
+ * on each block's pixel width.
+ *
+ * assets/ona-unique-coffees.js only moves `is-active`; the layout is here.
+ */
+#MainContent .unique-coffee-block .imgs-slider-unique { display: grid; position: relative; }
+#MainContent .unique-coffee-block .imgs-slider-unique > .slider-block { grid-area: 1 / 1; display: flex; align-items: center; gap: clamp(8px, 1.5vw, 20px); opacity: 0; visibility: hidden; transition: opacity .25s ease; }
+#MainContent .unique-coffee-block .imgs-slider-unique > .slider-block.is-active { opacity: 1; visibility: visible; }
+#MainContent .unique-coffee-block .imgs-slider-unique > .slider-block > img { flex: 1 1 0; min-width: 0; width: auto; height: auto; object-fit: contain; }
+
+/* The tabs. `button` takes the UA font unless told otherwise. */
+#MainContent .unique-coffee-block .slider-handle { padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: inherit; cursor: pointer; }
+#MainContent .unique-coffee-block .slider-handle.is-active { font-weight: 700; }
+#MainContent .unique-coffee-block .slider-handle:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+/* Only the selected coffee's copy is open, so the column cannot grow by three. */
+#MainContent .unique-coffee-block .faqs-text { display: none; }
+#MainContent .unique-coffee-block .faqs-text.is-active { display: block; }
+
+@media(prefers-reduced-motion: reduce){
+ #MainContent .unique-coffee-block .imgs-slider-unique > .slider-block { transition: none; }
+}
+
+/*
+ * The FAQ collapse used to live here, but legacy-page-layout.css is loaded
+ * only for a fixed list of page suffixes while those sections carry presets
+ * and can be placed on any template. The rules moved into each section's own
+ * {% stylesheet %} so they travel with it. Codex, #218.
+ */

@@ -292,7 +292,7 @@
       ],
       "name": "t:names.footer",
       "settings": {
-        "column_ratios": "",
+        "column_ratios": "1fr 1fr 4fr 3fr",
         "heading_dividers": true,
         "section_width": "page-width",
         "gap": 40,
@@ -406,3 +406,4 @@
     "utilities"
   ]
 }
+
