@@ -196,10 +196,30 @@ const painted = (declarations) => {
   const hex = value.match(/#([0-9a-f]{6})\b/i);
   if (hex) return { alpha, literal: [1, 3, 5].map((at) => parseInt(`#${hex[1]}`.slice(at, at + 2), 16)), how: value };
 
-  const slashed = value.match(/\/\s*([0-9.]+)\s*\)/);
-  if (slashed) alpha *= Number(slashed[1]);
-  if (/--opacity-muted-text/.test(value)) alpha *= opacityToken('muted');
-  if (/--opacity-subdued-text/.test(value)) alpha *= opacityToken('subdued');
+  /* Alpha after a slash inside a colour function. The first version matched only bare digits
+     followed by `)`, so the perfectly valid `rgb(var(--color-foreground-rgb) / 60%)` fell
+     through to the `inherits` check below, which accepted the foreground variable and left
+     alpha at 1 (Codex, #300). Anything after the slash this cannot resolve now fails. */
+  const slashed = value.match(/\/\s*([^)]+?)\s*\)/);
+  if (slashed) {
+    const part = slashed[1].trim();
+    const literal = part.match(/^([0-9.]+)(%?)$/);
+    if (literal) {
+      alpha *= literal[2] ? Number(literal[1]) / 100 : Number(literal[1]);
+    } else if (/--opacity-muted-text/.test(part)) {
+      alpha *= opacityToken('muted');
+    } else if (/--opacity-subdued-text/.test(part)) {
+      alpha *= opacityToken('subdued');
+    } else {
+      assert.fail(
+        `cannot read the eyebrow's alpha from "${part}" -- extend this resolver rather than ` +
+          'treating the label as fully opaque'
+      );
+    }
+  } else {
+    if (/--opacity-muted-text/.test(value)) alpha *= opacityToken('muted');
+    if (/--opacity-subdued-text/.test(value)) alpha *= opacityToken('subdued');
+  }
   if (/--color-foreground-muted/.test(value)) alpha *= opacityToken('muted');
   if (/--color-foreground-subdued/.test(value)) alpha *= opacityToken('subdued');
 
