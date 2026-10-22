@@ -301,7 +301,7 @@ needs a decision before the page it is on can reach stage 2.
 | `ona-sustainability-list` | live and enabled on `templates/page.about.json` with two of its three blocks filled — Solar → `/pages/solar`, and the Women in coffee campaign → `/pages/womenincoffee`. Each block is image + title + rich text + url, rendered as independent cards, so `media-with-content`'s single media slot cannot hold the pair. A `section` of two `group`s, each with `image`, `text` and `button`, is the obvious shape, but two things have to survive the move and neither has been checked against the rendered page: the image is painted as a CSS `background-image` on a bare `div` rather than an `<img>`, so it carries no alt text and no responsive sources today, and the "Read More" label is hard-coded in the markup (`sections/ona-sustainability-list.liquid:9`) rather than being a block setting. |
 | `ona-bookings-top` | not a booking iframe, despite sitting next to one. It renders a breadcrumb `<ul>` and then a two-column heading/intro pair out of `page.metafields.accentuate.*`. The breadcrumb has the same problem as `ona-bread-crumbs` — no generic target — and the two-column intro is a `section` of two `group`s, but the copy lives in metafields rather than block settings, so the move is a content migration as well as a layout one. The page-by-page note that bookings needs only iframe framing is incomplete until this is mapped. |
 | `ona-content` (about) | live and enabled on `templates/page.about.json`. Heading and lead render as two **independent** text columns over an `.animated-svg` blob, so `media-with-content`'s one media slot plus one content slot collapses the pair into a single column. A `section` with two `group`s is the shape, but it inherits the decorative-layer problem above — `ona-content` is one of the 15 `.animated-svg` sections — so it needs the blob solved first. Unmapped in the kit until then, rather than silently treated as a media/text variant. |
-| `ona-cafe-testimonial` — **until #246 merges** | all four live blocks have both an `image` and a `title`, and the legacy section renders the title as a citation. On `main` today, `sections/press-quotes.liquid:30` shows `source` only in an `elsif` after both logo fields, so a block with a logo cannot also show a name — migrating the four cafés would hide every café name. #246 replaces that branch with a trailing `<figcaption>`, which is what makes this mapping work; it is a dependency, not an assumption. #253 did not touch the markup — the `<cite>` carrying `title` and `subtitle` is unchanged, so that dependency reads exactly as written — but it added a second one: `.cafe-reviews` now lays the blocks out as a three-up `scroll-snap` carousel that falls to two columns at 989px and one at 749px. `press-quotes` has to match that, and Victor's `.cafe-reviews` rules go dead the day the section does. |
+| `ona-cafe-testimonial` — **until #246 merges** | all four live blocks have both an `image` and a `title`, and the legacy section renders the title as a citation. On `main` today, `sections/press-quotes.liquid:30` shows `source` only in an `elsif` after both logo fields, so a block with a logo cannot also show a name — migrating the four cafés would hide every café name. #246 replaces that branch with a trailing `<figcaption>`, which is what makes this mapping work; it is a dependency, not an assumption. #253 did not touch the markup — the `<cite>` carrying `title` and `subtitle` is unchanged, so that dependency reads exactly as written — but it added a second one: `.cafe-reviews` now lays the blocks out as a three-up `scroll-snap` carousel that falls to two columns at 989px and one at 749px. `press-quotes` has to match that, and Victor's `.cafe-reviews` rules go dead the day the section does. **And #278 added a third dependency, the hardest of the three:** `bottom_image` is set on the wholesale instance to `shopify://shop_images/ONA_Bus.png`, and `sections/ona-cafe-testimonial.liquid:22-27` renders it as the ONA bus straddling the section boundary. `press-quotes` has no section-level image setting at all — its schema is columns, icons style, background, text colour and the two paddings — so the swap deletes the bus outright. The target needs a section-level image slot before this row is a mapping. |
 
 ## Page by page
 
@@ -311,7 +311,7 @@ the verification rule at the top and to the gaps above.
 
 | Page | Sections now | After | The work |
 | --- | --- | --- | --- |
-| `/pages/wholesale` | 19 (all legacy) | ~10 | the five `*-sourcing-v*` clones have **no verified target** — every one carries an `.animated-svg` layer that `media-with-content` drops (see Known gaps); `ona-cafe-testimonial` → `press-quotes`; the four panel-plus-slider composites and `ona-unique-coffees` have no verified target (see Known gaps); `ona-wholesale-brands` lost its target to #253 (see Known gaps); `ona-faq-lists`, `ona-training` and `ona-icon-and-content` have no verified target (see Known gaps); `ona-gust-r` stays until its subject and business fields have a home |
+| `/pages/wholesale` | 19 (all legacy) | ~10 | the five `*-sourcing-v*` clones have **no verified target** — every one carries an `.animated-svg` layer that `media-with-content` drops (see Known gaps); `ona-cafe-testimonial` has no verified target — #278 put the ONA bus in it (see Known gaps); the four panel-plus-slider composites and `ona-unique-coffees` have no verified target (see Known gaps); `ona-wholesale-brands` lost its target to #253 (see Known gaps); `ona-faq-lists`, `ona-training` and `ona-icon-and-content` have no verified target (see Known gaps); `ona-gust-r` stays until its subject and business fields have a home |
 | `/pages/barista-courses` | 10 (all legacy) | ~6 | the four `traning-sourcing-v*` clones have **no verified target**, same `.animated-svg` layer (see Known gaps); `ona-traning-supported` has no verified target (see Known gaps); `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
 | `/pages/about` | 7 (all legacy) | ~5 | media/text variants → `media-with-content`, except any carrying `.animated-svg`; `ona-awards`, `ona-content` and `ona-sustainability-list` have no verified target (see Known gaps) |
 | `/pages/learn` | 2 | 2 | `ona-page-title` → page-header; `ona-brewguides-and-training` → `section` + `_product-card`-style tiles |
@@ -367,19 +367,27 @@ next one to have happened.
 1. **Write `page-header`** and move `ona-page-title` and `ona-sr-heading` onto
    it. Smallest possible proof of the pattern, touches six pages, no layout
    risk.
-2. **Wholesale** — the biggest page and the most duplication, so the
-   `media-with-content` conversion is worth most there and the rest of the
-   mapping is a repeat of it.
-3. **Barista courses**, which is the same five conversions again.
-4. **About**, then **learn**.
-5. **Delete each section as its last use goes.** Nothing is unused today — all
+2. **Solve the decorative layer**, because steps 3 and 4 are blocked on it.
+   All ten sourcing clones and `ona-training-image-text` render an
+   `.animated-svg` blob that `media-with-content` drops, so every conversion
+   those two steps were going to make is a visible regression until the blob
+   has a target — either a component that carries a decorative layer, or the
+   layer moving to CSS on the new section. This is a decision, not a
+   conversion.
+3. **Wholesale** — the biggest page and the most duplication, so the
+   conversion is worth most there and the rest of the mapping is a repeat of
+   it. Not startable before step 2.
+4. **Barista courses**, the same conversions again, and the same
+   prerequisite.
+5. **About**, then **learn**.
+6. **Delete each section as its last use goes.** Nothing is unused today — all
    46 are referenced — so there is no up-front sweep to do. The four shared
    sections above are the only ones whose deletion needs more than one page
    converted.
-6. **Tokens**: the 77 `custom` presets and the 19 padding values, once the
+7. **Tokens**: the 77 `custom` presets and the 19 padding values, once the
    sections they live in have stopped moving. Doing this first means doing it
    twice.
-7. **The 20 inline `<style>` blocks**, independent of all of the above.
+8. **The 20 inline `<style>` blocks**, independent of all of the above.
 
 Steps 1–4 are also when the thin pages get flagged for content: a page with 852
 characters cannot be fixed by swapping its sections.
