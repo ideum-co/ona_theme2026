@@ -10,8 +10,14 @@ const stripBanner = (text) => text.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '');
 const schemaOf = (file) =>
   JSON.parse(read(file).match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/)[1]);
 
-/* A URL fragment: what an href="#..." can actually reach. */
-const FRAGMENT = /^[A-Za-z][\w:.-]*$/;
+/*
+ * What an href="#..." can actually reach. HTML5 ids may start with a digit -- `2026-training` is
+ * a working anchor -- so the old "must begin with a letter" rule was HTML4's and would have
+ * blocked a legitimate value. What genuinely breaks a fragment link: whitespace, a leading `#`
+ * (the typo the setting's info text warns about), and any character `| escape` rewrites, because
+ * the rendered id then no longer equals what the merchant typed and the link misses silently.
+ */
+const FRAGMENT = /^[^\s#"'<>&]+$/;
 
 /*
  * /pages/wholesale navigates to itself -- `ona-icon-and-content` links to four #anchors, and
