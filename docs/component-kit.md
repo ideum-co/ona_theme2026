@@ -183,10 +183,16 @@ Alongside that, three kinds of drift, measured across all 150 sections in
 go stale again — they already did once, when #276 added three product
 templates:
 
-- **77 blocks sit on `type_preset: "custom"`** — nearly three times the next
+- **77 settings sit on `type_preset: "custom"`** — nearly three times the next
   most common preset (`paragraph` 28, `rte` 18, `h2` 17, `h4` 14, `h6` 14).
   Each one opts out of the type scale and restates a size; there are **11
-  distinct literal `font_size` values** in the templates.
+  distinct literal `font_size` values** in the templates. They are not all
+  blocks: **70 are block settings and 7 are section settings** —
+  `product-highlight` and `club-invite` on the homepage, and `story-video` on
+  the homepage plus all four product templates. A cleanup that walks only
+  blocks misses those seven, which is also why the first count of this figure
+  read 84: section and block settings both carry `type_preset`, and counting
+  one population twice is as easy as counting the other not at all.
 - **15 distinct padding values** between sections: 0, 8, 20, 24, 32, 40, 48,
   60, 64, 72, 80, 96, 100, 120, 152. On the homepage every inter-section gap is
   0 and all rhythm is internal padding, so these 15 values *are* the vertical
@@ -298,7 +304,7 @@ loads its own script is doing something a `text` block cannot:
 | `ona-campaign-banner` (homepage) | reads `shop.metafields.custom.donation_end_date` and renders the campaign line only when it has a value, next to its own scoped stylesheet | keep: it is the other half of the counter — both read metafields written by the same recompute job, and a `text` block cannot omit itself when the date is unset |
 
 So the honest version of the collapse: the **layout** fragments go to eight
-components. Seven sections carry behaviour: three are `{% form 'contact' %}`
+components. Eight sections carry behaviour: three are `{% form 'contact' %}`
 sections that **cannot** move to Horizon's `contact-form` as it stands — each
 posts a fixed `contact[subject]`, and `ona-gust-r` a `contact[business]` too,
 which the stock block has no setting for, so the block needs a subject setting
@@ -343,7 +349,7 @@ the verification rule at the top and to the gaps above.
 | --- | --- | --- | --- |
 | `/pages/wholesale` | 19 (all legacy) | ~10 | **six** sourcing sections have **no verified target** — `ona-sourcing` plus the five `*-sourcing-v*` clones, every one carrying an `.animated-svg` layer that `media-with-content` drops (see Known gaps); together with barista-courses' four they are the ten of the kit's largest duplication group; `ona-cafe-testimonial` has no verified target — #278 put the ONA bus in it (see Known gaps); the four panel-plus-slider composites and `ona-unique-coffees` have no verified target (see Known gaps); `ona-wholesale-brands` lost its target to #253 (see Known gaps); `ona-faq-lists`, `ona-training` and `ona-icon-and-content` have no verified target (see Known gaps); `ona-gust-r` stays until its subject and business fields have a home |
 | `/pages/barista-courses` | 10 (all legacy) | ~6 | **four** sourcing sections have **no verified target** — `ona-traning-sourcing` plus the three `traning-sourcing-v*` clones, same `.animated-svg` layer (see Known gaps); `ona-training-image-text` is blocked on the same layer and is the 11th of the kit's blocked set; `ona-traning-supported` has no verified target (see Known gaps); `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
-| `/pages/about` | 7 (all legacy) | ~5 | `ona-inner-banner` → `hero`; `ona-our-philosophy` → `media-with-content`, the one clean conversion on this page; the other five have no verified target (see Known gaps) — `ona-awards`, `ona-content`, `ona-sustatnability`, `ona-sustainability-list` and `ona-careers`, the last two of those blocked on the `.animated-svg` layer |
+| `/pages/about` | 7 (all legacy) | ~5 | `ona-inner-banner` → `hero`; `ona-our-philosophy` → `media-with-content`, the one clean conversion on this page; the other five have no verified target (see Known gaps) — `ona-awards`, `ona-content`, `ona-sustatnability`, `ona-sustainability-list` and `ona-careers`. Three of those five carry the `.animated-svg` layer and so wait on step 2: `ona-awards`, `ona-content` and `ona-careers`. `ona-sustainability-list` and `ona-sustatnability` do not — they are blocked for their own reasons, which their gap rows give |
 | `/pages/learn` | 2 | 2 | `ona-page-title` → page-header; `ona-brewguides-and-training` → `section` + `_product-card`-style tiles |
 | `/pages/faq`, `/pages/subscription-faq` | 2 each | 2 each | `ona-page-title` → page-header. `ona-faq-layout` already Horizon-native — leave it |
 | `/pages/private-courses-and-experiences` | 3 | 3 | thin on content; layout swap only after the copy lands. Two of its three sections have no target anyway: `ona-expericences-content`'s form and `ona-bread-crumbs` (see Known gaps) |

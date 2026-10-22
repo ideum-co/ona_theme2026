@@ -400,8 +400,23 @@ test('the custom type_preset count is what the templates hold', () => {
   assert.ok(custom > 0, 'the probe found no custom presets, so it is broken');
   assert.match(
     doc,
-    new RegExp(`\\*\\*${custom} blocks sit on \`type_preset: "custom"\`\\*\\*`),
+    new RegExp(`\\*\\*${custom} settings sit on \`type_preset: "custom"\`\\*\\*`),
     `the drift list does not say ${custom} custom presets`
+  );
+
+  /* They are settings, not blocks: seven of them sit on the section itself. Saying "blocks"
+     sent the cleanup at 70 of 77 and left the section-level ones standing, so the split is
+     guarded alongside the total. */
+  let sectionLevel = 0;
+  for (const [, parsed] of eachTemplate()) {
+    for (const section of Object.values(parsed.sections ?? {})) {
+      if ((section.settings ?? {}).type_preset === 'custom') sectionLevel += 1;
+    }
+  }
+  assert.ok(sectionLevel > 0, 'no section-level custom presets found; the split probe is broken');
+  assert.ok(
+    doc.includes(`**${custom - sectionLevel} are block settings and ${sectionLevel} are section settings**`),
+    `the drift list should split ${custom} into ${custom - sectionLevel} block and ${sectionLevel} section settings`
   );
 
   /* The whole breakdown is quoted, not just the custom total, and guarding one number of six
@@ -626,17 +641,52 @@ test('the .animated-svg section count is the grep it quotes', () => {
  * named anywhere in the kit is either a mapping nobody wrote down or a gap nobody declared, and
  * both are the failure this document exists to prevent.
  */
-test('every ona-* section is named somewhere in the kit', () => {
+test('every ona-* section has a mapping or a declared gap', () => {
   const sections = readdirSync(join(root, 'sections'))
     .filter((file) => file.startsWith('ona-') && file.endsWith('.liquid'))
     .map((file) => file.replace(/\.liquid$/, ''));
 
   assert.ok(sections.length > 40, `only ${sections.length} ona-* sections found; the probe is broken`);
 
-  const missing = sections.filter((name) => !doc.includes(name));
+  /* Scope. A name in the verification preamble proves only that the section exists, which the
+     filesystem already said. Guidance starts where the analysis does. */
+  const guidance = doc.slice(doc.indexOf('## What the reviews actually found'));
+  assert.ok(guidance.length > 5000, 'the analysis sections are no longer where this expects');
+
+  /* Boundary. `ona-training` is a prefix of `ona-training-form`, `ona-training-iframe` and four
+     more, so a plain substring search lets an unmapped section be "covered" by a longer name
+     that happens to start the same way. Match the backticked token the document writes. */
+  const named = new Set([...guidance.matchAll(/`([a-z0-9-]+)`/g)].map((match) => match[1]));
+
+  /* The document is allowed to treat the sourcing clones collectively -- it does, in the kit
+     row and the gap row -- but then the collective claim is the thing to check: the phrase has
+     to be there and the group has to be the size it says. */
+  const clones = sections.filter((name) => /^ona-(wholesale-|traning-)?sourcing(-v\d+)?$/.test(name));
+  assert.equal(clones.length, 10, 'the sourcing clone group is no longer ten sections');
+  assert.ok(guidance.includes('ten sourcing clones'), 'the kit no longer names the sourcing clones as a group');
+  assert.ok(guidance.includes('the **10** `*-sourcing-v*` clones'), 'the kit row no longer states the group size');
+
+  const covered = new Set([...named, ...clones]);
+  const missing = sections.filter((name) => !covered.has(name)).sort();
   assert.deepEqual(
     missing,
     [],
-    `these sections exist but appear nowhere in docs/component-kit.md: ${missing.join(', ')}`
+    `these sections have no mapping and no declared gap in docs/component-kit.md: ${missing.join(', ')}`
+  );
+});
+
+/*
+ * "Seven sections carry behaviour" sat above a table of eight, and the prose below it
+ * enumerated all eight -- three forms, three that stay, `ona-bookings-top` and
+ * `ona-unique-coffees` -- while totalling them as seven. The table is the measurable thing.
+ */
+test('the behavioural count is the length of the table above it', () => {
+  const scope = doc.slice(doc.indexOf('## What the kit does not cover'), doc.indexOf('## Known gaps'));
+  const rows = scope.split('\n').filter((line) => /^\| `ona-[a-z-]+`/.test(line));
+
+  assert.ok(rows.length > 3, `only ${rows.length} behavioural rows found; the probe is broken`);
+  assert.ok(
+    new RegExp(`${NUMBER_WORDS[rows.length]} sections carry behaviour`, "i").test(scope),
+    `the summary should say ${NUMBER_WORDS[rows.length]} sections carry behaviour, for ${rows.length} table rows`
   );
 });
