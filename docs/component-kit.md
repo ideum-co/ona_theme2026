@@ -14,7 +14,7 @@ Read this before using the mapping. This document has two halves and they are
 not equally trustworthy.
 
 **Measured and guarded by `tests/component-kit.test.mjs`:** the section
-inventory (45 sections, all referenced), the duplication groups (parsed from
+inventory (46 sections, all referenced), the duplication groups (parsed from
 schemas), which components exist, which legacy sections style themselves,
 which carry a form or a metafield, and that the sourcing clones have no
 enabled blocks.
@@ -34,7 +34,7 @@ invisible, before it changes anything.
 
 ## What the reviews actually found
 
-The theme ships **45 `ona-*` sections**, and the first thing to say about them is
+The theme ships **46 `ona-*` sections**, and the first thing to say about them is
 what is *not* true: none of them is dead. Every one is referenced by a template,
 so there is nothing to delete today — a section goes only when the page that
 uses it has been converted. Four are used by more than one template:
@@ -260,10 +260,11 @@ loads its own script is doing something a `text` block cannot:
 | `ona-unique-coffees` (wholesale) | three named tabs that switch a three-image panel and its copy together, with `role="tabpanel"` and `aria-hidden` wiring | **nothing in Horizon does this.** `carousel` gives cards and dots, an `accordion` does not drive a separate panel. Keep the section, or write a tabs component — a decision, not a mapping |
 | `ona-donation-counter` (homepage) | reads `shop.metafields.custom.donation_total` and renders it as flip-counter digits | keep: it has its own schema and stylesheet and no generic block reproduces it |
 | `ona-bookings-top`, `ona-training-iframe` (bookings, training) | metafield-driven booking iframes | keep until the booking provider changes |
+| `ona-campaign-banner` (homepage) | reads `shop.metafields.custom.donation_end_date` and renders the campaign line only when it has a value, next to its own scoped stylesheet | keep: it is the other half of the counter — both read metafields written by the same recompute job, and a `text` block cannot omit itself when the date is unset |
 
 So the honest version of the collapse: the **layout** fragments go to eight
-components. Six sections carry behaviour — three of them onto Horizon's
-`contact-form`, three of them staying as they are — and `ona-unique-coffees`
+components. Seven sections carry behaviour — three of them onto Horizon's
+`contact-form`, four of them staying as they are — and `ona-unique-coffees`
 is the one section on the wholesale page that stage 2 cannot convert without a
 decision first.
 
@@ -356,7 +357,7 @@ next one to have happened.
 3. **Barista courses**, which is the same five conversions again.
 4. **About**, then **learn**.
 5. **Delete each section as its last use goes.** Nothing is unused today — all
-   45 are referenced — so there is no up-front sweep to do. The four shared
+   46 are referenced — so there is no up-front sweep to do. The four shared
    sections above are the only ones whose deletion needs more than one page
    converted.
 6. **Tokens**: the 38 `custom` presets and the 19 padding values, once the
