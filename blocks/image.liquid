@@ -58,21 +58,36 @@
   {%- endif -%}
 {% endcapture %}
 
+{%- liquid
+  assign shape = block_settings.decorative_shape
+  if shape == 'none'
+    assign shape = blank
+  endif
+-%}
+
+{%- capture decoration -%}
+  {%- if shape != blank -%}
+    {%- render 'decorative-shape', shape: shape, color: block_settings.decorative_shape_color -%}
+  {%- endif -%}
+{%- endcapture -%}
+
 {% if block_settings.link == blank %}
   <div
-    class="{{ class }}"
+    class="{{ class }}{% if shape != blank %} image-block--decorated{% endif %}"
     style="{{ style }}"
     {{ block.shopify_attributes }}
   >
+    {{ decoration }}
     {{ image }}
   </div>
 {% else %}
   <a
     href="{{ block_settings.link }}"
-    class="{{ class }}"
+    class="{{ class }}{% if shape != blank %} image-block--decorated{% endif %}"
     style="{{ style }}"
     {{ block.shopify_attributes }}
   >
+    {{ decoration }}
     {{ image }}
   </a>
 {% endif %}
@@ -91,6 +106,35 @@
     position: relative;
     aspect-ratio: var(--ratio);
     overflow: hidden;
+  }
+
+  /* Mirrors `assets/legacy-page-layout.css:348-349`, which is how the 15 legacy sections draw
+     this today: the shape fills the image's width, is anchored to its top, and is painted
+     behind it. Only a decorated block becomes a containing block, so an undecorated one is
+     positioned exactly as it was. */
+  .image-block--decorated {
+    position: relative;
+    /* Without a stacking context of its own, the shape's `z-index: -1` is resolved against the
+       nearest ancestor that has one -- so in a group with a background colour, where
+       contrast-override paints that colour on `.group-block`, the shape paints *behind* the
+       group and disappears. Isolating keeps the negative layer inside this block. */
+    isolation: isolate;
+  }
+
+  .image-block .decorative-shape {
+    position: absolute;
+    /* The padding lives on the block, and an absolutely positioned child is laid out against the
+       padding box -- so with any padding set the shape would sit at the block edge while
+       .spacing-style puts the image at the content edge, displacing the shape from the photo it
+       decorates. Inset by the same variables the block was given, so the shape tracks the image
+       rather than the box. */
+    inset-block-start: var(--padding-block-start, 0px);
+    inset-inline-start: var(--padding-inline-start, 0px);
+    inset-inline-end: var(--padding-inline-end, 0px);
+    z-index: -1;
+    max-width: calc(100% - var(--padding-inline-start, 0px) - var(--padding-inline-end, 0px));
+    height: auto;
+    pointer-events: none;
   }
 
   .image-block {
@@ -290,6 +334,33 @@
       "step": 1,
       "unit": "px",
       "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Decoration"
+    },
+    {
+      "type": "select",
+      "id": "decorative_shape",
+      "label": "Background shape",
+      "info": "A decorative blob painted behind the image. Each option is the shape a legacy ONA section draws today, so a rebuilt section can keep the one it had.",
+      "default": "none",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "sourcing", "label": "Sourcing" },
+        { "value": "about", "label": "About" },
+        { "value": "awards", "label": "Awards" },
+        { "value": "careers", "label": "Careers" },
+        { "value": "training", "label": "Training" },
+        { "value": "enquiry", "label": "Enquiry" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "decorative_shape_color",
+      "label": "Shape color",
+      "placeholder": "t:settings.default",
+      "visible_if": "{{ block.settings.decorative_shape != 'none' }}"
     },
     {
       "type": "header",
