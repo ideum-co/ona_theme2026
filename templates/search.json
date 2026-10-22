@@ -1,10 +1,4 @@
 /*
- * Re-emitted 2026-10-22 to force the GitHub-connected staging theme to re-pull
- * this template. At connect time these commerce-core templates (index, product*,
- * collection, cart, search, 404) were dropped from the theme while page/blog/article
- * templates synced, leaving the storefront home and these routes returning 404 on the
- * staging preview. Re-emitting them makes the theme sync pick them up now that all
- * referenced sections exist. Invisible at runtime (Shopify strips template comments).
  * ------------------------------------------------------------
  * IMPORTANT: The contents of this file are auto-generated.
  *
