@@ -1858,11 +1858,32 @@ test('every in-page anchor owned by a section setting is recorded as a blocker',
 
   assert.ok(owners.size >= 4, `only ${owners.size} setting-owned anchors found; the probe is broken`);
 
-  /* If the replacement ever gains an anchor setting, this row is the stale thing, not the theme. */
+  /* The row and the theme have to agree about whether this gap is still open. It was written
+     while `section` had no anchor setting; #284 added one, so the row now says solved. If the
+     setting is ever removed the row becomes a false all-clear, which is the worse direction --
+     so this checks both ways round rather than asserting one state. */
   const target = readFileSync(join(root, 'sections/section.liquid'), 'utf8');
   const schema = JSON.parse(target.match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/)[1]);
   const anchorSetting = (schema.settings ?? []).find((setting) => /^(id|anchor|section_id)$/.test(setting.id ?? ''));
-  assert.equal(anchorSetting, undefined, 'sections/section.liquid now has an anchor setting; the anchor gap row is stale');
+  const anchorRow = between('## Known gaps', '## Page by page')
+    .split('\n')
+    .filter((line) => /^\|/.test(line))
+    .find((row) => /anchor/i.test(row.split('|')[1] ?? '')) ?? '';
+  const claimsSolved = /\*\*Solved\*\*/.test(anchorRow);
+  assert.equal(
+    claimsSolved,
+    anchorSetting !== undefined,
+    anchorSetting
+      ? 'sections/section.liquid has an anchor setting but the gap row still reads as an open blocker'
+      : 'the gap row says the anchor is solved but sections/section.liquid has no anchor setting'
+  );
+  if (anchorSetting) {
+    assert.match(
+      anchorRow,
+      /top-level `section`|`group`/,
+      'the solved row does not say the anchor is per-section, so collapsing the four into group blocks reads as safe'
+    );
+  }
 
   /* The document has to state the OWNERSHIP, not merely mention both names somewhere in one
      row. Two earlier versions were satisfied by a row that happened to contain every section
