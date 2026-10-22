@@ -1,3 +1,4 @@
+{% render 'ona-band', section: section %}
 <div class="wholesale-form pop-up-form">
   <div class="form-box">
     <div class="box">
@@ -86,7 +87,18 @@
 {% schema %}
 {
   "name": "Wholesale video",
-  "settings": [],
+  "settings": [
+    {
+      "type": "header",
+      "content": "Band"
+    },
+    {
+      "type": "color",
+      "id": "band_background",
+      "label": "Band background",
+      "info": "Full-bleed colour behind this section. Leave blank to use the page background. Text and buttons are contrasted automatically."
+    }
+  ],
   "presets": [
     {
       "name": "Wholesale video"
