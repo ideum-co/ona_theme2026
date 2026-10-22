@@ -42,8 +42,11 @@
   is_brewguide_article) evaluated false even though the article's own accentuate.* metafields
   were confirmed populated via the Admin API. Printed unconditionally, before the blog-handle
   gate, so it survives into the raw response regardless of which branch actually runs.
+  content_brew_guide is raw HTML (per this file's own doc comment) -- stripped, escaped and
+  truncated rather than interpolated as-is, since an unescaped "-->" inside it would close this
+  comment early and dump markup mid-page instead of just corrupting the diagnostic.
 {%- endcomment -%}
-<!-- BREWGUIDE_RECIPE_DEBUG blog_handle="{{ article.blog.handle }}" is_brewguide_article="{{ is_brewguide_article }}" content_brew_guide="{{ article.metafields.accentuate.content_brew_guide }}" title_item="{{ article.metafields.accentuate.title_item }}" -->
+<!-- BREWGUIDE_RECIPE_DEBUG blog_handle="{{ article.blog.handle | escape }}" is_brewguide_article="{{ is_brewguide_article }}" content_brew_guide="{{ article.metafields.accentuate.content_brew_guide | strip_html | escape | truncate: 120 }}" title_item="{{ article.metafields.accentuate.title_item | escape }}" -->
 
 {%- if is_brewguide_article -%}
   {%- liquid
