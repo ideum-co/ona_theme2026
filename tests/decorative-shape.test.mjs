@@ -201,3 +201,44 @@ test('a shape on a negative layer is isolated inside its own block', () => {
       'ancestor background paints over it'
   );
 });
+
+/*
+ * The block carries `spacing-style` and its `--padding-*` variables, and an absolutely
+ * positioned child is laid out against the padding box -- so insets of 0 put the shape at the
+ * block edge while the image sits at the content edge. With any padding set the decoration
+ * drifts off the photo by exactly the configured amount, which looks like a design choice
+ * rather than a bug. The insets have to reference the same variables the block was given.
+ * Codex, #293.
+ */
+test('the shape is inset by the block padding, not pinned to the block edge', () => {
+  const css = read('blocks/image.liquid').match(/\{%\s*stylesheet\s*%\}([\s\S]*?)\{%\s*endstylesheet\s*%\}/)[1];
+  const rule = css.match(/\.image-block \.decorative-shape\s*\{([^}]*)\}/);
+  assert.ok(rule, 'no rule positions the decorative shape');
+  const body = rule[1];
+
+  assert.match(body, /position\s*:\s*absolute/, 'the shape is not absolutely positioned');
+
+  for (const [property, variable] of [
+    ['inset-block-start', '--padding-block-start'],
+    ['inset-inline-start', '--padding-inline-start'],
+    ['inset-inline-end', '--padding-inline-end'],
+  ]) {
+    const declared = body.match(new RegExp(`${property}\\s*:\\s*([^;]+);`));
+    assert.ok(declared, `the shape sets no ${property}`);
+    assert.match(
+      declared[1],
+      new RegExp(`var\\(\\s*${variable}`),
+      `${property} is "${declared[1].trim()}" -- it must follow ${variable} or the shape ` +
+        'drifts off the image by the configured padding'
+    );
+  }
+
+  const maxWidth = body.match(/max-width\s*:\s*([^;]+);/);
+  assert.ok(maxWidth, 'the shape has no max-width, so a wide shape can overflow the block');
+  assert.match(
+    maxWidth[1],
+    /--padding-inline-start[\s\S]*--padding-inline-end/,
+    `max-width is "${maxWidth[1].trim()}" -- it measures the padding box, not the content box ` +
+      'the image occupies'
+  );
+});
