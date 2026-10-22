@@ -13,8 +13,14 @@
   custom properties, {% stylesheet %}), not a copy of the old pre-Horizon markup (inline
   <style>, decorative animated SVG, raw <table>s).
 
-  Scoped to the Brew Guides blog only (article.blog.handle == 'brewguides') so it stays inert
-  on News/Journal/other blogs that share templates/article.json.
+  Scoped to the Brew Guides blog only (blog.handle == 'brewguides') so it stays inert on
+  News/Journal/other blogs that share templates/article.json. Gates on the global `blog` object,
+  not `article.blog.handle`: a live diagnostic (an unconditional debug comment printing both)
+  proved `article.blog.handle` resolves BLANK in this theme's actual rendering of this section,
+  even though `article.metafields.*` on the very same object reads correctly -- so `article` is
+  genuinely populated here, just not its `.blog` property. `blog` is the simpler, standard
+  Liquid context object for "the blog the current page belongs to" and resolved correctly in
+  the same diagnostic.
 
   Metafield types, see reference_shopify_json_string_metafield_no_value:
     - accentuate.content_brew_guide   string (raw HTML)            -> no .value, read directly
@@ -30,23 +36,16 @@
 
 {%- liquid
   assign is_brewguide_article = false
-  if article.blog.handle == 'brewguides'
+  if blog.handle == 'brewguides'
     assign is_brewguide_article = true
   endif
 -%}
 
 {%- comment -%}
-  TEMP DIAGNOSTIC -- remove once live rendering is confirmed. This section's own
-  shopify-section wrapper was confirmed present but empty on the first deploy after
-  templates/article.article.json started resolving, meaning has_any_content (or
-  is_brewguide_article) evaluated false even though the article's own accentuate.* metafields
-  were confirmed populated via the Admin API. Printed unconditionally, before the blog-handle
-  gate, so it survives into the raw response regardless of which branch actually runs.
-  content_brew_guide is raw HTML (per this file's own doc comment) -- stripped, escaped and
-  truncated rather than interpolated as-is, since an unescaped "-->" inside it would close this
-  comment early and dump markup mid-page instead of just corrupting the diagnostic.
+  TEMP DIAGNOSTIC -- remove once live rendering confirms blog.handle resolves correctly here.
+  Placed unconditionally so it survives regardless of is_brewguide_article's value.
 {%- endcomment -%}
-<!-- BREWGUIDE_RECIPE_DEBUG blog_handle="{{ article.blog.handle | escape }}" is_brewguide_article="{{ is_brewguide_article }}" content_brew_guide="{{ article.metafields.accentuate.content_brew_guide | strip_html | escape | truncate: 120 }}" title_item="{{ article.metafields.accentuate.title_item | escape }}" -->
+<!-- BREWGUIDE_RECIPE_DEBUG blog_handle="{{ blog.handle | escape }}" is_brewguide_article="{{ is_brewguide_article }}" -->
 
 {%- if is_brewguide_article -%}
   {%- liquid

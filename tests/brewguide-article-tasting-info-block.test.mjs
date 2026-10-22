@@ -40,9 +40,13 @@ test('templates/article.json nests this block in main-blog-post\'s own block_ord
   );
 });
 
-test('every piece is gated on article.blog.handle == \'brewguides\', so News/Journal articles stay untouched', () => {
-  const gateIndex = code.indexOf("if article.blog.handle == 'brewguides'");
-  assert.ok(gateIndex > -1, 'must gate on article.blog.handle, not render unconditionally for every blog sharing templates/article.json');
+test('every piece is gated on blog.handle == \'brewguides\', so News/Journal articles stay untouched', () => {
+  // A live diagnostic (PR #286/#287) proved article.blog.handle resolves blank in this theme's
+  // actual rendering of this block, even though article.metafields.* on the same object reads
+  // correctly -- so the gate uses the simpler, standard `blog` context object instead.
+  const gateIndex = code.indexOf("if blog.handle == 'brewguides'");
+  assert.ok(gateIndex > -1, 'must gate on blog.handle, not render unconditionally for every blog sharing templates/article.json');
+  assert.ok(!code.includes('article.blog.handle'), 'article.blog.handle resolves blank in this theme -- must not reintroduce it as the gate');
   const ifBrewguideIndex = code.indexOf('if is_brewguide_article');
   assert.ok(ifBrewguideIndex > gateIndex, 'the blog-handle check must set the flag the rendering is gated on');
 });
