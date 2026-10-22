@@ -114,6 +114,11 @@
      positioned exactly as it was. */
   .image-block--decorated {
     position: relative;
+    /* Without a stacking context of its own, the shape's `z-index: -1` is resolved against the
+       nearest ancestor that has one -- so in a group with a background colour, where
+       contrast-override paints that colour on `.group-block`, the shape paints *behind* the
+       group and disappears. Isolating keeps the negative layer inside this block. */
+    isolation: isolate;
   }
 
   .image-block .decorative-shape {

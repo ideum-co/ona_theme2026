@@ -174,3 +174,30 @@ test('an image can carry a shape, and an undecorated one is untouched', () => {
     'the decorated modifier is not emitted on both branches and used once in CSS'
   );
 });
+
+/*
+ * The shape sits behind the image on a negative layer. A negative z-index is resolved against
+ * the nearest ancestor stacking context, not the element's parent -- so when the block sits in
+ * a group with a background colour, contrast-override paints that colour on `.group-block` and
+ * the shape is painted behind the group entirely and vanishes. The decorated block therefore has
+ * to establish a stacking context of its own. Codex, #293.
+ */
+test('a shape on a negative layer is isolated inside its own block', () => {
+  const css = read('blocks/image.liquid').match(/\{%\s*stylesheet\s*%\}([\s\S]*?)\{%\s*endstylesheet\s*%\}/)[1];
+  const ruleFor = (selector) => {
+    const match = css.match(new RegExp(`${selector.replace('.', '\\.')}\\s*\\{([^}]*)\\}`));
+    assert.ok(match, `no rule for ${selector}`);
+    return match[1];
+  };
+
+  const shape = ruleFor('.image-block .decorative-shape');
+  const zIndex = shape.match(/z-index\s*:\s*(-?\d+)/);
+  if (!zIndex || Number(zIndex[1]) >= 0) return;
+
+  const decorated = ruleFor('.image-block--decorated');
+  assert.ok(
+    /isolation\s*:\s*isolate/.test(decorated) || /z-index\s*:\s*\d+/.test(decorated),
+    'the shape is on a negative layer but its block establishes no stacking context, so an ' +
+      'ancestor background paints over it'
+  );
+});
