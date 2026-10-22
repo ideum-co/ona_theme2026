@@ -39,15 +39,15 @@
   assign country = p.metafields.custom.country.value | strip
 -%}
 
-{%- capture country_map -%}{%- if country != blank and section.settings.show_map != false -%}{%- render 'country-map', country: country -%}{%- endif -%}{%- endcapture -%}
+{%- capture country_map -%}{%- if country != blank -%}{%- render 'country-map', country: country -%}{%- endif -%}{%- endcapture -%}
 
 {%- if has_specs -%}
   {%- if section.settings.background_color != blank -%}
     {%- render 'contrast-override', background_color: section.settings.background_color, section_id: section.id -%}
   {%- endif -%}
   <section
-    class="origin-detail section origin-detail--media-{{ section.settings.media_position | default: 'left' }}{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
-    style="--origin-map-color: {{ section.settings.map_color }}; --origin-map-size: {{ section.settings.map_size | default: 180 }}px; padding-block-start: {{ section.settings.padding_block_start | default: 0 }}px; padding-block-end: {{ section.settings.padding_block_end | default: 0 }}px;"
+    class="origin-detail section{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+    style="--origin-map-color: {{ section.settings.map_color }};"
     {{ section.shopify_attributes }}
   >
     <div class="origin-detail__inner">
@@ -131,18 +131,6 @@
       grid-template-columns: 1fr 1fr;
       align-items: stretch;
     }
-
-    /* Image on the right: swap the two columns. DOM order stays media-then-panel, so on
-       mobile (single column) the image still comes first regardless of this setting. */
-    .origin-detail--media-right .origin-detail__media {
-      grid-column: 2;
-      grid-row: 1;
-    }
-
-    .origin-detail--media-right .origin-detail__panel {
-      grid-column: 1;
-      grid-row: 1;
-    }
   }
 
   .origin-detail__media {
@@ -205,7 +193,7 @@
 
   .country-map__svg {
     display: block;
-    width: clamp(120px, 16vw, var(--origin-map-size, 200px));
+    width: clamp(120px, 16vw, 200px);
     height: auto;
   }
 
@@ -238,10 +226,6 @@
   "enabled_on": { "templates": ["product"] },
   "settings": [
     {
-      "type": "header",
-      "content": "Content"
-    },
-    {
       "type": "text",
       "id": "heading",
       "label": "Heading",
@@ -261,46 +245,6 @@
       "default": "h4"
     },
     {
-      "type": "header",
-      "content": "Layout"
-    },
-    {
-      "type": "select",
-      "id": "media_position",
-      "label": "Image position",
-      "info": "On desktop. The image always stacks on top on mobile.",
-      "options": [
-        { "value": "left", "label": "Left" },
-        { "value": "right", "label": "Right" }
-      ],
-      "default": "left"
-    },
-    {
-      "type": "header",
-      "content": "Country map"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_map",
-      "label": "Show country map",
-      "info": "Shown only when the product's Country metafield is set and has a map on file.",
-      "default": true
-    },
-    {
-      "type": "range",
-      "id": "map_size",
-      "label": "Map size",
-      "min": 100,
-      "max": 280,
-      "step": 10,
-      "unit": "px",
-      "default": 180
-    },
-    {
-      "type": "header",
-      "content": "Colours"
-    },
-    {
       "type": "color",
       "id": "background_color",
       "label": "t:settings.background_color",
@@ -312,30 +256,6 @@
       "label": "Labels & map colour",
       "info": "Used for the small labels and the country map outline.",
       "default": "#751132"
-    },
-    {
-      "type": "header",
-      "content": "t:content.padding"
-    },
-    {
-      "type": "range",
-      "id": "padding_block_start",
-      "label": "t:settings.top",
-      "min": 0,
-      "max": 120,
-      "step": 2,
-      "unit": "px",
-      "default": 0
-    },
-    {
-      "type": "range",
-      "id": "padding_block_end",
-      "label": "t:settings.bottom",
-      "min": 0,
-      "max": 120,
-      "step": 2,
-      "unit": "px",
-      "default": 0
     }
   ],
   "presets": [
