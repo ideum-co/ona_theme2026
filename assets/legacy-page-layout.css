@@ -116,6 +116,33 @@
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings) h3 { font-size:var(--font-h3--size, 2rem); line-height:1.4; margin:0 0 18px; }
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings) p { font-size:var(--font-paragraph--size, 0.875rem); line-height:1.65; }
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.training-bookings) :is(img,video,iframe) { max-width:100%; }
+
+/*
+ * The eyebrow above a section heading.
+ *
+ * Eleven legacy sections open with `<span class="subtitle">`, and nothing in this theme ever
+ * styled it -- the class came over with the markup, its rules did not. So the label that
+ * introduces the heading rendered as an inline run of body copy butted against the `<h2>`,
+ * with seven of them on /pages/wholesale alone. It is a block, not a span, because the whole
+ * point of it is to sit on its own line above the heading.
+ *
+ * Four of those seven are empty: the section ships the element whether or not the setting has
+ * a value, and an empty inline box still occupies a line box and pushes the heading down.
+ */
+#MainContent .subtitle {
+  display: block;
+  margin: 0 0 14px;
+  font-size: var(--font-paragraph--size, 0.875rem);
+  line-height: 1.4;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  /* No colour of its own. A muted token would read as the obvious choice for a label, but
+     --color-foreground-muted composites the foreground at --opacity-muted-text (0.6), which
+     puts 14px text at 4.42:1 on the page's cream and 4.21:1 on the sand bands -- under the
+     4.5:1 that normal-size text needs (Codex, #300). The case and the tracking carry the
+     de-emphasis instead, and inheriting means the label follows whatever band it sits on. */
+}
+#MainContent .subtitle:empty { display: none; }
 #MainContent .banner-detail-top { position:relative; isolation:isolate; display:flex; align-items:center; min-height:clamp(260px,38vw,540px); }
 #MainContent .banner-detail-top .img-bg { position:absolute; inset:0; z-index:-1; background-size:cover; background-position:center; }
 #MainContent .banner-detail-top .mobile-show { display:none; }
