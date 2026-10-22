@@ -1,0 +1,105 @@
+{%- doc -%}
+  The Tastes Like / Roast info row the 2026 theme migration dropped from individual Brew Guides
+  blog articles. A block inside the existing main-blog-post section (templates/article.json),
+  placed in its block_order right after the title block -- matching
+  sections/article-template.liquid in Shopify theme 147471433919 ("ONA - OLD 11/26/2025"), the
+  last pre-cutover snapshot, where this info sat directly under the heading, above the featured
+  image and article body.
+
+  Split out of sections/brewguide-article-info.liquid (which still carries the brew recipe and
+  the cross-sell, both in their own sibling section placed after the article body) and, on a
+  second round, out of being its own sibling section entirely: Codex on PR #282 first caught
+  that bundling all three pieces into one section placed after main-blog-post put the tasting
+  info below the full article body instead of near the title; the fix after that (a second
+  sibling section placed BEFORE main-blog-post) put it above the article's own <h1> instead,
+  since main-blog-post's title is the first block INSIDE that section, not before it. A block
+  nested inside main-blog-post's own block_order is the only way to land between the title and
+  the rest of the post -- main-blog-post's schema declares "@theme" and "@app" block slots
+  alongside its private _blog-post-* ones, so a custom theme block is accepted there.
+
+  No `.section` wrapper here (unlike the sibling recipe/cross-sell section): this renders inside
+  main-blog-post's own page-width wrapper already, as a sibling of the title/date/image/content
+  blocks, so wrapping it in a second nested .section would double up the grid.
+
+  Scoped to the Brew Guides blog only (article.blog.handle == 'brewguides') so it stays inert on
+  News/Journal/other blogs that share templates/article.json.
+
+  Metafield types, see reference_shopify_json_string_metafield_no_value:
+    - accentuate.tastes_like   string   -> no .value, read directly
+    - accentuate.roast         string   -> no .value, read directly
+{%- enddoc -%}
+
+{%- liquid
+  assign is_brewguide_article = false
+  if article.blog.handle == 'brewguides'
+    assign is_brewguide_article = true
+  endif
+-%}
+
+{%- if is_brewguide_article -%}
+  {%- liquid
+    assign tastes_like = article.metafields.accentuate.tastes_like
+    assign roast = article.metafields.accentuate.roast
+
+    assign has_info = false
+    if tastes_like != blank or roast != blank
+      assign has_info = true
+    endif
+  -%}
+
+  {%- if has_info -%}
+    <dl class="brewguide-article-info" {{ block.shopify_attributes }}>
+      {%- if tastes_like != blank -%}
+        <div class="brewguide-article-info__row">
+          <dt class="brewguide-article-info__label">Tastes like</dt>
+          <dd class="brewguide-article-info__value">{{ tastes_like }}</dd>
+        </div>
+      {%- endif -%}
+      {%- if roast != blank -%}
+        <div class="brewguide-article-info__row">
+          <dt class="brewguide-article-info__label">Roast</dt>
+          <dd class="brewguide-article-info__value">{{ roast }}</dd>
+        </div>
+      {%- endif -%}
+    </dl>
+  {%- endif -%}
+{%- endif -%}
+
+{% stylesheet %}
+  .brewguide-article-info {
+    margin: 0;
+    display: grid;
+    gap: var(--gap-sm);
+    width: 100%;
+  }
+
+  .brewguide-article-info__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-sm);
+    align-items: baseline;
+  }
+
+  .brewguide-article-info__label {
+    font-size: var(--font-h6--size);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .brewguide-article-info__value {
+    margin: 0;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Brew guide tasting info",
+  "tag": null,
+  "presets": [
+    {
+      "name": "Brew guide tasting info"
+    }
+  ]
+}
+{% endschema %}

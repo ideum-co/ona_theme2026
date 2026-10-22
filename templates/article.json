@@ -37,6 +37,10 @@
           },
           "blocks": {}
         },
+        "blog-post-tasting-info": {
+          "type": "brewguide-article-tasting-info",
+          "settings": {}
+        },
         "blog-post-details": {
           "type": "_blog-post-info-text",
           "name": "t:names.details",
@@ -80,6 +84,7 @@
       },
       "block_order": [
         "blog-post-title",
+        "blog-post-tasting-info",
         "blog-post-details",
         "blog-post-image",
         "blog-post-content"
@@ -90,9 +95,14 @@
         "padding-block-start": 40,
         "padding-block-end": 80
       }
+    },
+    "brewguide-info": {
+      "type": "brewguide-article-info",
+      "settings": {}
     }
   },
   "order": [
-    "section"
+    "section",
+    "brewguide-info"
   ]
 }
