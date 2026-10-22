@@ -57,65 +57,89 @@
     if cross_sell_handle != blank
       assign cross_sell_product = all_products[cross_sell_handle]
     endif
+
+    assign has_info = false
+    if tastes_like != blank or roast != blank
+      assign has_info = true
+    endif
+
+    assign has_recipe = false
+    if guide_intro != blank or spec_count > 0
+      assign has_recipe = true
+    endif
+
+    assign has_any_content = false
+    if has_info or has_recipe or cross_sell_product != blank
+      assign has_any_content = true
+    endif
   -%}
 
-  {%- if tastes_like != blank or roast != blank -%}
-    <div class="brewguide-article-info">
-      {%- if tastes_like != blank -%}
-        <div class="brewguide-article-info__row">
-          <span class="brewguide-article-info__label">Tastes like</span>
-          <span class="brewguide-article-info__value">{{ tastes_like }}</span>
+  {%- if has_any_content -%}
+    {#- .section is Horizon's own page-width grid wrapper (assets/base.css): a direct child of
+        it is auto-placed in the centred content column with the theme's standard gutters.
+        Without it this content would render edge-to-edge against the viewport, since it isn't
+        nested inside the existing main-blog-post section -- it's a sibling top-level section in
+        templates/article.json, so it needs its own instance of that wrapper. #}
+    <div class="section">
+      {%- if has_info -%}
+        <div class="brewguide-article-info">
+          {%- if tastes_like != blank -%}
+            <div class="brewguide-article-info__row">
+              <span class="brewguide-article-info__label">Tastes like</span>
+              <span class="brewguide-article-info__value">{{ tastes_like }}</span>
+            </div>
+          {%- endif -%}
+          {%- if roast != blank -%}
+            <div class="brewguide-article-info__row">
+              <span class="brewguide-article-info__label">Roast</span>
+              <span class="brewguide-article-info__value">{{ roast }}</span>
+            </div>
+          {%- endif -%}
         </div>
       {%- endif -%}
-      {%- if roast != blank -%}
-        <div class="brewguide-article-info__row">
-          <span class="brewguide-article-info__label">Roast</span>
-          <span class="brewguide-article-info__value">{{ roast }}</span>
+
+      {%- if has_recipe -%}
+        <div class="brewguide-article-recipe">
+          <h2 class="brewguide-article-recipe__heading">Brew guide</h2>
+          {%- if guide_intro != blank -%}
+            <div class="brewguide-article-recipe__intro rte">{{ guide_intro }}</div>
+          {%- endif -%}
+          {%- if spec_count > 0 -%}
+            {%- assign last_index = spec_count | minus: 1 -%}
+            <dl class="brewguide-article-recipe__spec">
+              {%- for index in (0..last_index) -%}
+                {%- assign label = spec_labels[index] | strip -%}
+                {%- assign value = spec_values[index] | strip -%}
+                {%- if label != blank and value != blank -%}
+                  <div class="brewguide-article-recipe__row">
+                    <dt class="brewguide-article-recipe__label">{{ label | upcase }}</dt>
+                    <dd class="brewguide-article-recipe__value">{{ value }}</dd>
+                  </div>
+                {%- endif -%}
+              {%- endfor -%}
+            </dl>
+          {%- endif -%}
         </div>
       {%- endif -%}
-    </div>
-  {%- endif -%}
 
-  {%- if guide_intro != blank or spec_count > 0 -%}
-    <div class="brewguide-article-recipe">
-      <h2 class="brewguide-article-recipe__heading">Brew guide</h2>
-      {%- if guide_intro != blank -%}
-        <div class="brewguide-article-recipe__intro rte">{{ guide_intro }}</div>
+      {%- if cross_sell_product != blank -%}
+        <div class="brewguide-article-cross-sell">
+          {%- if cross_sell_product.featured_media != blank -%}
+            <a href="{{ cross_sell_product.url }}" class="brewguide-article-cross-sell__image" aria-hidden="true" tabindex="-1">
+              {{
+                cross_sell_product.featured_media
+                | image_url: width: 300
+                | image_tag: loading: 'lazy', widths: '150, 300'
+              }}
+            </a>
+          {%- endif -%}
+          <div class="brewguide-article-cross-sell__content">
+            <h3 class="brewguide-article-cross-sell__heading">Running low on this coffee?</h3>
+            <p class="brewguide-article-cross-sell__title">{{ cross_sell_product.title }}</p>
+            <a href="{{ cross_sell_product.url }}" class="button brewguide-article-cross-sell__link">Buy another bag</a>
+          </div>
+        </div>
       {%- endif -%}
-      {%- if spec_count > 0 -%}
-        {%- assign last_index = spec_count | minus: 1 -%}
-        <dl class="brewguide-article-recipe__spec">
-          {%- for index in (0..last_index) -%}
-            {%- assign label = spec_labels[index] | strip -%}
-            {%- assign value = spec_values[index] | strip -%}
-            {%- if label != blank and value != blank -%}
-              <div class="brewguide-article-recipe__row">
-                <dt class="brewguide-article-recipe__label">{{ label | upcase }}</dt>
-                <dd class="brewguide-article-recipe__value">{{ value }}</dd>
-              </div>
-            {%- endif -%}
-          {%- endfor -%}
-        </dl>
-      {%- endif -%}
-    </div>
-  {%- endif -%}
-
-  {%- if cross_sell_product != blank -%}
-    <div class="brewguide-article-cross-sell">
-      {%- if cross_sell_product.featured_media != blank -%}
-        <a href="{{ cross_sell_product.url }}" class="brewguide-article-cross-sell__image" aria-hidden="true" tabindex="-1">
-          {{
-            cross_sell_product.featured_media
-            | image_url: width: 300
-            | image_tag: loading: 'lazy', widths: '150, 300'
-          }}
-        </a>
-      {%- endif -%}
-      <div class="brewguide-article-cross-sell__content">
-        <h3 class="brewguide-article-cross-sell__heading">Running low on this coffee?</h3>
-        <p class="brewguide-article-cross-sell__title">{{ cross_sell_product.title }}</p>
-        <a href="{{ cross_sell_product.url }}" class="button brewguide-article-cross-sell__link">Buy another bag</a>
-      </div>
     </div>
   {%- endif -%}
 {%- endif -%}
@@ -239,7 +263,6 @@
 {% schema %}
 {
   "name": "Brew guide article info",
-  "tag": null,
   "presets": [
     {
       "name": "Brew guide article info"

@@ -32,13 +32,20 @@ test('every piece is gated on article.blog.handle == \'brewguides\', so News/Jou
 });
 
 test('tastes like / roast info only renders when at least one of the two has a value', () => {
-  assert.match(code, /\{%-\s*if tastes_like != blank or roast != blank\s*-%\}/, 'the info block must not render when both accentuate.tastes_like and accentuate.roast are blank');
+  assert.match(code, /assign has_info = false\s*\n\s*if tastes_like != blank or roast != blank\s*\n\s*assign has_info = true/, 'has_info must only be set when accentuate.tastes_like or accentuate.roast is non-blank');
+  assert.match(code, /\{%-\s*if has_info\s*-%\}/, 'the info block must be gated on has_info, not render unconditionally');
   assert.match(code, /\{%-\s*if tastes_like != blank\s*-%\}/, 'tastes_like row must be independently guarded');
   assert.match(code, /\{%-\s*if roast != blank\s*-%\}/, 'roast row must be independently guarded, so one being blank does not hide the other');
 });
 
+test('the whole section is wrapped in .section (Horizon\'s page-width grid) only when there is something to show', () => {
+  assert.match(code, /assign has_any_content = false\s*\n\s*if has_info or has_recipe or cross_sell_product != blank\s*\n\s*assign has_any_content = true/, 'has_any_content must be true only when at least one of the three pieces will render');
+  assert.match(code, /\{%-\s*if has_any_content\s*-%\}[\s\S]*?<div class="section">/, 'the .section wrapper must be gated on has_any_content, never emitted empty');
+});
+
 test('the recipe block only renders when there is an intro or at least one spec pair, matching the pruning-safe pattern in blocks/product-brew-guide.liquid', () => {
-  assert.match(code, /\{%-\s*if guide_intro != blank or spec_count > 0\s*-%\}/, 'must gate the whole recipe block on intro-or-specs, not render an empty "Brew guide" heading over nothing');
+  assert.match(code, /assign has_recipe = false\s*\n\s*if guide_intro != blank or spec_count > 0\s*\n\s*assign has_recipe = true/, 'has_recipe must only be set when there is an intro or at least one spec pair');
+  assert.match(code, /\{%-\s*if has_recipe\s*-%\}/, 'the recipe block must be gated on has_recipe, not render an empty "Brew guide" heading over nothing');
 });
 
 test('spec_labels and spec_values are paired only as far as both lists go, same discipline as the product-level brew guide', () => {
@@ -71,4 +78,11 @@ test('the section schema has no visible settings and a preset, matching the othe
   const schema = JSON.parse(code.slice(schemaStart + '{% schema %}'.length, schemaEnd));
   assert.equal(schema.name, 'Brew guide article info');
   assert.ok(Array.isArray(schema.presets) && schema.presets.length === 1, 'must have exactly one preset so it can be added back from the theme editor if ever removed');
+  // Codex, PR #282: a section schema only accepts tag values of article/aside/div/footer/
+  // header/section (unlike a theme block, where tag: null is valid and means "no wrapper").
+  // This is a section (referenced directly in templates/article.json, not nested inside
+  // another section's blocks), so tag: null here would have made the schema itself invalid
+  // and the file unsyncable. Omitting the key entirely falls back to Shopify's own <div>
+  // default, which is what's wanted.
+  assert.equal(schema.tag, undefined, 'tag must be omitted (section schema does not accept tag: null the way a theme block schema does)');
 });
