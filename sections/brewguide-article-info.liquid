@@ -75,11 +75,13 @@
   -%}
 
   {%- if has_any_content -%}
-    {#- .section is Horizon's own page-width grid wrapper (assets/base.css): a direct child of
-        it is auto-placed in the centred content column with the theme's standard gutters.
-        Without it this content would render edge-to-edge against the viewport, since it isn't
-        nested inside the existing main-blog-post section -- it's a sibling top-level section in
-        templates/article.json, so it needs its own instance of that wrapper. #}
+    {%- comment -%}
+      .section is Horizon's own page-width grid wrapper (assets/base.css): a direct child of
+      it is auto-placed in the centred content column with the theme's standard gutters.
+      Without it this content would render edge-to-edge against the viewport, since it isn't
+      nested inside the existing main-blog-post section -- it's a sibling top-level section in
+      templates/article.json, so it needs its own instance of that wrapper.
+    {%- endcomment -%}
     <div class="section">
       {%- if has_info -%}
         <div class="brewguide-article-info">
@@ -170,7 +172,7 @@
     gap: var(--gap-lg);
     max-width: 46rem;
     margin-inline: auto;
-    margin-block: var(--margin-3xl);
+    margin-block: var(--gap-3xl);
   }
 
   .brewguide-article-recipe__heading {
@@ -220,7 +222,7 @@
     gap: var(--gap-lg);
     padding: var(--padding-xl);
     border: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
-    border-radius: var(--style-border-radius-cards);
+    border-radius: var(--style-border-radius-popover);
     max-width: 46rem;
     margin-inline: auto;
   }
@@ -235,7 +237,7 @@
     display: block;
     width: 100%;
     height: auto;
-    border-radius: var(--style-border-radius-images);
+    border-radius: var(--style-border-radius-popover);
   }
 
   .brewguide-article-cross-sell__content {

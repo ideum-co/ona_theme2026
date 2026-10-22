@@ -86,3 +86,28 @@ test('the section schema has no visible settings and a preset, matching the othe
   // default, which is what's wanted.
   assert.equal(schema.tag, undefined, 'tag must be omitted (section schema does not accept tag: null the way a theme block schema does)');
 });
+
+test('no Jinja-style {# #} comment delimiters -- Liquid does not recognise them, so they would render as visible text', () => {
+  // Codex, PR #282: a {#- ... #} block around the .section wrapper's developer note rendered
+  // as literal customer-facing text on every brew-guide article, since Liquid has no such
+  // delimiter (that's Jinja2 syntax). The only valid Liquid comment form is
+  // {% comment %}...{% endcomment %} (or {%- comment -%} with whitespace control).
+  assert.doesNotMatch(source, /\{#/, 'must not contain any {# ... #} Jinja-style comment delimiter');
+  assert.match(source, /\{%-?\s*comment\s*-?%\}/, 'the developer note must use a real Liquid comment tag instead');
+});
+
+test('every spacing and radius token used is one already proven to resolve elsewhere in this theme, not a plausible-looking guess', () => {
+  // Codex, PR #282: --margin-3xl, --style-border-radius-cards and --style-border-radius-images
+  // are never declared anywhere in this theme (confirmed: this file was the ONLY one in the
+  // whole codebase referencing them before this fix) -- browsers silently discard a declaration
+  // naming an undefined custom property, so the margin and both border-radius rules had no
+  // effect at all. --gap-* and --style-border-radius-popover are both used successfully
+  // elsewhere (blocks/product-brew-guide.liquid for gap-*; sections/header.liquid,
+  // sections/product-hotspots.liquid, blocks/filters.liquid for the popover radius).
+  assert.doesNotMatch(code, /var\(--margin-3xl\)/, 'must not reference the undefined --margin-3xl token');
+  assert.doesNotMatch(code, /var\(--style-border-radius-cards\)/, 'must not reference the undefined --style-border-radius-cards token');
+  assert.doesNotMatch(code, /var\(--style-border-radius-images\)/, 'must not reference the undefined --style-border-radius-images token');
+  assert.match(code, /margin-block:\s*var\(--gap-3xl\)/, 'the recipe block spacing must use the proven --gap-3xl token instead');
+  const radiusUses = code.match(/border-radius:\s*var\(--style-border-radius-popover\)/g) || [];
+  assert.equal(radiusUses.length, 2, 'both the cross-sell card and its image must use the proven --style-border-radius-popover token');
+});
