@@ -4,12 +4,27 @@ import { cartPerformance } from '@theme/performance';
 import { CartErrorEvent, CartNoteUpdateEvent } from '@shopify/events';
 
 const PENDING = 'data-cart-note-pending';
+const UNSAVED = 'data-cart-note-unsaved';
 
 /**
  * Whether a note write is in flight. The flag lives on <html> because the accelerated checkout
  * buttons are rendered outside <cart-note>, so nothing closer reaches both.
  */
 const noteIsPending = () => document.documentElement.hasAttribute(PENDING);
+
+/**
+ * Whether a write has failed and the server does not hold what the shopper typed. Separate from
+ * PENDING because the two need opposite treatment: in flight means wait, unsaved means retry.
+ */
+const noteIsUnsaved = () => document.documentElement.hasAttribute(UNSAVED);
+
+/** Every mounted <cart-note>, so the document listener can reach one without a shared ancestor. */
+const notes = new Set();
+
+/** The flag is on <html> and the state is per instance, so it is recomputed, never toggled. */
+const refreshUnsaved = () => {
+  document.documentElement.toggleAttribute(UNSAVED, [...notes].some((note) => note.noteUnsaved));
+};
 
 /*
  * The hold, as something a cart morph cannot undo.
@@ -28,13 +43,26 @@ for (const type of ['click', 'keydown']) {
   document.addEventListener(
     type,
     (event) => {
-      if (!noteIsPending()) return;
+      const pending = noteIsPending();
+      if (!pending && !noteIsUnsaved()) return;
       const held = event.target instanceof Element ? event.target.closest('.additional-checkout-buttons') : null;
       if (!held) return;
       if (type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
       event.preventDefault();
       event.stopPropagation();
-      held.toggleAttribute('inert', true);
+
+      if (pending) {
+        held.toggleAttribute('inert', true);
+        return;
+      }
+
+      /* Not in flight, but the server does not hold what the shopper typed: the last write
+         failed. The blur that would have retried it has already happened -- focus left the
+         textarea on the first checkout attempt -- so this click is the only thing left that
+         can. Retry once per value and then stand aside: a shopper must never be locked out of
+         checkout by a note, and the failed write has already raised a CartErrorEvent, so they
+         are not losing it silently. */
+      for (const note of notes) note.retryOnce();
     },
     { capture: true }
   );
@@ -57,6 +85,40 @@ class CartNote extends Component {
 
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   #release;
+
+  /** @type {boolean} Set when a write fails, cleared when one lands. */
+  #unsaved = false;
+
+  /** @type {string | null} The value already retried from a checkout attempt, so a note that
+   *  keeps failing costs one retry rather than blocking checkout on every click. */
+  #retried = null;
+
+  get noteUnsaved() {
+    return this.#unsaved;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    notes.add(this);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    notes.delete(this);
+    /* A drawer closing must not leave the document flagged by a note that is gone. */
+    refreshUnsaved();
+  }
+
+  /**
+   * Retries a failed write from the checkout attempt that found it, at most once per value.
+   */
+  retryOnce = () => {
+    const textarea = this.querySelector('textarea');
+    if (!(textarea instanceof HTMLTextAreaElement)) return;
+    if (textarea.value === this.#accepted || textarea.value === this.#retried) return;
+    this.#retried = textarea.value;
+    this.#write(textarea, new Event('cart-note-retry'));
+  };
 
   /**
    * Holds the accelerated checkout buttons while a write is in flight, and lets them go after.
@@ -91,7 +153,7 @@ class CartNote extends Component {
    * Handles updates to the cart note as the shopper types. Debounced path. The flush path below shares #write so the two cannot drift.
    * @param {InputEvent} event
    */
-  updateCartNote = debounce((event) => this.#write(event), 200);
+  updateCartNote = debounce((event) => this.#write(event.target, event), 200);
 
   /**
    * Writes the note immediately, cancelling any debounced write still waiting.
@@ -105,16 +167,20 @@ class CartNote extends Component {
    */
   flushCartNote = (event) => {
     this.updateCartNote.cancel();
-    this.#write(event);
+    this.#write(event.target, event);
   };
 
   /**
+   * The textarea is passed separately from the event because a retry has no user event behind
+   * it -- the click it rides on belongs to the checkout button, not to the note.
+   *
+   * @param {EventTarget | null} textarea
    * @param {Event} event
    */
-  #write = async (event) => {
-    if (!(event.target instanceof HTMLTextAreaElement)) return;
+  #write = async (textarea, event) => {
+    if (!(textarea instanceof HTMLTextAreaElement)) return;
 
-    const note = event.target.value;
+    const note = textarea.value;
     /* Only skip when the server already holds this exact value, or is being handed it right
        now. A write that failed leaves `#accepted` alone, so the next blur retries it. */
     if (note === this.#sending || (note === this.#accepted && this.#sending === null)) return;
@@ -160,13 +226,23 @@ class CartNote extends Component {
 
       /* Only now. Everything above can throw, and a value recorded as accepted before the
          server accepted it is a note the shopper believes is saved and is not. */
-      if (this.#activeFetch === abortController) this.#accepted = note;
+      if (this.#activeFetch === abortController) {
+        this.#accepted = note;
+        this.#unsaved = false;
+        this.#retried = null;
+        refreshUnsaved();
+      }
 
       deferredPromise.resolve({ cart: CartNoteUpdateEvent.createCartFromAjaxResponse(data) });
     } catch (error) {
       deferredPromise.reject(error);
       // Don't dispatch error for user-triggered aborts
       if (error instanceof Error && error.name !== 'AbortError') {
+        /* The server does not hold what the shopper typed, and focus has already left the
+           textarea, so no further blur will retry it. The flag is what lets the next checkout
+           attempt find that out. */
+        this.#unsaved = true;
+        refreshUnsaved();
         this.dispatchEvent(
           new CartErrorEvent({
             error: error.message || 'Failed to update cart note',

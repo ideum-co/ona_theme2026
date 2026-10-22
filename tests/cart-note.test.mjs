@@ -170,3 +170,81 @@ test('a pending note write cannot be outrun by accelerated checkout', () => {
     'a non-2xx response no longer takes the failure path, so a rejected update would release checkout as if it had worked'
   );
 });
+
+/*
+ * The hold released on failure, and nothing retried.
+ *
+ * A write that fails leaves the server holding the previous note. The hold is released in
+ * `finally`, so the buttons come back -- and focus left the textarea on the first checkout
+ * attempt, so no further blur ever fires. The shopper's second Shop Pay click then sailed
+ * through the document guard and checked out with the old note, which on this store means the
+ * grind request is gone. Codex, #292.
+ */
+test('a note the server rejected is retried by the next checkout attempt', () => {
+  const source = read('assets/cart-note.js');
+
+  assert.match(
+    source,
+    /const UNSAVED = 'data-cart-note-unsaved'/,
+    'there is no unsaved state, so a failed write is indistinguishable from a saved one'
+  );
+
+  /* The guard has to act on both states, and act differently: in flight means wait, unsaved
+     means retry. One condition covering both would either never retry or never hold. */
+  const listener = source.slice(source.indexOf("for (const type of ['click'"), source.indexOf('class CartNote'));
+  assert.match(listener, /noteIsPending\(\)/, 'the document guard no longer checks for a write in flight');
+  assert.match(listener, /noteIsUnsaved\(\)/, 'the document guard ignores a note the server rejected');
+  assert.match(listener, /retryOnce\(\)/, 'the guard intercepts an unsaved note without retrying it');
+  assert.match(
+    listener,
+    /if \(pending\) \{[\s\S]*?return;/,
+    'the in-flight branch must return before the retry branch, or a write in flight is retried on top of itself'
+  );
+
+  /* Bounded. A note that keeps failing must cost one retry, not block checkout on every click:
+     being unable to check out at all is worse than checking out with a stale note, and the
+     failure already raises a CartErrorEvent so the shopper is told. */
+  assert.match(
+    source,
+    /#retried/,
+    'nothing records that a value has already been retried, so a failing note blocks every click'
+  );
+  assert.match(
+    source,
+    /textarea\.value === this\.#accepted \|\| textarea\.value === this\.#retried/,
+    'retryOnce does not stand aside once it has retried a value'
+  );
+
+  /* Set on failure, cleared on success -- in that order, and both through refreshUnsaved, since
+     the flag is on <html> and the state is per instance. */
+  const [, failure] = source.split("error.name !== 'AbortError'");
+  assert.match(failure, /this\.#unsaved = true;[\s\S]{0,120}refreshUnsaved\(\)/, 'a failed write does not flag the note unsaved');
+  assert.match(
+    source,
+    /this\.#accepted = note;[\s\S]{0,160}this\.#unsaved = false;[\s\S]{0,160}refreshUnsaved\(\)/,
+    'a successful write does not clear the unsaved flag, so the note is retried forever'
+  );
+});
+
+/*
+ * The visual half of the hold must NOT widen to the unsaved state, however natural that looks.
+ * `pointer-events: none` stops the click reaching the buttons at all -- and the document
+ * listener finds its target with `event.target.closest('.additional-checkout-buttons')`, so a
+ * click that never lands on them is a click the retry never sees. Greying the buttons out would
+ * silently disable the fix above.
+ */
+test('the unsaved state does not take the checkout buttons out of hit-testing', () => {
+  const summary = read('snippets/cart-summary.liquid');
+  const styles = summary.match(/\{%\s*stylesheet\s*%\}([\s\S]*?)\{%\s*endstylesheet\s*%\}/);
+  assert.ok(styles, 'cart-summary.liquid has no stylesheet block');
+
+  for (const rule of styles[1].split('}')) {
+    if (!/pointer-events\s*:\s*none/.test(rule)) continue;
+    assert.doesNotMatch(
+      rule,
+      /data-cart-note-unsaved/,
+      'the unsaved state suppresses pointer hit-testing, so the click that should retry the ' +
+        'note never reaches the listener that retries it'
+    );
+  }
+});
