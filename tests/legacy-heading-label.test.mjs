@@ -845,7 +845,10 @@ const grounds = () => {
       continue;
     }
     for (const [key, section] of Object.entries(parsed.sections ?? {})) {
-      const band = section.settings?.band_background;
+      /* Both ids, because the band setting is being renamed to Horizon's own `background_color`
+         on a separate branch (#307) and these two can land in either order. Reading only one of
+         them would quietly measure nothing for as long as the other was in the templates. */
+      const band = section.settings?.background_color ?? section.settings?.band_background;
       if (typeof band === 'string' && /^#[0-9a-f]{6}$/i.test(band)) found.set(`${file} ${key}`, band);
     }
   }
@@ -956,6 +959,12 @@ const painted = (declarations) => {
 test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
   assert.ok(palette.foreground && palette.background, 'cannot read the palette');
   const where = grounds();
+  /* A band read under neither id leaves this measuring the page background alone and passing
+     for it -- the silent way for a rename to take the coverage with it. */
+  assert.ok(
+    where.length > 1,
+    'no template declares a band colour, so this is measuring the page background and nothing else'
+  );
 
   for (const [name] of labels) {
     const contexts = contextsFor(name);
