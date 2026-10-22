@@ -364,3 +364,106 @@ test('stage 2 points at the kit', () => {
   );
   assert.match(stage2, /\(component-kit\.md\)/, 'stage 2 should link to the component kit');
 });
+
+/*
+ * The three "drift" figures were measured once, on 2026-10-20, and written into prose. #276
+ * then added three product templates and every one of them moved -- the custom presets by 46,
+ * the inline <style> blocks by 12, the section total by 34 -- while the suite stayed green,
+ * because nothing derived them. A number a reader is invited to plan from has to be guarded
+ * the way the inventory is, so these three derive from templates/*.json and read the figure
+ * back out of the prose.
+ */
+const eachTemplate = () =>
+  readdirSync(join(root, 'templates'))
+    .filter((file) => file.endsWith('.json'))
+    .map((file) => [file, JSON.parse(stripBanner(readFileSync(join(root, 'templates', file), 'utf8')))]);
+
+/* A template's settings live on the section and on blocks nested to any depth, and both carry
+   type_preset -- counting only one of them is how 84 reads as 77. */
+const everySettings = function* (sections) {
+  for (const node of Object.values(sections ?? {})) {
+    yield node.settings ?? {};
+    yield* everySettings(node.blocks);
+  }
+};
+
+test('the custom type_preset count is what the templates hold', () => {
+  let custom = 0;
+  for (const [, parsed] of eachTemplate()) {
+    for (const settings of everySettings(parsed.sections)) {
+      if (settings.type_preset === 'custom') custom += 1;
+    }
+  }
+
+  assert.ok(custom > 0, 'the probe found no custom presets, so it is broken');
+  assert.match(
+    doc,
+    new RegExp(`\\*\\*${custom} blocks sit on \`type_preset: "custom"\`\\*\\*`),
+    `the drift list does not say ${custom} custom presets`
+  );
+  assert.match(doc, new RegExp(`the ${custom} \`custom\` presets`), `step 6 does not say ${custom}`);
+});
+
+test('the inline <style> count is what the templates hold', () => {
+  let inline = 0;
+  for (const [, parsed] of eachTemplate()) {
+    for (const settings of everySettings(parsed.sections)) {
+      if (Object.values(settings).some((value) => typeof value === 'string' && value.includes('<style'))) {
+        inline += 1;
+      }
+    }
+  }
+
+  assert.ok(inline > 0, 'the probe found no inline <style>, so it is broken');
+  assert.match(
+    doc,
+    new RegExp(`\\*\\*${inline} \`custom_liquid\` blocks carry an inline \`<style>\`\\*\\*`),
+    `the drift list does not say ${inline} inline <style> blocks`
+  );
+  assert.match(doc, new RegExp(`The ${inline} inline \`<style>\` blocks`), `step 7 does not say ${inline}`);
+});
+
+/*
+ * Shopify refuses a template above 25 sections outright rather than dropping the extra, so the
+ * homepage's remaining headroom is a number people plan against. It was written as "25 of 25,
+ * eleven disabled" and is now 24 and nine.
+ */
+test('the homepage section count and its headroom are current', () => {
+  const index = JSON.parse(stripBanner(readFileSync(join(root, 'templates/index.json'), 'utf8')));
+  const sections = Object.values(index.sections ?? {});
+  const disabled = sections.filter((section) => section.disabled).length;
+
+  assert.ok(sections.length <= 25, `templates/index.json holds ${sections.length} sections, over Shopify's 25`);
+  assert.match(
+    doc,
+    new RegExp(`is at ${sections.length} of Shopify's 25 sections`),
+    `the kit does not say the homepage holds ${sections.length} sections`
+  );
+  assert.match(
+    doc,
+    new RegExp(`${NUMBER_WORDS[disabled] ?? disabled} of the ${sections.length} are\\s+disabled`, 'i'),
+    `the kit does not say ${disabled} of them are disabled`
+  );
+});
+
+/*
+ * ona-bookings-top sat in one row with ona-training-iframe as "metafield-driven booking
+ * iframes" and renders no iframe at all, which deferred a visible legacy layout behind a
+ * provider change that has nothing to do with it. Keep the two apart by the thing that
+ * separates them.
+ */
+test('the kit does not call ona-bookings-top an iframe', () => {
+  const bookings = readFileSync(join(root, 'sections/ona-bookings-top.liquid'), 'utf8');
+  const iframe = readFileSync(join(root, 'sections/ona-training-iframe.liquid'), 'utf8');
+
+  /* Neither section writes an <iframe> tag: ona-training-iframe prints
+     page.metafields.accentuate.iframe, and the markup lives in the metafield. So the thing
+     that tells them apart is which metafield each one reads, not a literal tag -- checking
+     for the tag reports both as iframe-free and proves nothing. */
+  assert.match(iframe, /metafields\.accentuate\.iframe/, 'ona-training-iframe no longer reads the iframe metafield; the probe is stale');
+  assert.ok(
+    !/<iframe/i.test(bookings) && !/metafields\.accentuate\.iframe/.test(bookings),
+    'ona-bookings-top now renders an iframe; the kit row needs rewriting'
+  );
+  assert.match(doc, /`ona-bookings-top` \(bookings\) \| \*\*no iframe at all\*\*/);
+});

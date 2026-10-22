@@ -159,20 +159,26 @@ disabled placeholder testimonials on the homepage.
 So: before converting any section, read its Liquid. The schema tells you what
 a merchant can set, not what the page draws.
 
-Alongside that, three kinds of drift the reviews measured across all 116
-sections in `templates/*.json`:
+Alongside that, three kinds of drift, measured across all 150 sections in
+`templates/*.json` and guarded by `tests/component-kit.test.mjs` so they do not
+go stale again — they already did once, when #276 added three product
+templates:
 
-- **38 blocks sit on `type_preset: "custom"`** — more than any real preset
-  (`paragraph` 19, `rte` 17, `h2` 17, `h4` 14). Each one opts out of the type
-  scale and restates a size; there are **11 distinct literal `font_size`
-  values** in the templates.
+- **77 blocks sit on `type_preset: "custom"`** — nearly three times the next
+  most common preset (`paragraph` 28, `rte` 22, `h2` 17, `h4` 14, `h6` 14).
+  Each one opts out of the type scale and restates a size; there are **11
+  distinct literal `font_size` values** in the templates.
 - **19 distinct padding values** between sections: 0, 4, 8, 10, 12, 16, 20, 24,
   32, 40, 48, 60, 64, 72, 80, 96, 100, 120, 152. On the homepage every
   inter-section gap is 0 and all rhythm is internal padding, so these 19 values
   *are* the vertical rhythm.
-- **8 `custom_liquid` blocks carry an inline `<style>`** — `collection.json` ×3,
-  `index.json` ×1, `product.json` ×4. Two of the four in `product.json` are
-  superseded by #243.
+- **20 `custom_liquid` blocks carry an inline `<style>`** — `collection.json`
+  ×3, `index.json` ×1, and ×4 in each of `product.json`,
+  `product.equipment.json`, `product.merch.json` and `product.non-coffee.json`.
+  Two of the four in `product.json` are superseded by #243. The three product
+  variants #276 added each carry their own copy of the same four, so this is
+  one block duplicated four ways rather than twenty separate decisions — fix
+  it once and the other three follow.
 
 ## The kit
 
@@ -259,14 +265,15 @@ loads its own script is doing something a `text` block cannot:
 | `ona-expericences-content` (private courses) | two columns: heading/image/lead/copy on the left, a working contact form on the right, posting a fixed `contact[subject]` | the two-column shell is `section` + two `group`s — **not** `media-with-content`, which has one media slot and one content slot. The form itself is **not** stock `contact-form`: see [Known gaps](#known-gaps) |
 | `ona-unique-coffees` (wholesale) | three named tabs that switch a three-image panel and its copy together, with `role="tabpanel"` and `aria-hidden` wiring | **nothing in Horizon does this.** `carousel` gives cards and dots, an `accordion` does not drive a separate panel. Keep the section, or write a tabs component — a decision, not a mapping |
 | `ona-donation-counter` (homepage) | reads `shop.metafields.custom.donation_total` and renders it as flip-counter digits | keep: it has its own schema and stylesheet and no generic block reproduces it |
-| `ona-bookings-top`, `ona-training-iframe` (bookings, training) | metafield-driven booking iframes | keep until the booking provider changes |
+| `ona-training-iframe` (training) | a metafield-driven booking iframe | keep until the booking provider changes |
+| `ona-bookings-top` (bookings) | **no iframe at all** — a breadcrumb list, then a two-column heading and intro read from `page.metafields.accentuate.title_bookings` and `content_bookings` | needs its own target, not the iframe's deferral — see [Known gaps](#known-gaps) |
 | `ona-campaign-banner` (homepage) | reads `shop.metafields.custom.donation_end_date` and renders the campaign line only when it has a value, next to its own scoped stylesheet | keep: it is the other half of the counter — both read metafields written by the same recompute job, and a `text` block cannot omit itself when the date is unset |
 
 So the honest version of the collapse: the **layout** fragments go to eight
 components. Seven sections carry behaviour — three of them onto Horizon's
-`contact-form`, four of them staying as they are — and `ona-unique-coffees`
-is the one section on the wholesale page that stage 2 cannot convert without a
-decision first.
+`contact-form`, three of them staying as they are, and `ona-bookings-top`
+needing a target of its own — and `ona-unique-coffees` is the one section on
+the wholesale page that stage 2 cannot convert without a decision first.
 
 ## Known gaps
 
@@ -288,6 +295,8 @@ needs a decision before the page it is on can reach stage 2.
 | `ona-icon-and-content` (wholesale) | live and enabled, with five blocks of icon + title + `url`, and the urls are **in-page anchors** — `#complete-training`, `#unique-coffees`, `#supported`, `#exclusive-access` — so the section is the wholesale page's own contents list, not decoration. Horizon's `icon` block inside a `group` per cell is still the obvious candidate, and `blocks/icon.liquid` does carry `image_upload` and `link`. What has changed is the bar: #253 wraps each cell in `a.box.icon-box-anchor` and styles it as an equal-height outlined button with a hover and `:focus-visible` inversion, so a swap now has to reproduce a styled nav, not five plain anchors. Still a gap rather than a row, but for a sharper reason than before. |
 | `ona-bread-crumbs` | live on `/pages/private-courses-and-experiences`, rendering linked ancestors and a dynamic `page.title`. The only other breadcrumb in the theme is the product-specific one, so there is no generic target: keep the section, or write a page-breadcrumb component. |
 | `ona-sustainability-list` | live and enabled on `templates/page.about.json` with two of its three blocks filled — Solar → `/pages/solar`, and the Women in coffee campaign → `/pages/womenincoffee`. Each block is image + title + rich text + url, rendered as independent cards, so `media-with-content`'s single media slot cannot hold the pair. A `section` of two `group`s, each with `image`, `text` and `button`, is the obvious shape, but two things have to survive the move and neither has been checked against the rendered page: the image is painted as a CSS `background-image` on a bare `div` rather than an `<img>`, so it carries no alt text and no responsive sources today, and the "Read More" label is hard-coded in the markup (`sections/ona-sustainability-list.liquid:9`) rather than being a block setting. |
+| `ona-bookings-top` | not a booking iframe, despite sitting next to one. It renders a breadcrumb `<ul>` and then a two-column heading/intro pair out of `page.metafields.accentuate.*`. The breadcrumb has the same problem as `ona-bread-crumbs` — no generic target — and the two-column intro is a `section` of two `group`s, but the copy lives in metafields rather than block settings, so the move is a content migration as well as a layout one. The page-by-page note that bookings needs only iframe framing is incomplete until this is mapped. |
+| `ona-content` (about) | live and enabled on `templates/page.about.json`. Heading and lead render as two **independent** text columns over an `.animated-svg` blob, so `media-with-content`'s one media slot plus one content slot collapses the pair into a single column. A `section` with two `group`s is the shape, but it inherits the decorative-layer problem above — `ona-content` is one of the 15 `.animated-svg` sections — so it needs the blob solved first. Unmapped in the kit until then, rather than silently treated as a media/text variant. |
 | `ona-cafe-testimonial` — **until #246 merges** | all four live blocks have both an `image` and a `title`, and the legacy section renders the title as a citation. On `main` today, `sections/press-quotes.liquid:30` shows `source` only in an `elsif` after both logo fields, so a block with a logo cannot also show a name — migrating the four cafés would hide every café name. #246 replaces that branch with a trailing `<figcaption>`, which is what makes this mapping work; it is a dependency, not an assumption. #253 did not touch the markup — the `<cite>` carrying `title` and `subtitle` is unchanged, so that dependency reads exactly as written — but it added a second one: `.cafe-reviews` now lays the blocks out as a three-up `scroll-snap` carousel that falls to two columns at 989px and one at 749px. `press-quotes` has to match that, and Victor's `.cafe-reviews` rules go dead the day the section does. |
 
 ## Page by page
@@ -316,10 +325,12 @@ be deleted, `ona-sr-heading` from bookings, private-courses and wholesale,
 `ona-faq-lists` from bookings and wholesale. Convert all uses in one PR, or the
 section stays and the page is the only thing that moved.
 
-**`templates/index.json` is at 25 of Shopify's 25 sections.** A 26th makes the
-GitHub integration refuse the whole file rather than drop the extra section —
-`tests/shop-owned-templates.test.mjs` guards this. Eleven of the 25 are
-disabled, so retiring one is how the homepage gets room again.
+**`templates/index.json` is at 24 of Shopify's 25 sections**, so there is
+exactly one slot left. A 26th makes the GitHub integration refuse the whole
+file rather than drop the extra section — `tests/shop-owned-templates.test.mjs`
+guards the file's contents and `tests/component-kit.test.mjs` guards this
+count. Nine of the 24 are disabled, so retiring one is how the homepage gets
+more room than that single slot.
 
 ## The tokens that make it one design
 
@@ -360,10 +371,10 @@ next one to have happened.
    46 are referenced — so there is no up-front sweep to do. The four shared
    sections above are the only ones whose deletion needs more than one page
    converted.
-6. **Tokens**: the 38 `custom` presets and the 19 padding values, once the
+6. **Tokens**: the 77 `custom` presets and the 19 padding values, once the
    sections they live in have stopped moving. Doing this first means doing it
    twice.
-7. **The 8 inline `<style>` blocks**, independent of all of the above.
+7. **The 20 inline `<style>` blocks**, independent of all of the above.
 
 Steps 1–4 are also when the thin pages get flagged for content: a page with 852
 characters cannot be fixed by swapping its sections.
