@@ -1,0 +1,123 @@
+{%- comment -%}
+  PDP producer quote: a full-width band with a quote from the coffee's producer and their name and
+  role, all read from the product's metafields. Dynamic and self-hiding -- if the product has no
+  `custom.producer_quote`, the section renders nothing (no band, no spacing). Author and role each
+  show only when present.
+
+  The band colour is editable in the theme editor (background + text colour settings), per the brief.
+
+  Metafields (namespace `custom`):
+    - producer_quote        multi_line_text_field   -> the quote (required; blank hides the section)
+    - producer_quote_author single_line_text_field  -> name
+    - producer_quote_role   single_line_text_field  -> role / location under the name
+
+  CSS lives in {% stylesheet %} (aggregated), never an inline <style>.
+{%- endcomment -%}
+
+{%- liquid
+  assign p = product
+  assign quote = p.metafields.custom.producer_quote.value | strip
+  assign author = p.metafields.custom.producer_quote_author.value | strip
+  assign role = p.metafields.custom.producer_quote_role.value | strip
+-%}
+
+{%- if quote != blank -%}
+  <section
+    class="producer-quote"
+    style="--producer-quote-bg: {{ section.settings.background_color }}; --producer-quote-fg: {{ section.settings.text_color }};"
+    {{ section.shopify_attributes }}
+  >
+    <div class="producer-quote__inner">
+      <blockquote class="producer-quote__text">&ldquo;{{ quote | escape | newline_to_br }}&rdquo;</blockquote>
+
+      {%- if author != blank or role != blank -%}
+        <div class="producer-quote__attribution">
+          {%- if author != blank -%}
+            <p class="producer-quote__author">{{ author | escape }}</p>
+          {%- endif -%}
+          {%- if role != blank -%}
+            <p class="producer-quote__role">{{ role | escape }}</p>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </section>
+{%- endif -%}
+
+{% stylesheet %}
+  .producer-quote {
+    background-color: var(--producer-quote-bg, #c17d88);
+    color: var(--producer-quote-fg, #f4f3e9);
+    padding-block: clamp(56px, 9vw, 120px);
+    padding-inline: var(--page-margin);
+  }
+
+  .producer-quote__inner {
+    max-width: 50rem;
+    margin-inline: auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(28px, 4vw, 52px);
+  }
+
+  .producer-quote__text {
+    margin: 0;
+    font-family: var(--font-body--family, 'Karla', sans-serif);
+    font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+    font-weight: 400;
+    line-height: 1.55;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .producer-quote__attribution {
+    display: grid;
+    gap: 4px;
+  }
+
+  .producer-quote__author {
+    margin: 0;
+    font-family: var(--font-accent--family, 'Silk Serif', Georgia, serif);
+    font-style: italic;
+    font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+    line-height: 1.2;
+  }
+
+  .producer-quote__role {
+    margin: 0;
+    font-family: var(--font-accent--family, 'Silk Serif', Georgia, serif);
+    font-style: italic;
+    font-size: clamp(1rem, 1.8vw, 1.3rem);
+    line-height: 1.3;
+    opacity: 0.85;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Producer quote",
+  "tag": "section",
+  "class": "shopify-section--producer-quote",
+  "enabled_on": { "templates": ["product"] },
+  "settings": [
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "default": "#c17d88"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "default": "#f4f3e9"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Producer quote"
+    }
+  ]
+}
+{% endschema %}

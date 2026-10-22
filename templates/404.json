@@ -1,4 +1,8 @@
 /*
+ * Re-emitted 2026-10-22: #302 fixed blocks/subscribe-button.liquid, which had blocked
+ * every template using the `subscribe` block from syncing to the connected theme. The theme
+ * sync only re-pulls changed files, so this one-line touch re-pulls this template now that the
+ * block compiles. Invisible at runtime (Shopify strips template comments).
  * ------------------------------------------------------------
  * IMPORTANT: The contents of this file are auto-generated.
  *
