@@ -34,6 +34,17 @@ Evidence: `docs/legacy-sections-unstyled-2026-10-20.md`.
 | `faq_lists` | 268 | **70** | **0.3x** |
 | **whole page** | **10,400** | **40,886** | **3.9x** |
 
+**The table is 17 rows and the page has 18 sections.**
+`wholesale_sourcing_v6` is enabled in `templates/page.wholesale.json` and was
+never measured. The rows above sum to 10,266px live and 38,155px in theme2026
+against the stated whole-page 10,400px and 40,886px, so 134px and 2,731px are
+unaccounted for. That residual is either `_v6` itself — which would make it the
+worst ratio on the page by some distance, ahead of `icon_and_content` — or page
+chrome the per-section measurement did not attribute. It was not resolved, and
+#209 has since changed the row layout these sections share, so the 2026-10-20
+numbers cannot be reproduced to settle it. Re-measure before using this table to
+rank anything (Codex, #203).
+
 Three things this tells us that a screenshot does not:
 
 - **Two sections match live's height — which is not the same as being
@@ -110,7 +121,9 @@ before picking up item 2 rather than trusting this ordering (Codex, #203):
    2,308px -> 265px. Together with item 1 the page went 32,136px -> 23,830px,
    upscaled images 17 -> 12, and the worst upscale 11.8x -> 3.7x.
 4. **`ona-wholesale-testimonial`** — 4.2x.
-5. ~~**The four `sourcing` variants** — 2.9x to 3.9x.~~ **Done, #209.** Their
+5. ~~**The `sourcing` family** — six sections render on the page (`sourcing`
+   and `wholesale_sourcing_v2` through `_v6`, all enabled); the table measures
+   five of them, 2.4x to 3.9x.~~ **Done, #209.** Their
    shared fault was the row layout, not `.bg-img` (they render none — see
    above): the two-column rule did not match the single-element
    `<div class="content container">`. With that fixed the live page went

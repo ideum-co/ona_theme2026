@@ -6,10 +6,22 @@ Source: `Web 1920 – 1.svg` (57.7 MB Figma export, 1920 x 11814), from
 20 embedded images, mapped to home-page blocks by their position on the
 artboard, deduplicated, and resized to web masters.
 
-**41.2 MB -> 4.33 MB (89% smaller).** Nothing was upscaled. Masters are 2x the
-size each image is actually drawn at on the 1920 artboard, floored at 1200px on
-the long edge and capped at 2400px — Shopify resizes down from the master, so
-an 8000px source was pure waste.
+**41.2 MB -> 4.33 MB (89% smaller).** The *target* was 2x the size each image is
+actually drawn at on the 1920 artboard, floored at 1200px on the long edge and
+capped at 2400px — Shopify resizes down from the master, so an 8000px source was
+pure waste.
+
+**Nothing was upscaled, and that constraint wins over the target.** Where the
+image embedded in the Figma export was already smaller than 2x the drawn size,
+the master is that source at its native resolution, so 2x is a ceiling here and
+not a guarantee. Nine of the thirteen rows below fall short of it, and five are
+at or below 1x on one axis: the hero (1928x1085 drawn against a 1920x1080
+master), the spotlight gallery (470 wide against 400), Subscribe & Save (1762
+wide against 1600), The sweet spot (2245x1263 against 1920x1080) and More than
+coffee (1522 wide against 1500). Where the master's aspect ratio differs from
+the drawn box the block crops it, so the shortfall is on the axis named, not
+both. Those five need a better source — re-exported from the original assets,
+not from this SVG — before the home page's imagery is done.
 
 | block | file | drawn at | master |
 |---|---|---|---|
