@@ -217,8 +217,14 @@ test('every stored anchor is reachable and unique on the page it renders on', ()
      the page before a section renders. An anchor duplicating one sends `#MainContent` to the
      wrapper instead of the section. (password.liquid is deliberately not here: it serves the
      password page, which has no template JSON, so its ids are not on these pages.) */
-  const fromLayout = [...read('layout/theme.liquid').matchAll(ID_ATTRIBUTE)].map((m) => [m[1], 'layout/theme.liquid']);
+  /* Through its snippets too: `{% render 'search-modal' %}` at theme.liquid:216 puts
+     `id="search-modal"` on every page, and reading only the layout file misses it. */
+  const fromLayout = [...new Set(emitted('layout/theme.liquid'))].map((id) => [id, 'layout/theme.liquid']);
   assert.ok(fromLayout.length >= 2, `the layout emits ${fromLayout.length} static ids; the probe is broken`);
+  assert.ok(
+    fromLayout.some(([id]) => id === 'search-modal'),
+    'the layout scan no longer reaches its snippets; search-modal comes from snippets/search-modal.liquid'
+  );
 
   /* The groups reach every page, so their section types' own ids do too. Without this the set
      holds only what the group JSON configures, and `header-component` -- which is on every page
