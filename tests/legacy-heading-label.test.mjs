@@ -31,14 +31,21 @@ const labels = (() => {
   );
 
   for (const file of files) {
+    /* Liquid tags become a space, but an output becomes a character: the two are the
+       difference between a slot that holds a label and a div that is empty by construction.
+       ona-gust-r's pop-up form carries `<div class="title"></div>`, never populated and
+       deliberately hidden since #249; stripping outputs too made it indistinguishable from
+       `<span class="subtitle">{{ ... }}</span>` and put a permanently invisible element under
+       the same typography and contrast bar as a label a shopper reads. */
     const markup = readFileSync(join(root, 'sections', file), 'utf8')
       .split(/\{%-?\s*schema\s*-?%\}/)[0]
       .replace(/\{%-?[\s\S]*?-?%\}/g, ' ')
-      .replace(/\{\{[\s\S]*?\}\}/g, ' ');
+      .replace(/\{\{[\s\S]*?\}\}/g, 'x');
 
     /* A one-element run of text, then a heading: the shape of an eyebrow. */
-    const pattern = /<(span|p|div)\b[^>]*class="([^"]*)"[^>]*>[^<]*<\/\1>\s*<h[1-6]\b/g;
-    for (const [, , classes] of markup.matchAll(pattern)) {
+    const pattern = /<(span|p|div)\b[^>]*class="([^"]*)"[^>]*>([^<]*)<\/\1>\s*<h[1-6]\b/g;
+    for (const [, , classes, content] of markup.matchAll(pattern)) {
+      if (content.trim() === '') continue;
       for (const name of classes.split(/\s+/).filter(Boolean)) {
         if (!found.has(name)) found.set(name, new Set());
         found.get(name).add(file.slice(0, -'.liquid'.length));
@@ -49,6 +56,21 @@ const labels = (() => {
 })();
 
 const selects = (name, suffix = '') => declarationsFor(name, suffix) !== null;
+
+/*
+ * Every rule that paints a non-empty eyebrow, in source order.
+ *
+ * The layout and contrast checks used to read the single base `.subtitle` rule and nothing
+ * else, so appending a later, more specific `#MainContent .add-image-and-text-slider
+ * .subtitle { opacity: 0.6; }` muted those eyebrows below the bar with all four tests green
+ * (Codex, #300). What a reader sees is the cascade, so the cascade is what gets measured.
+ */
+const rulesFor = (name) => {
+  const pattern = new RegExp(`([^{}]*\\.${name.replace(/-/g, '\\-')}(?![\\w-])[^{}]*)\\{([^}]*)\\}`, 'g');
+  return [...css.matchAll(pattern)]
+    .filter(([, selector]) => !/:empty/.test(selector))
+    .map(([, selector, declarations]) => ({ selector: selector.trim().replace(/\s+/g, ' '), declarations }));
+};
 
 /* The body of the first rule whose selector matches, or null. */
 function declarationsFor(name, suffix = '') {
@@ -62,8 +84,11 @@ test('the eyebrow above a heading is a class the stylesheet actually styles', ()
   assert.ok(labels.size > 0, 'no section puts a labelled element above a heading any more');
 
   for (const [name, sections] of labels) {
+    /* Not `selects(name)`: that counts `.name:empty { display: none; }` as styling, so a new
+       eyebrow class carrying only the hide rule passed while the label a shopper actually
+       reads got nothing (Codex, #300). Only rules that paint the non-empty element count. */
     assert.ok(
-      selects(name),
+      rulesFor(name).length > 0,
       `.${name} introduces the heading in ${sections.size} section(s) ` +
         `(${[...sections].sort().slice(0, 3).join(', ')}...) and no rule in ` +
         'assets/legacy-page-layout.css selects it, so it renders as plain body copy'
@@ -98,14 +123,14 @@ test('an eyebrow with nothing in it takes up no room', () => {
 });
 
 test('the eyebrow sits on its own line above the heading', () => {
-  const rule = css.match(/#MainContent\s+\.subtitle\s*\{([^}]*)\}/);
-  assert.ok(rule, 'cannot find the .subtitle rule');
-  assert.match(
-    rule[1],
-    /display\s*:\s*block/,
-    'a span is inline by default, so without an explicit display the eyebrow runs into the ' +
-      'heading on the same line'
-  );
+  for (const [name] of labels) {
+    const applicable = rulesFor(name);
+    assert.ok(
+      applicable.some(({ declarations }) => /display\s*:\s*block/.test(declarations)),
+      `a span is inline by default, so without an explicit display .${name} runs into the ` +
+        `heading on the same line -- its rules are ${JSON.stringify(applicable.map((r) => r.selector))}`
+    );
+  }
 });
 
 /*
@@ -173,25 +198,31 @@ const opacityToken = (name) => {
   return Number(found[1]);
 };
 
+/* The later declaration wins, so the resolver reads the last one rather than the first --
+   otherwise a base `color` would mask the override that actually paints the label. */
+const lastValue = (declarations, property) => {
+  const all = [...declarations.matchAll(new RegExp(`(?:^|;)\\s*${property}\\s*:\\s*([^;]+)`, 'g'))];
+  return all.length ? all[all.length - 1][1].trim() : null;
+};
+
 const painted = (declarations) => {
   /* An element's own opacity multiplies whatever colour it ends up with. A value this cannot
      read -- `opacity: var(--opacity-muted-text)` -- used to fall through to alpha 1 and report
      the label as fully opaque, so an opacity present and unresolved now fails (Codex, #300). */
-  const faded = declarations.match(/(?:^|;)\s*opacity\s*:\s*([^;]+)/);
+  const faded = lastValue(declarations, 'opacity');
   let alpha = 1;
   if (faded) {
-    const literal = faded[1].trim().match(/^([0-9.]+)%?$/);
+    const literal = faded.match(/^([0-9.]+)%?$/);
     assert.ok(
       literal,
-      `cannot read the eyebrow's opacity from "${faded[1].trim()}" -- extend this resolver ` +
+      `cannot read the eyebrow's opacity from "${faded}" -- extend this resolver ` +
         'rather than treating the label as fully opaque'
     );
-    alpha = faded[1].includes('%') ? Number(literal[1]) / 100 : Number(literal[1]);
+    alpha = faded.includes('%') ? Number(literal[1]) / 100 : Number(literal[1]);
   }
 
-  const declared = declarations.match(/(?:^|;)\s*color\s*:\s*([^;]+)/);
-  if (!declared) return { alpha, literal: null, how: 'inherited' };
-  const value = declared[1].trim();
+  const value = lastValue(declarations, 'color');
+  if (value === null) return { alpha, literal: null, how: 'inherited' };
 
   const hex = value.match(/#([0-9a-f]{6})\b/i);
   if (hex) return { alpha, literal: [1, 3, 5].map((at) => parseInt(`#${hex[1]}`.slice(at, at + 2), 16)), how: value };
@@ -236,24 +267,36 @@ const painted = (declarations) => {
 };
 
 test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
-  const rule = css.match(/#MainContent\s+\.subtitle\s*\{([^}]*)\}/);
-  assert.ok(rule, 'cannot find the .subtitle rule');
   assert.ok(palette.foreground && palette.background, 'cannot read the palette');
+  const where = grounds();
 
-  const { alpha, literal, how } = painted(rule[1]);
+  for (const [name] of labels) {
+    const applicable = rulesFor(name);
+    assert.ok(applicable.length > 0, `no rule paints .${name}`);
 
-  for (const [where, ground] of grounds()) {
-    const ink = rgb(ground);
-    /* Inherited, the eyebrow takes the section's foreground, and the band snippet has already
-       chosen the palette extreme that contrasts best with the band. */
-    const inherited = [palette.foreground, palette.background]
-      .map(rgb)
-      .sort((a, b) => contrast(b, ink) - contrast(a, ink))[0];
-    const ratio = contrast(over(literal ?? inherited, ink, alpha), ink);
-    assert.ok(
-      ratio >= 4.5,
-      `${where} is ${ground}, and the eyebrow (${how}${alpha < 1 ? ` at ${alpha} opacity` : ''}) ` +
-        `lands at ${ratio.toFixed(2)}:1 on it -- under 4.5:1`
-    );
+    /* Walked in source order, carrying the declarations forward: the state after each rule is
+       a state the label is really in, and every one of them has to clear the bar. Reading
+       only the base rule let a later override through (Codex, #300). */
+    let carried = '';
+    for (const rule of applicable) {
+      carried += `;${rule.declarations}`;
+      const { alpha, literal, how } = painted(carried);
+
+      for (const [ground_name, ground] of where) {
+        const ink = rgb(ground);
+        /* Inherited, the eyebrow takes the section's foreground, and the band snippet has
+           already chosen the palette extreme that contrasts best with the band. */
+        const inherited = [palette.foreground, palette.background]
+          .map(rgb)
+          .sort((a, b) => contrast(b, ink) - contrast(a, ink))[0];
+        const ratio = contrast(over(literal ?? inherited, ink, alpha), ink);
+        assert.ok(
+          ratio >= 4.5,
+          `${ground_name} is ${ground}, and .${name} as painted by "${rule.selector}" ` +
+            `(${how}${alpha < 1 ? ` at ${alpha} opacity` : ''}) lands at ${ratio.toFixed(2)}:1 ` +
+            'on it -- under 4.5:1'
+        );
+      }
+    }
   }
 });
