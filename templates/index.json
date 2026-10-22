@@ -454,6 +454,7 @@
       },
       "name": "t:names.media_with_text",
       "settings": {
+        "motion_reveal": true,
         "mobile_padding_inline": 16,
         "mobile_text_center": true,
         "content_padding_custom": true,
@@ -1063,6 +1064,7 @@
       "disabled": true,
       "name": "t:names.media_with_text",
       "settings": {
+        "motion_reveal": true,
         "mobile_padding_inline": 0,
         "mobile_text_center": false,
         "content_padding_custom": false,
@@ -3814,6 +3816,7 @@
       },
       "name": "t:names.media_with_text",
       "settings": {
+        "motion_reveal": true,
         "mobile_padding_inline": 0,
         "mobile_text_center": false,
         "content_padding_custom": true,
