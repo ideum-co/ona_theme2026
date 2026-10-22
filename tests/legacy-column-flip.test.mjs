@@ -21,54 +21,39 @@ const rootClassesOf = (markup) => {
   return match ? match[1].split(/\s+/).filter(Boolean) : [];
 };
 
-const flipping = sections.filter((section) =>
-  rootClassesOf(section.markup).some((className) => FLIP_CLASSES.includes(className))
-);
+const flipping = sections
+  .map((section) => ({
+    ...section,
+    flipClass: rootClassesOf(section.markup).find((className) => FLIP_CLASSES.includes(className)),
+  }))
+  .filter((section) => section.flipClass);
 
-/*
- * These three classes sat on the markup with no rule behind them from the migration until this
- * change -- the same failure as `bg-red`, which still has none. A class the markup asks for and
- * the stylesheet never answers is invisible in review: the section looks fine, it is just not
- * the design. This fails if any of them loses its rule again.
- */
-test('every flip class the markup carries has a rule behind it', () => {
-  assert.ok(flipping.length > 0, 'no section carries a flip class -- has the markup changed?');
-  for (const className of FLIP_CLASSES) {
-    const used = flipping.some((section) => rootClassesOf(section.markup).includes(className));
-    if (!used) continue;
-    assert.match(
-      css,
-      new RegExp(`\\.${className}\\b`),
-      `.${className} is on a section but nothing in the stylesheet answers it`
-    );
-  }
-});
-
-/*
- * `order` applies to the grid ITEM. The first version of this test read the section markup for
- * the first `<div class="img...">` in document order and was satisfied -- but in ona-supported
- * that div sits inside `<ona-slider>`, so the grid item is the slider and `order` on the `.img`
- * would move nothing. The section carried `img-right` and stayed image-left, and this test said
- * it was fine (Codex, #297).
- *
- * So the check is structural now: parse the direct children of the grid container out of the
- * markup, and require the first one to match a selector the rule actually targets -- read from
- * the stylesheet rather than restated here, so widening or narrowing the rule is reflected.
- */
 const VOID = new Set(['img', 'br', 'input', 'source', 'hr', 'meta', 'link', 'path', 'use']);
 
-/* Direct children of the first element whose class list contains `content`. */
-const gridChildren = (markup) => {
+/*
+ * The grid container and its DIRECT children.
+ *
+ * `order` applies to the grid item. The first version of this test read the first
+ * `<div class="img...">> in document order and was satisfied -- but ona-supported wraps that div
+ * in a custom element, so the grid item is the wrapper and the `.img` is a grandchild `order`
+ * cannot reach. The section carried `img-right`, stayed image-left, and the test said it was
+ * fine (Codex, #297). Document order cannot see a wrapper; a depth walk can.
+ */
+const grid = (markup) => {
   const clean = markup.replace(/\{%[\s\S]*?%\}/g, '').replace(/\{\{[\s\S]*?\}\}/g, '');
   const tags = [...clean.matchAll(/<(\/?)([a-zA-Z][\w-]*)([^>]*?)(\/?)>/g)];
 
   let depth = null;
+  let container = null;
   const children = [];
   for (const [, closing, tag, attrs, selfClosing] of tags) {
     const classes = (attrs.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/).filter(Boolean);
 
     if (depth === null) {
-      if (!closing && classes.includes('content')) depth = 0;
+      if (!closing && classes.includes('content')) {
+        depth = 0;
+        container = classes;
+      }
       continue;
     }
     if (closing) {
@@ -79,24 +64,81 @@ const gridChildren = (markup) => {
     if (depth === 0) children.push({ tag, classes });
     if (!VOID.has(tag.toLowerCase()) && !selfClosing) depth += 1;
   }
-  return children;
+
+  /* Two markup shapes exist: `.container > .content`, and a single `.content.container`. They
+     need different selectors, and the rule carries a branch for each. */
+  return { children, shape: container?.includes('container') ? 'combined' : 'nested' };
 };
 
-/* What the rule moves, and which way, read out of the rule itself. */
-const flipRule = (() => {
-  const match = css.match(/>\s*\.content(?:\.container)?\s*>\s*([^\s{]+)\s*\{[^}]*order\s*:\s*(-?\d+)/);
-  assert.ok(match, 'cannot read the flip rule out of the stylesheet');
-  return { target: match[1], order: Number(match[2]) };
+/*
+ * The rule, parsed into one entry per comma-separated branch.
+ *
+ * Checking that a class merely occurs *somewhere* in the stylesheet is not enough: every
+ * flipping section today uses the `.container > .content` branch, so dropping `.img-right` from
+ * that branch while leaving it on the unused `.content.container` branch would stop all four
+ * wholesale sections flipping with every test still green (Codex, #297). Each class has to be
+ * checked against the branch that matches its own markup.
+ */
+const branches = (() => {
+  const rule = css.match(/([^{}]*?:is\([^)]*\)[^{}]*?)\{\s*order\s*:\s*(-?\d+)\s*;?\s*\}/);
+  assert.ok(rule, 'cannot find the flip rule in the stylesheet');
+  const order = Number(rule[2]);
+
+  /* Split on top-level commas only: `:is(.invert-columns,.img-r,.img-right)` carries its own. */
+  const topLevel = [];
+  let depth = 0;
+  let current = '';
+  for (const character of rule[1]) {
+    if (character === '(') depth += 1;
+    if (character === ')') depth -= 1;
+    if (character === ',' && depth === 0) {
+      topLevel.push(current);
+      current = '';
+      continue;
+    }
+    current += character;
+  }
+  topLevel.push(current);
+
+  return topLevel
+    .map((selector) => selector.trim())
+    .filter(Boolean)
+    .map((selector) => {
+      const classes = (selector.match(/:is\(([^)]*)\)/)?.[1] ?? '')
+        .split(',')
+        .map((name) => name.trim().replace(/^\./, ''))
+        .filter(Boolean);
+      const shape = />\s*\.content\.container\s*>/.test(selector)
+        ? 'combined'
+        : />\s*\.container\s*>\s*\.content\s*>/.test(selector)
+          ? 'nested'
+          : null;
+      const target = selector.split('>').pop().trim();
+      return { selector, classes, shape, target, order };
+    });
 })();
 
-test('the rule moves a real grid item, and moves it the right way', () => {
-  const matches = ({ tag, classes }) =>
-    flipRule.target.startsWith('.')
-      ? classes.includes(flipRule.target.slice(1))
-      : tag.toLowerCase() === flipRule.target;
+test('every flipping section is covered by the branch that matches its own markup', () => {
+  assert.ok(flipping.length > 0, 'no section carries a flip class -- has the markup changed?');
 
-  for (const { name, markup } of flipping) {
-    const children = gridChildren(markup);
+  for (const { name, markup, flipClass } of flipping) {
+    const { shape } = grid(markup);
+    const covering = branches.filter(
+      (branch) => branch.classes.includes(flipClass) && branch.shape === shape
+    );
+    assert.ok(
+      covering.length > 0,
+      `${name} carries .${flipClass} and its grid is the "${shape}" shape, but no branch of the ` +
+        `flip rule matches both. Branches: ${branches
+          .map((branch) => `${branch.shape}[${branch.classes.join('|')}]`)
+          .join(', ')}`
+    );
+  }
+});
+
+test('the branch that covers a section moves one of that section\'s real grid items', () => {
+  for (const { name, markup, flipClass } of flipping) {
+    const { children, shape } = grid(markup);
     assert.equal(
       children.length,
       2,
@@ -105,23 +147,31 @@ test('the rule moves a real grid item, and moves it the right way', () => {
         .join(', ')}], so a single order declaration does not simply swap two columns`
     );
 
+    const branch = branches.find((entry) => entry.classes.includes(flipClass) && entry.shape === shape);
+    if (!branch) continue; // the test above owns that failure
+
+    const matches = ({ tag, classes }) =>
+      branch.target.startsWith('.')
+        ? classes.includes(branch.target.slice(1))
+        : tag.toLowerCase() === branch.target;
+
     const moved = children.findIndex(matches);
     assert.notEqual(
       moved,
       -1,
-      `${name}: nothing among the grid items [${children
+      `${name}: none of the grid items [${children
         .map((child) => `${child.tag}.${child.classes.join('.')}`)
-        .join(', ')}] matches "${flipRule.target}" -- the flip is a no-op here. ` +
-        'A descendant match would not help: order applies to the grid item.'
+        .join(', ')}] match "${branch.target}" -- the flip is a no-op here. A descendant match ` +
+        'would not help: order applies to the grid item.'
     );
 
     /* Source order is media, then text. Moving the text to the front (order < 0) or the media
        to the back (order > 0) both yield media-right; doing neither yields nothing. */
     const movedIsText = children[moved].classes.includes('text');
     assert.ok(
-      movedIsText ? flipRule.order < 0 : flipRule.order > 0,
-      `${name}: the rule gives order:${flipRule.order} to the ` +
-        `${movedIsText ? 'text' : 'media'} column, which leaves it where it already was`
+      movedIsText ? branch.order < 0 : branch.order > 0,
+      `${name}: the rule gives order:${branch.order} to the ${movedIsText ? 'text' : 'media'} ` +
+        'column, which leaves it where it already was'
     );
   }
 });
