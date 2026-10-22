@@ -38,8 +38,8 @@ The theme ships **46 `ona-*` sections**, and the first thing to say about them i
 what is *not* true: none of them is dead. Every one is referenced by a template,
 so there is nothing to delete today — a section goes only when the page that
 uses it has been converted. Four are used by more than one template:
-`ona-page-title` (faq, faq-subscriptions, learn), `ona-sr-heading` (bookings,
-private-courses, wholesale), `ona-faq-lists` (bookings, wholesale) and
+`ona-page-title` (faq, faq-subscriptions, learn, wholesale), `ona-sr-heading`
+(bookings, private-courses), `ona-faq-lists` (bookings, wholesale) and
 `ona-faq-layout` (faq, faq-subscriptions).
 
 The problem is duplication, not disuse. The old theme had no block model, so each
@@ -346,11 +346,11 @@ toggle covers both.
 It has to carry their *fallback*, not just their settings.
 `sections/ona-sr-heading.liquid:5` renders
 `section.settings.text | default: page.title | default: shop.name`, and
-`sections/ona-page-title.liquid:14` falls back to `page.title` when `title2` is
+`sections/ona-page-title.liquid:15` falls back to `page.title` when `title2` is
 blank — and **four of the six instances leave the setting blank**: the
-`ona-sr-heading`s on bookings, private courses and wholesale, and the
-`ona-page-title` on Learn. Those four H1s are the page's own title today, read
-at render time.
+`ona-sr-heading`s on bookings and private courses, and the `ona-page-title`s on
+Learn and wholesale. Those four H1s are the page's own title today, read at
+render time.
 
 `templates/page.bookings.json` is what makes this a requirement rather than a
 nicety. The `bookings` suffix is shop-wide and serves **three** separately
@@ -477,8 +477,8 @@ apart from the 20 inline-`<style>` blocks listed above — one on the homepage a
 the rest across `collection.json` and the four product templates.
 
 Four sections are shared, so converting one page does not retire them:
-`ona-page-title` has to go from faq, faq-subscriptions *and* learn before it can
-be deleted, `ona-sr-heading` from bookings, private-courses and wholesale,
+`ona-page-title` has to go from faq, faq-subscriptions, learn *and* wholesale
+before it can be deleted, `ona-sr-heading` from bookings and private-courses,
 `ona-faq-lists` from bookings and wholesale, and `ona-faq-layout` from faq and
 faq-subscriptions. Convert all uses in one PR, or the section stays and the
 page is the only thing that moved.
