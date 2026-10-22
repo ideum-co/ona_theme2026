@@ -1727,7 +1727,7 @@ test('every in-page anchor owned by a section setting is recorded as a blocker',
       for (const value of Object.values(node.settings ?? {})) {
         if (typeof value !== 'string' || !value.startsWith('#') || HEX.test(value)) continue;
         const target = byAnchor.get(value.slice(1));
-        if (target) owners.set(target, `${file} ${value}`);
+        if (target) owners.set(target, value);
       }
     }
   }
@@ -1740,9 +1740,20 @@ test('every in-page anchor owned by a section setting is recorded as a blocker',
   const anchorSetting = (schema.settings ?? []).find((setting) => /^(id|anchor|section_id)$/.test(setting.id ?? ''));
   assert.equal(anchorSetting, undefined, 'sections/section.liquid now has an anchor setting; the anchor gap row is stale');
 
-  const anchorRows = doc.split('\n').filter((line) => /^\|/.test(line) && /anchor/i.test(line));
-  const unrecorded = [...owners.keys()].filter((name) => !anchorRows.some((row) => row.includes(`\`${name}\``)));
-  assert.deepEqual(unrecorded, [], 'these sections own a live in-page anchor that no gap row records');
+  /* Scoped to the gap table, and each section has to appear beside the anchor it actually owns.
+     "Mentioned in some row containing the word anchor" was satisfied by the wholesale plan row,
+     which lists every section on the page -- a row that names everything answers nothing. */
+  const gaps = doc.slice(doc.indexOf('## Known gaps'), doc.indexOf('\n## ', doc.indexOf('## Known gaps') + 1));
+  const gapRows = gaps.split('\n').filter((line) => /^\|/.test(line));
+  assert.ok(gapRows.length > 5, `only ${gapRows.length} gap rows found; the probe is broken`);
+  const unrecorded = [...owners].filter(
+    ([name, anchor]) => !gapRows.some((row) => row.includes(`\`${name}\``) && row.includes(anchor))
+  );
+  assert.deepEqual(
+    unrecorded.map(([name, anchor]) => `${name} ${anchor}`),
+    [],
+    'these sections own a live in-page anchor that no gap row records beside the anchor itself'
+  );
 
   /* The section has to actually emit the setting, or the finding rests on nothing. */
   for (const name of owners.keys()) {
