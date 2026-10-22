@@ -1,3 +1,4 @@
+{% render 'ona-band', section: section %}
 <script src="{{ 'ona-unique-coffees.js' | asset_url }}" type="module"></script>
 
 <ona-unique-coffees>
@@ -59,6 +60,16 @@
     "en": "Unique coffees"
   },
   "settings": [
+    {
+      "type": "header",
+      "content": "Band"
+    },
+    {
+      "type": "color",
+      "id": "band_background",
+      "label": "Band background",
+      "info": "Full-bleed colour behind this section. Leave blank to use the page background. Text and buttons are contrasted automatically."
+    },
     {
       "type": "text",
       "id": "id",

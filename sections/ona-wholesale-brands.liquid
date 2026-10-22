@@ -1,3 +1,4 @@
+{% render 'ona-band', section: section %}
 <section class="add-image-and-text  wholesale-brands wowo fadeInUp" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
     <div class="container">
         <div class="content">            
@@ -100,6 +101,16 @@
     "en": "Brands"
   },
   "settings": [
+    {
+      "type": "header",
+      "content": "Band"
+    },
+    {
+      "type": "color",
+      "id": "band_background",
+      "label": "Band background",
+      "info": "Full-bleed colour behind this section. Leave blank to use the page background. Text and buttons are contrasted automatically."
+    },
     {
       "type": "text",
       "id": "id",

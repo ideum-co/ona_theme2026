@@ -104,7 +104,10 @@
 
 
 /* Migrated pages: editorial content layouts and whitespace. */
-#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings,.learn-list,.product-search) { padding-block:var(--legacy-page-gap); }
+/* `.col-4-icons` and `.add-faqs-section` were left out of this list, so the four-icon
+   row and the FAQ list ran flush into their neighbours. Harmless while the page was a
+   single flat colour; with colour bands a section's padding is the band's height. */
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings,.learn-list,.product-search,.col-4-icons,.add-faqs-section) { padding-block:var(--legacy-page-gap); }
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.training-bookings) :is(.container,.content,.text,.img,.image,.left-box,.right-box) { min-width:0; }
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.two-columns-title-intro,.training-bookings) > .container > .content,
 #MainContent .training > .container { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(24px,5vw,70px); align-items:center; }
