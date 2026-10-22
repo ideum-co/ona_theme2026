@@ -19,6 +19,13 @@
         </div>
         {% endfor %}
     </div>
+    {%- if section.settings.bottom_image != blank -%}
+      <div class="cafe-reviews__bus">
+        {%- assign bus = section.settings.bottom_image -%}
+        {%- assign bus_h = 600 | divided_by: bus.aspect_ratio | round -%}
+        <img src="{{ bus | img_url: '600x' }}" width="600" height="{{ bus_h }}" alt="{{ bus.alt | escape }}" loading="lazy" decoding="async">
+      </div>
+    {%- endif -%}
 </section>
 
 {% stylesheet %}
@@ -58,6 +65,27 @@
   @media (max-width: 749px) {
     #MainContent .cafe-reviews .add-images-slider > .slider-block { flex-basis: 84%; }
   }
+
+  /* Decorative bus, centred on the section's bottom edge so it straddles the join
+     to the next section. The carousel clips its own overflow (.add-images-slider),
+     not the section, so the bus sits outside it and is never cut off. */
+  #MainContent .cafe-reviews { position: relative; }
+
+  #MainContent .cafe-reviews__bus {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translate(-50%, 50%);
+    inline-size: clamp(180px, 22vw, 320px);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  #MainContent .cafe-reviews__bus img {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -72,6 +100,12 @@
       "label": {
         "en": "ID"
       }
+    },
+    {
+      "type": "image_picker",
+      "id": "bottom_image",
+      "label": "Bottom decoration image",
+      "info": "Sits centred on the section's bottom edge (e.g. the ONA bus). Leave empty to hide."
     }
   ],
   "blocks": [
