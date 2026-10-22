@@ -136,8 +136,11 @@
   line-height: 1.4;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  /* Set by the band snippet on a banded section, so the label follows the band it sits on. */
-  color: var(--color-foreground-muted, currentColor);
+  /* No colour of its own. A muted token would read as the obvious choice for a label, but
+     --color-foreground-muted composites the foreground at --opacity-muted-text (0.6), which
+     puts 14px text at 4.42:1 on the page's cream and 4.21:1 on the sand bands -- under the
+     4.5:1 that normal-size text needs (Codex, #300). The case and the tracking carry the
+     de-emphasis instead, and inheriting means the label follows whatever band it sits on. */
 }
 #MainContent .subtitle:empty { display: none; }
 #MainContent .banner-detail-top { position:relative; isolation:isolate; display:flex; align-items:center; min-height:clamp(260px,38vw,540px); }
