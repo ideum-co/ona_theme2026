@@ -745,6 +745,16 @@ test('every ona-* section has a mapping or a declared gap', () => {
  * all while its gap row said the replacement could not be invisible (Codex, #247). The two
  * tables have to agree in this direction too: naming a gapped section as a replacement is only
  * honest if the cell says so.
+ *
+ * The first version of this asked whether the *cell* carried a marker, which is useless: rows
+ * 2, 5 and 6 already contain "blocked", so all three became permanently exempt and a new
+ * unqualified mapping could be appended to any of them with the suite still green. Row 6 is
+ * the row this guard was written for, and giving it its marker is what exempted it. Demonstrated
+ * by appending `ona-awards` to row 2 as a straight swap: 23/23 pass. The marker has to attach
+ * to the *name*, so the clause each gapped name sits in is the unit, not the cell.
+ *
+ * `**Not**` counts as a treatment: row 4 already uses that idiom to exclude a target, and an
+ * explicit exclusion is the opposite of an unqualified mapping, not an instance of one.
  */
 test('no kit row offers a gapped section as an unqualified replacement', () => {
   const between = (from, to) => doc.slice(doc.indexOf(from), doc.indexOf(to));
@@ -759,13 +769,22 @@ test('no kit row offers a gapped section as an unqualified replacement', () => {
   );
   assert.ok(gapped.size > 5, `only ${gapped.size} gap rows found; the probe is broken`);
 
+  /* `\|` is a literal pipe inside a cell; splitting on every pipe would truncate the cell at
+     the escape and scan neither the names nor the markers after it. */
+  const cells = (row) => row.split(/(?<!\\)\|/);
+  const TREATED = /\bblocked\b|Known gaps|no verified target|\*\*Not\*\*/i;
+
   const unqualified = [];
   for (const row of kit.split('\n').filter((line) => /^\| \d+ \|/.test(line))) {
-    const replaces = row.split('|').at(-2) ?? '';
-    const named = [...replaces.matchAll(/`(ona-[a-z0-9-]+)`/g)].map((match) => match[1]);
-    const marked = /blocked|Known gaps|no verified target/i.test(replaces);
-    if (marked) continue;
-    unqualified.push(...named.filter((name) => gapped.has(name)));
+    const replaces = cells(row).at(-2) ?? '';
+    /* Clause, not cell. A marker earlier in the same cell says nothing about a name added to
+       the end of it. Sentence and semicolon boundaries are what separate one claim from the
+       next in these cells; em-dash asides stay with the claim they qualify. */
+    for (const clause of replaces.split(/(?<=\.)\s+|;\s+/)) {
+      if (TREATED.test(clause)) continue;
+      const named = [...clause.matchAll(/`(ona-[a-z0-9-]+)`/g)].map((match) => match[1]);
+      unqualified.push(...named.filter((name) => gapped.has(name)));
+    }
   }
 
   assert.deepEqual(
@@ -788,7 +807,12 @@ test('the wholesale plan carries both halves of the ona-gust-r gap', () => {
 
   const planRow = doc.split('\n').find((line) => line.startsWith('| `/pages/wholesale` |'));
   assert.ok(planRow, 'the wholesale page-plan row is gone');
-  const clause = planRow.slice(planRow.lastIndexOf('`ona-gust-r`'));
+  /* indexOf, not lastIndexOf: taking from the *last* mention would shrink the clause to
+     nothing if a second mention were added later in the row, and the test would fail for the
+     wrong reason. Pin the count so a second mention is a deliberate change. */
+  const mentions = planRow.match(/`ona-gust-r`/g) ?? [];
+  assert.equal(mentions.length, 1, `the wholesale row mentions ona-gust-r ${mentions.length} times; this guard assumes one`);
+  const clause = planRow.slice(planRow.indexOf('`ona-gust-r`'));
   assert.match(
     clause,
     /two-column container/i,

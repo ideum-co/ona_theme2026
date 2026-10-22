@@ -2,8 +2,12 @@
 
 Found while checking image stability on `/pages/wholesale`, 2026-10-20.
 
-This is the real reason those pages do not look like the live site. It is not a
-missing design — it is missing stylesheets.
+This is the real reason those pages do not look like the **old theme**. It is
+not a missing design — it is missing stylesheets.
+
+Throughout this document, "the old theme" means `160815546559`, which was
+published when it was written. It no longer is — see the note under the
+measurement.
 
 ---
 
@@ -22,9 +26,10 @@ so lazy loading is not a factor — 43 images in `<main>`, 43 loaded, 0 missing)
 > `role: MAIN` and is what `onacoffee.com.au` serves —
 > `Shopify.theme = {"id":154676789439,...,"role":"main"}` in the page source —
 > while `160815546559` ("PREVIEW - product media fills column (PR #46)") is
-> `UNPUBLISHED`. So the measurement below is live-vs-candidate as it stood
-> before the go-live, and the 17 upscaled images are on the theme that is now
-> production. Do not use `160815546559` as the current baseline.
+> `UNPUBLISHED`. So the measurement above is old-theme-vs-candidate as it
+> stood before the go-live, and the 17 upscaled images are on the theme that is
+> now production. Do not use `160815546559` as the current baseline, and read
+> every "old theme" below as `160815546559`, not as whatever is published.
 
 Worst offenders, all in the same section:
 
@@ -39,8 +44,9 @@ Worst offenders, all in the same section:
 
 A 100x150 icon painted at 1016x1526. It renders as mud.
 
-**This is a regression.** Live renders the same sections, from the same image
-sources, with zero upscaling.
+**This is a regression.** The old theme rendered the same sections, from the
+same image sources, with zero upscaling — and since the go-live the upscaled
+side is the published one.
 
 Layout shift is *not* the problem — CLS on that page measures **0.0051**, which
 is excellent. Nothing jumps. It is simply blurry.
@@ -132,7 +138,7 @@ markup whose CSS never came across.
 ## 4. Why "there is no design to work from" was the wrong framing
 
 Said earlier in the session, and worth correcting. These pages do not need a
-design comp. The design already exists — as CSS on the live theme. The work is
+design comp. The design already exists — as CSS on the old theme. The work is
 to re-express it in this theme, not to invent it.
 
 ## 5. Scope
