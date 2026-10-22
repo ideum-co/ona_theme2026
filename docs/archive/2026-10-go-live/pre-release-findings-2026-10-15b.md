@@ -14,14 +14,14 @@ Horizon 4.1.4), inspected pinned in preview with `Shopify.theme.id` asserted.
 ## 0. In Sequence banner — confirmed still running
 
 Felipe confirmed the campaign is live, so this moves from a question to a
-required port. Full audit in `docs/manual-theme-work-2026-10-15.md`; the short
+required port. Full audit in `docs/archive/2026-10-go-live/manual-theme-work-2026-10-15.md`; the short
 version is that the lead slide of the live homepage's `ona-banner-slider` was
 switched on and re-pointed by hand on 2026-10-15T01:01:41Z, it exists in no
 repository, and **2026 has no banner-slider section at all**.
 
 Because the live theme is also the named rollback, it has to stay current:
 anything the editor changes there is the newest copy that exists, and the only
-record is the dated snapshot in `docs/live-theme-160815546559/`. **Re-pull that
+record is the dated snapshot in `docs/archive/2026-10-go-live/live-theme-160815546559/`. **Re-pull that
 snapshot before the release**, not just before a rollback.
 
 ---

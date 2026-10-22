@@ -1,7 +1,13 @@
 # Front-end preview audit — 2026-10-20
 
 Audit of **theme 154676789439** (`ona_theme2026/main`, unpublished preview),
-against the live theme 160815546559 where a comparison was useful.
+against the then-live theme 160815546559 where a comparison was useful.
+
+> **Roles have swapped since this audit.** As of 2026-10-22 the audited theme
+> `154676789439` is `MAIN` — it is what `onacoffee.com.au` serves — and
+> `160815546559` is `UNPUBLISHED`. So the findings below are findings about
+> **production**, not about a preview, and the comparison theme is no longer a
+> baseline. See `docs/archive/2026-10-go-live/README.md`.
 
 Written for Victor. It is split by **who decides**: what is already fixed, what
 is yours to call, and what only an admin can do. Nothing in the "yours" section
@@ -184,7 +190,7 @@ These cannot be done from the repo.
    metafield path is **untested until this is done**. Once set, no release can
    take the map down again.
 2. **Ten app embeds** (Judge.me, Appstle Subscriptions and the rest) — see
-   `docs/go-live-parity-and-post-publish-2026-10-19.md` §1.
+   `docs/archive/2026-10-go-live/go-live-parity-and-post-publish-2026-10-19.md` §1.
 3. **Favicon.**
 4. **Empty state collection.** A search with no results currently renders
    `collections.all` — 54 products and 1.63 MB, heavier than the page *with* 93

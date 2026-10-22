@@ -1,6 +1,6 @@
 # Responsive and mobile review — `ona_theme2026`, 16 October 2026
 
-Companion to `docs/victor-review-2026-10-16.md`. Measured against `main` = `77174e8` and theme
+Companion to `docs/archive/2026-10-go-live/victor-review-2026-10-16.md`. Measured against `main` = `77174e8` and theme
 `154676789439`.
 
 **What this is not:** a visual check. Chrome in this environment clamps window resizing at about

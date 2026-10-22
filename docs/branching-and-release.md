@@ -30,7 +30,7 @@ point is that no one *chose* to deploy it.
 > in thirty hours is precisely the problem: the storefront changed twice without
 > a decision either time. Keep working on `staging` — the moment
 > `154676789439` is published again, `main` is production again, and nobody will
-> send a reminder. See `docs/post-publish-review-2026-10-15.md` §13.
+> send a reminder. See `docs/archive/2026-10-go-live/post-publish-review-2026-10-15.md` §13.
 
 ---
 
@@ -43,7 +43,7 @@ point is that no one *chose* to deploy it.
 > commits merged into `origin/staging` at 13:04Z and never arrived. Of eight
 > probed files only `layout/theme.liquid` exists on it; all six JSON templates
 > are missing. This is the same silent validation drop described in
-> `docs/victor-review-2026-10-16.md` §1 — a clean merge, no error anywhere, and
+> `docs/archive/2026-10-go-live/victor-review-2026-10-16.md` §1 — a clean merge, no error anywhere, and
 > a theme quietly a day behind its branch.
 >
 > **The branch fell behind and never came back.** §4 below already said *"`main`
@@ -350,8 +350,14 @@ Paste into the body of every `staging-v2` → `main` PR:
       reconcile — record it as such
 - [ ] Section count ≤ 25 and blocks ≤ 50 for every JSON template changed
 - [ ] Rollback named — and check which theme is actually `MAIN` first; it has
-      changed twice without notice. `160335790271` is the pre-cutover theme;
-      `160815546559` is what is live as of 2026-10-14 22:00:42Z
+      changed three times without notice. **As of 2026-10-22 `MAIN` is
+      `154676789439` (`ona_theme2026/main`, Horizon 4.1.4)**, which is this
+      repository's own theme, so a rollback now means publishing a different
+      theme, not re-publishing the live one. `160815546559` ("PREVIEW -
+      product media fills column", Horizon 3.5.1) is the last pre-`main` theme
+      and is `UNPUBLISHED`; `160335790271` is older still. Resolve it at the
+      time — `curl -s https://onacoffee.com.au | grep -o 'Shopify.theme = {[^}]*}'`
+      answers it in one line and cannot be stale
 - [ ] Deploying at a sensible hour (AEDT), not into a promo window
 - [ ] If `templates/page.location.json` is in the diff: **re-enter the Google
       Maps API key in the theme editor immediately after merging**, then confirm
@@ -401,4 +407,4 @@ Paste into the body of every `staging-v2` → `main` PR:
   *Horizon-compatible* rebuild of those pages — that work has not been done yet,
   which is a backlog item, not a storage problem. **App embeds are the real
   not-in-git item**: they live in `config/settings_data.json` on each theme and
-  are listed in `docs/post-publish-review-2026-10-15.md` §4.
+  are listed in `docs/archive/2026-10-go-live/post-publish-review-2026-10-15.md` §4.

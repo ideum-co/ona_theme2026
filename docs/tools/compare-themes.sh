@@ -15,9 +15,26 @@
 
 set -uo pipefail
 
-LIVE_ID="${LIVE_ID:-160815546559}"
+# Both ids must be given deliberately. This script was written when the
+# published theme was 160815546559 and ona_theme2026 was the candidate; since
+# the go-live, 154676789439 IS the published theme, so defaulting LIVE_ID to
+# the old id would compare production against an unpublished preview and
+# report the preview as the baseline. Resolve MAIN at run time instead.
+LIVE_ID="${LIVE_ID:-}"
 NEW_ID="${NEW_ID:-154676789439}"
 BASE="https://onacoffee.com.au"
+
+if [[ -z "$LIVE_ID" ]]; then
+  echo "LIVE_ID is not set. The published theme is:" >&2
+  curl -s "$BASE" | grep -o 'Shopify.theme = {[^}]*}' >&2 || true
+  echo "Set LIVE_ID=<theme id> explicitly (it is no longer safe to default)." >&2
+  exit 2
+fi
+if [[ "$LIVE_ID" == "$NEW_ID" ]]; then
+  echo "LIVE_ID == NEW_ID ($LIVE_ID): there is nothing to compare." >&2
+  exit 2
+fi
+
 OUT="${1:-./theme-compare-$(date -u +%Y%m%dT%H%M%SZ)}"
 mkdir -p "$OUT"
 
