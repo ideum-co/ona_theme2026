@@ -522,4 +522,39 @@
   .variant-option__button-label--has-swatch:has([data-option-available='false']):has(:checked):hover {
     background-color: inherit;
   }
+
+  /*
+   * Outline variant buttons (XD design). The text variant buttons (Size / Weight)
+   * read as outlined boxes on the product's own background instead of filled pills,
+   * and the selected one is marked by a thicker, full-strength border rather than a
+   * fill. Border and text use the section foreground, so they stay legible on any
+   * product colour -- dark on a light product, light on a dark one. Swatches are
+   * left as they are. These selectors are more specific than the base rules above,
+   * so they win without !important.
+   */
+  .variant-option--buttons .variant-option__button-label:not(.variant-option__button-label--has-swatch) {
+    background-color: transparent;
+    border-color: rgb(var(--color-foreground-rgb) / 0.4);
+    color: var(--color-foreground);
+  }
+
+  .variant-option--buttons
+    .variant-option__button-label:not(.variant-option__button-label--has-swatch)::before {
+    border-color: rgb(var(--color-foreground-rgb) / 0.4);
+  }
+
+  .variant-option--buttons
+    .variant-option__button-label:not(.variant-option__button-label--has-swatch)
+    .variant-option__button-label__pill {
+    background: transparent;
+  }
+
+  .variant-option--buttons
+    .variant-option__button-label:not(.variant-option__button-label--has-swatch):has(:checked),
+  .variant-option--buttons
+    .variant-option__button-label:not(.variant-option__button-label--has-swatch):has(:checked)::before {
+    border-color: var(--color-foreground);
+    border-width: 2px;
+    color: var(--color-foreground);
+  }
 {% endstylesheet %}
