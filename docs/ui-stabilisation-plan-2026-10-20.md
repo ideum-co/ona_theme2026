@@ -101,26 +101,35 @@ everywhere. A scoped `{% stylesheet %}` is right only for something genuinely
 local to one section, such as the icon-box constraint in item 1. (Codex, #203 —
 the first draft of this plan sent every item to its own stylesheet.)
 
-Ordered by damage, worst first. **Items 1 and 3 have since shipped in #204**
-(`6648c74`) — the numbers below them describe the pre-fix tree, so remeasure
-before picking up item 2 rather than trusting this ordering (Codex, #203):
+Ordered by damage, worst first. **Items 1 and 3 shipped in #204** (`6648c74`), **item 2 in #216**, **item 4 in
+#233/#244** and **item 5 in #209** — so every ratio below describes the pre-fix
+tree and none of it is an outstanding instruction. Remeasure before picking
+anything up here (Codex, #203):
 
 1. ~~**`ona-icon-and-content`** — 16.4x. Five icons at 100-195px natural,
    painted at 1016px.~~ **Done, #204.** `assets/legacy-page-layout.css` now
    defines the `.col-4-icons` grid and caps icons at 120x88;
    `tests/legacy-image-sizing.test.mjs` holds it. Measured on the deployed page:
    the section went 6,491px -> 230px.
-2. **`ona-unique-coffees`** — 14.5x, the largest absolute excess. **Not a CSS
+2. ~~**`ona-unique-coffees`** — 14.5x, the largest absolute excess. **Not a CSS
    job.** With the three configured blocks it emits nine images and three
    `.slider-handle` controls, and `slider-handle` and `imgs-slider-unique`
    appear nowhere outside that one Liquid file — no listener, no component. CSS
    can bring the height down; only rebuilt behaviour makes a tab select its
-   coffee. Budget it as behaviour, not layout (Codex, #203).
+   coffee. Budget it as behaviour, not layout.~~ **Done, #216.** The behaviour
+   was built: `assets/ona-unique-coffees.js` defines an `<ona-unique-coffees>`
+   element handling click and arrow-key selection, the section wraps itself in
+   it, and `assets/legacy-page-layout.css` stacks the panels so only the active
+   coffee shows. The 14.5x above is the pre-fix number — remeasure (Codex,
+   #203).
 3. ~~**`ona-wholesale-brands`** — 6.5x. A logo wall; same class of fault.~~
    **Done, #204.** Brand logos capped at 170px wide; the section went
    2,308px -> 265px. Together with item 1 the page went 32,136px -> 23,830px,
    upscaled images 17 -> 12, and the worst upscale 11.8x -> 3.7x.
-4. **`ona-wholesale-testimonial`** — 4.2x.
+4. ~~**`ona-wholesale-testimonial`** — 4.2x.~~ **Done, #233/#244.** The height
+   came from four episodes stacking; the section now loads `assets/ona-slider.js`,
+   marks each block as a slide and scopes the enhanced track to one active slide
+   at a time. Remeasure rather than reusing 4.2x (Codex, #203).
 5. ~~**The `sourcing` family** — six sections render on the page (`sourcing`
    and `wholesale_sourcing_v2` through `_v6`, all enabled); the table measures
    five of them, 2.4x to 3.9x.~~ **Done, #209.** Their

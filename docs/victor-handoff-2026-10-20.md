@@ -120,6 +120,13 @@ which is where the autoplay work was aimed in the first place.
 ## One coordination note
 
 `templates/index.json` and `config/settings_data.json` both carried theme-editor
-changes on the afternoon of 2026-10-19 that this repo does not have. Any merge
-touching those two files wipes that work. Nothing I have open goes near them —
-flagging it so a future PR does not.
+changes on the afternoon of 2026-10-19 that this repo did not have, so any merge
+touching them would have wiped that work.
+
+**Both have since been reconciled** — #245 updated `config/settings_data.json`
+to preserve the live app embeds, and #264 re-baselined `templates/index.json`
+from the shop-owned state — so the warning as written is no longer true and
+following it would cause an unnecessary reconciliation (Codex, #203). The
+standing rule it came from still holds: those two files are shop-owned, the
+theme editor writes to them directly, and a PR that touches either has to
+re-baseline from the live theme first rather than from this branch.

@@ -58,8 +58,14 @@ Two things compound:
 
 ## 3. It is not one section
 
-**Forty legacy `ona-*` sections carry no scoped CSS of their own** — no
-`{% stylesheet %}` and no `{% style %}`. They are not bare, though: every one of
+**Thirty of the theme's 46 legacy `ona-*` sections carry no scoped CSS of
+their own** — no `{% stylesheet %}` and no `{% style %}`. It was forty when
+this was written on 2026-10-20; ten have been scoped since, among them
+`ona-awards`, `ona-cafe-testimonial`, `ona-faq-lists`, `ona-icon-and-content`,
+`ona-supported` and `ona-wholesale-testimonial`, all of which this document
+originally listed. `tests/legacy-sections-scoped-css.test.mjs` now derives the
+count, so the next one to be scoped moves this sentence instead of stranding
+it (Codex, #203). They are not bare, though: every one of
 them draws on the shared `assets/legacy-page-layout.css`, which
 `layout/theme.liquid` loads for the migrated page suffixes. An earlier draft of
 this document said they had "no matching rules in `assets/`" — that was wrong
@@ -74,22 +80,26 @@ earlier draft reported by covering `.block`, `.slider-block` and `.bg-img`
 fix lands.
 
 Of the 85, the ones that still cost layout are `.section-full-large`
-(16 uses), `.match-height` / `.equal-height` (12 / 11), `.more-btn` (14) and
-the `.start` / `.medium` / `.end` trio (14 each). The largest by raw count are
+(16 uses), `.match-height` / `.equal-height` (12 / 11) and the `.start` /
+`.medium` / `.end` trio (14 each). `.more-btn` (14) was on this list and is
+now covered by `assets/legacy-page-layout.css` (Codex, #203) — another reason
+to rerun the count rather than work from it. The largest by raw count are
 animation hooks — `.fadeInUp` at 63, `.fadeIn` and `.fadeInup` at 16 each — and
 those are inert in this theme, so they need deleting rather than styling. So
-the work is to finish the shared sheet selector by selector, not to write forty
+the work is to finish the shared sheet selector by selector, not to write thirty
 new ones:
 
 ```
-ona-awards            ona-bookings-top       ona-bread-crumbs
-ona-brewguides-and-training                  ona-cafe-testimonial
-ona-careers           ona-content            ona-exclusive-access
-ona-expericences-content                     ona-expressions
-ona-faq-lists         ona-gust-r             ona-icon-and-content
-ona-inner-banner      ona-our-philosophy     ona-sourcing
-ona-supported         ona-sustainability-list
-ona-sustatnability    ona-training-banner    ...
+ona-bookings-top                ona-bread-crumbs                ona-brewguides-and-training
+ona-careers                     ona-content                     ona-exclusive-access
+ona-expericences-content        ona-gust-r                      ona-inner-banner
+ona-our-philosophy              ona-sourcing                    ona-sustainability-list
+ona-sustatnability              ona-training-banner             ona-training-form
+ona-training-iframe             ona-training-image-text         ona-training-text-image-bg
+ona-training-text-two-images    ona-traning-sourcing            ona-traning-sourcing-v2
+ona-traning-sourcing-v3         ona-traning-sourcing-v4         ona-unique-coffees
+ona-wholesale-partnership       ona-wholesale-sourcing-v2       ona-wholesale-sourcing-v3
+ona-wholesale-sourcing-v4       ona-wholesale-sourcing-v5       ona-wholesale-sourcing-v6
 ```
 
 They were ported as markup and their stylesheets were left behind. The pages
