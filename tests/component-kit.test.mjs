@@ -740,6 +740,49 @@ test('every ona-* section has a mapping or a declared gap', () => {
 });
 
 /*
+ * The declared-gap population is not just the rows that start with a name. Two gap rows are
+ * collective -- "the five panel-plus-slider composites" and "every media/text section carrying
+ * `.animated-svg` -- **15 of them**" -- and reading only named rows let a page plan drop
+ * `ona-traning-supported`, one of the five, with the suite green (Codex, #247). Derive the
+ * members rather than listing them: the composites from the table that defines them, the
+ * decorative-layer sections from the filesystem, the same grep the gap row quotes.
+ */
+const between = (from, to) => doc.slice(doc.indexOf(from), doc.indexOf(to));
+
+const gappedSections = () => {
+  const gaps = between('## Known gaps', '## Page by page');
+  const named = gaps
+    .split('\n')
+    .filter((line) => /^\| `ona-[a-z0-9-]+`/.test(line))
+    .map((line) => line.match(/^\| `(ona-[a-z0-9-]+)`/)[1]);
+
+  const compositeTable = between(
+    '### The dominant shape is a composite',
+    '### The media slot holds less than the sections do'
+  );
+  const composites = [...compositeTable.matchAll(/^\| `(ona-[a-z0-9-]+)` \|/gm)].map((m) => m[1]);
+  assert.equal(composites.length, 5, `the composite table lists ${composites.length} sections, not five`);
+  assert.ok(
+    gaps.includes('the five panel-plus-slider composites'),
+    'Known gaps no longer carries the collective row for the panel-plus-slider composites'
+  );
+
+  const carriers = readdirSync(join(root, 'sections'))
+    .filter((file) => file.startsWith('ona-') && file.endsWith('.liquid'))
+    .filter((file) => readFileSync(join(root, 'sections', file), 'utf8').includes('animated-svg'))
+    .map((file) => file.replace(/\.liquid$/, ''));
+  assert.ok(carriers.length > 1, 'the .animated-svg probe found almost nothing; it is broken');
+  assert.ok(
+    gaps.includes(`carrying \`.animated-svg\` — **${carriers.length} of them**`),
+    `the collective gap row should say ${carriers.length}`
+  );
+
+  const all = new Set([...named, ...composites, ...carriers]);
+  assert.ok(all.size > 15, `only ${all.size} gapped sections found; the probe is broken`);
+  return all;
+};
+
+/*
  * A section with a Known-gaps row is, by definition, not a clean mapping -- but the kit table
  * is what an implementer follows, and `ona-faq-lists` sat in a Replaces cell with no marker at
  * all while its gap row said the replacement could not be invisible (Codex, #247). The two
@@ -757,49 +800,41 @@ test('every ona-* section has a mapping or a declared gap', () => {
  * explicit exclusion is the opposite of an unqualified mapping, not an instance of one.
  */
 test('no kit row offers a gapped section as an unqualified replacement', () => {
-  const between = (from, to) => doc.slice(doc.indexOf(from), doc.indexOf(to));
   const kit = between('## The kit', '### Why `media-with-content` carries the weight');
-  const gaps = between('## Known gaps', '## Page by page');
-
-  const gapped = new Set(
-    gaps
-      .split('\n')
-      .filter((line) => /^\| `ona-[a-z0-9-]+`/.test(line))
-      .map((line) => line.match(/^\| `(ona-[a-z0-9-]+)`/)[1])
-  );
-  assert.ok(gapped.size > 5, `only ${gapped.size} gap rows found; the probe is broken`);
+  const gapped = gappedSections();
 
   /* `\|` is a literal pipe inside a cell; splitting on every pipe would truncate the cell at
      the escape and scan neither the names nor the markers after it. */
   const cells = (row) => row.split(/(?<!\\)\|/);
-  const TREATED = /\bblocked\b|Known gaps|no verified target|\*\*Not\*\*/i;
+  const TREATED = /\bblocked\b|Known gaps|no verified target/i;
 
+  /* Three span-shaped versions of this were each defeated by a one-line edit: cell-level let a
+     name be appended anywhere in an already-marked row, sentence-level let it be inserted before
+     the period of a marked sentence, comma-level let it be joined on with "and" (Codex, #247,
+     three rounds). Spans are the wrong unit. A marker is evidence about the name it sits beside.
+
+     So each name owns the text from itself to the next section name, or to the end of the cell:
+     a marker that qualifies an earlier name cannot reach across the name that follows it. The
+     one qualifier that legitimately *precedes* a name is `**Not**`, so that is matched in a
+     short lookbehind -- short enough that it cannot reach a distant marker. */
   const unqualified = [];
   for (const row of kit.split('\n').filter((line) => /^\| \d+ \|/.test(line))) {
     const replaces = cells(row).at(-2) ?? '';
-    /* Segment, not clause, and not cell. Both looser versions of this failed the same way:
-       a marker somewhere in the scanned span exempts every name in it, so appending one more
-       name to a span that is already marked slips through. Cell-level let `ona-awards` be
-       added anywhere in rows 2, 5 or 6; clause-level still let it be added before the period
-       of a marked sentence (Codex, #247). Commas bound a name's own claim, so they split too.
+    const names = [...replaces.matchAll(/`(ona-[a-z0-9-]+)`/g)];
 
-       Em dashes deliberately do not: rows 2 and 5 write the marker as an aside after one
-       (``ona-cafe-testimonial` — **blocked**`), and splitting there would separate every
-       marker from its name. The cost of this is that the marker must stay adjacent to the
-       name it qualifies -- `ona-faq-lists`, blocked per instance` fails where
-       `**`ona-faq-lists` is blocked, per instance**` passes. That is the intended pressure:
-       a reader scanning one row should not have to carry a qualifier across a comma. */
-    for (const segment of replaces.split(/(?<=\.)\s+|;\s+|,\s+/)) {
-      if (TREATED.test(segment)) continue;
-      const named = [...segment.matchAll(/`(ona-[a-z0-9-]+)`/g)].map((match) => match[1]);
-      unqualified.push(...named.filter((name) => gapped.has(name)));
+    for (const [index, match] of names.entries()) {
+      if (!gapped.has(match[1])) continue;
+      const territory = replaces.slice(match.index, names[index + 1]?.index ?? replaces.length);
+      const lookbehind = replaces.slice(Math.max(0, match.index - 12), match.index);
+      if (TREATED.test(territory) || /\*\*Not\*\*\s*$/.test(lookbehind)) continue;
+      unqualified.push(match[1]);
     }
   }
 
   assert.deepEqual(
     unqualified,
     [],
-    `these sections have a Known-gaps row but are offered as a plain replacement in the kit table: ${unqualified.join(', ')}`
+    `these sections have a declared gap but are offered as a plain replacement in the kit table: ${unqualified.join(', ')}`
   );
 });
 
@@ -824,15 +859,12 @@ const PAGE_ROWS = [
 ];
 
 test('every page plan names the gapped sections live on that page', () => {
-  const between = (from, to) => doc.slice(doc.indexOf(from), doc.indexOf(to));
-  const gaps = between('## Known gaps', '## Page by page');
-  const gapped = new Set(
-    gaps
-      .split('\n')
-      .filter((line) => /^\| `ona-[a-z0-9-]+`/.test(line))
-      .map((line) => line.match(/^\| `(ona-[a-z0-9-]+)`/)[1])
+  const gapped = gappedSections();
+  const compositeTable = between(
+    '### The dominant shape is a composite',
+    '### The media slot holds less than the sections do'
   );
-  assert.ok(gapped.size > 5, `only ${gapped.size} gap rows found; the probe is broken`);
+  const composites = [...compositeTable.matchAll(/^\| `(ona-[a-z0-9-]+)` \|/gm)].map((m) => m[1]);
 
   /* Live means in `order` and not disabled -- a parked section is not work this page owes. */
   const liveGapped = (file) => {
@@ -860,19 +892,120 @@ test('every page plan names the gapped sections live on that page', () => {
     'these page templates carry a gapped live section but are not in PAGE_ROWS, so their plan row is unchecked'
   );
 
+  /* A plan row is allowed to treat a group collectively -- it does, for the sourcing clones and
+     the panel-plus-slider composites, and spelling out nine names per row would make the plan
+     unreadable. But a collective mention only covers the group if the row says how many of that
+     group are on *this* page: that is what makes dropping one member detectable. Drop
+     `ona-traning-supported` from the barista row and the composites live there fall from one to
+     zero, so the row no longer carries a count that matches. */
+  const COLLECTIVES = [
+    {
+      what: 'sourcing clones',
+      members: (name) => /^ona-(wholesale-|traning-)?sourcing(-v\d+)?$/.test(name),
+      stated: (row, n) => new RegExp(`\\*\\*${NUMBER_WORDS[n]}\\*\\* sourcing sections`, 'i').test(row)
+    },
+    {
+      what: 'panel-plus-slider composites',
+      members: (name) => composites.includes(name),
+      stated: (row, n) => new RegExp(`the ${NUMBER_WORDS[n]} panel-plus-slider composites?`, 'i').test(row)
+    }
+  ];
+
   const missing = [];
   for (const [file, marker] of PAGE_ROWS) {
     const row = doc.split('\n').find((line) => line.startsWith(marker));
     assert.ok(row, `the page-plan row ${marker} is gone or renamed`);
-    for (const name of liveGapped(file)) {
-      if (!row.includes(`\`${name}\``)) missing.push(`${marker} omits ${name}`);
+
+    const live = liveGapped(file);
+    const covers = (name) =>
+      row.includes(`\`${name}\``) ||
+      COLLECTIVES.some(
+        (group) => group.members(name) && group.stated(row, live.filter(group.members).length)
+      );
+
+    for (const group of COLLECTIVES) {
+      const onThisPage = live.filter(group.members);
+      if (!onThisPage.length) continue;
+      if (onThisPage.every((name) => row.includes(`\`${name}\``))) continue;
+      if (!group.stated(row, onThisPage.length)) {
+        missing.push(
+          `${marker} leans on the ${group.what} collectively but does not say ${NUMBER_WORDS[onThisPage.length]} are on this page`
+        );
+      }
     }
+
+    missing.push(...live.filter((name) => !covers(name)).map((name) => `${marker} omits ${name}`));
   }
 
   assert.deepEqual(
     missing,
     [],
     `these pages run a section with a declared gap that their plan row does not mention: ${missing.join('; ')}`
+  );
+});
+
+/*
+ * Step 2 solves the decorative layer and steps 3-5 then convert the pages. But four sections
+ * carry the blob *and* have a gap row of their own for an unrelated reason, so step 2 does not
+ * release them -- and an ordered plan that says "the same prerequisite" hands an implementer a
+ * page that is still blocked. Step 4 did exactly that with `ona-training-form`, whose fixed
+ * `contact[subject]` survives any decision about the blob (Codex, #247); step 5 did the same,
+ * silently, with three sections on About.
+ *
+ * Derive the set rather than list it: a section with a `.animated-svg` layer that also has its
+ * own named gap row. Then every page that runs one has to name it in its own step.
+ */
+const ORDER_STEPS = [
+  ['templates/page.wholesale.json', /^3\. \*\*Wholesale\*\*/],
+  ['templates/page.training.json', /^4\. \*\*Barista courses\*\*/],
+  ['templates/page.about.json', /^5\. \*\*About\*\*/]
+];
+
+test('an order-of-work step names the blockers step 2 does not clear', () => {
+  const order = between('## Order of work', '## Rules');
+  const gaps = between('## Known gaps', '## Page by page');
+  const namedRows = gaps
+    .split('\n')
+    .filter((line) => /^\| `ona-[a-z0-9-]+`/.test(line))
+    .map((line) => line.match(/^\| `(ona-[a-z0-9-]+)`/)[1]);
+
+  const carriers = readdirSync(join(root, 'sections'))
+    .filter((file) => file.startsWith('ona-') && file.endsWith('.liquid'))
+    .filter((file) => readFileSync(join(root, 'sections', file), 'utf8').includes('animated-svg'))
+    .map((file) => file.replace(/\.liquid$/, ''));
+
+  const doubly = namedRows.filter((name) => carriers.includes(name));
+  assert.ok(doubly.length > 2, `only ${doubly.length} doubly-blocked sections found; the probe is broken`);
+
+  /* Steps are numbered list items: from the marker to the next top-level number. */
+  const stepText = (marker) => {
+    const lines = order.split('\n');
+    const start = lines.findIndex((line) => marker.test(line));
+    assert.ok(start >= 0, `the order-of-work step ${marker} is gone or renumbered`);
+    const rest = lines.slice(start + 1).findIndex((line) => /^\d+\. /.test(line));
+    return lines.slice(start, rest === -1 ? undefined : start + 1 + rest).join('\n');
+  };
+
+  const missing = [];
+  for (const [file, marker] of ORDER_STEPS) {
+    const parsed = JSON.parse(stripBanner(readFileSync(join(root, file), 'utf8')));
+    const ids = new Set(parsed.order ?? []);
+    const live = new Set(
+      Object.entries(parsed.sections ?? {})
+        .filter(([id, section]) => ids.has(id) && !section.disabled)
+        .map(([, section]) => section.type)
+    );
+    const step = stepText(marker);
+    for (const name of doubly.filter((section) => live.has(section))) {
+      if (!step.includes(`\`${name}\``)) missing.push(`${marker.source} omits ${name}`);
+    }
+  }
+
+  assert.deepEqual(
+    missing,
+    [],
+    `these steps present step 2 as sufficient for a section that is blocked for a second, ` +
+      `unrelated reason: ${missing.join('; ')}`
   );
 });
 

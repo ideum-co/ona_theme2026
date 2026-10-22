@@ -224,7 +224,7 @@ has to be written.
 | 3 | `hero` | full-bleed media with blocks over it: desktop and custom mobile media, overlay, `section_height`, `fetchpriority` on the image itself. Already on the homepage. | `ona-training-banner`, `ona-inner-banner` |
 | 4 | `carousel` | a static `group` header **above** a row of `_card`s. Both are direct children of `.section`, which puts them in the same grid column on separate rows — it is a header-over-cards layout, not a side-by-side one. | card rows. **Not** the five panel-plus-slider sections: their panel sits beside the slider |
 | 5 | `press-quotes` | quote carousel: logo, quote, attribution, arrows when blocks outnumber columns | `ona-cafe-testimonial` — **blocked**: #246 has merged, so the café names are satisfied; what is left is the #253 carousel layout and a section-level image slot for the bus #278 added (see [Known gaps](#known-gaps)) |
-| 6 | `ona-faq-layout` | already Horizon-native, styles itself, takes `_faq-category` blocks | the FAQ half of `ona-expressions`. **`ona-faq-lists` is blocked, per instance**: the live wholesale instance has every FAQ block disabled and renders trailing tips this target has no slot for, and bookings has not been checked (see [Known gaps](#known-gaps)) |
+| 6 | `ona-faq-layout` | already Horizon-native, styles itself, takes `_faq-category` blocks | the FAQ half of `ona-expressions` — **the rest of that section is blocked**, it is one of the five panel-plus-slider composites and its panel and slider have no target (see [Known gaps](#known-gaps)), so this converts half a section. **`ona-faq-lists` is blocked, per instance**: the live wholesale instance has every FAQ block disabled and renders trailing tips this target has no slot for, and bookings has not been checked (see [Known gaps](#known-gaps)) |
 | 7 | `ona-page-media-gallery` | already Horizon-native, styles itself | ad-hoc image grids |
 | 8 | **a page-header section** — *to write* | eyebrow, heading, optional sub-copy, optional visually-hidden variant | `ona-page-title`, `ona-sr-heading` |
 
@@ -428,8 +428,23 @@ next one to have happened.
    conversion is worth most there and the rest of the mapping is a repeat of
    it. Not startable before step 2.
 4. **Barista courses**, the same conversions again, and the same
-   prerequisite.
-5. **About**, then **learn**.
+   prerequisite — **plus a second one that step 2 does not cover**.
+   `ona-training-form` carries the blob *and* is blocked on its fixed
+   `contact[subject]` ("Barista training enquiry",
+   `sections/ona-training-form.liquid:51`), which stock `contact-form` cannot
+   carry. Solving the decorative layer does not unblock this page; the subject
+   setting has to exist first, or the conversion silently drops how those
+   enquiries are routed.
+5. **About**, then **learn**. About has **three** sections in the same shape
+   as the form above — blob carriers that each have a second reason of their
+   own, so step 2 does not release them either: `ona-awards` (five slider
+   images plus a twelve-row award table, and nothing holds both),
+   `ona-content` (two independent text columns, which one content slot
+   collapses) and `ona-careers` (its "VIEW LISTING" `url` is a section
+   setting, not a block). Each needs its own decision before About starts;
+   `ona-sustatnability` and `ona-sustainability-list` are blocked for reasons
+   unrelated to the blob, which their gap rows give. Learn is two sections and
+   is limited by content, not layout.
 6. **Delete each section as its last use goes.** Nothing is unused today — all
    46 are referenced — so there is no up-front sweep to do. The four shared
    sections above are the only ones whose deletion needs more than one page
