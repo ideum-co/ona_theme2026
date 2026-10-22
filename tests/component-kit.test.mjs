@@ -1749,23 +1749,27 @@ test('the Learn tile gap tracks what snippets/group.liquid emits', () => {
  * so a third instance cannot be added without a gap row.
  */
 test('every live embed that renders nothing is recorded as a behaviour change', () => {
-  /* Six of the eight live instances are set on BLOCKS, not on the section, so a probe that
-     reads section-level settings finds two and reports the gap as half its real size. That is
-     what the first version did, and its own comment claimed a third instance could not be added
-     without a gap row. */
+  /* Seven of the nine configured instances are set on BLOCKS, not on the section, so a probe
+     that reads section-level settings finds two and reports the gap as a fraction of its real
+     size. That is what the first version did, and its own comment claimed a third instance
+     could not be added without a gap row. */
   const silent = [];
   for (const file of readdirSync(join(root, 'templates')).filter((name) => name.endsWith('.json'))) {
     const data = JSON.parse(stripBanner(readFileSync(join(root, 'templates', file), 'utf8')));
-    const walk = (node, owner) => {
+    const walk = (node, owner, off) => {
       const settings = node.settings ?? {};
       const type = owner ?? node.type;
+      /* A block inside a disabled section is not live either, so the flag travels down. */
+      const disabled = off || Boolean(node.disabled);
       if (settings.media_type === 'embed' && !String(settings.video_url ?? '').includes('vimeo')) {
         const liquid = readFileSync(join(root, 'sections', `${type}.liquid`), 'utf8');
-        if (/<div id="\{\{ player_id \}\}"[^>]*><\/div>/.test(liquid)) silent.push(type);
+        if (/<div id="\{\{ player_id \}\}"[^>]*><\/div>/.test(liquid)) {
+          silent.push({ type, disabled, autoplay: Boolean(settings.autoplay) });
+        }
       }
-      for (const child of Object.values(node.blocks ?? {})) walk(child, type);
+      for (const child of Object.values(node.blocks ?? {})) walk(child, type, disabled);
     };
-    for (const section of Object.values(data.sections ?? {})) walk(section, undefined);
+    for (const section of Object.values(data.sections ?? {})) walk(section, undefined, false);
   }
 
   const handled = readdirSync(join(root, 'assets'))
@@ -1777,7 +1781,19 @@ test('every live embed that renders nothing is recorded as a behaviour change', 
     assert.fail('a script now drives the legacy embeds; the "nothing plays" gap row no longer holds');
   }
 
-  assert.ok(silent.length >= 8, `only ${silent.length} silent embed instances found; the probe is broken`);
+  /* Exact, not a lower bound. The lower bound passed while the document claimed eight total,
+     six on blocks and seven enabled, when the template holds nine configured -- two on sections
+     and seven on blocks, one of the `ona-exclusive-access` blocks disabled, so eight live
+     (Codex, #247). A floor cannot keep a migration inventory honest; adding a tenth would have
+     left the count stale and still green. */
+  const live = silent.filter((instance) => !instance.disabled);
+  assert.equal(silent.length, 9, `the template holds ${silent.length} configured silent embeds; the document says nine`);
+  assert.equal(live.length, 8, `${live.length} of them are enabled; the document says eight`);
+  assert.equal(
+    live.filter((instance) => instance.autoplay).length,
+    8,
+    'the document says all eight enabled embeds carry autoplay: true'
+  );
 
   /* Matched against the whitespace-normalised document: the first version keyed on the exact
      line wrap of the deleted claim, so restoring it as one unwrapped line passed. */
@@ -1793,7 +1809,7 @@ test('every live embed that renders nothing is recorded as a behaviour change', 
   const gapRows = gapsOnly
     .split('\n')
     .filter((line) => /^\|/.test(line) && /behaviour change/i.test(line) && /autoplay/.test(line));
-  const unrecorded = [...new Set(silent)].filter(
+  const unrecorded = [...new Set(silent.map((instance) => instance.type))].filter(
     (name) => !gapRows.some((row) => row.includes(`\`${name}\``))
   );
   assert.deepEqual(unrecorded, [], 'these silent embed sections have no gap row calling the swap a behaviour change');
