@@ -1764,7 +1764,7 @@ test('every live embed that renders nothing is recorded as a behaviour change', 
       if (settings.media_type === 'embed' && !String(settings.video_url ?? '').includes('vimeo')) {
         const liquid = readFileSync(join(root, 'sections', `${type}.liquid`), 'utf8');
         if (/<div id="\{\{ player_id \}\}"[^>]*><\/div>/.test(liquid)) {
-          silent.push({ type, disabled, autoplay: Boolean(settings.autoplay) });
+          silent.push({ type, disabled, autoplay: Boolean(settings.autoplay), onBlock: owner !== undefined });
         }
       }
       for (const child of Object.values(node.blocks ?? {})) walk(child, type, disabled);
@@ -1787,12 +1787,23 @@ test('every live embed that renders nothing is recorded as a behaviour change', 
      (Codex, #247). A floor cannot keep a migration inventory honest; adding a tenth would have
      left the count stale and still green. */
   const live = silent.filter((instance) => !instance.disabled);
-  assert.equal(silent.length, 9, `the template holds ${silent.length} configured silent embeds; the document says nine`);
-  assert.equal(live.length, 8, `${live.length} of them are enabled; the document says eight`);
+  /* Read out of the sentence rather than repeated here. Hardcoding the numbers in the test
+     would let the prose drift from them in exactly the way the lower bound already allowed --
+     the document would say eight, the test would say nine, and both would be green. */
+  const claim = doc
+    .replace(/\s+/g, ' ')
+    .match(/There are (\w+) configured — two on sections and (\w+) on blocks — one of the `ona-exclusive-access` blocks is disabled, so \*\*(\w+) are live\*\*, and all (\w+) carry `autoplay: true`\./);
+  assert.ok(claim, 'the silent-embed sentence has changed shape; this guard reads its numbers out of it');
+
+  const WORDS = { six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11 };
+  const [, totalWord, blockWord, liveWord, autoplayWord] = claim;
+  assert.equal(silent.length, WORDS[totalWord], `the template holds ${silent.length} configured silent embeds; the document says ${totalWord}`);
+  assert.equal(silent.filter((i) => i.onBlock).length, WORDS[blockWord], `${silent.filter((i) => i.onBlock).length} are set on blocks; the document says ${blockWord}`);
+  assert.equal(live.length, WORDS[liveWord], `${live.length} are live; the document says ${liveWord}`);
   assert.equal(
     live.filter((instance) => instance.autoplay).length,
-    8,
-    'the document says all eight enabled embeds carry autoplay: true'
+    WORDS[autoplayWord],
+    `${live.filter((i) => i.autoplay).length} live embeds carry autoplay: true; the document says ${autoplayWord}`
   );
 
   /* Matched against the whitespace-normalised document: the first version keyed on the exact
