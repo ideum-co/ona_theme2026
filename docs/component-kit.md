@@ -111,13 +111,15 @@ These five therefore have **no verified target**. See [Known gaps](#known-gaps).
 
 ### The media slot holds less than the sections do
 
-`media-with-content` looked like the home for all six media/text variants. Its
-media block, `_media-without-appearance`, takes **one** image or one
-Shopify-hosted video — and four of the six need more than that:
+`media-with-content` looked like the home for all eight media/text variants.
+Its media block, `_media-without-appearance`, takes **one** image or one
+Shopify-hosted video — and four of the eight need more than that:
 
 | Section | Live media | Fits the slot? |
 | --- | --- | --- |
-| `ona-training-image-text` | one image | yes |
+| `ona-training-image-text` | one image | yes — but see the blocks note below |
+| `ona-our-philosophy` (about) | one image | yes |
+| `ona-careers` (about) | one image, over an `.animated-svg` blob | yes for the photo, no for the blob — see [Known gaps](#known-gaps) |
 | `ona-expericences-content` | one image — but beside a live `{% form 'contact' %}`, see below | no |
 | `ona-training` | `media_type: embed`, a youtu.be URL | no — external |
 | `ona-wholesale-partnership` | `media_type: embed`, a YouTube watch URL | no — external |
@@ -128,7 +130,18 @@ Those four go to component 1 instead: a `section` holding a row `group`, with a
 `video` block (whose `video_url` accepts YouTube and Vimeo) or two `image`
 blocks on one side and a column `group` of text on the other. Same layout, same
 media, and it is still a merchant-editable block tree — which is stage 2's
-actual test. Only `ona-training-image-text` is a plain `media-with-content`.
+actual test.
+
+Three fit the media slot plainly — `ona-training-image-text`,
+`ona-our-philosophy` and `ona-careers` — and only **`ona-our-philosophy`** is
+an unblocked `media-with-content`. The other two carry the `.animated-svg`
+decorative layer (see [Known gaps](#known-gaps)). `ona-training-image-text` is
+also not a settings-only swap: `templates/page.training.json` gives it three
+enabled blocks, rendered by `sections/ona-training-image-text.liquid:30-36` as
+a `<ul class="courses">` of Canberra / Sydney / Melbourne booking links. Those
+convert cleanly to `button` blocks in the content slot — unlike `ona-training`,
+whose three blocks are `faqs-toggle`s and earn their own gap row — but they
+have to be carried, not dropped.
 
 ### Read the markup, not the schema
 
@@ -313,11 +326,12 @@ needs a decision before the page it is on can reach stage 2.
 | `ona-faq-lists` (wholesale) | all six FAQ blocks on the live instance are **disabled**, but `title2` ("Need help?") and `tips` (the admin mailto) are populated, so what the page actually renders is the tips, not a FAQ list. `ona-faq-layout` has a left-column `body` and `_faq-category` blocks and no slot for trailing copy, so the replacement cannot be invisible here. #253 confirms the reading from the other side: it styles the call-out behind `:not(:has(.faqs-toggle))`, "a page with no FAQ rows (e.g. /pages/wholesale)", and centres the heading, constrains the paragraph to `48ch` and underlines the mailto. Whatever replaces the section has to carry that treatment, not just the text. The bookings instance has to be checked separately before the section is retired. |
 | `ona-icon-and-content` (wholesale) | live and enabled, with five blocks of icon + title + `url`, and the urls are **in-page anchors** — `#complete-training`, `#unique-coffees`, `#supported`, `#exclusive-access` — so the section is the wholesale page's own contents list, not decoration. Horizon's `icon` block inside a `group` per cell is still the obvious candidate, and `blocks/icon.liquid` does carry `image_upload` and `link`. What has changed is the bar: #253 wraps each cell in `a.box.icon-box-anchor` and styles it as an equal-height outlined button with a hover and `:focus-visible` inversion, so a swap now has to reproduce a styled nav, not five plain anchors. Still a gap rather than a row, but for a sharper reason than before. |
 | `ona-bread-crumbs` | live on `/pages/private-courses-and-experiences`, rendering linked ancestors and a dynamic `page.title`. The only other breadcrumb in the theme is the product-specific one, so there is no generic target: keep the section, or write a page-breadcrumb component. |
-| `ona-sustatnability` (about) | the one section on `page.about.json` with no target and no gap anywhere in this document — easy to miss because the name is a typo of its neighbour. Live and enabled as `sustainability_hero` with **blank settings and no blocks**, so it draws no content, but it still emits `.sustainability-top`, which `assets/legacy-page-layout.css:61` gives `padding-block: var(--legacy-page-gap)`. Deleting it silently closes that gap between About's sections; converting it carries an empty title/copy panel and image slider nobody is using. This needs an explicit decision — almost certainly delete and absorb the spacing into the neighbouring section — rather than falling off the end of the About row. |
+| `ona-careers` (about) | live and enabled as the last section on `templates/page.about.json`, and one of the 15 `.animated-svg` sections: `sections/ona-careers.liquid:12-16` renders the same three-path mustard blob behind the photo, so it inherits the decorative-layer decision above. Its content side is heading + subtitle + rich text + a "VIEW LISTING" link, which a content slot of `text` and `button` blocks holds — but the `url` is a section setting, not a block, so the copy migration is real. Blocked on the blob, same as the sourcing clones. `assets/legacy-page-layout.css:61` also gives `.careers` `padding-block: var(--legacy-page-gap)` through the same `:is()` list as `.sustainability-top`, so the spacing caveat on the row below applies here too. |
+| `ona-sustatnability` (about) | easy to miss because the name is a typo of its neighbour. Live and enabled as `sustainability_hero` with **blank settings and no blocks**, so it draws no content, but it still emits `.sustainability-top`, which `assets/legacy-page-layout.css:61` gives `padding-block: var(--legacy-page-gap)`. Deleting it silently closes that gap between About's sections; converting it carries an empty title/copy panel and image slider nobody is using. This needs an explicit decision — almost certainly delete and absorb the spacing into the neighbouring section — rather than falling off the end of the About row. |
 | `ona-sustainability-list` | live and enabled on `templates/page.about.json` with two of its three blocks filled — Solar → `/pages/solar`, and the Women in coffee campaign → `/pages/womenincoffee`. Each block is image + title + rich text + url, rendered as independent cards, so `media-with-content`'s single media slot cannot hold the pair. A `section` of two `group`s, each with `image`, `text` and `button`, is the obvious shape, but two things have to survive the move and neither has been checked against the rendered page: the image is painted as a CSS `background-image` on a bare `div` rather than an `<img>`, so it carries no alt text and no responsive sources today, and the "Read More" label is hard-coded in the markup (`sections/ona-sustainability-list.liquid:9`) rather than being a block setting. |
 | `ona-bookings-top` | not a booking iframe, despite sitting next to one. It renders a breadcrumb `<ul>` and then a two-column heading/intro pair out of `page.metafields.accentuate.*`. The breadcrumb has the same problem as `ona-bread-crumbs` — no generic target — and the two-column intro is a `section` of two `group`s, but the copy lives in metafields rather than block settings, so the move is a content migration as well as a layout one. The page-by-page note that bookings needs only iframe framing is incomplete until this is mapped. |
 | `ona-content` (about) | live and enabled on `templates/page.about.json`. Heading and lead render as two **independent** text columns over an `.animated-svg` blob, so `media-with-content`'s one media slot plus one content slot collapses the pair into a single column. A `section` with two `group`s is the shape, but it inherits the decorative-layer problem above — `ona-content` is one of the 15 `.animated-svg` sections — so it needs the blob solved first. Unmapped in the kit until then, rather than silently treated as a media/text variant. |
-| `ona-cafe-testimonial` — **until #246 merges** | all four live blocks have both an `image` and a `title`, and the legacy section renders the title as a citation. On `main` today, `sections/press-quotes.liquid:30` shows `source` only in an `elsif` after both logo fields, so a block with a logo cannot also show a name — migrating the four cafés would hide every café name. #246 replaces that branch with a trailing `<figcaption>`, which is what makes this mapping work; it is a dependency, not an assumption. #253 did not touch the markup — the `<cite>` carrying `title` and `subtitle` is unchanged, so that dependency reads exactly as written — but it added a second one: `.cafe-reviews` now lays the blocks out as a three-up `scroll-snap` carousel that falls to two columns at 989px and one at 749px. `press-quotes` has to match that, and Victor's `.cafe-reviews` rules go dead the day the section does. **And #278 added a third dependency, the hardest of the three:** `bottom_image` is set on the wholesale instance to `shopify://shop_images/ONA_Bus.png`, and `sections/ona-cafe-testimonial.liquid:22-27` renders it as the ONA bus straddling the section boundary. `press-quotes` has no section-level image setting at all — its schema is columns, icons style, background, text colour and the two paddings — so the swap deletes the bus outright. The target needs a section-level image slot before this row is a mapping. |
+| `ona-cafe-testimonial` | all four live blocks have both an `image` and a `title`, and the legacy section renders the title as a citation. The café-name dependency is now **satisfied**: #246 has merged, and `sections/press-quotes.liquid:56-57` renders `<figcaption class="press-quotes__source">{{ block.settings.source }}</figcaption>` unconditionally after the quote, so a block can carry a logo *and* a name. The in-file comment at `:50` records what it replaced. That was one of three dependencies; the other two still block. #253 did not touch the markup — the `<cite>` carrying `title` and `subtitle` is unchanged, so that dependency reads exactly as written — but it added a second one: `.cafe-reviews` now lays the blocks out as a three-up `scroll-snap` carousel that falls to two columns at 989px and one at 749px. `press-quotes` has to match that, and Victor's `.cafe-reviews` rules go dead the day the section does. **And #278 added a third dependency, the hardest of the three:** `bottom_image` is set on the wholesale instance to `shopify://shop_images/ONA_Bus.png`, and `sections/ona-cafe-testimonial.liquid:22-27` renders it as the ONA bus straddling the section boundary. `press-quotes` has no section-level image setting at all — its schema is columns, icons style, background, text colour and the two paddings — so the swap deletes the bus outright. The target needs a section-level image slot before this row is a mapping. |
 
 ## Page by page
 
@@ -327,9 +341,9 @@ the verification rule at the top and to the gaps above.
 
 | Page | Sections now | Distinct types after | The work |
 | --- | --- | --- | --- |
-| `/pages/wholesale` | 19 (all legacy) | ~10 | the five `*-sourcing-v*` clones have **no verified target** — every one carries an `.animated-svg` layer that `media-with-content` drops (see Known gaps); `ona-cafe-testimonial` has no verified target — #278 put the ONA bus in it (see Known gaps); the four panel-plus-slider composites and `ona-unique-coffees` have no verified target (see Known gaps); `ona-wholesale-brands` lost its target to #253 (see Known gaps); `ona-faq-lists`, `ona-training` and `ona-icon-and-content` have no verified target (see Known gaps); `ona-gust-r` stays until its subject and business fields have a home |
-| `/pages/barista-courses` | 10 (all legacy) | ~6 | the four `traning-sourcing-v*` clones have **no verified target**, same `.animated-svg` layer (see Known gaps); `ona-traning-supported` has no verified target (see Known gaps); `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
-| `/pages/about` | 7 (all legacy) | ~5 | media/text variants → `media-with-content`, except any carrying `.animated-svg`; `ona-awards`, `ona-content`, `ona-sustatnability` and `ona-sustainability-list` have no verified target (see Known gaps) |
+| `/pages/wholesale` | 19 (all legacy) | ~10 | **six** sourcing sections have **no verified target** — `ona-sourcing` plus the five `*-sourcing-v*` clones, every one carrying an `.animated-svg` layer that `media-with-content` drops (see Known gaps); together with barista-courses' four they are the ten of the kit's largest duplication group; `ona-cafe-testimonial` has no verified target — #278 put the ONA bus in it (see Known gaps); the four panel-plus-slider composites and `ona-unique-coffees` have no verified target (see Known gaps); `ona-wholesale-brands` lost its target to #253 (see Known gaps); `ona-faq-lists`, `ona-training` and `ona-icon-and-content` have no verified target (see Known gaps); `ona-gust-r` stays until its subject and business fields have a home |
+| `/pages/barista-courses` | 10 (all legacy) | ~6 | **four** sourcing sections have **no verified target** — `ona-traning-sourcing` plus the three `traning-sourcing-v*` clones, same `.animated-svg` layer (see Known gaps); `ona-training-image-text` is blocked on the same layer and is the 11th of the kit's blocked set; `ona-traning-supported` has no verified target (see Known gaps); `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
+| `/pages/about` | 7 (all legacy) | ~5 | `ona-inner-banner` → `hero`; `ona-our-philosophy` → `media-with-content`, the one clean conversion on this page; the other five have no verified target (see Known gaps) — `ona-awards`, `ona-content`, `ona-sustatnability`, `ona-sustainability-list` and `ona-careers`, the last two of those blocked on the `.animated-svg` layer |
 | `/pages/learn` | 2 | 2 | `ona-page-title` → page-header; `ona-brewguides-and-training` → `section` + `_product-card`-style tiles |
 | `/pages/faq`, `/pages/subscription-faq` | 2 each | 2 each | `ona-page-title` → page-header. `ona-faq-layout` already Horizon-native — leave it |
 | `/pages/private-courses-and-experiences` | 3 | 3 | thin on content; layout swap only after the copy lands. Two of its three sections have no target anyway: `ona-expericences-content`'s form and `ona-bread-crumbs` (see Known gaps) |
@@ -349,8 +363,9 @@ the rest across `collection.json` and the four product templates.
 Four sections are shared, so converting one page does not retire them:
 `ona-page-title` has to go from faq, faq-subscriptions *and* learn before it can
 be deleted, `ona-sr-heading` from bookings, private-courses and wholesale,
-`ona-faq-lists` from bookings and wholesale. Convert all uses in one PR, or the
-section stays and the page is the only thing that moved.
+`ona-faq-lists` from bookings and wholesale, and `ona-faq-layout` from faq and
+faq-subscriptions. Convert all uses in one PR, or the section stays and the
+page is the only thing that moved.
 
 **`templates/index.json` is at 24 of Shopify's 25 sections**, so there is
 exactly one slot left. A 26th makes the GitHub integration refuse the whole
@@ -391,7 +406,10 @@ next one to have happened.
    risk.
 2. **Solve the decorative layer**, because steps 3 and 4 are blocked on it.
    All ten sourcing clones and `ona-training-image-text` render an
-   `.animated-svg` blob that `media-with-content` drops, so every conversion
+   `.animated-svg` blob that `media-with-content` drops — and so do
+   `ona-content`, `ona-careers`, `ona-awards` and `ona-training-form`, which
+   carry their own gap rows for other reasons as well, making 15 sections in
+   all. So every conversion
    those two steps were going to make is a visible regression until the blob
    has a target — either a component that carries a decorative layer, or the
    layer moving to CSS on the new section. This is a decision, not a

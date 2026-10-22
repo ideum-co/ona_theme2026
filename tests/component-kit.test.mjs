@@ -563,3 +563,80 @@ test('the Horizon block usage counts are what the templates hold', () => {
     `component 1 should cite ${expected}`
   );
 });
+
+/*
+ * The three figures below sit inside sentences that say they are guarded, and until this test
+ * they were not: the 150, the 11 font sizes and the 15 `.animated-svg` sections were all
+ * read off a grep that nothing re-ran. That is the same shape as the padding and type_preset
+ * misses -- a number that looks checked because it is standing next to numbers that are.
+ */
+test('the drift figures quoted as guarded are derived', () => {
+  let sections = 0;
+  const fontSizes = new Set();
+  for (const [, parsed] of eachTemplate()) {
+    sections += Object.keys(parsed.sections ?? {}).length;
+    for (const settings of everySettings(parsed.sections)) {
+      /* A `font_size` of "" is the setting present and unset -- 37 of them, all on presets other
+         than `custom`. They restate no size, so they are not one of the literal values the
+         sentence counts; including them reads 12 where the templates hold 11. */
+      if (settings.font_size) fontSizes.add(String(settings.font_size));
+    }
+  }
+
+  assert.ok(sections > 100, `only ${sections} sections found; the probe is broken`);
+  assert.ok(fontSizes.size > 0, 'no font_size values found; the probe is broken');
+
+  assert.ok(
+    doc.includes(`measured across all ${sections} sections in`),
+    `the drift preamble should say ${sections} sections`
+  );
+  assert.ok(
+    doc.includes(`there are **${NUMBER_WORDS[fontSizes.size] ?? fontSizes.size}\n  distinct literal \`font_size\` values**`),
+    `the kit should cite ${fontSizes.size} distinct font_size values`
+  );
+});
+
+/*
+ * `grep -l animated-svg sections/*.liquid` returns 15 is a claim about the filesystem, quoted
+ * verbatim in the gap row. Run the grep.
+ */
+test('the .animated-svg section count is the grep it quotes', () => {
+  const carriers = readdirSync(join(root, 'sections'))
+    .filter((file) => file.endsWith('.liquid'))
+    .filter((file) => readFileSync(join(root, 'sections', file), 'utf8').includes('animated-svg'));
+
+  assert.ok(carriers.length > 1, 'the .animated-svg probe found almost nothing; it is broken');
+  assert.ok(
+    doc.includes(`carrying \`.animated-svg\` — **${carriers.length} of them**`),
+    `the gap row should say ${carriers.length}`
+  );
+  assert.ok(
+    doc.includes(`returns ${carriers.length}, and **all ten**`),
+    `the quoted grep result should be ${carriers.length}`
+  );
+});
+
+/*
+ * The hole this closes: `ona-our-philosophy` and `ona-careers` were live, enabled sections on
+ * page.about.json that the document named nowhere at all -- under a sentence asserting that
+ * exactly one About section was unaccounted for. The existing coverage guard could not see them
+ * because its population is sections carrying a form or a metafield, and neither has either.
+ *
+ * So guard the whole population instead of a property of it. A section that exists and is not
+ * named anywhere in the kit is either a mapping nobody wrote down or a gap nobody declared, and
+ * both are the failure this document exists to prevent.
+ */
+test('every ona-* section is named somewhere in the kit', () => {
+  const sections = readdirSync(join(root, 'sections'))
+    .filter((file) => file.startsWith('ona-') && file.endsWith('.liquid'))
+    .map((file) => file.replace(/\.liquid$/, ''));
+
+  assert.ok(sections.length > 40, `only ${sections.length} ona-* sections found; the probe is broken`);
+
+  const missing = sections.filter((name) => !doc.includes(name));
+  assert.deepEqual(
+    missing,
+    [],
+    `these sections exist but appear nowhere in docs/component-kit.md: ${missing.join(', ')}`
+  );
+});
