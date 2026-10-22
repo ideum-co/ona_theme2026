@@ -268,6 +268,32 @@
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider) > .content.container > * { min-width:0; }
 
 /*
+ * Restore the column flip.
+ *
+ * `invert-columns`, `img-r` and `img-right` came across from the old theme on five sections --
+ * ona-training, ona-unique-coffees, ona-supported, ona-exclusive-access and
+ * ona-traning-supported -- and have had no rule behind them anywhere in this theme since the
+ * migration. So every two-column section renders image-left and the page reads as one block
+ * repeated down the page. This is the original design returning, not a new one: the markup has
+ * been asking for it the whole time.
+ *
+ * The text column is what moves, not the media column. `order` applies to the grid item, and
+ * the media is not always the item: one of the five wraps its images in a custom element, which
+ * is then the item and leaves the inner `.img` a grandchild that `order` cannot reach. The
+ * `.text` column is a direct child in all five, so pulling it in front is the one formulation
+ * that does not depend on how the media happens to be wrapped -- and it keeps this sheet from
+ * naming a slider component that ships its own styles, which its own test forbids this sheet
+ * from doing.
+ *
+ * Desktop only. At 749px the grid collapses to a single column, where the image belongs above
+ * the text whichever side it took on a wide screen -- flipping there would push it below.
+ */
+@media (min-width:750px) {
+  #MainContent :is(.invert-columns,.img-r,.img-right) > .container > .content > .text,
+  #MainContent :is(.invert-columns,.img-r,.img-right) > .content.container > .text { order:-1; }
+}
+
+/*
  * The play button is a real <img> in the ported markup, not production's
  * ::before, so base.css's img{width:100%} painted a 150px source at 605px
  * (4.0x) and pushed it out of the frame. `:has(> .play-video)` gives the
