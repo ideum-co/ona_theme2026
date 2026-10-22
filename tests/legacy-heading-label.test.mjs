@@ -79,7 +79,8 @@ const specificity = (selector) => {
 };
 
 const rulesFor = (name) => {
-  const target = new RegExp(`\\.${name.replace(/-/g, '\\-')}(?![\\w-])`);
+  const escaped = name.replace(/-/g, '\\-');
+  const target = new RegExp(`\\.${escaped}(?![\\w-])`);
   const found = [];
   let at = 0;
   for (const [, selectorList, declarations] of css.matchAll(/([^{}]+)\{([^}]*)\}/g)) {
@@ -93,10 +94,25 @@ const rulesFor = (name) => {
         `.${name} is styled with !important ("${branch.trim()}"), which this cascade model ` +
           'does not resolve -- extend it rather than trusting the result'
       );
+
+      /* The ancestors the rule asks for, and what it asks of the label itself. A rule applies
+         wherever another one does when everything it asks for is also present there, which is
+         what keeps two mutually exclusive sections from resolving as one element. */
+      const compounds = branch.trim().split(/\s+/).filter(Boolean);
+      const own = compounds.findIndex((compound) => target.test(compound));
+      const label = compounds[own];
+      /* `:not(:empty)` selects a label that HAS text. Reading it as an empty-state rule threw
+         the declaration away, so `:not(:empty) { opacity: 0.6 }` muted every visible eyebrow
+         with nothing failing (Codex, #300). The negation is stripped before the test. */
+      const needsFilled = /:not\(\s*:empty\s*\)/.test(label);
+      const needsEmpty = /:empty/.test(label.replace(/:not\([^)]*\)/g, ''));
+
       found.push({
         selector: branch.trim().replace(/\s+/g, ' '),
         declarations,
-        empty: /:empty/.test(branch),
+        ancestors: compounds.slice(0, own),
+        needsEmpty,
+        needsFilled,
         weight: specificity(branch),
         at,
       });
@@ -105,10 +121,32 @@ const rulesFor = (name) => {
   return found.sort((a, b) => a.weight - b.weight || a.at - b.at);
 };
 
-/* The rules that apply to a label with text in it. An `:empty` rule is not one of them. */
-const whenFilled = (name) => rulesFor(name).filter((rule) => !rule.empty);
-/* An empty element matches the base rules as well as the `:empty` ones. */
-const whenEmpty = (name) => rulesFor(name);
+/*
+ * One resolution per markup context.
+ *
+ * Merging every rule that mentions the class treated mutually exclusive sections as one
+ * element, so `.add-image-and-text-slider .subtitle { display: inline }` followed by
+ * `.add-image-and-text .subtitle { display: block }` resolved to block and the slider's
+ * eyebrows stayed inline with the suite green (Codex, #300). Each rule names a context; the
+ * rules that apply there are the ones whose ancestors are all present in it.
+ */
+const contextsFor = (name) => {
+  const all = rulesFor(name);
+  const seen = new Set();
+  const out = [];
+  for (const rule of all) {
+    const key = rule.ancestors.join(' ');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const applicable = all.filter((other) => other.ancestors.every((a) => rule.ancestors.includes(a)));
+    out.push({
+      where: rule.ancestors.length ? rule.ancestors.join(' ') : 'any legacy page',
+      filled: applicable.filter((other) => !other.needsEmpty),
+      empty: applicable.filter((other) => !other.needsFilled),
+    });
+  }
+  return out;
+};
 
 const merge = (rules) => rules.map((rule) => rule.declarations).join(';');
 
@@ -120,7 +158,7 @@ test('the eyebrow above a heading is a class the stylesheet actually styles', ()
        eyebrow class carrying only the hide rule passed while the label a shopper actually
        reads got nothing (Codex, #300). Only rules that paint the non-empty element count. */
     assert.ok(
-      whenFilled(name).length > 0,
+      contextsFor(name).some((context) => context.filled.length > 0),
       `.${name} introduces the heading in ${sections.size} section(s) ` +
         `(${[...sections].sort().slice(0, 3).join(', ')}...) and no rule in ` +
         'assets/legacy-page-layout.css selects it, so it renders as plain body copy'
@@ -134,40 +172,44 @@ const REMOVES_BOX = 'none';
 
 test('an eyebrow with nothing in it takes up no room', () => {
   for (const [name, sections] of labels) {
-    /* The element ships whether or not its setting has a value -- four of the seven on
-       /pages/wholesale render empty -- and an empty inline box still occupies a line box. */
-    const applicable = whenEmpty(name);
-    assert.ok(
-      applicable.some((rule) => rule.empty),
-      `.${name} is rendered unconditionally by ${[...sections].sort()[0]}, so it can be empty, ` +
-        'but no rule hides it when it is'
-    );
-    /* Not "an :empty rule exists" and not "the first match hides it": a second
-       `.subtitle:empty { display: block; }` wins in the browser and used to pass here
-       (Codex, #300). The winner is what decides whether the box is there. */
-    const winner = lastValue(merge(applicable), 'display');
-    assert.equal(
-      (winner ?? '').trim(),
-      REMOVES_BOX,
-      `.${name} when empty resolves to display:${winner ?? '<unset>'} across ` +
-        `${JSON.stringify(applicable.map((rule) => rule.selector))}, so an empty eyebrow ` +
-        'still occupies a line'
-    );
+    for (const context of contextsFor(name)) {
+      /* The element ships whether or not its setting has a value -- four of the seven on
+         /pages/wholesale render empty -- and an empty inline box still occupies a line box. */
+      assert.ok(
+        context.empty.some((rule) => rule.needsEmpty),
+        `.${name} is rendered unconditionally by ${[...sections].sort()[0]}, so it can be ` +
+          `empty, but in ${context.where} no rule hides it when it is`
+      );
+      /* Not "an :empty rule exists" and not "the first match hides it": a second
+         `.subtitle:empty { display: block; }` wins in the browser and used to pass here
+         (Codex, #300). The winner is what decides whether the box is there. */
+      const winner = lastValue(merge(context.empty), 'display');
+      assert.equal(
+        (winner ?? '').trim(),
+        REMOVES_BOX,
+        `.${name} when empty resolves to display:${winner ?? '<unset>'} in ${context.where} ` +
+          `across ${JSON.stringify(context.empty.map((rule) => rule.selector))}, so an empty ` +
+          'eyebrow still occupies a line'
+      );
+    }
   }
 });
 
 test('the eyebrow sits on its own line above the heading', () => {
   for (const [name] of labels) {
-    const applicable = whenFilled(name);
-    /* `.some()` passed while a later `display: inline` won in the browser (Codex, #300). */
-    const winner = lastValue(merge(applicable), 'display');
-    assert.equal(
-      (winner ?? '').trim(),
-      'block',
-      `a span is inline by default, so .${name} needs to resolve to display:block -- across ` +
-        `${JSON.stringify(applicable.map((rule) => rule.selector))} it resolves to ` +
-        `${winner ?? '<unset>'}, and the eyebrow runs into the heading on the same line`
-    );
+    for (const context of contextsFor(name)) {
+      if (context.filled.length === 0) continue;
+      /* `.some()` passed while a later `display: inline` won in the browser (Codex, #300). */
+      const winner = lastValue(merge(context.filled), 'display');
+      assert.equal(
+        (winner ?? '').trim(),
+        'block',
+        `a span is inline by default, so .${name} needs to resolve to display:block -- in ` +
+          `${context.where}, across ` +
+          `${JSON.stringify(context.filled.map((rule) => rule.selector))}, it resolves to ` +
+          `${winner ?? '<unset>'}, and the eyebrow runs into the heading on the same line`
+      );
+    }
   }
 });
 
@@ -309,18 +351,16 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
   const where = grounds();
 
   for (const [name] of labels) {
-    const applicable = whenFilled(name);
-    assert.ok(applicable.length > 0, `no rule paints .${name}`);
+    const contexts = contextsFor(name);
+    assert.ok(contexts.length > 0, `no rule paints .${name}`);
 
-    /* Walked in cascade order, carrying the declarations forward. Deliberately conservative:
-       a rule that applies to only some eyebrows -- `.add-image-and-text-slider .subtitle` --
-       makes both the state with it and the state without it real, so every prefix has to
-       clear the bar. A rule that mutes one section's eyebrow fails even though the rest are
-       fine, which is the intent: no eyebrow anywhere goes under 4.5:1. */
-    let carried = '';
-    for (const rule of applicable) {
-      carried += `;${rule.declarations}`;
-      const { alpha, literal, how } = painted(carried);
+    /* One resolution per context rather than a walk over every rule: a context is a real
+       element state, so the declaration that wins there is what the reader sees. Resolving
+       them all together let a rule for one section mask a regression in another, and walking
+       them in sequence failed on states no element is ever in (Codex, #300). */
+    for (const context of contexts) {
+      if (context.filled.length === 0) continue;
+      const { alpha, literal, how } = painted(merge(context.filled));
 
       for (const [ground_name, ground] of where) {
         const ink = rgb(ground);
@@ -332,7 +372,7 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
         const ratio = contrast(over(literal ?? inherited, ink, alpha), ink);
         assert.ok(
           ratio >= 4.5,
-          `${ground_name} is ${ground}, and .${name} as painted by "${rule.selector}" ` +
+          `${ground_name} is ${ground}, and .${name} in ${context.where} ` +
             `(${how}${alpha < 1 ? ` at ${alpha} opacity` : ''}) lands at ${ratio.toFixed(2)}:1 ` +
             'on it -- under 4.5:1'
         );
