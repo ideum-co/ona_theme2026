@@ -69,56 +69,40 @@ test('renders a configurable breadcrumb above the entire PDP information grid', 
   );
 });
 
-test('fits the complete PDP information layout within the desktop viewport', () => {
+test('the PDP details flow in full, with a sticky gallery, not an internal scroll', () => {
   const schema = parseSchema(sectionSource, 'Product information');
   const setting = (id) => schema.settings.find((item) => item.id === id);
 
   assert.equal(setting('layout_max_width')?.default, 1360);
   assert.equal(setting('media_column_width')?.default, 60);
   assert.match(contentSource, /class="product-information__viewport"/);
-  assert.match(
-    contentSource,
-    /\.product-information__viewport\s*\{[\s\S]*?height: 100svh;[\s\S]*?overflow: hidden;/,
-  );
   assert.match(contentSource, /--product-information-max-width:[\s\S]*?settings\.layout_max_width/);
   assert.match(contentSource, /--product-information-media-width:[\s\S]*?settings\.media_column_width/);
   assert.match(contentSource, /minmax\(0, var\(--product-information-media-width\)\)/);
-  assert.match(
-    contentSource,
-    /\.product-information__media \.product-media-container:not\(\.dialog-zoomed-gallery \*\)[\s\S]*?height: 100%;[\s\S]*?aspect-ratio: auto;/,
-  );
   assert.match(contentSource, /\.deferred-media__poster-image\)[\s\S]*?object-fit: contain;/);
+
   /*
-   * The details column scrolls independently -- that is what lets the whole layout
-   * fit a 100svh viewport, so `overflow-y: auto` is the load-bearing declaration
-   * this test exists for.
-   *
-   * It used to also require `scrollbar-gutter: stable`, which reserved gutter space
-   * so the layout did not shift horizontally when the scrollbar appeared. PR #154
-   * replaced that with hiding the scrollbar outright (`scrollbar-width: none` and
-   * the `::-webkit-scrollbar` rule). That is coherent, not a regression: a
-   * scrollbar that is never rendered takes no space, so there is no shift to
-   * stabilise. The no-layout-shift guarantee is what matters, so assert whichever
-   * mechanism provides it rather than the specific declaration -- and do not
-   * reinstate `scrollbar-gutter: stable` alongside the hiding rules, because the
-   * gutter would then be reserved for a scrollbar that never appears.
+   * The old layout pinned the section to one 100svh viewport and scrolled the details column inside
+   * it; on a product with a lot of information the Add to cart ended up below that internal scroll,
+   * hidden. The details now flow with the page in full and the gallery sticks so it stays in view.
+   * These assertions are the inverse of the ones that guarded the old design -- the viewport must
+   * not lock its height and clip, and the details must not scroll on their own.
    */
+  const desktop = contentSource.slice(contentSource.indexOf('@media screen and (min-width: 750px)'));
+
+  const viewportRule = desktop.match(/\.product-information__viewport\s*\{[^}]*\}/)[0];
+  assert.doesNotMatch(viewportRule, /height:\s*100svh/, 'the viewport must not lock to 100svh');
+  assert.doesNotMatch(viewportRule, /overflow:\s*hidden/, 'and must not clip its overflow');
+
+  const detailsRule = desktop.match(
+    /\.product-information__grid:not\(\.product-information--media-none\) > \.product-details\s*\{[^}]*\}/,
+  )[0];
+  assert.doesNotMatch(detailsRule, /overflow-y:\s*auto/, 'the details column must not scroll independently');
+  assert.doesNotMatch(detailsRule, /max-height:\s*100%/, 'nor cap its height to the viewport');
+
   assert.match(
-    contentSource,
-    /\.product-information__grid:not\(\.product-information--media-none\) > \.product-details[\s\S]*?overflow-y: auto;/,
-  );
-  assert.match(
-    contentSource,
-    /\.product-information__grid:not\(\.product-information--media-none\) > \.product-details[\s\S]*?scrollbar-width: none;/,
-    'the details column must not reserve or render scrollbar space, or the grid shifts',
-  );
-  // `scrollbar-width` is unsupported in WebKit and older Chromium, which need the
-  // pseudo-element. Without this, dropping the `::-webkit-scrollbar` rule would
-  // bring the rendered scrollbar -- and the shift -- back in those browsers while
-  // the assertion above still passed.
-  assert.match(
-    contentSource,
-    /\.product-information__grid:not\(\.product-information--media-none\) > \.product-details[\s\S]*?&::-webkit-scrollbar\s*\{[\s\S]*?display: none;/,
-    'WebKit needs the ::-webkit-scrollbar rule too, or the scrollbar returns there',
+    desktop,
+    /\.product-information__media\s*\{[^}]*position:\s*sticky/,
+    'the gallery sticks so it stays in view while the details scroll',
   );
 });
