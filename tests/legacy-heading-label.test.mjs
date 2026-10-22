@@ -23,7 +23,7 @@ const sheets = (() => {
      new global sheet is covered the day it is added. base.css was missing, and because the
      eyebrow rule does not reset `opacity`, a `.subtitle { opacity: .6 }` there rendered
      every label under the bar with all four tests green (Codex, #300). */
-    const loaded = [];
+  const loaded = [];
   for (const file of ['snippets/stylesheets.liquid', 'layout/theme.liquid']) {
     let source;
     try {
@@ -37,26 +37,69 @@ const sheets = (() => {
   }
   assert.ok(
     loaded.includes('legacy-page-layout.css'),
-    'the layout no longer loads legacy-page-layout.css the way this scan reads it'
+    'the layout no longer loads legacy-page-layout.css the way this scan reads it',
   );
 
-  const out = loaded.map((asset) => decomment(readFileSync(join(root, 'assets', asset), 'utf8')));
+  const out = loaded.map((asset) => ({
+    origin: null,
+    text: decomment(readFileSync(join(root, 'assets', asset), 'utf8')),
+  }));
+
+  const liquid = (text) =>
+    decomment(text)
+      .replace(/\{%-?[\s\S]*?-?%\}/g, ' ')
+      .replace(/\{\{[\s\S]*?\}\}/g, 'x');
+
   for (const dir of ['sections', 'snippets']) {
     for (const file of readdirSync(join(root, dir))) {
       if (!file.endsWith('.liquid')) continue;
       const source = readFileSync(join(root, dir, file), 'utf8');
+
+      /* Shopify concatenates every `{% stylesheet %}` into one asset served on every page,
+         so these are global whether or not the section renders. */
       for (const [, body] of source.matchAll(
-        /\{%-?\s*(?:style|stylesheet)[^%]*-?%\}([\s\S]*?)\{%-?\s*end(?:style|stylesheet)\s*-?%\}/g
+        /\{%-?\s*stylesheet[^%]*-?%\}([\s\S]*?)\{%-?\s*endstylesheet\s*-?%\}/g,
       )) {
-        out.push(decomment(body).replace(/\{%-?[\s\S]*?-?%\}/g, ' ').replace(/\{\{[\s\S]*?\}\}/g, 'x'));
+        out.push({ origin: null, text: liquid(body) });
+      }
+
+      /* `{% style %}` renders inline where the section does, so it only reaches a page that
+         renders that section. Pooling them globally let CSS from a section no template uses
+         override a real regression (Codex, #300). A snippet can be rendered from anywhere,
+         so those stay global. */
+      for (const [, body] of source.matchAll(/\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}/g)) {
+        out.push({
+          origin: dir === 'sections' ? file.slice(0, -'.liquid'.length) : null,
+          text: liquid(body),
+        });
       }
     }
   }
   return out;
 })();
 
+/* Which sections share a page, so a section's inline styles reach only those eyebrows. */
+const templates = (() => {
+  const found = [];
+  for (const file of readdirSync(join(root, 'templates'))) {
+    if (!file.endsWith('.json')) continue;
+    try {
+      const parsed = JSON.parse(
+        readFileSync(join(root, 'templates', file), 'utf8').replace(/^\s*\/\*[\s\S]*?\*\//, ''),
+      );
+      found.push({
+        file,
+        types: new Set(Object.values(parsed.sections ?? {}).map((section) => section.type)),
+      });
+    } catch {
+      continue;
+    }
+  }
+  return found;
+})();
+
 /* Kept for the prose checks that only ask whether a name is mentioned at all. */
-const css = sheets.join('\n');
+const css = sheets.map((sheet) => sheet.text).join('\n');
 
 /*
  * The label a legacy section puts directly above its heading -- the eyebrow.
@@ -73,7 +116,7 @@ const css = sheets.join('\n');
 const labels = (() => {
   const found = new Map();
   const files = readdirSync(join(root, 'sections')).filter(
-    (file) => file.startsWith('ona-') && file.endsWith('.liquid')
+    (file) => file.startsWith('ona-') && file.endsWith('.liquid'),
   );
 
   for (const file of files) {
@@ -128,9 +171,10 @@ const specificity = (selector) => {
   for (;;) {
     const found = rest.match(/:(is|where|not|has)\(([^()]*)\)/i);
     if (!found) break;
-    const inner = found[1].toLowerCase() === 'where'
-      ? 0
-      : Math.max(0, ...splitSelectors(found[2]).map((branch) => specificity(branch)));
+    const inner =
+      found[1].toLowerCase() === 'where'
+        ? 0
+        : Math.max(0, ...splitSelectors(found[2]).map((branch) => specificity(branch)));
     ids += Math.floor(inner / 10000);
     classes += Math.floor((inner % 10000) / 100);
     elements += inner % 100;
@@ -139,9 +183,7 @@ const specificity = (selector) => {
 
   ids += (rest.match(/#[\w-]+/g) ?? []).length;
   classes += (rest.match(/\.[\w-]+|\[[^\]]*\]|:(?!:)[a-z-]+/gi) ?? []).length;
-  elements += (
-    rest.replace(/[#.][\w-]+|\[[^\]]*\]|::?[a-z-]+/gi, ' ').match(/[a-z][\w-]*/gi) ?? []
-  ).length;
+  elements += (rest.replace(/[#.][\w-]+|\[[^\]]*\]|::?[a-z-]+/gi, ' ').match(/[a-z][\w-]*/gi) ?? []).length;
   return ids * 10000 + classes * 100 + elements;
 };
 
@@ -184,15 +226,22 @@ const flatten = (text) => {
         const nested = inner.indexOf('{');
         if (nested === -1) {
           order += 1;
-          out.push({ conditions, selectorList: prelude, declarations: inner, at: order });
+          out.push({
+            conditions,
+            selectorList: prelude,
+            declarations: inner,
+            at: order,
+          });
         } else {
           const own = inner.slice(0, inner.lastIndexOf(';', nested) + 1);
           order += 1;
-          out.push({ conditions, selectorList: prelude, declarations: own, at: order });
-          walk(
-            inner.slice(own.length).replace(/&/g, prelude.trim()),
-            conditions
-          );
+          out.push({
+            conditions,
+            selectorList: prelude,
+            declarations: own,
+            at: order,
+          });
+          walk(inner.slice(own.length).replace(/&/g, prelude.trim()), conditions);
         }
       }
       at = close;
@@ -203,7 +252,9 @@ const flatten = (text) => {
   return out;
 };
 
-const flat = flatten(css);
+const flat = sheets.flatMap((sheet) =>
+  flatten(sheet.text).map((rule) => ({ ...rule, origin: sheet.origin })),
+);
 
 /*
  * Every rule in the sheets, as compounds.
@@ -217,18 +268,22 @@ let everyRuleCache = null;
 const everyRule = () => {
   if (everyRuleCache) return everyRuleCache;
   const found = [];
-  for (const { conditions, selectorList, declarations, at } of flat) {
+  for (const { conditions, selectorList, declarations, at, origin } of flat) {
     for (const branch of splitSelectors(selectorList)) {
-      const compounds = (branch.trim().match(/(?:[^\s(]+(?:\([^)]*\))?)+/g) ?? []).filter(Boolean);
-      if (compounds.length === 0) continue;
+      const parts = pathOf(branch);
+      if (parts.length === 0) continue;
       found.push({
         selector: branch.trim().replace(/\s+/g, ' '),
         declarations,
-        label: structural(compounds[compounds.length - 1]),
-        ancestors: compounds.slice(0, -1).map(structural),
+        path: parts.map((part) => ({
+          ...part,
+          compound: structural(part.compound),
+        })),
+        siblings: parts.some((part) => part.combinator === '+' || part.combinator === '~'),
         conditions: [...conditions, ...statesOf(branch)],
         weight: specificity(branch),
         at,
+        origin,
       });
     }
   }
@@ -238,16 +293,16 @@ const everyRule = () => {
 
 /* What the ancestors do to the label: opacity composites, so it multiplies; color is
    inherited, so the nearest ancestor that sets one supplies it. */
-const ancestorEffects = (chain, conditions) => {
+const ancestorEffects = (chain, conditions, live) => {
   let alpha = 1;
   let colour = null;
 
   for (let index = 0; index < chain.length - 1; index += 1) {
     const applicable = everyRule().filter(
       (rule) =>
+        live(rule) &&
         rule.conditions.every((condition) => conditions.includes(condition)) &&
-        matchesElement(rule.label, chain[index]) &&
-        matchesChain(rule.ancestors, chain.slice(0, index))
+        matchesPath(rule.path, chain, index),
     );
     if (applicable.length === 0) continue;
 
@@ -258,7 +313,7 @@ const ancestorEffects = (chain, conditions) => {
       assert.ok(
         literal,
         `cannot read an ancestor's opacity from "${faded}" -- extend this resolver rather ` +
-          'than treating the label as fully opaque'
+          'than treating the label as fully opaque',
       );
       alpha *= faded.includes('%') ? Number(literal[1]) / 100 : Number(literal[1]);
     }
@@ -272,7 +327,7 @@ const rulesFor = (name) => {
   const escaped = name.replace(/-/g, '\\-');
   const target = new RegExp(`\\.${escaped}(?![\\w-])`);
   const found = [];
-  for (const { conditions, selectorList, declarations, at } of flat) {
+  for (const { conditions, selectorList, declarations, at, origin } of flat) {
     for (const branch of splitSelectors(selectorList)) {
       if (!target.test(branch)) continue;
       /* `!important` reorders the cascade in a way none of this models, so it fails rather
@@ -280,15 +335,22 @@ const rulesFor = (name) => {
       assert.ok(
         !/!important/.test(declarations),
         `.${name} is styled with !important ("${branch.trim()}"), which this cascade model ` +
-          'does not resolve -- extend it rather than trusting the result'
+          'does not resolve -- extend it rather than trusting the result',
       );
 
       /* The ancestors the rule asks for, and what it asks of the label itself. A rule applies
          wherever another one does when everything it asks for is also present there, which is
          what keeps two mutually exclusive sections from resolving as one element. */
-      /* Descendant combinators only, and not the spaces inside `:is(a, b)`. */
-      const compounds = (branch.trim().match(/(?:[^\s(]+(?:\([^)]*\))?)+/g) ?? []).filter(Boolean);
+      const parts = pathOf(branch);
+      const compounds = parts.map((part) => part.compound);
       const own = compounds.findIndex((compound) => target.test(compound));
+      /* A sibling combinator describes a relationship this model has no chain for. Nothing
+         in the theme uses one on a label today, so it fails rather than being guessed. */
+      assert.ok(
+        own === -1 || !parts.some((part) => part.combinator === '+' || part.combinator === '~'),
+        `.${name} is selected through a sibling combinator ("${branch.trim()}"), which this ` +
+          'model does not resolve -- extend it rather than dropping the rule',
+      );
       /* Compounds after the label mean the rule targets a descendant of it, not the label:
          `#MainContent .subtitle span { display: block }` cannot change the eyebrow's own
          display, and discarding the trailing compound credited it with doing so, at a
@@ -310,12 +372,16 @@ const rulesFor = (name) => {
         selector: branch.trim().replace(/\s+/g, ' '),
         declarations,
         label: structural(label),
-        ancestors: compounds.slice(0, own).map(structural),
+        path: parts.map((part) => ({
+          ...part,
+          compound: structural(part.compound),
+        })),
         conditions: [...conditions, ...states],
         needsEmpty,
         needsFilled,
         weight: specificity(branch),
         at,
+        origin,
       });
     }
   }
@@ -364,8 +430,20 @@ const splitSelectors = (list) => {
 };
 
 const VOID_TAGS = new Set([
-  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param',
-  'source', 'track', 'wbr',
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
 ]);
 
 /*
@@ -387,9 +465,9 @@ const ancestriesFor = (name) => {
       .replace(/\{\{[\s\S]*?\}\}/g, 'x');
 
     const open = [];
-    for (const [tag, closing, element, attributes] of markup.matchAll(
-      /<(\/?)([a-zA-Z][\w-]*)\b([^>]*)>/g
-    ).map((match) => [match[0], match[1], match[2].toLowerCase(), match[3]])) {
+    for (const [tag, closing, element, attributes] of markup
+      .matchAll(/<(\/?)([a-zA-Z][\w-]*)\b([^>]*)>/g)
+      .map((match) => [match[0], match[1], match[2].toLowerCase(), match[3]])) {
       if (closing) {
         const at = open.map((entry) => entry.element).lastIndexOf(element);
         if (at !== -1) open.length = at;
@@ -454,7 +532,7 @@ const structural = (compound) =>
    with no parts vacuously satisfied every one of them. */
 const tagsOf = (text) =>
   (text.replace(/[#.][\w-]+|\[[^\]]*\]|::?[a-z-]+(?:\([^)]*\))?|&/gi, ' ').match(/[a-z][\w-]*/gi) ?? []).map(
-    (tag) => tag.toLowerCase()
+    (tag) => tag.toLowerCase(),
   );
 
 const matchesElement = (compound, element) => {
@@ -466,24 +544,51 @@ const matchesElement = (compound, element) => {
     partsOf(bare).every((part) => element.has(part)) &&
     tagsOf(bare).every((tag) => element.has(tag)) &&
     anyOf.every((match) =>
-      splitSelectors(match[1]).some((branch) => partsOf(branch).every((part) => element.has(part)))
+      splitSelectors(match[1]).some((branch) => partsOf(branch).every((part) => element.has(part))),
     ) &&
     noneOf.every((match) =>
-      splitSelectors(match[1]).every((branch) => !partsOf(branch).every((part) => element.has(part)))
+      splitSelectors(match[1]).every((branch) => !partsOf(branch).every((part) => element.has(part))),
     )
   );
 };
 
-/* Descendant combinators, so the ancestors have to appear in order -- a subsequence of the
-   chain, matched leftmost-first. */
-const matchesChain = (compounds, chain) => {
-  let from = 0;
-  for (const compound of compounds) {
-    const at = chain.findIndex((element, index) => index >= from && matchesElement(compound, element));
-    if (at === -1) return false;
-    from = at + 1;
+/*
+ * Walk a selector against a chain, honouring the combinator between each compound.
+ *
+ * The tokenizer used to make `>` a compound of its own, which no compound could match, so a
+ * real `#MainContent .text > .subtitle { opacity: .6 }` was dropped from the context and the
+ * label measured without it (Codex, #300). `+` and `~` are sibling relationships this model
+ * has no chain for, so they fail rather than being guessed at; nothing uses them today.
+ */
+const pathOf = (branch) => {
+  const tokens = branch.trim().match(/[>+~]|(?:[^\s>+~(]+(?:\([^)]*\))?)+/g) ?? [];
+  const parts = [];
+  let combinator = ' ';
+  for (const token of tokens) {
+    if (/^[>+~]$/.test(token)) {
+      combinator = token;
+      continue;
+    }
+    parts.push({ combinator, compound: token });
+    combinator = ' ';
   }
-  return true;
+  return parts;
+};
+
+const matchesPath = (parts, chain, endIndex) => {
+  if (parts.length === 0) return false;
+  const walk = (at, index) => {
+    if (index < 0) return false;
+    if (!matchesElement(parts[at].compound, chain[index])) return false;
+    if (at === 0) return true;
+    const { combinator } = parts[at];
+    if (combinator === '>') return walk(at - 1, index - 1);
+    for (let above = index - 1; above >= 0; above -= 1) {
+      if (walk(at - 1, above)) return true;
+    }
+    return false;
+  };
+  return walk(parts.length - 1, endIndex);
 };
 
 const satisfiable = (conditions) => {
@@ -493,11 +598,15 @@ const satisfiable = (conditions) => {
 
   for (const condition of conditions) {
     for (const [, bound, feature, value] of condition.matchAll(
-      /\(\s*(?:(min|max)-)?([a-z-]+)\s*:\s*([^)]+)\)/gi
+      /\(\s*(?:(min|max)-)?([a-z-]+)\s*:\s*([^)]+)\)/gi,
     )) {
       const name = feature.toLowerCase();
       if (name === 'width' && bound) {
-        const pixels = Number(String(value).replace(/px\s*$/i, '').trim());
+        const pixels = Number(
+          String(value)
+            .replace(/px\s*$/i, '')
+            .trim(),
+        );
         /* A width this cannot read is a width this cannot intersect. */
         if (Number.isNaN(pixels)) return false;
         if (bound.toLowerCase() === 'min') low = Math.max(low, pixels);
@@ -531,76 +640,78 @@ const contextsFor = (name) => {
   assert.ok(
     ancestries.length > 0,
     `cannot find .${name} in any section's markup, so there is no way to tell which rules ` +
-      'reach it -- the contexts would be invented'
+      'reach it -- the contexts would be invented',
   );
 
   const out = [];
   for (const entry of ancestries) {
-    const self = entry.chain[entry.chain.length - 1];
-    const above = entry.chain.slice(0, -1);
-    const reaches = all.filter(
-      (rule) => matchesElement(rule.label, self) && matchesChain(rule.ancestors, above)
-    );
-    if (reaches.length === 0) continue;
+    /* The pages this section appears on. A section on no template still gets one context,
+       where only its own inline styles are live. */
+    const pages = templates.filter((page) => page.types.has(entry.section));
+    const where =
+      pages.length > 0 ? pages : [{ file: `${entry.section} alone`, types: new Set([entry.section]) }];
 
-    /* Only the two ancestor declarations that can reach the label need their own contexts --
+    for (const page of where) {
+      const live = (rule) => rule.origin === null || page.types.has(rule.origin);
+
+      const reaches = all.filter(
+        (rule) => live(rule) && matchesPath(rule.path, entry.chain, entry.chain.length - 1),
+      );
+      if (reaches.length === 0) continue;
+
+      /* Only the two ancestor declarations that can reach the label need their own contexts --
        everything else an ancestor sets stays on the ancestor. Without that filter the
        powerset ran to 48 qualifier sets and tripped the cap. */
-    const AFFECTS_LABEL = /(?:^|;|\s)(?:opacity|color)\s*:/;
-    const touching = everyRule().filter(
-      (rule) =>
-        AFFECTS_LABEL.test(rule.declarations) &&
-        entry.chain
-          .slice(0, -1)
-          .some(
-            (element, at) =>
-              matchesElement(rule.label, element) && matchesChain(rule.ancestors, entry.chain.slice(0, at))
-          )
-    );
-
-    const sets = [];
-    const seen = new Set();
-    for (const rule of [...reaches, ...touching]) {
-      const key = JSON.stringify(rule.conditions);
-      if (seen.has(key)) continue;
-      seen.add(key);
-      sets.push(rule.conditions);
-    }
-    /* The powerset is exponential, so an unexpectedly branchy stylesheet stops the test
-       rather than quietly measuring a subset of the combinations. */
-    assert.ok(
-      sets.length <= 12,
-      `.${name} in ${entry.section} is styled under ${sets.length} distinct qualifier sets, ` +
-        'too many to enumerate the combinations of -- narrow the model rather than leaving ' +
-        'combinations unchecked'
-    );
-
-    const built = new Set();
-    for (let mask = 0; mask < 1 << sets.length; mask += 1) {
-      const conditions = [
-        ...new Set(sets.filter((_, at) => mask & (1 << at)).flat()),
-      ];
-      if (!satisfiable(conditions)) continue;
-
-      const key = JSON.stringify([...conditions].sort());
-      if (built.has(key)) continue;
-      built.add(key);
-
-      const applicable = reaches.filter((rule) =>
-        rule.conditions.every((condition) => conditions.includes(condition))
+      const AFFECTS_LABEL = /(?:^|;|\s)(?:opacity|color)\s*:/;
+      const touching = everyRule().filter(
+        (rule) =>
+          live(rule) &&
+          AFFECTS_LABEL.test(rule.declarations) &&
+          entry.chain.slice(0, -1).some((_, at) => matchesPath(rule.path, entry.chain, at)),
       );
-      if (applicable.length === 0) continue;
 
-      const fromAbove = ancestorEffects(entry.chain, conditions);
+      const sets = [];
+      const seen = new Set();
+      for (const rule of [...reaches, ...touching]) {
+        const key = JSON.stringify(rule.conditions);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        sets.push(rule.conditions);
+      }
+      /* The powerset is exponential, so an unexpectedly branchy stylesheet stops the test
+       rather than quietly measuring a subset of the combinations. */
+      assert.ok(
+        sets.length <= 12,
+        `.${name} in ${entry.section} is styled under ${sets.length} distinct qualifier sets, ` +
+          'too many to enumerate the combinations of -- narrow the model rather than leaving ' +
+          'combinations unchecked',
+      );
 
-      out.push({
-        where: [entry.section, ...conditions].join(' inside '),
-        inline: entry.inline,
-        ancestorAlpha: fromAbove.alpha,
-        ancestorColour: fromAbove.colour,
-        filled: applicable.filter((rule) => !rule.needsEmpty),
-        empty: applicable.filter((rule) => !rule.needsFilled),
-      });
+      const built = new Set();
+      for (let mask = 0; mask < 1 << sets.length; mask += 1) {
+        const conditions = [...new Set(sets.filter((_, at) => mask & (1 << at)).flat())];
+        if (!satisfiable(conditions)) continue;
+
+        const key = JSON.stringify([...conditions].sort());
+        if (built.has(key)) continue;
+        built.add(key);
+
+        const applicable = reaches.filter((rule) =>
+          rule.conditions.every((condition) => conditions.includes(condition)),
+        );
+        if (applicable.length === 0) continue;
+
+        const fromAbove = ancestorEffects(entry.chain, conditions, live);
+
+        out.push({
+          where: [`${entry.section} on ${page.file}`, ...conditions].join(' inside '),
+          inline: entry.inline,
+          ancestorAlpha: fromAbove.alpha,
+          ancestorColour: fromAbove.colour,
+          filled: applicable.filter((rule) => !rule.needsEmpty),
+          empty: applicable.filter((rule) => !rule.needsFilled),
+        });
+      }
     }
   }
   return out;
@@ -620,7 +731,7 @@ test('the eyebrow above a heading is a class the stylesheet actually styles', ()
       contextsFor(name).some((context) => context.filled.length > 0),
       `.${name} introduces the heading in ${sections.size} section(s) ` +
         `(${[...sections].sort().slice(0, 3).join(', ')}...) and no rule in ` +
-        'assets/legacy-page-layout.css selects it, so it renders as plain body copy'
+        'assets/legacy-page-layout.css selects it, so it renders as plain body copy',
     );
   }
 });
@@ -637,7 +748,7 @@ test('an eyebrow with nothing in it takes up no room', () => {
       assert.ok(
         context.empty.some((rule) => rule.needsEmpty),
         `.${name} is rendered unconditionally by ${[...sections].sort()[0]}, so it can be ` +
-          `empty, but in ${context.where} no rule hides it when it is`
+          `empty, but in ${context.where} no rule hides it when it is`,
       );
       /* Not "an :empty rule exists" and not "the first match hides it": a second
          `.subtitle:empty { display: block; }` wins in the browser and used to pass here
@@ -648,7 +759,7 @@ test('an eyebrow with nothing in it takes up no room', () => {
         REMOVES_BOX,
         `.${name} when empty resolves to display:${winner ?? '<unset>'} in ${context.where} ` +
           `across ${JSON.stringify(context.empty.map((rule) => rule.selector))}, so an empty ` +
-          'eyebrow still occupies a line'
+          'eyebrow still occupies a line',
       );
     }
   }
@@ -666,7 +777,7 @@ test('the eyebrow sits on its own line above the heading', () => {
         `a span is inline by default, so .${name} needs to resolve to display:block -- in ` +
           `${context.where}, across ` +
           `${JSON.stringify(context.filled.map((rule) => rule.selector))}, it resolves to ` +
-          `${winner ?? '<unset>'}, and the eyebrow runs into the heading on the same line`
+          `${winner ?? '<unset>'}, and the eyebrow runs into the heading on the same line`,
       );
     }
   }
@@ -685,7 +796,7 @@ test('the eyebrow sits on its own line above the heading', () => {
  */
 const palette = (() => {
   const settings = JSON.parse(
-    readFileSync(join(root, 'config/settings_data.json'), 'utf8').replace(/^\s*\/\*[\s\S]*?\*\//, '')
+    readFileSync(join(root, 'config/settings_data.json'), 'utf8').replace(/^\s*\/\*[\s\S]*?\*\//, ''),
   ).current;
   const colors = settings.color_palette?.[0]?.settings ?? settings.color_palette ?? {};
   return { background: colors.background, foreground: colors.foreground };
@@ -697,7 +808,9 @@ const grounds = () => {
     if (!file.endsWith('.json')) continue;
     let parsed;
     try {
-      parsed = JSON.parse(readFileSync(join(root, 'templates', file), 'utf8').replace(/^\s*\/\*[\s\S]*?\*\//, ''));
+      parsed = JSON.parse(
+        readFileSync(join(root, 'templates', file), 'utf8').replace(/^\s*\/\*[\s\S]*?\*\//, ''),
+      );
     } catch {
       continue;
     }
@@ -755,7 +868,7 @@ const painted = (declarations) => {
     assert.ok(
       literal,
       `cannot read the eyebrow's opacity from "${faded}" -- extend this resolver ` +
-        'rather than treating the label as fully opaque'
+        'rather than treating the label as fully opaque',
     );
     alpha = faded.includes('%') ? Number(literal[1]) / 100 : Number(literal[1]);
   }
@@ -764,7 +877,12 @@ const painted = (declarations) => {
   if (value === null) return { alpha, literal: null, how: 'inherited' };
 
   const hex = value.match(/#([0-9a-f]{6})\b/i);
-  if (hex) return { alpha, literal: [1, 3, 5].map((at) => parseInt(`#${hex[1]}`.slice(at, at + 2), 16)), how: value };
+  if (hex)
+    return {
+      alpha,
+      literal: [1, 3, 5].map((at) => parseInt(`#${hex[1]}`.slice(at, at + 2), 16)),
+      how: value,
+    };
 
   /* Alpha after a slash inside a colour function. The first version matched only bare digits
      followed by `)`, so the perfectly valid `rgb(var(--color-foreground-rgb) / 60%)` fell
@@ -783,7 +901,7 @@ const painted = (declarations) => {
     } else {
       assert.fail(
         `cannot read the eyebrow's alpha from "${part}" -- extend this resolver rather than ` +
-          'treating the label as fully opaque'
+          'treating the label as fully opaque',
       );
     }
   } else {
@@ -795,12 +913,12 @@ const painted = (declarations) => {
 
   const inherits =
     /currentColor|inherit|--color-foreground(?![\w-])|--color-foreground-rgb|--color-foreground-muted|--color-foreground-subdued|--palette-(darkest|lightest)/.test(
-      value
+      value,
     );
   assert.ok(
     inherits,
     `cannot work out what colour the eyebrow is painted in from "${value}" -- extend this ` +
-      'resolver rather than leaving the contrast unchecked'
+      'resolver rather than leaving the contrast unchecked',
   );
   return { alpha, literal: null, how: value };
 };
@@ -824,7 +942,7 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
          inherit. */
       const { alpha, literal, how } = painted(
         `${context.ancestorColour ? `color:${context.ancestorColour};` : ''}` +
-          merge(context.filled, context.inline)
+          merge(context.filled, context.inline),
       );
       const effective = alpha * context.ancestorAlpha;
 
@@ -840,7 +958,7 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
           ratio >= 4.5,
           `${ground_name} is ${ground}, and .${name} in ${context.where} ` +
             `(${how}${effective < 1 ? ` at ${effective} opacity` : ''}) lands at ` +
-            `${ratio.toFixed(2)}:1 on it -- under 4.5:1`
+            `${ratio.toFixed(2)}:1 on it -- under 4.5:1`,
         );
       }
     }
