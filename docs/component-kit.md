@@ -235,7 +235,7 @@ disabled placeholder testimonials on the homepage.
 So: before converting any section, read its Liquid. The schema tells you what
 a merchant can set, not what the page draws.
 
-Alongside that, three kinds of drift, measured across all 153 sections in
+Alongside that, three kinds of drift, measured across all 155 sections in
 `templates/*.json` and guarded by `tests/component-kit.test.mjs` so they do not
 go stale again — they already did once, when #276 added three product
 templates:
