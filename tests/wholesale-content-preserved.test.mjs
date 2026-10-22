@@ -31,17 +31,26 @@ test('every piece of wholesale copy, media and destination survives the rebuild'
      move intact or not at all, so they are matched exactly. */
   const atoms = new Set(live.map((item) => item.value));
 
-  /* Prose does not survive as a whole field value, and should not have to. The rebuild splits
-     one legacy `content` into separate text blocks and merges others, both of which are the
-     point of the exercise. What must not happen is words going missing, so prose is checked
-     against the page's whole word count: every word of the original, as many times as it
-     appeared. A dropped sentence takes its words with it and fails here; a sentence moved to
-     another block does not. */
+  /* Prose does not survive as a whole field value, and should not have to: the rebuild splits
+     one legacy `content` into separate text blocks and merges others, which is the point of the
+     exercise. Counting words was the first attempt and was far too slack -- on a page where
+     "wholesale", "coffee" and "support" recur in every section, a whole dropped sentence stayed
+     inside the page's total word budget and the control caught it passing.
+
+     So prose is matched as five-word shingles against every shingle on the page. A sentence
+     moved or a paragraph split at a word boundary loses only the few shingles spanning the
+     seam; a dropped sentence loses all of its own, which takes coverage below the floor. */
+  const SHINGLE = 5;
+  const FLOOR = 0.9;
   const words = (text) => text.toLowerCase().match(/[\p{L}\p{N}']+/gu) ?? [];
-  const budget = new Map();
-  for (const item of live) {
-    for (const word of words(item.value)) budget.set(word, (budget.get(word) ?? 0) + 1);
-  }
+  const shingles = (text) => {
+    const list = words(text);
+    if (list.length < SHINGLE) return [];
+    return Array.from({ length: list.length - SHINGLE + 1 }, (_, i) => list.slice(i, i + SHINGLE).join(' '));
+  };
+
+  const haystack = new Set();
+  for (const item of live) for (const shingle of shingles(item.value)) haystack.add(shingle);
 
   const isAtomic = (item) =>
     /^(shopify:\/\/|https?:\/\/|#|mailto:|\/)/.test(item.value) ||
@@ -50,20 +59,20 @@ test('every piece of wholesale copy, media and destination survives the rebuild'
     words(item.value).length <= 6;
 
   const lost = [];
-  const spent = new Map();
   for (const item of fixture.required) {
     if (isAtomic(item)) {
       if (!atoms.has(item.value)) lost.push(`${item.where} ${item.key}: ${item.value.slice(0, 80)}`);
       continue;
     }
-    const missing = [];
-    for (const word of words(item.value)) {
-      const used = (spent.get(word) ?? 0) + 1;
-      spent.set(word, used);
-      if (used > (budget.get(word) ?? 0)) missing.push(word);
-    }
-    if (missing.length) {
-      lost.push(`${item.where} ${item.key}: ${missing.length} words gone (${missing.slice(0, 8).join(' ')})`);
+    const mine = shingles(item.value);
+    if (!mine.length) continue;
+    const gone = mine.filter((shingle) => !haystack.has(shingle));
+    const coverage = 1 - gone.length / mine.length;
+    if (coverage < FLOOR) {
+      lost.push(
+        `${item.where} ${item.key}: ${Math.round(coverage * 100)}% of its wording remains ` +
+          `(missing e.g. "${gone[0]}")`
+      );
     }
   }
 
