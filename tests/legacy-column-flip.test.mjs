@@ -16,9 +16,21 @@ const sections = readdirSync(join(root, 'sections'))
     markup: readFileSync(join(root, 'sections', file), 'utf8').split(/\{%-?\s*schema\s*-?%\}/)[0],
   }));
 
+/*
+ * A flip class can sit behind a setting, as
+ * `class="... {% if section.settings.media_position == 'right' %} invert-columns{% endif %}"`.
+ * Splitting the
+ * raw attribute glues the class to the tag delimiter -- `invert-columns{%` -- so the section
+ * drops out of `flipping` and every coverage check below silently skips it. The Liquid goes
+ * before the split, not after.
+ */
 const rootClassesOf = (markup) => {
   const match = markup.match(/<(?:section|div)\b[^>]*class="([^"]+)"/);
-  return match ? match[1].split(/\s+/).filter(Boolean) : [];
+  if (!match) return [];
+  return match[1]
+    .replace(/\{%-?[\s\S]*?-?%\}/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
 };
 
 const flipping = sections
@@ -28,7 +40,12 @@ const flipping = sections
   }))
   .filter((section) => section.flipClass);
 
-const VOID = new Set(['img', 'br', 'input', 'source', 'hr', 'meta', 'link', 'path', 'use']);
+/* HTML void elements only. An SVG `<path>` or `<use>` is not one: it is written either
+   self-closing or with an explicit closing tag, and the walk below handles both. */
+const VOID = new Set([
+  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+  'link', 'meta', 'param', 'source', 'track', 'wbr',
+]);
 
 /*
  * The grid container and its DIRECT children.
@@ -43,26 +60,34 @@ const grid = (markup) => {
   const clean = markup.replace(/\{%[\s\S]*?%\}/g, '').replace(/\{\{[\s\S]*?\}\}/g, '');
   const tags = [...clean.matchAll(/<(\/?)([a-zA-Z][\w-]*)([^>]*?)(\/?)>/g)];
 
-  let depth = null;
   let container = null;
   const children = [];
+  const open = [];
   for (const [, closing, tag, attrs, selfClosing] of tags) {
+    const name = tag.toLowerCase();
     const classes = (attrs.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/).filter(Boolean);
 
-    if (depth === null) {
+    if (container === null) {
       if (!closing && classes.includes('content')) {
-        depth = 0;
         container = classes;
+        open.push(name);
       }
       continue;
     }
     if (closing) {
-      depth -= 1;
-      if (depth < 0) break;
+      /* A bare depth counter trusts the void list to be right about every tag it meets. It was
+         not: `path` was on it, the sourcing sections write `<path ...></path>`, and each close
+         decremented a depth the open never incremented -- so the walk fell out of the container
+         three tags in and reported one child for a two-column section. Matching a close against
+         the tags actually open cannot be wrong about a tag the list forgot. */
+      const at = open.lastIndexOf(name);
+      if (at === -1) continue;
+      open.length = at;
+      if (open.length === 0) break;
       continue;
     }
-    if (depth === 0) children.push({ tag, classes });
-    if (!VOID.has(tag.toLowerCase()) && !selfClosing) depth += 1;
+    if (open.length === 1) children.push({ tag: name, classes });
+    if (!VOID.has(name) && !selfClosing) open.push(name);
   }
 
   /* Two markup shapes exist: `.container > .content`, and a single `.content.container`. They
@@ -165,13 +190,21 @@ test('the branch that covers a section moves one of that section\'s real grid it
         'would not help: order applies to the grid item.'
     );
 
-    /* Source order is media, then text. Moving the text to the front (order < 0) or the media
-       to the back (order > 0) both yield media-right; doing neither yields nothing. */
-    const movedIsText = children[moved].classes.includes('text');
+    /*
+     * Whether the declaration moves anything is a fact about where the item already is, not
+     * about which column it is. This check used to read "source order is media, then text" and
+     * decide from the item's class -- an assumption the markup is free to break, and
+     * ona-wholesale-brands does break it: its text is the first child, so order:-1 pins it
+     * where it already was and the setting did nothing in either position (Codex, #299).
+     */
+    const last = children.length - 1;
+    const already = branch.order < 0 ? moved === 0 : moved === last;
     assert.ok(
-      movedIsText ? branch.order < 0 : branch.order > 0,
-      `${name}: the rule gives order:${branch.order} to the ${movedIsText ? 'text' : 'media'} ` +
-        'column, which leaves it where it already was'
+      !already,
+      `${name}: the rule gives order:${branch.order} to "${branch.target}", which is already ` +
+        `${branch.order < 0 ? 'first' : 'last'} of [${children
+          .map((child) => `${child.tag}.${child.classes.join('.')}`)
+          .join(', ')}] -- the declaration moves nothing`
     );
   }
 });
@@ -194,5 +227,46 @@ test('the flip is desktop-only, above the single-column breakpoint', () => {
   assert.ok(
     Number(width[1]) > Number(collapse[1]),
     `the flip starts at ${width[1]}px but the grid is still single-column up to ${collapse[1]}px`
+  );
+});
+
+/*
+ * The two ways this file's reading of the markup has already been wrong, each pinned so it
+ * cannot come back quietly. Both failed open: the section dropped out of `flipping`, or out of
+ * its own grid, and every assertion above passed by never seeing it.
+ */
+test('a flip class the editor switches on is read like any other', () => {
+  const conditional = flipping.filter(({ markup }) =>
+    /class="[^"]*\{%[^"]*invert-columns/.test(markup)
+  );
+  assert.ok(
+    conditional.length > 0,
+    'no section puts its flip class behind a setting, so this guard is no longer testing anything'
+  );
+  for (const { name, markup } of conditional) {
+    assert.ok(
+      rootClassesOf(markup).includes('invert-columns'),
+      `${name} flips from a setting, but the class reader did not find .invert-columns -- the ` +
+        'Liquid is being split along with the classes'
+    );
+  }
+});
+
+test('an svg child with an explicit closing tag does not end the walk early', () => {
+  const markup = `
+    <section class="invert-columns">
+      <div class="content container">
+        <div class="img">
+          <svg viewBox="0 0 1 1"><g><path d="M0 0"></path></g></svg>
+          <img src="a.jpg">
+        </div>
+        <div class="text"><h2>Title</h2></div>
+      </div>
+    </section>`;
+  const { children } = grid(markup);
+  assert.deepEqual(
+    children.map((child) => child.classes[0]),
+    ['img', 'text'],
+    'the walk lost a column: a tag it treated as void closed a depth it never opened'
   );
 });

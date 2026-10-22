@@ -1,5 +1,5 @@
 {% render 'ona-band', section: section %}
-<section class="add-image-and-text-slider section-full-large" id="{{ section.settings.id }}">
+<section class="add-image-and-text-slider section-full-large{% if section.settings.media_position == 'right' %} invert-columns{% endif %}" id="{{ section.settings.id }}">
 
     <div class="content container">
         <div class="img show-icon wowo fadeIn">
@@ -52,6 +52,22 @@
     "en": "Sourcing"
   },
   "settings": [
+    {
+      "type": "select",
+      "id": "media_position",
+      "label": "t:settings.media_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "left"
+    },
     {
       "type": "header",
       "content": "Band"
