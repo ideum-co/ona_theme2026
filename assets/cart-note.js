@@ -48,10 +48,10 @@ for (const type of ['click', 'keydown']) {
       const held = event.target instanceof Element ? event.target.closest('.additional-checkout-buttons') : null;
       if (!held) return;
       if (type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
-      event.preventDefault();
-      event.stopPropagation();
 
       if (pending) {
+        event.preventDefault();
+        event.stopPropagation();
         held.toggleAttribute('inert', true);
         return;
       }
@@ -59,10 +59,19 @@ for (const type of ['click', 'keydown']) {
       /* Not in flight, but the server does not hold what the shopper typed: the last write
          failed. The blur that would have retried it has already happened -- focus left the
          textarea on the first checkout attempt -- so this click is the only thing left that
-         can. Retry once per value and then stand aside: a shopper must never be locked out of
-         checkout by a note, and the failed write has already raised a CartErrorEvent, so they
-         are not losing it silently. */
-      for (const note of notes) note.retryOnce();
+         can.
+         
+         Cancel the activation ONLY when a retry is actually going to run. The retry is capped
+         at one per value, so once it is spent `retryOnce` does nothing -- and cancelling
+         anyway would leave Shop Pay permanently dead, which is far worse than checking out
+         with a stale note. The failed write already raised a CartErrorEvent, so the shopper
+         was told. */
+      const retrying = [...notes].filter((note) => note.canRetryNote());
+      if (retrying.length === 0) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      for (const note of retrying) note.retryOnce();
     },
     { capture: true }
   );
@@ -110,12 +119,23 @@ class CartNote extends Component {
   }
 
   /**
+   * Whether a retry would actually do something. The document listener asks before cancelling
+   * an activation, so a spent retry cannot leave the checkout buttons dead.
+   */
+  canRetryNote = () => {
+    const textarea = this.querySelector('textarea');
+    if (!(textarea instanceof HTMLTextAreaElement)) return false;
+    return this.#unsaved && textarea.value !== this.#accepted && textarea.value !== this.#retried;
+  };
+
+  /**
    * Retries a failed write from the checkout attempt that found it, at most once per value.
+   * Editing the note again makes it retryable again, which is the behaviour a shopper expects.
    */
   retryOnce = () => {
+    if (!this.canRetryNote()) return;
     const textarea = this.querySelector('textarea');
     if (!(textarea instanceof HTMLTextAreaElement)) return;
-    if (textarea.value === this.#accepted || textarea.value === this.#retried) return;
     this.#retried = textarea.value;
     this.#write(textarea, new Event('cart-note-retry'));
   };

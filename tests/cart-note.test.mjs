@@ -195,6 +195,31 @@ test('a note the server rejected is retried by the next checkout attempt', () =>
   assert.match(listener, /noteIsPending\(\)/, 'the document guard no longer checks for a write in flight');
   assert.match(listener, /noteIsUnsaved\(\)/, 'the document guard ignores a note the server rejected');
   assert.match(listener, /retryOnce\(\)/, 'the guard intercepts an unsaved note without retrying it');
+
+  /* The retry is capped at one per value, so once it is spent `retryOnce` does nothing. If the
+     activation were cancelled anyway, every later click would be swallowed and Shop Pay would
+     be permanently dead -- far worse than checking out with a stale note, and the exact bug
+     the cap was meant to avoid. The unsaved branch must therefore ask whether a retry will
+     actually run, and bail out BEFORE cancelling anything. Codex, #292. */
+  const unsavedBranch = listener.slice(listener.indexOf('if (pending)'));
+  const bail = unsavedBranch.indexOf('retrying.length === 0');
+  const cancel = unsavedBranch.indexOf('event.preventDefault()', unsavedBranch.indexOf('return;', bail));
+  assert.notEqual(bail, -1, 'the unsaved branch never checks whether a retry will actually run');
+  assert.ok(
+    bail < cancel,
+    'the unsaved branch cancels the activation before checking that a retry will run, so a ' +
+      'spent retry leaves the accelerated checkout buttons permanently unresponsive'
+  );
+  assert.match(
+    source,
+    /canRetryNote = \(\) => \{[\s\S]*?return this\.#unsaved &&/,
+    'there is no predicate for whether a retry would do anything'
+  );
+  assert.match(
+    source,
+    /retryOnce = \(\) => \{\s*if \(!this\.canRetryNote\(\)\) return;/,
+    'retryOnce does not share the predicate the guard asks, so the two can disagree'
+  );
   assert.match(
     listener,
     /if \(pending\) \{[\s\S]*?return;/,
@@ -211,8 +236,8 @@ test('a note the server rejected is retried by the next checkout attempt', () =>
   );
   assert.match(
     source,
-    /textarea\.value === this\.#accepted \|\| textarea\.value === this\.#retried/,
-    'retryOnce does not stand aside once it has retried a value'
+    /textarea\.value !== this\.#accepted && textarea\.value !== this\.#retried/,
+    'the retry predicate no longer stands aside once it has retried a value'
   );
 
   /* Set on failure, cleared on success -- in that order, and both through refreshUnsaved, since
