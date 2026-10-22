@@ -146,12 +146,18 @@ not rendered structure. All of these are invisible to it:
   reduced-motion fallback that degrades to a swipeable strip. Its schema did
   not change, so the mapping is blind to every bit of that.
 
-The sourcing one resolves in the mapping's favour, but only by measurement:
-across `page.wholesale.json` and `page.training.json` the ten clones have
-**zero enabled blocks** between them — nine carry none at all, and
-`ona-sourcing` carries four that are all `disabled: true`. So the live render
-of all ten really is the two-column row, and `media-with-content` reproduces
-it. What is at stake is stored content, not visible content: those four
+The sourcing one resolves **one** of its two questions in the mapping's
+favour, and only by measurement: across `page.wholesale.json` and
+`page.training.json` the ten clones have **zero enabled blocks** between them —
+nine carry none at all, and `ona-sourcing` carries four that are all
+`disabled: true`. So the trailing slider is not part of the live render, and
+that objection to `media-with-content` falls away.
+
+**The mapping is still blocked**, on the other question: all ten render an
+`.animated-svg` blob that `media-with-content` drops (see
+[Known gaps](#known-gaps)). Nothing in this paragraph makes the swap safe —
+it only removes one of the two reasons it was not. What is at stake in *this*
+paragraph is stored content, not visible content: those four
 disabled quotes, and the disabled blocks on `ona-faq-lists`, have to be
 carried across or dropped on purpose — ONA's call, the same shape as the
 disabled placeholder testimonials on the homepage.
@@ -191,7 +197,7 @@ has to be written.
 
 | # | Component | What it is | Replaces |
 | --- | --- | --- | --- |
-| 1 | `section` + `group`/`text`/`image`/`video`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×78, `group` ×34, `button` ×14, `image` ×11. A `group` has `content_direction`, so a row of two blocks is a media/text layout; `image` carries a `link` and `video` carries a YouTube/Vimeo URL. | anything that is just stacked copy, and the four media/text variants `media-with-content` cannot hold (below) |
+| 1 | `section` + `group`/`text`/`image`/`video`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×116, `group` ×40, `button` ×20, `image` ×14. A `group` has `content_direction`, so a row of two blocks is a media/text layout; `image` carries a `link` and `video` carries a YouTube/Vimeo URL. | anything that is just stacked copy, and the four media/text variants `media-with-content` cannot hold (below) |
 | 2 | `media-with-content` | one fixed media slot + a content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones, and `ona-training-image-text` — **all 11 blocked** on the decorative-layer decision: every one renders an `.animated-svg` blob this target drops (see [Known gaps](#known-gaps)). Nothing here is convertible until that is settled |
 | 3 | `hero` | full-bleed media with blocks over it: desktop and custom mobile media, overlay, `section_height`, `fetchpriority` on the image itself. Already on the homepage. | `ona-training-banner`, `ona-inner-banner` |
 | 4 | `carousel` | a static `group` header **above** a row of `_card`s. Both are direct children of `.section`, which puts them in the same grid column on separate rows — it is a header-over-cards layout, not a side-by-side one. | card rows. **Not** the five panel-plus-slider sections: their panel sits beside the slider |

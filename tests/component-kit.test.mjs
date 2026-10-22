@@ -518,3 +518,33 @@ test('the padding inventory is what the templates hold', () => {
     assert.ok(values.has(rung), `the proposed ladder includes ${rung}, which no template uses`);
   }
 });
+
+/*
+ * The kit argues for component 1 by saying these primitives are already the most-used thing in
+ * the theme, and quoted 78/34/14/11 -- measured before #276 added three product templates, by
+ * which point they were 116/40/20/14. The argument survives either way, which is exactly why
+ * nobody would notice the figures rotting. Derive them.
+ */
+test('the Horizon block usage counts are what the templates hold', () => {
+  const counts = new Map();
+  const tally = (blocks) => {
+    for (const block of Object.values(blocks ?? {})) {
+      if (block.type) counts.set(block.type, (counts.get(block.type) ?? 0) + 1);
+      tally(block.blocks);
+    }
+  };
+  for (const [, parsed] of eachTemplate()) {
+    for (const section of Object.values(parsed.sections ?? {})) tally(section.blocks);
+  }
+
+  const quoted = ['text', 'group', 'button', 'image'];
+  for (const type of quoted) {
+    assert.ok(counts.get(type) > 0, `no ${type} blocks found; the probe is broken`);
+  }
+
+  const expected = quoted.map((type) => `\`${type}\` ×${counts.get(type)}`).join(', ');
+  assert.ok(
+    doc.includes(`Already the most-used thing in the theme: ${expected}.`),
+    `component 1 should cite ${expected}`
+  );
+});
