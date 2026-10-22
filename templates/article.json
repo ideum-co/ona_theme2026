@@ -90,9 +90,14 @@
         "padding-block-start": 40,
         "padding-block-end": 80
       }
+    },
+    "brewguide-info": {
+      "type": "brewguide-article-info",
+      "settings": {}
     }
   },
   "order": [
-    "section"
+    "section",
+    "brewguide-info"
   ]
 }
