@@ -325,11 +325,11 @@ needs a decision before the page it is on can reach stage 2.
 | --- | --- |
 | the five panel-plus-slider composites | `carousel` renders its header **above** the cards — `sections/carousel.liquid` emits the static group and `_carousel-content` as consecutive children, and `assets/base.css` puts every direct child of `.section` in grid column 2. The legacy layout is panel *beside* slider. No component in the theme does that; it needs a two-column wrapper or an extended component. |
 | `ona-gust-r` | Two problems, and the fields are only the first. Horizon's `contact-form` block has name, email, phone and body; the live form also posts `contact[subject]` = "Wholesale partnership enquiry" and a `contact[business]` field, which is how enquiries are identified and routed, so swapping it would silently change what ONA receives. **The section is also not just a form:** `sections/ona-gust-r.liquid:57-84` renders a two-column YouTube promo (`42flR1Iwun4`), explanatory copy and a Get in touch CTA *beside* the form at lines 1-55. Adding the two missing settings to `contact-form` would still leave that shell with nowhere to go, so the mapping needs a two-column container with the form in one side, not a block swap. |
-| `ona-awards` | `templates/page.about.json` gives it five slider images (`block1`) and twelve award-table rows (`block2`). `ona-page-media-gallery` reads `page.metafields.accentuate.image` and takes neither; `media-with-content` has one media slot. Nothing holds both. |
+| `ona-awards` | `templates/page.about.json` gives it five slider images (`block1`) and twelve award-table rows (`block2`). `ona-page-media-gallery` reads `page.metafields.accentuate.image` and takes neither; `media-with-content` has one media slot. Nothing holds both — **independent of the decorative layer**, so step 2 does not release this one. |
 | `ona-unique-coffees` | three named tabs switching a three-image panel and its copy together. `carousel` gives cards and dots; an accordion does not drive a separate panel. |
 | every media/text section carrying `.animated-svg` — **15 of them** | the image is two layers, not one. `sections/ona-training-image-text.liquid:5-10` renders a three-path mustard (`#D0994D`) blob behind the photo, and `assets/legacy-page-layout.css` absolutely positions it behind the image with `z-index: -1` (the `#MainContent :has(> .animated-svg):has(img)` pair — cited by selector because PR #249 inserts ~38 lines above it). `media-with-content`'s `_media-without-appearance` renders one image or one video, so the swap removes the blob — visible, and stage 2 requires invisible. This is not one section: `grep -l animated-svg sections/*.liquid` returns 15, and **all ten** members of the largest duplication group are among them, so it applies to the kit's biggest mapping, not an edge case. Needs a target that carries a decorative layer, or the layer moves to CSS on the new section. |
 | `ona-expericences-content` | the live form posts `contact[subject]` = "Private courses and experiences enquiry" (`sections/ona-expericences-content.liquid:50`). Horizon's `contact-form` block has no subject setting — its schema is width, colour, input style, border and padding — so the swap would silently merge these enquiries into the untagged pile. The same loss is already treated as blocking for `ona-gust-r`; it is blocking here too. |
-| `ona-training-form` | same loss again, third instance: `sections/ona-training-form.liquid:51` posts `contact[subject]` = "Barista training enquiry". All three `{% form 'contact' %}` sections in the theme post a fixed subject that `contact-form` cannot carry, so "move the forms to `contact-form`" is not a mapping any of them can take as it stands — the block needs a subject setting first. |
+| `ona-training-form` | same loss again, third instance: `sections/ona-training-form.liquid:51` posts `contact[subject]` = "Barista training enquiry". This is **independent of the decorative layer**, so step 2 does not release this one even though the section carries a blob. All three `{% form 'contact' %}` sections in the theme post a fixed subject that `contact-form` cannot carry, so "move the forms to `contact-form`" is not a mapping any of them can take as it stands — the block needs a subject setting first. |
 | `ona-training` (wholesale) | the text column is not ordinary text. `templates/page.wholesale.json` gives the live instance three enabled blocks, and `sections/ona-training.liquid:40-56` renders each as a `faqs-toggle` button with `aria-expanded`, followed by a "Get In Touch" link to a Monday form. A `media-with-content` text slot drops both the interaction and the CTA; the blocks need an `accordion` and the link needs to survive. |
 | `ona-wholesale-brands` | #253 replaced the static logo grid with a marquee: a duplicated `aria-hidden inert` track, a `-webkit-mask-image` fade at both edges, a pause on hover and `:focus-within`, and a `prefers-reduced-motion` branch that turns the row into a plain `overflow-x: auto` strip. `section` + linked `image` blocks render none of that, and Horizon's `marquee` has no hover or focus pause (see the two absent components above). The mapping this row replaces — "`section` + linked `image` blocks, kept static" — was written against the pre-#253 section and would now be a visible regression. |
 | `ona-faq-lists` (wholesale) | all six FAQ blocks on the live instance are **disabled**, but `title2` ("Need help?") and `tips` (the admin mailto) are populated, so what the page actually renders is the tips, not a FAQ list. `ona-faq-layout` has a left-column `body` and `_faq-category` blocks and no slot for trailing copy, so the replacement cannot be invisible here. #253 confirms the reading from the other side: it styles the call-out behind `:not(:has(.faqs-toggle))`, "a page with no FAQ rows (e.g. /pages/wholesale)", and centres the heading, constrains the paragraph to `48ch` and underlines the mailto. Whatever replaces the section has to carry that treatment, not just the text. The bookings instance has to be checked separately before the section is retired. |
@@ -435,16 +435,17 @@ next one to have happened.
    carry. Solving the decorative layer does not unblock this page; the subject
    setting has to exist first, or the conversion silently drops how those
    enquiries are routed.
-5. **About**, then **learn**. About has **three** sections in the same shape
-   as the form above — blob carriers that each have a second reason of their
-   own, so step 2 does not release them either: `ona-awards` (five slider
-   images plus a twelve-row award table, and nothing holds both),
-   `ona-content` (two independent text columns, which one content slot
-   collapses) and `ona-careers` (its "VIEW LISTING" `url` is a section
-   setting, not a block). Each needs its own decision before About starts;
-   `ona-sustatnability` and `ona-sustainability-list` are blocked for reasons
-   unrelated to the blob, which their gap rows give. Learn is two sections and
-   is limited by content, not layout.
+5. **About**, then **learn**. One section here is in the same shape as the
+   form above — a blob carrier whose real blocker is something else, so step 2
+   does not release it: `ona-awards`, which has five slider images *and* a
+   twelve-row award table and no target holds both. `ona-content` and
+   `ona-careers` are **not** in that category despite also carrying the blob:
+   their gap rows identify the shape (two `group`s; `text` and `button`
+   blocks, and `blocks/button.liquid` has the `link` the "VIEW LISTING" `url`
+   needs) and say the blob is the blocker, so step 2 does release them.
+   `ona-sustatnability` and `ona-sustainability-list` carry no blob at all and
+   are blocked for their own reasons, which their gap rows give. Learn is two
+   sections and is limited by content, not layout.
 6. **Delete each section as its last use goes.** Nothing is unused today — all
    46 are referenced — so there is no up-front sweep to do. The four shared
    sections above are the only ones whose deletion needs more than one page

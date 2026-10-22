@@ -945,15 +945,22 @@ test('every page plan names the gapped sections live on that page', () => {
 });
 
 /*
- * Step 2 solves the decorative layer and steps 3-5 then convert the pages. But four sections
- * carry the blob *and* have a gap row of their own for an unrelated reason, so step 2 does not
+ * Step 2 solves the decorative layer and steps 3-5 then convert the pages. Some sections carry
+ * the blob *and* are blocked by something the blob decision does not touch, so step 2 does not
  * release them -- and an ordered plan that says "the same prerequisite" hands an implementer a
  * page that is still blocked. Step 4 did exactly that with `ona-training-form`, whose fixed
- * `contact[subject]` survives any decision about the blob (Codex, #247); step 5 did the same,
- * silently, with three sections on About.
+ * `contact[subject]` survives any decision about the blob (Codex, #247).
  *
- * Derive the set rather than list it: a section with a `.animated-svg` layer that also has its
- * own named gap row. Then every page that runs one has to name it in its own step.
+ * The first version of this derived the set as "carries a blob AND has a named gap row", which
+ * over-generated and made me write a false claim into step 5: `ona-careers` and `ona-content`
+ * both match that intersection, and both gap rows say in their own words that the blob IS the
+ * blocker -- `ona-careers` even has its destination setting already (`blocks/button.liquid`
+ * carries the `link` its "VIEW LISTING" url needs). Presence in two populations is not evidence
+ * about the content of a row (Codex, #247, again).
+ *
+ * So the marker is authored, and the guard checks it both ways: a marked row may not also say
+ * the blob is what blocks it, and a carrier row that is *not* marked must say so explicitly, so
+ * a genuinely independent blocker cannot be hidden by leaving the marker off.
  */
 const ORDER_STEPS = [
   ['templates/page.wholesale.json', /^3\. \*\*Wholesale\*\*/],
@@ -974,8 +981,31 @@ test('an order-of-work step names the blockers step 2 does not clear', () => {
     .filter((file) => readFileSync(join(root, 'sections', file), 'utf8').includes('animated-svg'))
     .map((file) => file.replace(/\.liquid$/, ''));
 
-  const doubly = namedRows.filter((name) => carriers.includes(name));
-  assert.ok(doubly.length > 2, `only ${doubly.length} doubly-blocked sections found; the probe is broken`);
+  const INDEPENDENT = '**independent of the decorative layer**';
+  const BLOB_IS_THE_BLOCKER = /Blocked on the blob|needs the blob solved first/i;
+  const gapRow = (name) =>
+    gaps.split('\n').find((line) => line.startsWith(`| \`${name}\``)) ?? '';
+
+  const doubly = namedRows.filter((name) => carriers.includes(name) && gapRow(name).includes(INDEPENDENT));
+  assert.ok(doubly.length > 0, 'no independently-blocked carrier found; the marker or the probe is broken');
+
+  /* Both directions. A row cannot claim independence and also say the blob is the blocker, and
+     a carrier row without the marker has to say the blob is the blocker rather than just
+     omitting the question -- otherwise dropping the marker would quietly shrink this set. */
+  for (const name of doubly) {
+    assert.doesNotMatch(
+      gapRow(name),
+      BLOB_IS_THE_BLOCKER,
+      `${name} is marked ${INDEPENDENT} but its gap row also says the blob is what blocks it`
+    );
+  }
+  for (const name of namedRows.filter((section) => carriers.includes(section) && !doubly.includes(section))) {
+    assert.match(
+      gapRow(name),
+      BLOB_IS_THE_BLOCKER,
+      `${name} carries a blob and has a gap row that neither claims an independent blocker nor says the blob is the blocker`
+    );
+  }
 
   /* Steps are numbered list items: from the marker to the next top-level number. */
   const stepText = (marker) => {
