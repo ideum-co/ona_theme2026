@@ -128,13 +128,29 @@ empty or partial first sync looks identical to a healthy one in the admin.
 > **Do not reuse an existing preview theme for this.** A theme can be connected
 > to only one branch, so the staging theme has to be a new one.
 >
-> ⚠️ **`160815546559` is NOT a clean-up candidate.** It was listed as one here
-> in an earlier draft, which was wrong and dangerous: it has been the
-> **published storefront** since 2026-10-14 22:00:42Z, and the release plan
-> names it as the rollback for the next attempt at publishing
-> `154676789439`. Deleting it would either take the store down or destroy the
-> rollback. Leave it alone until another theme is live **and** a replacement
-> rollback has been named.
+> ⚠️ **`160815546559`: do not delete it, but the reason has changed.**
+>
+> *Original warning, 2026-10-15.* It was listed as a clean-up candidate here in
+> an earlier draft, which was wrong and dangerous: it was the **published
+> storefront** from 2026-10-14 22:00:42Z, and the release plan named it as the
+> rollback for the next attempt at publishing `154676789439`.
+>
+> **As of 2026-10-22, the first half of that no longer holds.** The Admin API
+> reports `154676789439` (`ona_theme2026/main`) as **MAIN** and
+> `160815546559` ("PREVIEW - product media fills column (PR #46)") as
+> **UNPUBLISHED**, last updated 2026-10-19. Deleting it would **not** take the
+> store down.
+>
+> The second half is an open question, not a fact this document can settle:
+> whether `160815546559` is still the nominated rollback is ONA's call, and
+> nobody has made it since the roles swapped back. Until someone does, treat it
+> as the rollback and leave it alone — but do not repeat the "it is live"
+> reason, because an operator who checks will find it false and may discount
+> the warning entirely. Check the roles rather than this paragraph:
+>
+> ```bash
+> curl -s https://onacoffee.com.au | grep -o 'Shopify.theme = {[^}]*}'
+> ```
 >
 > `160861159615` ("PREVIEW - WFG counter on 2026 theme (PR #149)") is safe to
 > delete — it is unpublished, is not anyone's rollback, and its content is in
