@@ -56,3 +56,63 @@ test('the note setting exists and reaches both the drawer and the cart page', ()
     'the cart page no longer renders the summary block, so the note is missing from /cart'
   );
 });
+
+/*
+ * The accelerated checkout buttons (Shop Pay and friends) are rendered by Shopify into
+ * `content_for_additional_checkout_buttons`, outside `cart-form` and with no `form` attribute.
+ * They do not submit the textarea: they leave with whatever note the server already holds.
+ * Typing is only written after a 200 ms debounce plus an async cart update, so a shopper who
+ * types a grind request and goes straight to Shop Pay can lose it. Two things close that
+ * window -- a flush on blur, and a pending flag that holds the buttons until the write lands.
+ */
+test('a pending note write cannot be outrun by accelerated checkout', () => {
+  const summary = read('snippets/cart-summary.liquid');
+  const script = read('assets/cart-note.js');
+
+  const textarea = summary.match(/<textarea[\s\S]*?>/);
+  assert.ok(textarea, 'the cart note textarea is gone');
+  assert.match(
+    textarea[0],
+    /on:blur="\/flushCartNote"/,
+    'the textarea no longer flushes on blur, so the 200 ms debounce can swallow the last keystrokes'
+  );
+  assert.match(
+    script,
+    /flushCartNote\s*=/,
+    'cart-note.js no longer defines flushCartNote, so the on:blur binding resolves to nothing'
+  );
+  assert.match(
+    script,
+    /updateCartNote\.cancel\(\)/,
+    'flushCartNote no longer cancels the debounced write, so the flush can be overwritten by a stale one'
+  );
+
+  /* Both paths must go through the same writer, or one of them drifts. */
+  assert.equal(
+    (script.match(/Theme\.routes\.cart_update_url/g) ?? []).length,
+    1,
+    'cart-note.js writes the note from more than one place; the debounced and flush paths should share one writer'
+  );
+
+  /* The flag is set on <html> because <cart-note> is not an ancestor of the buttons. */
+  assert.match(
+    script,
+    /document\.documentElement\.setAttribute\('data-cart-note-pending'/,
+    'cart-note.js no longer marks a write as pending'
+  );
+  assert.match(
+    script,
+    /document\.documentElement\.removeAttribute\('data-cart-note-pending'\)/,
+    'cart-note.js never clears the pending flag; the accelerated buttons would stay disabled'
+  );
+  assert.match(
+    script,
+    /finally\s*\{[\s\S]*?removeAttribute\('data-cart-note-pending'\)/,
+    'the pending flag is not cleared in a finally block, so a failed write would leave checkout stuck'
+  );
+  assert.match(
+    summary,
+    /:root\[data-cart-note-pending\][^{]*\.additional-checkout-buttons\s*\{[^}]*pointer-events:\s*none/,
+    'nothing holds back the accelerated checkout buttons while a note write is in flight'
+  );
+});
