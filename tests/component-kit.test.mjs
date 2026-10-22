@@ -467,3 +467,44 @@ test('the kit does not call ona-bookings-top an iframe', () => {
   );
   assert.match(doc, /`ona-bookings-top` \(bookings\) \| \*\*no iframe at all\*\*/);
 });
+
+/*
+ * The paragraph above these three calls all of them guarded, and for a while only two were:
+ * nothing read a padding setting, so the 19 values and the ladder built on them could drift
+ * while the suite stayed green. The document prints the values, not just the count, and the
+ * values are the part a ladder is chosen from -- so assert the list.
+ */
+test('the padding inventory is what the templates hold', () => {
+  const values = new Set();
+  for (const [, parsed] of eachTemplate()) {
+    for (const settings of everySettings(parsed.sections)) {
+      for (const [key, value] of Object.entries(settings)) {
+        if (key.includes('padding') && typeof value === 'number') values.add(value);
+      }
+    }
+  }
+
+  const sorted = [...values].sort((a, b) => a - b);
+  assert.ok(sorted.length > 0, 'the probe found no padding values, so it is broken');
+
+  /* The list wraps across lines in the document, so compare against a whitespace-collapsed
+     copy rather than making the pattern guess where the breaks fall. */
+  const flat = doc.replace(/\s+/g, ' ');
+  assert.match(
+    flat,
+    new RegExp(`\\*\\*${sorted.length} distinct padding values\\*\\* between sections: ${sorted.join(', ')}\\.`),
+    `the drift list does not match the ${sorted.length} padding values in use: ${sorted.join(', ')}`
+  );
+  assert.match(
+    flat,
+    new RegExp(`Pick one from the ${sorted.length} values in use`),
+    `the spacing rule does not say ${sorted.length}`
+  );
+
+  /* The suggested ladder is only usable if every rung is a value that exists. */
+  const ladder = flat.match(/the obvious ladder is \*\*([0-9 /]+)\*\*/);
+  assert.ok(ladder, 'the spacing rule no longer proposes a ladder');
+  for (const rung of ladder[1].split('/').map((part) => Number(part.trim()))) {
+    assert.ok(values.has(rung), `the proposed ladder includes ${rung}, which no template uses`);
+  }
+});

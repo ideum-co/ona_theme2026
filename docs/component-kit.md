@@ -270,10 +270,14 @@ loads its own script is doing something a `text` block cannot:
 | `ona-campaign-banner` (homepage) | reads `shop.metafields.custom.donation_end_date` and renders the campaign line only when it has a value, next to its own scoped stylesheet | keep: it is the other half of the counter — both read metafields written by the same recompute job, and a `text` block cannot omit itself when the date is unset |
 
 So the honest version of the collapse: the **layout** fragments go to eight
-components. Seven sections carry behaviour — three of them onto Horizon's
-`contact-form`, three of them staying as they are, and `ona-bookings-top`
-needing a target of its own — and `ona-unique-coffees` is the one section on
-the wholesale page that stage 2 cannot convert without a decision first.
+components. Seven sections carry behaviour: three are `{% form 'contact' %}`
+sections that **cannot** move to Horizon's `contact-form` as it stands — each
+posts a fixed `contact[subject]`, and `ona-gust-r` a `contact[business]` too,
+which the stock block has no setting for, so the block needs a subject setting
+before any of the three is a mapping — three stay as they are, and
+`ona-bookings-top` needs a target of its own. `ona-unique-coffees` is the one
+section on the wholesale page that stage 2 cannot convert without a decision
+first.
 
 ## Known gaps
 
@@ -307,17 +311,18 @@ the verification rule at the top and to the gaps above.
 
 | Page | Sections now | After | The work |
 | --- | --- | --- | --- |
-| `/pages/wholesale` | 19 (all legacy) | ~10 | five `*-sourcing-v*` → `media-with-content`; `ona-cafe-testimonial` → `press-quotes`; the four panel-plus-slider composites and `ona-unique-coffees` have no verified target (see Known gaps); `ona-wholesale-brands` lost its target to #253 (see Known gaps); `ona-faq-lists`, `ona-training` and `ona-icon-and-content` have no verified target (see Known gaps); `ona-gust-r` stays until its subject and business fields have a home |
-| `/pages/barista-courses` | 10 (all legacy) | ~6 | four `traning-sourcing-v*` → `media-with-content`; `ona-traning-supported` has no verified target (see Known gaps); `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
-| `/pages/about` | 7 (all legacy) | ~5 | media/text variants → `media-with-content`; `ona-awards` and `ona-sustainability-list` have no verified target (see Known gaps) |
+| `/pages/wholesale` | 19 (all legacy) | ~10 | the five `*-sourcing-v*` clones have **no verified target** — every one carries an `.animated-svg` layer that `media-with-content` drops (see Known gaps); `ona-cafe-testimonial` → `press-quotes`; the four panel-plus-slider composites and `ona-unique-coffees` have no verified target (see Known gaps); `ona-wholesale-brands` lost its target to #253 (see Known gaps); `ona-faq-lists`, `ona-training` and `ona-icon-and-content` have no verified target (see Known gaps); `ona-gust-r` stays until its subject and business fields have a home |
+| `/pages/barista-courses` | 10 (all legacy) | ~6 | the four `traning-sourcing-v*` clones have **no verified target**, same `.animated-svg` layer (see Known gaps); `ona-traning-supported` has no verified target (see Known gaps); `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
+| `/pages/about` | 7 (all legacy) | ~5 | media/text variants → `media-with-content`, except any carrying `.animated-svg`; `ona-awards`, `ona-content` and `ona-sustainability-list` have no verified target (see Known gaps) |
 | `/pages/learn` | 2 | 2 | `ona-page-title` → page-header; `ona-brewguides-and-training` → `section` + `_product-card`-style tiles |
 | `/pages/faq`, `/pages/subscription-faq` | 2 each | 2 each | `ona-page-title` → page-header. `ona-faq-layout` already Horizon-native — leave it |
 | `/pages/private-courses-and-experiences` | 3 | 3 | thin on content; layout swap only after the copy lands. Two of its three sections have no target anyway: `ona-expericences-content`'s form and `ona-bread-crumbs` (see Known gaps) |
 | `/pages/womenincoffee`, `/pages/recycled-boxes` | 2, 1 | — | same: content first |
-| bookings ×3 | 4 each | 4 each | the iframe's framing only |
+| bookings ×3 | 4 each | 4 each | **not** iframe framing only: `ona-training-iframe` is the iframe, but `ona-bookings-top` is a breadcrumb plus a metafield-backed two-column intro and has no target yet (see Known gaps) |
 
 The homepage and the PDP are not in this table: both are already Horizon-native
-apart from the eight inline-`<style>` blocks listed above.
+apart from the 20 inline-`<style>` blocks listed above — one on the homepage and
+the rest across `collection.json` and the four product templates.
 
 Four sections are shared, so converting one page does not retire them:
 `ona-page-title` has to go from faq, faq-subscriptions *and* learn before it can
@@ -339,7 +344,7 @@ component still diverge if each restates its own sizes.
 
 1. **Type comes from the preset, not a literal.** `type_preset` is one of
    `h1…h6`, `paragraph`, `rte`. `custom` is for a genuine one-off and currently
-   covers 38 blocks — that number should fall, not grow. No `font_size` in a
+   covers 77 blocks — that number should fall, not grow. No `font_size` in a
    template.
 2. **Spacing comes from a short scale.** Pick one from the 19 values in use —
    the obvious ladder is **0 / 16 / 32 / 48 / 64 / 96 / 120** — and move every
