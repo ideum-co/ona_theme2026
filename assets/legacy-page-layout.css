@@ -279,10 +279,16 @@
  *
  * Desktop only. At 749px the grid collapses to a single column, where the image belongs above
  * the text whichever side it took on a wide screen -- flipping there would push it below.
+ *
+ * `order` applies to the grid item, which is not always the `.img`: ona-supported wraps its
+ * media in `<ona-slider>`, so there the slider is the item and the `.img` is a grandchild that
+ * `order` would not move. The media column is therefore matched as either, and the child
+ * combinator is deliberate -- a descendant match would set `order` on an element that is not a
+ * grid item and silently do nothing (Codex, #297).
  */
 @media (min-width:750px) {
-  #MainContent :is(.invert-columns,.img-r,.img-right) > .container > .content > .img,
-  #MainContent :is(.invert-columns,.img-r,.img-right) > .content.container > .img { order:2; }
+  #MainContent :is(.invert-columns,.img-r,.img-right) > .container > .content > :is(.img,ona-slider),
+  #MainContent :is(.invert-columns,.img-r,.img-right) > .content.container > :is(.img,ona-slider) { order:2; }
 }
 
 /*

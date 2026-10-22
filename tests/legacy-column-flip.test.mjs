@@ -45,21 +45,74 @@ test('every flip class the markup carries has a rule behind it', () => {
 });
 
 /*
- * `order: 2` moves whichever child it lands on. The rule targets `.img`, so a section that puts
- * its media in a differently-named child would flip nothing, or flip the text instead and leave
- * the image where it was. Measured off each flipping section rather than assumed.
+ * `order` applies to the grid ITEM. The first version of this test read the section markup for
+ * the first `<div class="img...">` in document order and was satisfied -- but in ona-supported
+ * that div sits inside `<ona-slider>`, so the grid item is the slider and `order` on the `.img`
+ * would move nothing. The section carried `img-right` and stayed image-left, and this test said
+ * it was fine (Codex, #297).
+ *
+ * So the check is structural now: parse the direct children of the grid container out of the
+ * markup, and require the first one to match a selector the rule actually targets -- read from
+ * the stylesheet rather than restated here, so widening or narrowing the rule is reflected.
  */
-test('every flipping section puts its media in the child the rule moves', () => {
+const VOID = new Set(['img', 'br', 'input', 'source', 'hr', 'meta', 'link', 'path', 'use']);
+
+/* Direct children of the first element whose class list contains `content`. */
+const gridChildren = (markup) => {
+  const clean = markup.replace(/\{%[\s\S]*?%\}/g, '').replace(/\{\{[\s\S]*?\}\}/g, '');
+  const tags = [...clean.matchAll(/<(\/?)([a-zA-Z][\w-]*)([^>]*?)(\/?)>/g)];
+
+  let depth = null;
+  const children = [];
+  for (const [, closing, tag, attrs, selfClosing] of tags) {
+    const classes = (attrs.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/).filter(Boolean);
+
+    if (depth === null) {
+      if (!closing && classes.includes('content')) depth = 0;
+      continue;
+    }
+    if (closing) {
+      depth -= 1;
+      if (depth < 0) break;
+      continue;
+    }
+    if (depth === 0) children.push({ tag, classes });
+    if (!VOID.has(tag.toLowerCase()) && !selfClosing) depth += 1;
+  }
+  return children;
+};
+
+/* The selectors the rule moves, taken from the rule itself. */
+const flipTargets = (() => {
+  const rule = css.match(/>\s*\.content[^>]*>\s*:is\(([^)]*)\)\s*\{[^}]*order\s*:\s*2/);
+  assert.ok(rule, 'cannot read the flip rule targets out of the stylesheet');
+  return rule[1].split(',').map((target) => target.trim());
+})();
+
+test('the rule moves the grid item that holds the media, not a descendant of it', () => {
+  const matches = ({ tag, classes }) =>
+    flipTargets.some((target) =>
+      target.startsWith('.') ? classes.includes(target.slice(1)) : tag.toLowerCase() === target
+    );
+
   for (const { name, markup } of flipping) {
-    const columns = [...markup.matchAll(/<div class="((?:img|text)[^"]*)"/g)].map((match) =>
-      match[1].split(/\s+/)[0]
-    );
+    const children = gridChildren(markup);
     assert.equal(
-      columns[0],
-      'img',
-      `${name}: the first column is .${columns[0]}, so order:2 on .img does not flip it`
+      children.length,
+      2,
+      `${name}: the grid has ${children.length} direct children [${children
+        .map((child) => child.tag)
+        .join(', ')}], so order:2 does not simply swap two columns`
     );
-    assert.ok(columns.includes('text'), `${name}: no .text column to flip against`);
+    assert.ok(
+      matches(children[0]),
+      `${name}: the first grid item is <${children[0].tag} class="${children[0].classes.join(' ')}">, ` +
+        `which none of the rule's targets (${flipTargets.join(', ')}) match -- the flip is a no-op here`
+    );
+    assert.ok(
+      children[1].classes.includes('text'),
+      `${name}: the second grid item is not .text, so there is nothing to flip against`
+    );
   }
 });
 
