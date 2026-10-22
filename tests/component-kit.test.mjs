@@ -439,11 +439,25 @@ test('the page-header contract keeps the dynamic title fallback', () => {
     `the contract should say ${NUMBER_WORDS[blanks.length]} instances are blank, for ${blanks.join(', ')}`
   );
 
-  /* The fallback each of those blanks relies on, cited where it lives. */
-  for (const [section, line] of [['ona-sr-heading', 5], ['ona-page-title', 14]]) {
-    const source = readFileSync(join(root, 'sections', `${section}.liquid`), 'utf8').split('\n')[line - 1];
-    assert.match(source, /page\.title/, `${section}.liquid:${line} no longer derives the title; the citation is stale`);
-    assert.ok(doc.includes(`sections/${section}.liquid:${line}`), `the contract should cite ${section}.liquid:${line}`);
+  /*
+   * The fallback each of those blanks relies on, cited where it lives.
+   *
+   * The line number used to be written here as well as in the contract, so a line added above
+   * the fallback broke a test that was asserting against its own copy of the number rather than
+   * against the theme. Derive it from the source and hold only the contract to it.
+   */
+  for (const section of ['ona-sr-heading', 'ona-page-title']) {
+    const lines = readFileSync(join(root, 'sections', `${section}.liquid`), 'utf8').split('\n');
+    const at = lines.flatMap((text, index) => (/page\.title/.test(text) ? [index + 1] : []));
+    assert.equal(
+      at.length,
+      1,
+      `${section}.liquid should derive the title in exactly one place, found ${at.length}`
+    );
+    assert.ok(
+      doc.includes(`sections/${section}.liquid:${at[0]}`),
+      `the contract cites the wrong line for ${section}.liquid -- the fallback is on line ${at[0]}`
+    );
   }
 
   assert.ok(

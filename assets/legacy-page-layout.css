@@ -107,7 +107,7 @@
 /* `.col-4-icons` and `.add-faqs-section` were left out of this list, so the four-icon
    row and the FAQ list ran flush into their neighbours. Harmless while the page was a
    single flat colour; with colour bands a section's padding is the band's height. */
-#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings,.learn-list,.product-search,.col-4-icons,.add-faqs-section) { padding-block:var(--legacy-page-gap); }
+#MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings,.learn-list,.product-search,.col-4-icons,.add-faqs-section,.page-title) { padding-block:var(--legacy-page-gap); }
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.training-bookings) :is(.container,.content,.text,.img,.image,.left-box,.right-box) { min-width:0; }
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.two-columns-title-intro,.training-bookings) > .container > .content,
 #MainContent .training > .container { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(24px,5vw,70px); align-items:center; }
@@ -116,6 +116,21 @@
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings) h3 { font-size:var(--font-h3--size, 2rem); line-height:1.4; margin:0 0 18px; }
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.two-columns-title-intro,.training-bookings) p { font-size:var(--font-paragraph--size, 0.875rem); line-height:1.65; }
 #MainContent :is(.add-image-and-text,.add-image-and-text-slider,.training,.training-bookings) :is(img,video,iframe) { max-width:100%; }
+
+/*
+ * The page header.
+ *
+ * `.page-title` opens three templates (faq, faq-subscriptions, learn) and had no rules of its
+ * own: `.container` gave it a measure and a gutter, nothing gave it room above or below, and
+ * its `<h1>` fell back to the browser default rather than the theme's heading scale.
+ */
+#MainContent .page-title h1 {
+  font-family: var(--font-heading--family, serif);
+  font-weight: 400;
+  font-size: var(--font-h1--size, 3.5rem);
+  line-height: 1.08;
+  margin: 0;
+}
 
 /*
  * The eyebrow above a section heading.
