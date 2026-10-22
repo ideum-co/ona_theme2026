@@ -250,6 +250,25 @@ const EMITS = new Map(
  */
 const ID_ATTRIBUTE = /(?<![-\w])id="([A-Za-z][-\w]*)"/g;
 
+/*
+ * An id can also be a Liquid expression that is constant. `snippets/search-modal.liquid`
+ * writes `id="{{ 'search-component--modal' }}"` and `id="{{ 'cmdk-input' | default: 'Search' }}"`,
+ * both of which render the same string on every page the layout wraps -- and the attribute
+ * regex above sees neither, because the value starts with `{`. An anchor of `cmdk-input` was
+ * therefore approved against an id that is on every page in the theme.
+ */
+const LITERAL_ID = /(?<![-\w])id="\{\{-?\s*'([^']+)'((?:[^}]*?))-?\}\}"/g;
+
+/*
+ * The filters that cannot change a non-blank literal: `default:` is a no-op on one, and
+ * `escape` and `strip` leave an id-shaped string alone. Anything else -- `handle`, `append`,
+ * `md5` -- renders a different string, and guessing it would reserve a name that is not on the
+ * page while still missing the one that is. Those are not skipped silently; the test below
+ * fails on them, because a constant id that quietly stops being reserved is the bug this
+ * whole addition exists to fix.
+ */
+const INERT_FILTERS = /^(?:\s*\|\s*(?:escape|strip)\s*|\s*\|\s*default:\s*(?:'[^']*'|"[^"]*")\s*)*$/;
+
 const maybeRead = (file) => {
   try {
     return read(file);
@@ -278,6 +297,9 @@ const emitted = (file, seen = new Set()) => {
   const dead = deadRanges(source);
   const live = (match) => !isDead(dead, match.index);
   const ids = [...source.matchAll(ID_ATTRIBUTE)].filter(live).map((m) => m[1]);
+  for (const match of source.matchAll(LITERAL_ID)) {
+    if (live(match) && INERT_FILTERS.test(match[2])) ids.push(match[1]);
+  }
   for (const match of source.matchAll(/\{%-?\s*(?:render|include)\s+'([^']+)'/g)) {
     if (!live(match)) continue;
     ids.push(...emitted(join('snippets', `${match[1]}.liquid`), seen));
@@ -377,6 +399,37 @@ test('every stored anchor is reachable and unique on the page it renders on', ()
   assert.ok(
     theme.ids.some(([id]) => id === 'search-modal'),
     'the layout scan no longer reaches its snippets; search-modal comes from snippets/search-modal.liquid'
+  );
+
+  /* A constant Liquid id is reserved like any other. Both of the theme's two live in
+     search-modal, which the layout renders on every page. */
+  assert.ok(
+    theme.ids.some(([id]) => id === 'cmdk-input'),
+    'cmdk-input is not reserved; a constant Liquid id is being read as no id at all'
+  );
+
+  /* The other one in that file is a `data-testid`, not an id -- `search-modal.liquid:46`
+     against `:70` -- so the boundary has to hold on this form too, or a test attribute costs
+     a merchant a valid anchor the same way the plain ones did. */
+  assert.ok(
+    !theme.ids.some(([id]) => id === 'search-component--modal'),
+    'search-component--modal is reserved, but it is a data-testid; the id boundary does not hold on constant Liquid values'
+  );
+
+  /* And if one of them grows a filter the evaluator does not know, it would stop being
+     reserved without saying so. Fail here instead, where the reason is written down. */
+  const unknown = [];
+  for (const dir of ['layout', 'sections', 'snippets', 'blocks']) {
+    for (const name of readdirSync(join(root, dir)).filter((file) => file.endsWith('.liquid'))) {
+      for (const match of read(join(dir, name)).matchAll(LITERAL_ID)) {
+        if (!INERT_FILTERS.test(match[2])) unknown.push(`${dir}/${name}: ${match[0]}`);
+      }
+    }
+  }
+  assert.deepEqual(
+    unknown,
+    [],
+    'these constant ids pass through a filter that may rewrite them, so they are not reserved; teach INERT_FILTERS or reserve the rendered value'
   );
 
   /* Tripwire for the dead-branch gate. `quick-add-dialog` lives in `snippets/quick-add-modal
