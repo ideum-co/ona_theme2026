@@ -740,6 +740,63 @@ test('every ona-* section has a mapping or a declared gap', () => {
 });
 
 /*
+ * A section with a Known-gaps row is, by definition, not a clean mapping -- but the kit table
+ * is what an implementer follows, and `ona-faq-lists` sat in a Replaces cell with no marker at
+ * all while its gap row said the replacement could not be invisible (Codex, #247). The two
+ * tables have to agree in this direction too: naming a gapped section as a replacement is only
+ * honest if the cell says so.
+ */
+test('no kit row offers a gapped section as an unqualified replacement', () => {
+  const between = (from, to) => doc.slice(doc.indexOf(from), doc.indexOf(to));
+  const kit = between('## The kit', '### Why `media-with-content` carries the weight');
+  const gaps = between('## Known gaps', '## Page by page');
+
+  const gapped = new Set(
+    gaps
+      .split('\n')
+      .filter((line) => /^\| `ona-[a-z0-9-]+`/.test(line))
+      .map((line) => line.match(/^\| `(ona-[a-z0-9-]+)`/)[1])
+  );
+  assert.ok(gapped.size > 5, `only ${gapped.size} gap rows found; the probe is broken`);
+
+  const unqualified = [];
+  for (const row of kit.split('\n').filter((line) => /^\| \d+ \|/.test(line))) {
+    const replaces = row.split('|').at(-2) ?? '';
+    const named = [...replaces.matchAll(/`(ona-[a-z0-9-]+)`/g)].map((match) => match[1]);
+    const marked = /blocked|Known gaps|no verified target/i.test(replaces);
+    if (marked) continue;
+    unqualified.push(...named.filter((name) => gapped.has(name)));
+  }
+
+  assert.deepEqual(
+    unqualified,
+    [],
+    `these sections have a Known-gaps row but are offered as a plain replacement in the kit table: ${unqualified.join(', ')}`
+  );
+});
+
+/*
+ * The wholesale page plan reduced `ona-gust-r` to its missing form fields, while its gap row
+ * says the fields are only the first of two problems -- the two-column YouTube promo beside the
+ * form needs a container target as well (Codex, #247). An actionable row that drops half a gap
+ * restarts the conversion too early, so the plan has to carry both halves.
+ */
+test('the wholesale plan carries both halves of the ona-gust-r gap', () => {
+  const gapRow = doc.split('\n').find((line) => line.startsWith('| `ona-gust-r` |'));
+  assert.ok(gapRow, 'the ona-gust-r gap row is gone');
+  assert.match(gapRow, /not just a form/i, 'the gap row no longer records the second problem');
+
+  const planRow = doc.split('\n').find((line) => line.startsWith('| `/pages/wholesale` |'));
+  assert.ok(planRow, 'the wholesale page-plan row is gone');
+  const clause = planRow.slice(planRow.lastIndexOf('`ona-gust-r`'));
+  assert.match(
+    clause,
+    /two-column container/i,
+    'the wholesale plan still reduces ona-gust-r to its form fields; the gap row needs a container target too'
+  );
+});
+
+/*
  * The kit row and the gap row described the same dependency differently: the gap row recorded
  * #246 as merged and the café-name dependency satisfied, while the kit row still listed #246 as
  * a blocker, which sends an implementer to redo finished work (Codex, #247). Two places, one

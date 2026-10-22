@@ -14,8 +14,17 @@ so lazy loading is not a factor — 43 images in `<main>`, 43 loaded, 0 missing)
 
 | theme | visible images | upscaled >1.3x |
 |---|---|---|
-| live `160815546559` | 42 | **0** |
+| then-live `160815546559` | 42 | **0** |
 | theme2026 `154676789439` | 43 | **17** |
+
+> **Those roles are the ones these themes held on 2026-10-20 and have since
+> swapped.** Checked 2026-10-22: `154676789439` (`ona_theme2026/main`) is
+> `role: MAIN` and is what `onacoffee.com.au` serves —
+> `Shopify.theme = {"id":154676789439,...,"role":"main"}` in the page source —
+> while `160815546559` ("PREVIEW - product media fills column (PR #46)") is
+> `UNPUBLISHED`. So the measurement below is live-vs-candidate as it stood
+> before the go-live, and the 17 upscaled images are on the theme that is now
+> production. Do not use `160815546559` as the current baseline.
 
 Worst offenders, all in the same section:
 
