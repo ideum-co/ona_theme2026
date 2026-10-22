@@ -277,18 +277,20 @@
  * repeated down the page. This is the original design returning, not a new one: the markup has
  * been asking for it the whole time.
  *
+ * The text column is what moves, not the media column. `order` applies to the grid item, and
+ * the media is not always the item: one of the five wraps its images in a custom element, which
+ * is then the item and leaves the inner `.img` a grandchild that `order` cannot reach. The
+ * `.text` column is a direct child in all five, so pulling it in front is the one formulation
+ * that does not depend on how the media happens to be wrapped -- and it keeps this sheet from
+ * naming a slider component that ships its own styles, which its own test forbids this sheet
+ * from doing.
+ *
  * Desktop only. At 749px the grid collapses to a single column, where the image belongs above
  * the text whichever side it took on a wide screen -- flipping there would push it below.
- *
- * `order` applies to the grid item, which is not always the `.img`: ona-supported wraps its
- * media in `<ona-slider>`, so there the slider is the item and the `.img` is a grandchild that
- * `order` would not move. The media column is therefore matched as either, and the child
- * combinator is deliberate -- a descendant match would set `order` on an element that is not a
- * grid item and silently do nothing (Codex, #297).
  */
 @media (min-width:750px) {
-  #MainContent :is(.invert-columns,.img-r,.img-right) > .container > .content > :is(.img,ona-slider),
-  #MainContent :is(.invert-columns,.img-r,.img-right) > .content.container > :is(.img,ona-slider) { order:2; }
+  #MainContent :is(.invert-columns,.img-r,.img-right) > .container > .content > .text,
+  #MainContent :is(.invert-columns,.img-r,.img-right) > .content.container > .text { order:-1; }
 }
 
 /*

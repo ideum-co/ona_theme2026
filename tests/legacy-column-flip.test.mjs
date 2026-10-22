@@ -82,18 +82,18 @@ const gridChildren = (markup) => {
   return children;
 };
 
-/* The selectors the rule moves, taken from the rule itself. */
-const flipTargets = (() => {
-  const rule = css.match(/>\s*\.content[^>]*>\s*:is\(([^)]*)\)\s*\{[^}]*order\s*:\s*2/);
-  assert.ok(rule, 'cannot read the flip rule targets out of the stylesheet');
-  return rule[1].split(',').map((target) => target.trim());
+/* What the rule moves, and which way, read out of the rule itself. */
+const flipRule = (() => {
+  const match = css.match(/>\s*\.content(?:\.container)?\s*>\s*([^\s{]+)\s*\{[^}]*order\s*:\s*(-?\d+)/);
+  assert.ok(match, 'cannot read the flip rule out of the stylesheet');
+  return { target: match[1], order: Number(match[2]) };
 })();
 
-test('the rule moves the grid item that holds the media, not a descendant of it', () => {
+test('the rule moves a real grid item, and moves it the right way', () => {
   const matches = ({ tag, classes }) =>
-    flipTargets.some((target) =>
-      target.startsWith('.') ? classes.includes(target.slice(1)) : tag.toLowerCase() === target
-    );
+    flipRule.target.startsWith('.')
+      ? classes.includes(flipRule.target.slice(1))
+      : tag.toLowerCase() === flipRule.target;
 
   for (const { name, markup } of flipping) {
     const children = gridChildren(markup);
@@ -102,16 +102,26 @@ test('the rule moves the grid item that holds the media, not a descendant of it'
       2,
       `${name}: the grid has ${children.length} direct children [${children
         .map((child) => child.tag)
-        .join(', ')}], so order:2 does not simply swap two columns`
+        .join(', ')}], so a single order declaration does not simply swap two columns`
     );
-    assert.ok(
-      matches(children[0]),
-      `${name}: the first grid item is <${children[0].tag} class="${children[0].classes.join(' ')}">, ` +
-        `which none of the rule's targets (${flipTargets.join(', ')}) match -- the flip is a no-op here`
+
+    const moved = children.findIndex(matches);
+    assert.notEqual(
+      moved,
+      -1,
+      `${name}: nothing among the grid items [${children
+        .map((child) => `${child.tag}.${child.classes.join('.')}`)
+        .join(', ')}] matches "${flipRule.target}" -- the flip is a no-op here. ` +
+        'A descendant match would not help: order applies to the grid item.'
     );
+
+    /* Source order is media, then text. Moving the text to the front (order < 0) or the media
+       to the back (order > 0) both yield media-right; doing neither yields nothing. */
+    const movedIsText = children[moved].classes.includes('text');
     assert.ok(
-      children[1].classes.includes('text'),
-      `${name}: the second grid item is not .text, so there is nothing to flip against`
+      movedIsText ? flipRule.order < 0 : flipRule.order > 0,
+      `${name}: the rule gives order:${flipRule.order} to the ` +
+        `${movedIsText ? 'text' : 'media'} column, which leaves it where it already was`
     );
   }
 });
@@ -123,7 +133,7 @@ test('the rule moves the grid item that holds the media, not a descendant of it'
  */
 test('the flip is desktop-only, above the single-column breakpoint', () => {
   const blocks = [...css.matchAll(/@media\s*\(([^)]*)\)\s*\{([\s\S]*?)\n\}/g)];
-  const flipBlock = blocks.find(([, , body]) => /order\s*:\s*2/.test(body));
+  const flipBlock = blocks.find(([, , body]) => /order\s*:\s*-?\d+/.test(body));
   assert.ok(flipBlock, 'the flip rule is not inside a media query, so it applies on mobile too');
 
   const width = flipBlock[1].match(/min-width\s*:\s*(\d+)px/);
