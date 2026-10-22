@@ -689,6 +689,61 @@ test('the Learn tiles map to a block a merchant can actually add', () => {
     'the Learn row no longer rules out both rejected cards');
 });
 
+/*
+ * The behavioural table said a subject setting was what stood between the three legacy forms
+ * and Horizon's contact-form. It is necessary and not sufficient. The legacy forms mark name,
+ * email and body required and label them visibly; blocks/contact-form.liquid has no required
+ * attribute on any field, hides every label behind visually-hidden in favour of placeholders,
+ * and adds a tel phone field. Swapping would relax validation, change the rendered form and
+ * add a field nobody asked for -- after the documented blocker was cleared, which is the worst
+ * time to discover it.
+ *
+ * Each of the three gap rows has to carry this itself. A reader lands on one row, and a
+ * blocker recorded only in the shared paragraph is a blocker that row does not have.
+ */
+test('the contact-form gap rows record the validation mismatch', () => {
+  const legacy = ['ona-gust-r', 'ona-training-form', 'ona-expericences-content'];
+
+  for (const name of legacy) {
+    const source = readFileSync(join(root, 'sections', `${name}.liquid`), 'utf8');
+    for (const field of ['name', 'email', 'body']) {
+      const input = new RegExp(`<(?:input|textarea)[^>]*\\brequired\\b[^>]*name="contact\\[${field}\\]"`);
+      const reversed = new RegExp(`<(?:input|textarea)[^>]*name="contact\\[${field}\\]"[^>]*\\brequired\\b`);
+      assert.ok(
+        input.test(source) || reversed.test(source),
+        `${name} no longer marks contact[${field}] required; the gap rows claim all three are`
+      );
+    }
+    assert.match(source, /<label for="ona-/, `${name} no longer has visible labels; the gap rows claim it does`);
+  }
+
+  const horizon = readFileSync(join(root, 'blocks', 'contact-form.liquid'), 'utf8');
+  assert.equal(
+    (horizon.match(/[^-]\brequired=/g) ?? []).length,
+    0,
+    'contact-form now has a required attribute; the gap rows say it has none on any field'
+  );
+  assert.match(horizon, /class="visually-hidden"/, 'contact-form no longer hides its labels; the gap rows say it does');
+  assert.match(horizon, /type="tel"/, 'contact-form no longer has the phone field the gap rows cite');
+  assert.match(horizon, /name="contact\[phone\]"/, 'contact-form no longer posts contact[phone]');
+
+  /* Every one of the three rows states it, not just the shared paragraph. */
+  const gaps = between('## Known gaps', '## Page by page');
+  for (const name of legacy) {
+    const row = gaps.split('\n').find((line) => line.startsWith(`| \`${name}\``));
+    assert.ok(row, `the Known gaps row for ${name} is gone`);
+    assert.ok(
+      /\*\*The field set and validation differ too\*\*/.test(row),
+      `the ${name} gap row no longer records the validation mismatch on its own`
+    );
+  }
+
+  assert.ok(
+    /A subject setting is necessary and\s+\*\*not sufficient\*\*/.test(doc),
+    'the behavioural summary is back to implying a subject setting is all that is needed'
+  );
+});
+
 test('the duplication table still matches the schemas', () => {
   const groups = new Map();
 
