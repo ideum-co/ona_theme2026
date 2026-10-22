@@ -2117,3 +2117,25 @@ test('the kit does not route a decorated section to media-with-content', () => {
     'row 2 should hand the decorated sections to component 1, which carries the shape'
   );
 });
+
+/*
+ * A doc that says one of its own tables is wrong is a doc with a bug in it, and the warning
+ * outlives the fix: row 2 was rewritten in this same PR while the gap row still told readers to
+ * disregard it (Codex, #293, twice in a row). The fix for "table X is stale" is to update table
+ * X, never to annotate it from somewhere else -- so the annotation itself is the failure.
+ */
+test('the kit does not tell its readers that part of the kit is wrong', () => {
+  const SELF_CONTRADICTION = [
+    /\b(?:row|table|step|section) \d+[^.]{0,60}\bis wrong\b/i,
+    /\buntil it is rewritten\b/i,
+    /\bdisregard the (?:row|table|step)\b/i,
+  ];
+  for (const pattern of SELF_CONTRADICTION) {
+    const hit = doc.match(pattern);
+    assert.equal(
+      hit,
+      null,
+      `the kit contains "${hit?.[0]}" -- update the part it points at instead of warning about it`
+    );
+  }
+});
