@@ -135,13 +135,48 @@ const EMITS = new Map(
  */
 const ID_ATTRIBUTE = /(?<![-\w])id="([A-Za-z][-\w]*)"/g;
 
+const maybeRead = (file) => {
+  try {
+    return read(file);
+  } catch {
+    return null;
+  }
+};
+
+/*
+ * Every static id a file puts on the page, following the snippets it renders.
+ *
+ * A section file is not the end of the chain. `layout/theme.liquid:216` renders
+ * `snippets/search-modal.liquid`, which emits `id="search-modal"` on every page, and
+ * `blocks/filters.liquid:409` emits `id="filters-drawer"` wherever a `filters` block is
+ * configured. Stopping at the file named in the JSON leaves those out and an anchor by either
+ * name collides with something real while this test says it is free. Snippets render snippets,
+ * so the walk is transitive, with `seen` for the cycles.
+ */
+const emitted = (file, seen = new Set()) => {
+  if (seen.has(file)) return [];
+  seen.add(file);
+  const source = maybeRead(file);
+  if (source === null) return [];
+  const ids = [...source.matchAll(ID_ATTRIBUTE)].map((m) => m[1]);
+  for (const match of source.matchAll(/\{%-?\s*(?:render|include)\s+'([^']+)'/g)) {
+    ids.push(...emitted(join('snippets', `${match[1]}.liquid`), seen));
+  }
+  return ids;
+};
+
+/* A type resolves to a section file or a block file; the JSON says which by where it sits. */
+const fileFor = (type, kind) =>
+  kind === 'section' && maybeRead(join('sections', `${type}.liquid`)) !== null
+    ? join('sections', `${type}.liquid`)
+    : maybeRead(join('blocks', `${type}.liquid`)) !== null
+      ? join('blocks', `${type}.liquid`)
+      : join('sections', `${type}.liquid`);
+
 const STATIC = new Map(
   readdirSync(join(root, 'sections'))
     .filter((name) => name.endsWith('.liquid'))
-    .map((name) => [
-      name.replace(/\.liquid$/, ''),
-      [...new Set([...read(join('sections', name)).matchAll(ID_ATTRIBUTE)].map((m) => m[1]))],
-    ])
+    .map((name) => [name.replace(/\.liquid$/, ''), [...new Set(emitted(join('sections', name)))]])
 );
 
 const idsIn = (file) => {
@@ -156,7 +191,15 @@ const idsIn = (file) => {
     if (typeof id === 'string' && id.trim() !== '') {
       for (const prefix of EMITS.get(section.type) ?? []) taken.push([`${prefix}${id}`, `${file} ${key} ${prefix || 'id'}`]);
     }
-    for (const id of STATIC.get(section.type) ?? []) taken.push([id, `sections/${section.type}.liquid`]);
+    /* The section's own markup and its snippets, plus every block the JSON configures under it
+       and theirs -- a configured block is as much on the page as the section holding it. */
+    const walk = (node, kind) => {
+      if (!node.type) return;
+      const source = fileFor(node.type, kind);
+      for (const id of new Set(emitted(source))) taken.push([id, source]);
+      for (const child of Object.values(node.blocks ?? {})) walk(child, 'block');
+    };
+    walk(section, 'section');
   }
   return { anchors, taken };
 };
@@ -186,9 +229,17 @@ test('every stored anchor is reachable and unique on the page it renders on', ()
     `the section groups instantiate no type that emits a static id; the probe is broken`
   );
 
+  /* Counted once over the whole universe, not inside the per-template loop. A group anchor is
+     set exactly once however many templates render it, and the previous form recognised a group
+     owner and then added nothing -- so an anchor stored in `footer-group.json` left this at
+     zero and the inertness claim went unchecked for the one file that reaches every page. */
+  const set = [...templates.map((file) => idsIn(file)), ...everywhere.map(([, ids]) => ids)].reduce(
+    (total, { anchors }) => total + anchors.length,
+    0
+  );
+
   const unreachable = [];
   const collisions = [];
-  let set = 0;
   for (const file of templates) {
     const page = [[file, idsIn(file)], ...everywhere];
     const taken = new Map(fromLayout);
@@ -196,7 +247,6 @@ test('every stored anchor is reachable and unique on the page it renders on', ()
 
     for (const [owner, { anchors }] of page) {
       for (const { key, anchor } of anchors) {
-        if (owner === file || groups.includes(owner)) set += owner === file ? 1 : 0;
         if (!reachable(anchor)) {
           unreachable.push(`${owner} ${key}: ${JSON.stringify(anchor)}`);
           continue;
