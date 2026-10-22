@@ -7,10 +7,35 @@ import { dirname, join } from 'node:path';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 /* Comments mention class names in prose; a rule has to actually select one. */
-const css = readFileSync(join(root, 'assets/legacy-page-layout.css'), 'utf8').replace(
-  /\/\*[\s\S]*?\*\//g,
-  ' '
-);
+const decomment = (text) => text.replace(/\/\*[\s\S]*?\*\//g, ' ');
+
+/*
+ * Every stylesheet that can reach a legacy eyebrow, in the order the browser applies them.
+ *
+ * Reading only legacy-page-layout.css missed the `{% style %}` and `{% stylesheet %}` blocks
+ * the sections carry -- 139 of them -- which render after the asset and override it, so
+ * `#MainContent .subtitle { opacity: .6 }` added to ona-wholesale-partnership muted every
+ * eyebrow on the page with all four tests green (Codex, #300). Liquid is stripped the same
+ * way it is in the markup, since a value it emits is not a selector.
+ */
+const sheets = (() => {
+  const out = [decomment(readFileSync(join(root, 'assets/legacy-page-layout.css'), 'utf8'))];
+  for (const dir of ['sections', 'snippets']) {
+    for (const file of readdirSync(join(root, dir))) {
+      if (!file.endsWith('.liquid')) continue;
+      const source = readFileSync(join(root, dir, file), 'utf8');
+      for (const [, body] of source.matchAll(
+        /\{%-?\s*(?:style|stylesheet)[^%]*-?%\}([\s\S]*?)\{%-?\s*end(?:style|stylesheet)\s*-?%\}/g
+      )) {
+        out.push(decomment(body).replace(/\{%-?[\s\S]*?-?%\}/g, ' ').replace(/\{\{[\s\S]*?\}\}/g, 'x'));
+      }
+    }
+  }
+  return out;
+})();
+
+/* Kept for the prose checks that only ask whether a name is mentioned at all. */
+const css = sheets.join('\n');
 
 /*
  * The label a legacy section puts directly above its heading -- the eyebrow.
@@ -258,7 +283,15 @@ const ancestriesFor = (name) => {
            partnership eyebrow lost both its layout and its contrast with the suite green
            (Codex, #300). It is carried with the chain and applied last. */
         found.push({
-          chain: new Set(['#MainContent', ...open.flatMap((entry) => entry.classes).map((c) => `.${c}`)]),
+          /* One entry per ancestor element, in order, each holding only its own classes.
+             Flattening them into a single set lost which classes share an element, so
+             `.add-image-and-text.text .subtitle` matched a page where those two classes sit
+             on different ancestors, and an `opacity: 1` written that way cancelled a real
+             muted rule that the browser keeps (Codex, #300). */
+          chain: [
+            new Set(['#MainContent']),
+            ...open.map((entry) => new Set(entry.classes.map((c) => `.${c}`))),
+          ],
           inline: attributes.match(/style="([^"]*)"/)?.[1] ?? '',
           section: file.slice(0, -'.liquid'.length),
         });
@@ -277,20 +310,32 @@ const ancestriesFor = (name) => {
  */
 const partsOf = (text) => text.match(/[#.][\w-]+/g) ?? [];
 
-const presentIn = (compound, ancestry) => {
+const matchesElement = (compound, element) => {
   const anyOf = [...compound.matchAll(/:(?:is|where)\(([^)]*)\)/gi)];
   const noneOf = [...compound.matchAll(/:not\(([^)]*)\)/gi)];
   const bare = compound.replace(/:(?:is|where|not)\([^)]*\)/gi, '');
 
   return (
-    partsOf(bare).every((part) => ancestry.has(part)) &&
+    partsOf(bare).every((part) => element.has(part)) &&
     anyOf.every((match) =>
-      splitSelectors(match[1]).some((branch) => partsOf(branch).every((part) => ancestry.has(part)))
+      splitSelectors(match[1]).some((branch) => partsOf(branch).every((part) => element.has(part)))
     ) &&
     noneOf.every((match) =>
-      splitSelectors(match[1]).every((branch) => !partsOf(branch).every((part) => ancestry.has(part)))
+      splitSelectors(match[1]).every((branch) => !partsOf(branch).every((part) => element.has(part)))
     )
   );
+};
+
+/* Descendant combinators, so the ancestors have to appear in order -- a subsequence of the
+   chain, matched leftmost-first. */
+const matchesChain = (compounds, chain) => {
+  let from = 0;
+  for (const compound of compounds) {
+    const at = chain.findIndex((element, index) => index >= from && matchesElement(compound, element));
+    if (at === -1) return false;
+    from = at + 1;
+  }
+  return true;
 };
 
 const satisfiable = (conditions) => {
@@ -344,7 +389,7 @@ const contextsFor = (name) => {
   const out = [];
   for (const entry of ancestries) {
     const reaches = all.filter((rule) =>
-      rule.ancestors.every((compound) => presentIn(compound, entry.chain))
+      matchesChain(rule.ancestors, entry.chain)
     );
     if (reaches.length === 0) continue;
 
