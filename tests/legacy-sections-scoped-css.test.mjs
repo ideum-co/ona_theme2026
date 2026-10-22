@@ -78,8 +78,86 @@ test('the listed sections are exactly the unscoped ones', () => {
  * that now says "scoped since" cannot quietly become wrong in the other direction.
  */
 test('the sections named as scoped-since really are scoped', () => {
-  for (const name of ['ona-awards', 'ona-cafe-testimonial', 'ona-faq-lists', 'ona-wholesale-testimonial']) {
+  for (const name of ['ona-awards', 'ona-cafe-testimonial', 'ona-faq-lists', 'ona-icon-and-content',
+    'ona-supported', 'ona-wholesale-testimonial']) {
     assert.ok(sections.includes(name), `${name} is no longer a section`);
     assert.ok(!unscoped.includes(name), `${name} is cited as scoped since, but carries no scoped CSS`);
   }
+});
+
+/*
+ * The class counts in the selector inventory are the other half of this document, and they were
+ * the unguarded half: `.section-full-large` was written as 16 when it was 17, `.fadeInUp` as 63
+ * when it was 64, `.fadeIn` as 16 when it was 21. None of those drifted -- all three were wrong
+ * on the day they were measured, which a guard catches and a re-read does not.
+ *
+ * The population is every `ona-*` section, not the 30: the inventory counts class usage across
+ * the legacy sections regardless of whether each one scopes its own CSS. Liquid tags and the
+ * schema come out first so a class named in a `{% schema %}` default or a comment is not counted
+ * as markup.
+ */
+const BLOCK_TAGS = ['schema', 'stylesheet', 'style', 'javascript', 'comment', 'raw'];
+
+/* Strip each paired block's *body*, not just its tags. Stripping only `{% ... %}` leaves the
+   JSON inside {% schema %} and the CSS inside {% stylesheet %} in the text, and a class named
+   in a prose comment there then counts as markup -- `.equal-height` reads 12 instead of 11
+   because ona-icon-and-content's stylesheet comment says "equal-height outlined buttons". */
+const markup = (name) => {
+  let text = readFileSync(join(root, 'sections', `${name}.liquid`), 'utf8');
+  for (const tag of BLOCK_TAGS) {
+    text = text.replace(new RegExp(`\\{%-?\\s*${tag}\\s*-?%\\}[\\s\\S]*?\\{%-?\\s*end${tag}\\s*-?%\\}`, 'g'), ' ');
+  }
+  return text.replace(/\{%[\s\S]*?%\}/g, ' ').replace(/<!--[\s\S]*?-->/g, ' ');
+};
+
+const classUses = (token) => {
+  const pattern = new RegExp(`\\b${token}\\b`, 'g');
+  return sections.reduce((total, name) => total + (markup(name).match(pattern) ?? []).length, 0);
+};
+
+test('the selector inventory counts are what the sections hold', () => {
+  /* fadeInup and fadeInUp differ only in case, so the probe has to be case-sensitive -- and
+     `\b` has to do the work, or fadeIn swallows fadeInUp, fadeInDown and fadeInLeft. */
+  const expected = [
+    ['section-full-large', 17],
+    ['match-height', 12],
+    ['equal-height', 11],
+    ['more-btn', 14],
+    ['fadeInUp', 64],
+    ['fadeIn', 21],
+    ['fadeInup', 16],
+  ];
+
+  for (const [token, count] of expected) {
+    assert.equal(classUses(token), count, `.${token} is no longer used ${count} times`);
+    assert.ok(doc.includes(`\`.${token}\``), `the doc no longer mentions .${token}`);
+  }
+
+  assert.ok(doc.includes('(17 uses)'), 'the doc should cite .section-full-large at 17 uses');
+  assert.ok(
+    doc.includes('`.fadeInUp` at 64, `.fadeIn` at 21, `.fadeInup` at 16'),
+    'the animation-hook counts in the doc do not match the measured ones'
+  );
+});
+
+/*
+ * animate__heartBeat was written up as being on "every one of these sections". It is on none of
+ * them: one occurrence theme-wide, on a section that scopes its own CSS. That is the difference
+ * between a sweep and a one-liner, which is what the work list is for.
+ */
+test('the animation sweep is sized to the sections that carry it', () => {
+  const carries = (token, names) => names.filter((name) => markup(name).includes(token));
+
+  assert.equal(carries('wowo', unscoped).length, 28);
+  assert.equal(carries('fadeInUp', unscoped).length, 28);
+  assert.equal(carries('animate__heartBeat', unscoped).length, 0);
+
+  const heartBeat = carries('animate__heartBeat', sections);
+  assert.deepEqual(heartBeat, ['ona-icon-and-content']);
+  assert.ok(!unscoped.includes('ona-icon-and-content'), 'ona-icon-and-content is no longer scoped');
+
+  assert.ok(
+    doc.includes('**28 of these 30**'),
+    'the retire-the-markup step should size the sweep at 28 of 30'
+  );
 });

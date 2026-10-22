@@ -38,7 +38,7 @@ is excellent. Nothing jumps. It is simply blurry.
 
 ## 2. The cause
 
-`sections/ona-icon-and-content.liquid:14` is the whole story:
+`sections/ona-icon-and-content.liquid:15` is the whole story:
 
 ```liquid
 <img src="{{ block.settings.icon | img_url: '400x' }}" ... class="wowo animate__heartBeat">
@@ -79,12 +79,22 @@ earlier draft reported by covering `.block`, `.slider-block` and `.bg-img`
 (Codex, #203). Rerun the count rather than trusting this number after the next
 fix lands.
 
+**It has already drifted, exactly as warned: the same count is 81 as of
+2026-10-22**, and was 84 at `09e0293` (#249), the most recent commit to that
+stylesheet. The methodology stands — a class used by an `ona-*` section with no
+rule in `legacy-page-layout.css` and none in that section's own scoped block —
+so the figure is not wrong, it is stale by four as #228, #232 and #249 landed.
+The per-selector counts below are guarded by
+`tests/legacy-sections-scoped-css.test.mjs`; this total deliberately is not,
+because a test that pins it would have to be edited by every PR that covers a
+selector, which is the work this number is meant to measure.
+
 Of the 85, the ones that still cost layout are `.section-full-large`
-(16 uses), `.match-height` / `.equal-height` (12 / 11) and the `.start` /
+(17 uses), `.match-height` / `.equal-height` (12 / 11) and the `.start` /
 `.medium` / `.end` trio (14 each). `.more-btn` (14) was on this list and is
 now covered by `assets/legacy-page-layout.css` (Codex, #203) — another reason
 to rerun the count rather than work from it. The largest by raw count are
-animation hooks — `.fadeInUp` at 63, `.fadeIn` and `.fadeInup` at 16 each — and
+animation hooks — `.fadeInUp` at 64, `.fadeIn` at 21, `.fadeInup` at 16 — and
 those are inert in this theme, so they need deleting rather than styling. So
 the work is to finish the shared sheet selector by selector, not to write thirty
 new ones:
@@ -159,9 +169,13 @@ Two things fall out:
    a property of those templates, not of the theme: `sections/hero.liquid`,
    `locations-flagships.liquid`, `product-dna.liquid` and the shared image
    snippets already go through `image_tag`. (Scope corrected after Codex, #203.)
-4. Retire `wowo` / `animate__heartBeat`. The classes are on every one of these
-   sections and the library behind them is not in this theme, so they are inert
-   markup.
+4. Retire `wowo` / `fadeInUp`. They are on **28 of these 30** sections —
+   `ona-bread-crumbs` and `ona-gust-r` are the exceptions — and the library
+   behind them is not in this theme, so they are inert markup.
+   `animate__heartBeat` is **not** part of this sweep: it occurs exactly once
+   theme-wide, on `sections/ona-icon-and-content.liquid:15`, which is one of
+   the 16 *scoped* sections and so is not in this list at all. Budget it as one
+   line in one file, not a sweep.
 
 Wholesale first: it is the largest commercial page, has the worst damage, and is
 nowhere near Victor's home-page work.
