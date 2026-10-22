@@ -183,6 +183,52 @@ const rulesFor = (name) => {
  * label carries is generated instead -- minus the combinations no viewport can satisfy,
  * since this stylesheet pairs `max-width:749px` with `min-width:750px`.
  */
+const VOID_TAGS = new Set([
+  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param',
+  'source', 'track', 'wbr',
+]);
+
+/*
+ * The ancestor classes a label really has, read off the section markup.
+ *
+ * The powerset unions ancestor constraints, and two alternative section roots are not one
+ * element: `.add-image-and-text-slider .subtitle` and `.add-image-and-text .subtitle`
+ * describe different sections, so an invented context carrying both was measured and failed
+ * on a state no page renders (Codex, #300). A union counts only where some section renders
+ * it. Everything legacy renders inside #MainContent, which is why each chain starts there.
+ */
+const ancestriesFor = (name) => {
+  const found = [];
+  for (const file of readdirSync(join(root, 'sections'))) {
+    if (!file.startsWith('ona-') || !file.endsWith('.liquid')) continue;
+    const markup = readFileSync(join(root, 'sections', file), 'utf8')
+      .split(/\{%-?\s*schema\s*-?%\}/)[0]
+      .replace(/\{%-?[\s\S]*?-?%\}/g, ' ')
+      .replace(/\{\{[\s\S]*?\}\}/g, 'x');
+
+    const open = [];
+    for (const [tag, closing, element, attributes] of markup.matchAll(
+      /<(\/?)([a-zA-Z][\w-]*)\b([^>]*)>/g
+    ).map((match) => [match[0], match[1], match[2].toLowerCase(), match[3]])) {
+      if (closing) {
+        const at = open.map((entry) => entry.element).lastIndexOf(element);
+        if (at !== -1) open.length = at;
+        continue;
+      }
+      const classes = (attributes.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/).filter(Boolean);
+      if (classes.includes(name)) {
+        found.push(new Set(['#MainContent', ...open.flatMap((entry) => entry.classes).map((c) => `.${c}`)]));
+      }
+      if (!VOID_TAGS.has(element) && !/\/\s*$/.test(attributes)) open.push({ element, classes });
+    }
+  }
+  return found;
+};
+
+/* A compound selector is present in a chain when every part of it is. */
+const presentIn = (compound, ancestry) =>
+  (compound.match(/[#.][\w-]+/g) ?? []).every((part) => ancestry.has(part));
+
 const satisfiable = (conditions) => {
   let low = 0;
   let high = Infinity;
@@ -197,6 +243,12 @@ const satisfiable = (conditions) => {
 
 const contextsFor = (name) => {
   const all = rulesFor(name);
+  const ancestries = ancestriesFor(name);
+  assert.ok(
+    ancestries.length > 0,
+    `cannot find .${name} in any section's markup, so there is no way to tell which ancestor ` +
+      'combinations are real -- the contexts would be invented'
+  );
 
   const constraints = [];
   const seen = new Set();
@@ -221,6 +273,7 @@ const contextsFor = (name) => {
     const ancestors = [...new Set(chosen.flatMap((rule) => rule.ancestors))];
     const conditions = [...new Set(chosen.flatMap((rule) => rule.conditions))];
     if (!satisfiable(conditions)) continue;
+    if (!ancestries.some((chain) => ancestors.every((compound) => presentIn(compound, chain)))) continue;
 
     const key = JSON.stringify([[...ancestors].sort(), [...conditions].sort()]);
     if (built.has(key)) continue;
