@@ -34,6 +34,12 @@ Evidence: `docs/legacy-sections-unstyled-2026-10-20.md`.
 | `faq_lists` | 268 | **70** | **0.3x** |
 | **whole page** | **10,400** | **40,886** | **3.9x** |
 
+**Most of this table has since been fixed.** `icon_and_content` and
+`wholesale_brands` in #204, `unique_coffees` in #216, the five measured
+`sourcing` rows in #209, and `wholesale_testimonial` in #233/#244 — so the
+three worst ratios and six of the seven worst are historical. Read every
+number below as the 2026-10-20 state, not as a current defect list.
+
 **The table is 17 rows and the page has 18 sections.**
 `wholesale_sourcing_v6` is enabled in `templates/page.wholesale.json` and was
 never measured. The rows above sum to 10,266px live and 38,155px in theme2026
@@ -206,9 +212,13 @@ Full detail in `docs/victor-handoff-2026-10-20.md`. As a checklist:
 5. **Use the new assets** — 20 photographs in Shopify Files (`ona-home-*`), 10
    vector marks in `assets/` (#202), eight of them recolourable via
    `currentColor`.
-6. **Reconcile before merging** — `templates/index.json` and
+6. ~~**Reconcile before merging** — `templates/index.json` and
    `config/settings_data.json` carry theme-editor changes from 2026-10-19 that
-   the repo does not have.
+   the repo does not have.~~ **Done.** #245 preserved the live app embeds in
+   `config/settings_data.json` and #264 re-baselined `templates/index.json`.
+   The standing rule survives the reconciliation: both files are shop-owned and
+   the theme editor writes to them directly, so a PR touching either
+   re-baselines from the live theme rather than from its branch.
 
 There is **no XD design for any `/pages`**. If a second prototype covers the
 inner pages it changes Track A's approach; worth asking before Stage 2.
