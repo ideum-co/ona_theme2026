@@ -349,6 +349,55 @@ const canonical = (value) =>
       ? Object.keys(value).sort().reduce((out, key) => ({ ...out, [key]: canonical(value[key]) }), {})
       : value;
 
+/*
+ * Three places quote how many of the eight media/text variants media-with-content cannot hold:
+ * the sentence above the table, the sentence below it, and the kit's component 1 row. Nothing
+ * derived them, and they drifted -- all three said four while the table's "Fits the slot?"
+ * column said no five times. The fifth, ona-expericences-content, is a no for a reason the
+ * other four are not: its one image fits the slot, but a live form sits beside it. Leaving it
+ * out of the count is how its two-group shell drops out of the migration scope while the
+ * behavioural table still assigns that shell to component 1.
+ *
+ * So the count is read off the column rather than repeated, and ona-careers stays out of it:
+ * its cell opens "yes for the photo", a yes with a decorative-layer caveat, not a no.
+ */
+test('the media-slot count is the number of no rows in the table above it', () => {
+  const scope = between('### The media slot holds less than the sections do', '### Read the markup, not the schema');
+  const rows = scope
+    .split('\n')
+    .filter((line) => line.startsWith('| `ona-'))
+    .map((line) => line.split('|').map((cell) => cell.trim()));
+  assert.equal(rows.length, 8, `the media table has ${rows.length} rows, not eight`);
+
+  const misfits = rows.filter((cells) => /^no\b/i.test(cells[3]));
+  const word = NUMBER_WORDS[misfits.length];
+  assert.ok(misfits.length > 1, 'the "Fits the slot?" column parsed as almost no misfits; the probe is broken');
+
+  assert.ok(
+    new RegExp(`${word} of the eight do not fit it`).test(scope),
+    `the sentence above the table should say ${word} of the eight do not fit`
+  );
+  assert.ok(
+    new RegExp(`Those ${word} go to component 1`).test(scope),
+    `the sentence below the table should say those ${word} go to component 1`
+  );
+  assert.ok(
+    kitRows.some((row) => row.join(' ').includes(`the ${word} media/text variants`)),
+    `component 1's row should claim the ${word} media/text variants`
+  );
+
+  /* The one the count used to lose. It is a misfit, and the paragraph has to say why it is a
+     different kind of misfit from the other four, or the shell silently leaves the scope. */
+  assert.ok(
+    misfits.some((cells) => cells[1] === '`ona-expericences-content`'),
+    'ona-expericences-content is no longer a misfit row; the exception paragraph is now wrong'
+  );
+  assert.ok(
+    /`ona-expericences-content` is\s+the fifth for a different reason/.test(scope),
+    'the paragraph no longer separates the form-bearing variant from the four media misfits'
+  );
+});
+
 test('the duplication table still matches the schemas', () => {
   const groups = new Map();
 

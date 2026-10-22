@@ -113,7 +113,7 @@ These five therefore have **no verified target**. See [Known gaps](#known-gaps).
 
 `media-with-content` looked like the home for all eight media/text variants.
 Its media block, `_media-without-appearance`, takes **one** image or one
-Shopify-hosted video — and four of the eight need more than that:
+Shopify-hosted video — and five of the eight do not fit it:
 
 | Section | Live media | Fits the slot? |
 | --- | --- | --- |
@@ -126,11 +126,17 @@ Shopify-hosted video — and four of the eight need more than that:
 | `ona-training-text-image-bg` | a pasted `<iframe>` of a YouTube embed, over a background image | no — external, and two layers |
 | `ona-training-text-two-images` | `image` **and** `image2`, rendered together | no — two |
 
-Those four go to component 1 instead: a `section` holding a row `group`, with a
+Those five go to component 1 instead: a `section` holding a row `group`, with a
 `video` block (whose `video_url` accepts YouTube and Vimeo) or two `image`
 blocks on one side and a column `group` of text on the other. Same layout, same
 media, and it is still a merchant-editable block tree — which is stage 2's
 actual test.
+
+Four of the five are media the slot cannot hold. `ona-expericences-content` is
+the fifth for a different reason: its one image *does* fit the slot, but the
+section is a two-column shell with a live `{% form 'contact' %}` beside it, so
+the shell goes to component 1 and the form is a [Known gap](#known-gaps) —
+the same split the behavioural table records.
 
 Three fit the media slot plainly — `ona-training-image-text`,
 `ona-our-philosophy` and `ona-careers` — and only **`ona-our-philosophy`** is
@@ -219,7 +225,7 @@ has to be written.
 
 | # | Component | What it is | Replaces |
 | --- | --- | --- | --- |
-| 1 | `section` + `group`/`text`/`image`/`video`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×116, `group` ×40, `button` ×20, `image` ×14. A `group` has `content_direction`, so a row of two blocks is a media/text layout; `image` carries a `link` and `video` carries a YouTube/Vimeo URL. | anything that is just stacked copy, and the four media/text variants `media-with-content` cannot hold (below) |
+| 1 | `section` + `group`/`text`/`image`/`video`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×116, `group` ×40, `button` ×20, `image` ×14. A `group` has `content_direction`, so a row of two blocks is a media/text layout; `image` carries a `link` and `video` carries a YouTube/Vimeo URL. | anything that is just stacked copy, and the five media/text variants `media-with-content` cannot hold (below) |
 | 2 | `media-with-content` | one fixed media slot + a content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones, and `ona-training-image-text` — **all 11 blocked** on the decorative-layer decision: every one renders an `.animated-svg` blob this target drops (see [Known gaps](#known-gaps)). Nothing here is convertible until that is settled |
 | 3 | `hero` | full-bleed media with blocks over it: desktop and custom mobile media, overlay, `section_height`, `fetchpriority` on the image itself. Already on the homepage. | `ona-training-banner`, `ona-inner-banner` |
 | 4 | `carousel` | a static `group` header **above** a row of `_card`s. Both are direct children of `.section`, which puts them in the same grid column on separate rows — it is a header-over-cards layout, not a side-by-side one. | card rows. **Not** the five panel-plus-slider sections: their panel sits beside the slider |
