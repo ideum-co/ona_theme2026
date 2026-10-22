@@ -25,17 +25,49 @@ const fixture = JSON.parse(readFileSync(join(root, 'tests/fixtures/wholesale-con
  */
 test('every piece of wholesale copy, media and destination survives the rebuild', () => {
   const now = extract(join(root, 'templates/page.wholesale.json'));
-  const present = new Set(now.required.map((item) => item.value));
-  for (const item of now.chrome) present.add(item.value);
-  for (const item of now.disabled) present.add(item.value);
+  const live = [...now.required, ...now.chrome, ...now.disabled];
 
-  const lost = fixture.required.filter((item) => !present.has(item.value));
+  /* Atomic values -- an image ref, a video url, an anchor, a short heading -- are tokens. They
+     move intact or not at all, so they are matched exactly. */
+  const atoms = new Set(live.map((item) => item.value));
 
-  assert.deepEqual(
-    lost.map((item) => `${item.where} ${item.key}: ${item.value.slice(0, 80)}`),
-    [],
-    `${lost.length} content values from the pre-rebuild page are no longer anywhere in the template`
-  );
+  /* Prose does not survive as a whole field value, and should not have to. The rebuild splits
+     one legacy `content` into separate text blocks and merges others, both of which are the
+     point of the exercise. What must not happen is words going missing, so prose is checked
+     against the page's whole word count: every word of the original, as many times as it
+     appeared. A dropped sentence takes its words with it and fails here; a sentence moved to
+     another block does not. */
+  const words = (text) => text.toLowerCase().match(/[\p{L}\p{N}']+/gu) ?? [];
+  const budget = new Map();
+  for (const item of live) {
+    for (const word of words(item.value)) budget.set(word, (budget.get(word) ?? 0) + 1);
+  }
+
+  const isAtomic = (item) =>
+    /^(shopify:\/\/|https?:\/\/|#|mailto:|\/)/.test(item.value) ||
+    item.key.endsWith('@href') ||
+    item.key === 'id' ||
+    words(item.value).length <= 6;
+
+  const lost = [];
+  const spent = new Map();
+  for (const item of fixture.required) {
+    if (isAtomic(item)) {
+      if (!atoms.has(item.value)) lost.push(`${item.where} ${item.key}: ${item.value.slice(0, 80)}`);
+      continue;
+    }
+    const missing = [];
+    for (const word of words(item.value)) {
+      const used = (spent.get(word) ?? 0) + 1;
+      spent.set(word, used);
+      if (used > (budget.get(word) ?? 0)) missing.push(word);
+    }
+    if (missing.length) {
+      lost.push(`${item.where} ${item.key}: ${missing.length} words gone (${missing.slice(0, 8).join(' ')})`);
+    }
+  }
+
+  assert.deepEqual(lost, [], `${lost.length} content values from the pre-rebuild page are no longer on it`);
 });
 
 /*
