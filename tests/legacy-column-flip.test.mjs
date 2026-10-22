@@ -190,13 +190,21 @@ test('the branch that covers a section moves one of that section\'s real grid it
         'would not help: order applies to the grid item.'
     );
 
-    /* Source order is media, then text. Moving the text to the front (order < 0) or the media
-       to the back (order > 0) both yield media-right; doing neither yields nothing. */
-    const movedIsText = children[moved].classes.includes('text');
+    /*
+     * Whether the declaration moves anything is a fact about where the item already is, not
+     * about which column it is. This check used to read "source order is media, then text" and
+     * decide from the item's class -- an assumption the markup is free to break, and
+     * ona-wholesale-brands does break it: its text is the first child, so order:-1 pins it
+     * where it already was and the setting did nothing in either position (Codex, #299).
+     */
+    const last = children.length - 1;
+    const already = branch.order < 0 ? moved === 0 : moved === last;
     assert.ok(
-      movedIsText ? branch.order < 0 : branch.order > 0,
-      `${name}: the rule gives order:${branch.order} to the ${movedIsText ? 'text' : 'media'} ` +
-        'column, which leaves it where it already was'
+      !already,
+      `${name}: the rule gives order:${branch.order} to "${branch.target}", which is already ` +
+        `${branch.order < 0 ? 'first' : 'last'} of [${children
+          .map((child) => `${child.tag}.${child.classes.join('.')}`)
+          .join(', ')}] -- the declaration moves nothing`
     );
   }
 });

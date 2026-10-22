@@ -1,5 +1,5 @@
 {% render 'ona-band', section: section %}
-<section class="add-image-and-text  wholesale-brands wowo fadeInUp{% if section.settings.media_position == 'right' %} invert-columns{% endif %}" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
+<section class="add-image-and-text  wholesale-brands wowo fadeInUp" data-wow-duration="0.75s" data-wow-delay="300ms" id="{{ section.settings.id }}">
     <div class="container">
         <div class="content">            
             <div class="text wowo fadeInUp">
@@ -101,22 +101,6 @@
     "en": "Brands"
   },
   "settings": [
-    {
-      "type": "select",
-      "id": "media_position",
-      "label": "t:settings.media_position",
-      "options": [
-        {
-          "value": "left",
-          "label": "t:options.left"
-        },
-        {
-          "value": "right",
-          "label": "t:options.right"
-        }
-      ],
-      "default": "left"
-    },
     {
       "type": "header",
       "content": "Band"

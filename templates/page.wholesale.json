@@ -574,8 +574,7 @@
     "wholesale_brands": {
       "type": "ona-wholesale-brands",
       "settings": {
-        "media_position": "right",
-        "band_background": "#ebe4d4",
+                "band_background": "#ebe4d4",
         "id": "",
         "title": "Brands we work with",
         "content": ""
