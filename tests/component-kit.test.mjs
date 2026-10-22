@@ -1892,6 +1892,35 @@ test('every in-page anchor owned by a section setting is recorded as a blocker',
     );
   }
 
+  /* Same shape, for the decorative layer. The row was written while nothing could carry the
+     blob; `blocks/image.liquid` can now, so the row says solved. Checked both ways round, so
+     removing the setting turns the row into a false all-clear rather than going unnoticed. */
+  const imageSchema = JSON.parse(
+    readFileSync(join(root, 'blocks/image.liquid'), 'utf8').match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/)[1]
+  );
+  const shapeSetting = (imageSchema.settings ?? []).find((setting) => setting.id === 'decorative_shape');
+  const blobRow = between('## Known gaps', '## Page by page')
+    .split('\n')
+    .filter((line) => /^\|/.test(line))
+    .find((row) => /animated-svg/.test(row.split('|')[1] ?? '')) ?? '';
+  assert.ok(blobRow, 'the decorative-layer gap row is gone');
+  assert.equal(
+    /\*\*Solved\*\*/.test(blobRow),
+    shapeSetting !== undefined,
+    shapeSetting
+      ? 'blocks/image.liquid carries a decorative shape but the gap row still reads as an open blocker'
+      : 'the gap row says the decorative layer is solved but blocks/image.liquid has no shape setting'
+  );
+  if (shapeSetting) {
+    /* The caveat is the whole value of the row now: the setting is on the public `image`
+       block, so these sections go to component 1 and row 2 of the kit is stale for them. */
+    assert.match(
+      blobRow,
+      /component 1/,
+      'the solved row no longer says the conversion target moves to component 1'
+    );
+  }
+
   /* The document has to state the OWNERSHIP, not merely mention both names somewhere in one
      row. Two earlier versions were satisfied by a row that happened to contain every section
      and every anchor -- first the wholesale plan row, then the gap row itself -- under which a
