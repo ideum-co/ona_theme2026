@@ -11,6 +11,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
    silently move the baseline. See the note in the baseline test below. */
 const FROZEN_DIGEST = 'd5e27c84d85264628b7aa581b8b93f5e9d10e571a9aff7ffbac93e912a985150';
 
+const stripBanner = (text) => text.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '');
+
 const fixture = JSON.parse(readFileSync(join(root, 'tests/fixtures/wholesale-content.json'), 'utf8'));
 
 /*
@@ -140,5 +142,61 @@ test('the wholesale baseline has not been quietly weakened', () => {
     FROZEN_DIGEST,
     'the fixture content no longer matches the frozen baseline. If the page genuinely lost or gained ' +
       'content, say so in the PR and update FROZEN_DIGEST deliberately -- do not regenerate to go green.'
+  );
+});
+
+/*
+ * Some of what the page shows is not in any setting.
+ *
+ * `templates/page.wholesale.json` leaves `sr_heading`'s `text` blank, and
+ * `sections/ona-sr-heading.liquid:5` renders `page.title` instead -- so the page's only H1 is
+ * produced at render time and exists nowhere in the stored content. The fixture is built from
+ * stored content, so deleting that section outright left all 176 required values intact and
+ * both tests above green, while the page lost its heading. Found by Codex on #283.
+ *
+ * This is the behaviour, not the bytes: whatever replaces the section has to keep an H1 on the
+ * page, and has to keep deriving it from the page title while the setting stays blank. A
+ * `page-header` with a literal heading would pass the first half and fail the second, which is
+ * right -- `templates/page.bookings.json` shares its suffix across three differently titled
+ * pages, so a literal is wrong there and the habit is worth catching here.
+ */
+test('the page keeps the heading it derives at render time', () => {
+  const parsed = JSON.parse(stripBanner(readFileSync(join(root, 'templates/page.wholesale.json'), 'utf8')));
+  const order = parsed.order ?? Object.keys(parsed.sections ?? {});
+
+  const headings = [];
+  for (const key of order) {
+    const section = (parsed.sections ?? {})[key];
+    if (!section || section.disabled) continue;
+    let source;
+    try {
+      source = readFileSync(join(root, 'sections', `${section.type}.liquid`), 'utf8');
+    } catch {
+      continue;
+    }
+    for (const match of source.matchAll(/<h1\b[\s\S]*?<\/h1>/g)) {
+      headings.push({ key, type: section.type, markup: match[0], settings: section.settings ?? {} });
+    }
+  }
+
+  assert.ok(
+    headings.length >= 1,
+    'no live section on /pages/wholesale emits an <h1>; the page has lost its heading, and no stored value would show it'
+  );
+
+  /* And the fallback, for every heading whose own setting the template leaves blank. */
+  const literal = [];
+  for (const heading of headings) {
+    const keys = [...heading.markup.matchAll(/section\.settings\.([\w-]+)/g)].map((match) => match[1]);
+    const filled = keys.some((name) => String(heading.settings[name] ?? '').trim() !== '');
+    if (filled) continue;
+    if (!/page\.title|shop\.name/.test(heading.markup)) {
+      literal.push(`${heading.key}(${heading.type}): heading setting is blank and the markup falls back to nothing`);
+    }
+  }
+  assert.deepEqual(
+    literal,
+    [],
+    'the H1 is blank in the template and the section does not fall back to the page title, so the page renders an empty heading'
   );
 });
