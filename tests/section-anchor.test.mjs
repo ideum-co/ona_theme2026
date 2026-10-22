@@ -22,8 +22,17 @@ const schemaOf = (file) =>
  * text tells the merchant to leave it off, and an id of `#complete-training` needs
  * `href="##complete-training"` to reach it, so every link written the documented way misses. A
  * `#` later in the value is fine -- the fragment is everything after the first one.
+ *
+ * A percent escape is the one place where that transparency argument does not carry over. `|
+ * escape` is an HTML escape and the parser undoes it, so the DOM id is what the merchant typed.
+ * Percent-decoding happens on the *other* side: `research%20development` is emitted verbatim as
+ * the id, but `href="#research%20development"` is decoded during fragment navigation and looks
+ * for `research development`, which is not on the page. The value is accepted everywhere and
+ * reachable nowhere, so it is rejected here rather than silently shipped.
  */
 const FRAGMENT = /^[^\s#][^\s]*$/;
+const PERCENT_ESCAPE = /%[0-9A-Fa-f]{2}/;
+const reachable = (anchor) => FRAGMENT.test(anchor) && !PERCENT_ESCAPE.test(anchor);
 
 /*
  * /pages/wholesale navigates to itself -- `ona-icon-and-content` links to four #anchors, and
@@ -109,6 +118,23 @@ const EMITS = new Map(
     .filter(([, prefixes]) => prefixes.length > 0)
 );
 
+/*
+ * The static ids a section type's own markup puts on the page. `settings.id` is not the only
+ * thing a legacy section contributes: `sections/header.liquid` emits `id="header-component"`,
+ * and the header group pulls it onto every template, so an anchor of `header-component` lands a
+ * link on the header. Reading these per type -- and attributing them to the pages that
+ * instantiate the type -- is what keeps the collision set the ids of the *rendered page* rather
+ * than the ids the JSON happens to configure.
+ */
+const STATIC = new Map(
+  readdirSync(join(root, 'sections'))
+    .filter((name) => name.endsWith('.liquid'))
+    .map((name) => [
+      name.replace(/\.liquid$/, ''),
+      [...new Set([...read(join('sections', name)).matchAll(/id="([A-Za-z][-\w]*)"/g)].map((m) => m[1]))],
+    ])
+);
+
 const idsIn = (file) => {
   const parsed = JSON.parse(stripBanner(read(file)));
   const anchors = [];
@@ -121,6 +147,7 @@ const idsIn = (file) => {
     if (typeof id === 'string' && id.trim() !== '') {
       for (const prefix of EMITS.get(section.type) ?? []) taken.push([`${prefix}${id}`, `${file} ${key} ${prefix || 'id'}`]);
     }
+    for (const id of STATIC.get(section.type) ?? []) taken.push([id, `sections/${section.type}.liquid`]);
   }
   return { anchors, taken };
 };
@@ -141,6 +168,15 @@ test('every stored anchor is reachable and unique on the page it renders on', ()
   const fromLayout = [...read('layout/theme.liquid').matchAll(/id="([A-Za-z][-\w]*)"/g)].map((m) => [m[1], 'layout/theme.liquid']);
   assert.ok(fromLayout.length >= 2, `the layout emits ${fromLayout.length} static ids; the probe is broken`);
 
+  /* The groups reach every page, so their section types' own ids do too. Without this the set
+     holds only what the group JSON configures, and `header-component` -- which is on every page
+     from `sections/header.liquid` -- is absent. */
+  const fromGroupMarkup = everywhere.flatMap(([, { taken: ids }]) => ids).filter(([, where]) => where.endsWith('.liquid'));
+  assert.ok(
+    fromGroupMarkup.length >= 1,
+    `the section groups instantiate no type that emits a static id; the probe is broken`
+  );
+
   const unreachable = [];
   const collisions = [];
   let set = 0;
@@ -152,7 +188,7 @@ test('every stored anchor is reachable and unique on the page it renders on', ()
     for (const [owner, { anchors }] of page) {
       for (const { key, anchor } of anchors) {
         if (owner === file || groups.includes(owner)) set += owner === file ? 1 : 0;
-        if (!FRAGMENT.test(anchor)) {
+        if (!reachable(anchor)) {
           unreachable.push(`${owner} ${key}: ${JSON.stringify(anchor)}`);
           continue;
         }
@@ -199,6 +235,6 @@ test('the wholesale anchors the contents list points at are expressible as this 
   visit(contents[0]);
 
   assert.ok(targets.size >= 4, `only ${targets.size} in-page anchor targets found in the contents list; the probe is broken`);
-  const unusable = [...targets].filter((anchor) => !FRAGMENT.test(anchor));
+  const unusable = [...targets].filter((anchor) => !reachable(anchor));
   assert.deepEqual(unusable, [], 'these live anchors cannot be carried by the new setting');
 });
