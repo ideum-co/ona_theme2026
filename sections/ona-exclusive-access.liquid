@@ -34,7 +34,7 @@
                               {% if block.settings.play_icon != blank %}<img src="{{ block.settings.play_icon | img_url: '100x' }}" alt="title-play-video" loading="lazy" decoding="async"/>{% endif %}
                           </a>
                           <img src="{{ block.settings.image | img_url: '800x' }}" alt="{{ block.settings.image.alt | escape }}" class="wowo fadeInup scale-cover-image" data-wow-duration="0.75s" data-wow-delay="300ms" loading="lazy" decoding="async">
-                          {% else %}
+                          {% elsif block.settings.image != blank %}
                               <img src="{{ block.settings.image | img_url: '800x' }}" alt="{{ block.settings.image.alt | escape }}" class="wowo fadeInup" data-wow-duration="0.75s" data-wow-delay="300ms" loading="lazy" decoding="async">
                           {% endif %}
                     </div>
@@ -43,9 +43,11 @@
               {% endfor %}  
             </div>            
             <div class="text wowo fadeInUp">
-                {% if section.settings.overlay != '' %}
+                {% comment %} `!= ''` is true for a blank image_picker (nil != ''), so it rendered
+                nil | img_url as a "No image" placeholder. `!= blank` only renders a real image. {% endcomment %}
+                {% if section.settings.overlay != blank %}
                   <div class="overlay-imagee">
-                      <img src="{{ section.settings.overlay | img_url: '300x' }}" alt="{{ block.settings.overlay.alt | escape }}" loading="lazy" decoding="async">
+                      <img src="{{ section.settings.overlay | img_url: '300x' }}" alt="{{ section.settings.overlay.alt | escape }}" loading="lazy" decoding="async">
                   </div>
                 {% endif %}
                 <h2>{{ section.settings.title }}</h2>
