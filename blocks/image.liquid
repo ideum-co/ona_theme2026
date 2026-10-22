@@ -123,10 +123,16 @@
 
   .image-block .decorative-shape {
     position: absolute;
-    inset-block-start: 0;
-    inset-inline: 0;
+    /* The padding lives on the block, and an absolutely positioned child is laid out against the
+       padding box -- so with any padding set the shape would sit at the block edge while
+       .spacing-style puts the image at the content edge, displacing the shape from the photo it
+       decorates. Inset by the same variables the block was given, so the shape tracks the image
+       rather than the box. */
+    inset-block-start: var(--padding-block-start, 0px);
+    inset-inline-start: var(--padding-inline-start, 0px);
+    inset-inline-end: var(--padding-inline-end, 0px);
     z-index: -1;
-    max-width: 100%;
+    max-width: calc(100% - var(--padding-inline-start, 0px) - var(--padding-inline-end, 0px));
     height: auto;
     pointer-events: none;
   }
