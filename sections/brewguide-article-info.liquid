@@ -35,6 +35,19 @@
   endif
 -%}
 
+{%- comment -%}
+  TEMP DIAGNOSTIC -- remove once live rendering is confirmed. This section's own
+  shopify-section wrapper was confirmed present but empty on the first deploy after
+  templates/article.article.json started resolving, meaning has_any_content (or
+  is_brewguide_article) evaluated false even though the article's own accentuate.* metafields
+  were confirmed populated via the Admin API. Printed unconditionally, before the blog-handle
+  gate, so it survives into the raw response regardless of which branch actually runs.
+  content_brew_guide is raw HTML (per this file's own doc comment) -- stripped, escaped and
+  truncated rather than interpolated as-is, since an unescaped "-->" inside it would close this
+  comment early and dump markup mid-page instead of just corrupting the diagnostic.
+{%- endcomment -%}
+<!-- BREWGUIDE_RECIPE_DEBUG blog_handle="{{ article.blog.handle | escape }}" is_brewguide_article="{{ is_brewguide_article }}" content_brew_guide="{{ article.metafields.accentuate.content_brew_guide | strip_html | escape | truncate: 120 }}" title_item="{{ article.metafields.accentuate.title_item | escape }}" -->
+
 {%- if is_brewguide_article -%}
   {%- liquid
     assign guide_intro = article.metafields.accentuate.content_brew_guide
@@ -237,6 +250,7 @@
 {% schema %}
 {
   "name": "Brew guide article info",
+  "settings": [],
   "presets": [
     {
       "name": "Brew guide article info"

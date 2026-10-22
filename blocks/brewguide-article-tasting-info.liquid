@@ -36,6 +36,20 @@
   endif
 -%}
 
+{%- comment -%}
+  TEMP DIAGNOSTIC -- remove once the block confirms it renders at all. This block was completely
+  absent from the compiled page (no shopify-block wrapper, not even an empty one) on the first
+  deploy after templates/article.article.json started resolving correctly, which points at the
+  block type itself failing to register with main-blog-post's content_for 'blocks' rather than
+  the is_brewguide_article/has_info gate evaluating false. Placed BEFORE the is_brewguide_article
+  gate (not inside it, unlike an earlier draft of this marker) so it survives into the raw
+  response regardless of which branch runs -- otherwise a false gate reproduces the exact "no
+  output, can't tell why" ambiguity this diagnostic exists to resolve. `escape`d since
+  tastes_like is attacker/editor-controlled free text that could otherwise contain "-->" and
+  truncate this comment early.
+{%- endcomment -%}
+<!-- BREWGUIDE_TASTING_DEBUG blog_handle="{{ article.blog.handle | escape }}" is_brewguide_article="{{ is_brewguide_article }}" tastes_like="{{ article.metafields.accentuate.tastes_like | escape }}" -->
+
 {%- if is_brewguide_article -%}
   {%- liquid
     assign tastes_like = article.metafields.accentuate.tastes_like
@@ -96,6 +110,7 @@
 {
   "name": "Brew guide tasting info",
   "tag": null,
+  "settings": [],
   "presets": [
     {
       "name": "Brew guide tasting info"
