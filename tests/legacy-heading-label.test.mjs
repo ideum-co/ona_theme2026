@@ -217,7 +217,15 @@ const ancestriesFor = (name) => {
       }
       const classes = (attributes.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/).filter(Boolean);
       if (classes.includes(name)) {
-        found.push(new Set(['#MainContent', ...open.flatMap((entry) => entry.classes).map((c) => `.${c}`)]));
+        /* An inline `style` outranks every rule in the stylesheet, and reading only the
+           classes off this element meant `style="display:inline;opacity:.6"` on the
+           partnership eyebrow lost both its layout and its contrast with the suite green
+           (Codex, #300). It is carried with the chain and applied last. */
+        found.push({
+          chain: new Set(['#MainContent', ...open.flatMap((entry) => entry.classes).map((c) => `.${c}`)]),
+          inline: attributes.match(/style="([^"]*)"/)?.[1] ?? '',
+          section: file.slice(0, -'.liquid'.length),
+        });
       }
       if (!VOID_TAGS.has(element) && !/\/\s*$/.test(attributes)) open.push({ element, classes });
     }
@@ -273,11 +281,10 @@ const contextsFor = (name) => {
     const ancestors = [...new Set(chosen.flatMap((rule) => rule.ancestors))];
     const conditions = [...new Set(chosen.flatMap((rule) => rule.conditions))];
     if (!satisfiable(conditions)) continue;
-    if (!ancestries.some((chain) => ancestors.every((compound) => presentIn(compound, chain)))) continue;
 
-    const key = JSON.stringify([[...ancestors].sort(), [...conditions].sort()]);
-    if (built.has(key)) continue;
-    built.add(key);
+    const here = ancestries.filter((entry) =>
+      ancestors.every((compound) => presentIn(compound, entry.chain))
+    );
 
     /* A rule applies here when everything it asks for is present here -- its ancestors, and
        the at-rules it sits inside. An unconditional rule applies in every context; a media
@@ -289,16 +296,26 @@ const contextsFor = (name) => {
     );
     if (applicable.length === 0) continue;
 
-    out.push({
-      where: [ancestors.join(' ') || 'any legacy page', ...conditions].join(' inside '),
-      filled: applicable.filter((rule) => !rule.needsEmpty),
-      empty: applicable.filter((rule) => !rule.needsFilled),
-    });
+    /* One entry per element the union describes, because the inline style belongs to the
+       element rather than to the selector. */
+    for (const entry of here) {
+      const key = JSON.stringify([[...ancestors].sort(), [...conditions].sort(), entry.section]);
+      if (built.has(key)) continue;
+      built.add(key);
+
+      out.push({
+        where: [entry.section, ...conditions].join(' inside '),
+        inline: entry.inline,
+        filled: applicable.filter((rule) => !rule.needsEmpty),
+        empty: applicable.filter((rule) => !rule.needsFilled),
+      });
+    }
   }
   return out;
 };
 
-const merge = (rules) => rules.map((rule) => rule.declarations).join(';');
+/* Inline last: it outranks every rule, and the resolvers take the final declaration. */
+const merge = (rules, inline = '') => [...rules.map((rule) => rule.declarations), inline].join(';');
 
 test('the eyebrow above a heading is a class the stylesheet actually styles', () => {
   assert.ok(labels.size > 0, 'no section puts a labelled element above a heading any more');
@@ -333,7 +350,7 @@ test('an eyebrow with nothing in it takes up no room', () => {
       /* Not "an :empty rule exists" and not "the first match hides it": a second
          `.subtitle:empty { display: block; }` wins in the browser and used to pass here
          (Codex, #300). The winner is what decides whether the box is there. */
-      const winner = lastValue(merge(context.empty), 'display');
+      const winner = lastValue(merge(context.empty, context.inline), 'display');
       assert.equal(
         (winner ?? '').trim(),
         REMOVES_BOX,
@@ -350,7 +367,7 @@ test('the eyebrow sits on its own line above the heading', () => {
     for (const context of contextsFor(name)) {
       if (context.filled.length === 0) continue;
       /* `.some()` passed while a later `display: inline` won in the browser (Codex, #300). */
-      const winner = lastValue(merge(context.filled), 'display');
+      const winner = lastValue(merge(context.filled, context.inline), 'display');
       assert.equal(
         (winner ?? '').trim(),
         'block',
@@ -510,7 +527,7 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
        them in sequence failed on states no element is ever in (Codex, #300). */
     for (const context of contexts) {
       if (context.filled.length === 0) continue;
-      const { alpha, literal, how } = painted(merge(context.filled));
+      const { alpha, literal, how } = painted(merge(context.filled, context.inline));
 
       for (const [ground_name, ground] of where) {
         const ink = rgb(ground);
