@@ -2,8 +2,9 @@
   Restores content the 2026 theme migration dropped from individual Brew Guides blog articles:
   the full brew recipe (intro + spec table) and the "running low on this coffee?" cross-sell
   back to the matching product. The Tastes Like / Roast info that used to sit near the title is
-  a separate section, sections/brewguide-article-tasting-info.liquid, placed earlier in
-  templates/article.json's order -- this section renders after the full article body
+  blocks/brewguide-article-tasting-info.liquid, nested inside main-blog-post's own block_order
+  right after the title block -- see that file's doc comment for why it's a block there rather
+  than a second sibling section like this one. This section renders after the full article body
   (main-blog-post), where the old recipe block and cross-sell sat too.
 
   Source: sections/article-template.liquid in Shopify theme 147471433919 ("ONA - OLD

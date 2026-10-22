@@ -23,8 +23,8 @@ test('templates/article.json wires in this section, after the existing main-blog
   assert.equal(template.sections['brewguide-info'].type, 'brewguide-article-info', 'the entry must use this section\'s type');
   assert.deepEqual(
     template.order,
-    ['brewguide-tasting-info', 'section', 'brewguide-info'],
-    'this section (recipe + cross-sell) must render after main-blog-post, same position the old recipe block and cross-sell held; the separate tasting-info section (see tests/brewguide-article-tasting-info-section.test.mjs) renders before it, near the title'
+    ['section', 'brewguide-info'],
+    'this section (recipe + cross-sell) must render after main-blog-post, same position the old recipe block and cross-sell held. The Tastes Like / Roast info is a separate block nested inside main-blog-post itself now, not a sibling section -- see tests/brewguide-article-tasting-info-block.test.mjs'
   );
 });
 
