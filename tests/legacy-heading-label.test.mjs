@@ -95,10 +95,31 @@ const selects = (name, suffix = '') => declarationsFor(name, suffix) !== null;
  * cascade -- specificity first, then source order -- and read the winner.
  */
 const specificity = (selector) => {
-  const ids = (selector.match(/#[\w-]+/g) ?? []).length;
-  const classes = (selector.match(/\.[\w-]+|\[[^\]]*\]|:(?!:)[a-z-]+(?:\([^)]*\))?/gi) ?? []).length;
-  const elements = (
-    selector.replace(/[#.][\w-]+|\[[^\]]*\]|::?[a-z-]+(?:\([^)]*\))?/gi, ' ').match(/[a-z][\w-]*/gi) ?? []
+  /* `:where()` contributes nothing and `:is()`/`:not()` contribute their most specific
+     argument. Counting each functional pseudo as one class made
+     `:where(.add-image-and-text-slider) .subtitle` tie with the plain descendant selector,
+     so a later low-specificity rule appeared to mask a real regression (Codex, #300). */
+  let rest = selector;
+  let ids = 0;
+  let classes = 0;
+  let elements = 0;
+
+  for (;;) {
+    const found = rest.match(/:(is|where|not|has)\(([^()]*)\)/i);
+    if (!found) break;
+    const inner = found[1].toLowerCase() === 'where'
+      ? 0
+      : Math.max(0, ...splitSelectors(found[2]).map((branch) => specificity(branch)));
+    ids += Math.floor(inner / 10000);
+    classes += Math.floor((inner % 10000) / 100);
+    elements += inner % 100;
+    rest = rest.replace(found[0], ' ');
+  }
+
+  ids += (rest.match(/#[\w-]+/g) ?? []).length;
+  classes += (rest.match(/\.[\w-]+|\[[^\]]*\]|:(?!:)[a-z-]+/gi) ?? []).length;
+  elements += (
+    rest.replace(/[#.][\w-]+|\[[^\]]*\]|::?[a-z-]+/gi, ' ').match(/[a-z][\w-]*/gi) ?? []
   ).length;
   return ids * 10000 + classes * 100 + elements;
 };
@@ -137,8 +158,21 @@ const flatten = (text) => {
           walk(inner, [...conditions, prelude.replace(/\s+/g, ' ')]);
         }
       } else if (prelude) {
-        order += 1;
-        out.push({ conditions, selectorList: prelude, declarations: inner, at: order });
+        /* Nested CSS: `a { color: red; &[x] { color: blue } }`. Treating the whole body as
+           the parent's declarations would attribute the nested rule's colour to the parent. */
+        const nested = inner.indexOf('{');
+        if (nested === -1) {
+          order += 1;
+          out.push({ conditions, selectorList: prelude, declarations: inner, at: order });
+        } else {
+          const own = inner.slice(0, inner.lastIndexOf(';', nested) + 1);
+          order += 1;
+          out.push({ conditions, selectorList: prelude, declarations: own, at: order });
+          walk(
+            inner.slice(own.length).replace(/&/g, prelude.trim()),
+            conditions
+          );
+        }
       }
       at = close;
     }
@@ -149,6 +183,69 @@ const flatten = (text) => {
 };
 
 const flat = flatten(css);
+
+/*
+ * Every rule in the sheets, as compounds.
+ *
+ * An ancestor's `opacity` composites the whole subtree and an ancestor's `color` is what the
+ * label inherits, so a rule that never mentions the label can still decide how it reads:
+ * `.add-image-and-text-slider .text { opacity: .6 }` put every sourcing eyebrow under the
+ * bar with all four tests green (Codex, #300). Filtering on the label class missed them.
+ */
+let everyRuleCache = null;
+const everyRule = () => {
+  if (everyRuleCache) return everyRuleCache;
+  const found = [];
+  for (const { conditions, selectorList, declarations, at } of flat) {
+    for (const branch of splitSelectors(selectorList)) {
+      const compounds = (branch.trim().match(/(?:[^\s(]+(?:\([^)]*\))?)+/g) ?? []).filter(Boolean);
+      if (compounds.length === 0) continue;
+      found.push({
+        selector: branch.trim().replace(/\s+/g, ' '),
+        declarations,
+        label: structural(compounds[compounds.length - 1]),
+        ancestors: compounds.slice(0, -1).map(structural),
+        conditions: [...conditions, ...statesOf(branch)],
+        weight: specificity(branch),
+        at,
+      });
+    }
+  }
+  everyRuleCache = found.sort((a, b) => a.weight - b.weight || a.at - b.at);
+  return everyRuleCache;
+};
+
+/* What the ancestors do to the label: opacity composites, so it multiplies; color is
+   inherited, so the nearest ancestor that sets one supplies it. */
+const ancestorEffects = (chain, conditions) => {
+  let alpha = 1;
+  let colour = null;
+
+  for (let index = 0; index < chain.length - 1; index += 1) {
+    const applicable = everyRule().filter(
+      (rule) =>
+        rule.conditions.every((condition) => conditions.includes(condition)) &&
+        matchesElement(rule.label, chain[index]) &&
+        matchesChain(rule.ancestors, chain.slice(0, index))
+    );
+    if (applicable.length === 0) continue;
+
+    const body = merge(applicable);
+    const faded = lastValue(body, 'opacity');
+    if (faded !== null) {
+      const literal = faded.match(/^([0-9.]+)%?$/);
+      assert.ok(
+        literal,
+        `cannot read an ancestor's opacity from "${faded}" -- extend this resolver rather ` +
+          'than treating the label as fully opaque'
+      );
+      alpha *= faded.includes('%') ? Number(literal[1]) / 100 : Number(literal[1]);
+    }
+    const declared = lastValue(body, 'color');
+    if (declared !== null) colour = declared;
+  }
+  return { alpha, colour };
+};
 
 const rulesFor = (name) => {
   const escaped = name.replace(/-/g, '\\-');
@@ -181,17 +278,13 @@ const rulesFor = (name) => {
          -- only holds in that state, and treating such a rule as always applying let
          `.subtitle:hover { display: block }` mask a default-state `display: inline`
          (Codex, #300). A state is a qualifier like an at-rule, so it joins them. */
-      const states = (
-        label
-          .replace(/:not\(\s*:empty\s*\)/gi, '')
-          .replace(/:empty\b/gi, '')
-          .match(/::?[a-z-]+(?:\([^)]*\))?/gi) ?? []
-      ).map((state) => state.toLowerCase());
+      const states = statesOf(label);
 
       found.push({
         selector: branch.trim().replace(/\s+/g, ' '),
         declarations,
-        ancestors: compounds.slice(0, own),
+        label: structural(label),
+        ancestors: compounds.slice(0, own).map(structural),
         conditions: [...conditions, ...states],
         needsEmpty,
         needsFilled,
@@ -288,9 +381,14 @@ const ancestriesFor = (name) => {
              `.add-image-and-text.text .subtitle` matched a page where those two classes sit
              on different ancestors, and an `opacity: 1` written that way cancelled a real
              muted rule that the browser keeps (Codex, #300). */
+          /* The label itself is the last link. Recording only its ancestors meant an extra
+             class in the label compound -- `.subtitle.not-rendered` -- was never checked
+             against the real element, so a rule that selects nothing could be written to
+             cancel a real regression (Codex, #300). */
           chain: [
             new Set(['#MainContent']),
-            ...open.map((entry) => new Set(entry.classes.map((c) => `.${c}`))),
+            ...open.map((entry) => new Set([entry.element, ...entry.classes.map((c) => `.${c}`)])),
+            new Set([element, ...classes.map((c) => `.${c}`)]),
           ],
           inline: attributes.match(/style="([^"]*)"/)?.[1] ?? '',
           section: file.slice(0, -'.liquid'.length),
@@ -310,6 +408,29 @@ const ancestriesFor = (name) => {
  */
 const partsOf = (text) => text.match(/[#.][\w-]+/g) ?? [];
 
+/* The pseudo-classes that make a rule hold only sometimes. `:is`, `:where` and `:not` are
+   structural -- matchesElement resolves those against the element -- and `:empty` is the
+   fill state, handled on its own. */
+const statesOf = (compound) =>
+  (
+    compound
+      .replace(/:(?:is|where|not)\([^)]*\)/gi, '')
+      .replace(/:empty\b/gi, '')
+      .match(/::?[a-z-]+(?:\([^)]*\))?/gi) ?? []
+  ).map((state) => state.toLowerCase());
+
+/* A compound with its state pseudos removed, leaving what identifies the element. */
+const structural = (compound) =>
+  compound.replace(/:empty\b/gi, '').replace(/:(?!is\(|where\(|not\()[a-z-]+(?:\([^)]*\))?/gi, '');
+
+/* Bare element names in a compound. Without these, `text-component { color: transparent }`
+   -- a selector with no class or id at all -- matched every ancestor, because a compound
+   with no parts vacuously satisfied every one of them. */
+const tagsOf = (text) =>
+  (text.replace(/[#.][\w-]+|\[[^\]]*\]|::?[a-z-]+(?:\([^)]*\))?|&/gi, ' ').match(/[a-z][\w-]*/gi) ?? []).map(
+    (tag) => tag.toLowerCase()
+  );
+
 const matchesElement = (compound, element) => {
   const anyOf = [...compound.matchAll(/:(?:is|where)\(([^)]*)\)/gi)];
   const noneOf = [...compound.matchAll(/:not\(([^)]*)\)/gi)];
@@ -317,6 +438,7 @@ const matchesElement = (compound, element) => {
 
   return (
     partsOf(bare).every((part) => element.has(part)) &&
+    tagsOf(bare).every((tag) => element.has(tag)) &&
     anyOf.every((match) =>
       splitSelectors(match[1]).some((branch) => partsOf(branch).every((part) => element.has(part)))
     ) &&
@@ -388,14 +510,31 @@ const contextsFor = (name) => {
 
   const out = [];
   for (const entry of ancestries) {
-    const reaches = all.filter((rule) =>
-      matchesChain(rule.ancestors, entry.chain)
+    const self = entry.chain[entry.chain.length - 1];
+    const above = entry.chain.slice(0, -1);
+    const reaches = all.filter(
+      (rule) => matchesElement(rule.label, self) && matchesChain(rule.ancestors, above)
     );
     if (reaches.length === 0) continue;
 
+    /* Only the two ancestor declarations that can reach the label need their own contexts --
+       everything else an ancestor sets stays on the ancestor. Without that filter the
+       powerset ran to 48 qualifier sets and tripped the cap. */
+    const AFFECTS_LABEL = /(?:^|;|\s)(?:opacity|color)\s*:/;
+    const touching = everyRule().filter(
+      (rule) =>
+        AFFECTS_LABEL.test(rule.declarations) &&
+        entry.chain
+          .slice(0, -1)
+          .some(
+            (element, at) =>
+              matchesElement(rule.label, element) && matchesChain(rule.ancestors, entry.chain.slice(0, at))
+          )
+    );
+
     const sets = [];
     const seen = new Set();
-    for (const rule of reaches) {
+    for (const rule of [...reaches, ...touching]) {
       const key = JSON.stringify(rule.conditions);
       if (seen.has(key)) continue;
       seen.add(key);
@@ -426,9 +565,13 @@ const contextsFor = (name) => {
       );
       if (applicable.length === 0) continue;
 
+      const fromAbove = ancestorEffects(entry.chain, conditions);
+
       out.push({
         where: [entry.section, ...conditions].join(' inside '),
         inline: entry.inline,
+        ancestorAlpha: fromAbove.alpha,
+        ancestorColour: fromAbove.colour,
         filled: applicable.filter((rule) => !rule.needsEmpty),
         empty: applicable.filter((rule) => !rule.needsFilled),
       });
@@ -650,7 +793,14 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
        them in sequence failed on states no element is ever in (Codex, #300). */
     for (const context of contexts) {
       if (context.filled.length === 0) continue;
-      const { alpha, literal, how } = painted(merge(context.filled, context.inline));
+      /* The ancestor's colour goes first so the label's own declaration still wins, and its
+         opacity multiplies rather than merging -- `opacity` composites, it does not
+         inherit. */
+      const { alpha, literal, how } = painted(
+        `${context.ancestorColour ? `color:${context.ancestorColour};` : ''}` +
+          merge(context.filled, context.inline)
+      );
+      const effective = alpha * context.ancestorAlpha;
 
       for (const [ground_name, ground] of where) {
         const ink = rgb(ground);
@@ -659,12 +809,12 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
         const inherited = [palette.foreground, palette.background]
           .map(rgb)
           .sort((a, b) => contrast(b, ink) - contrast(a, ink))[0];
-        const ratio = contrast(over(literal ?? inherited, ink, alpha), ink);
+        const ratio = contrast(over(literal ?? inherited, ink, effective), ink);
         assert.ok(
           ratio >= 4.5,
           `${ground_name} is ${ground}, and .${name} in ${context.where} ` +
-            `(${how}${alpha < 1 ? ` at ${alpha} opacity` : ''}) lands at ${ratio.toFixed(2)}:1 ` +
-            'on it -- under 4.5:1'
+            `(${how}${effective < 1 ? ` at ${effective} opacity` : ''}) lands at ` +
+            `${ratio.toFixed(2)}:1 on it -- under 4.5:1`
         );
       }
     }
