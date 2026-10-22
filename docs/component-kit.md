@@ -168,10 +168,14 @@ templates:
   most common preset (`paragraph` 28, `rte` 22, `h2` 17, `h4` 14, `h6` 14).
   Each one opts out of the type scale and restates a size; there are **11
   distinct literal `font_size` values** in the templates.
-- **19 distinct padding values** between sections: 0, 4, 8, 10, 12, 16, 20, 24,
-  32, 40, 48, 60, 64, 72, 80, 96, 100, 120, 152. On the homepage every
-  inter-section gap is 0 and all rhythm is internal padding, so these 19 values
-  *are* the vertical rhythm.
+- **15 distinct padding values** between sections: 0, 8, 20, 24, 32, 40, 48,
+  60, 64, 72, 80, 96, 100, 120, 152. On the homepage every inter-section gap is
+  0 and all rhythm is internal padding, so these 15 values *are* the vertical
+  rhythm. An earlier count said 19 by sweeping every setting whose name
+  contains "padding"; that admitted button, badge and inline padding — 4, 10,
+  12 and 16 — which are component-internal and not inter-section rhythm at all
+  (Codex, #247). This counts `padding-block-start` and `padding-block-end` on
+  top-level sections only.
 - **20 `custom_liquid` blocks carry an inline `<style>`** — `collection.json`
   ×3, `index.json` ×1, and ×4 in each of `product.json`,
   `product.equipment.json`, `product.merch.json` and `product.non-coffee.json`.
@@ -188,10 +192,10 @@ has to be written.
 | # | Component | What it is | Replaces |
 | --- | --- | --- | --- |
 | 1 | `section` + `group`/`text`/`image`/`video`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×78, `group` ×34, `button` ×14, `image` ×11. A `group` has `content_direction`, so a row of two blocks is a media/text layout; `image` carries a `link` and `video` carries a YouTube/Vimeo URL. | anything that is just stacked copy, and the four media/text variants `media-with-content` cannot hold (below) |
-| 2 | `media-with-content` | one fixed media slot + a content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones, and `ona-training-image-text` |
+| 2 | `media-with-content` | one fixed media slot + a content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones, and `ona-training-image-text` — **all 11 blocked** on the decorative-layer decision: every one renders an `.animated-svg` blob this target drops (see [Known gaps](#known-gaps)). Nothing here is convertible until that is settled |
 | 3 | `hero` | full-bleed media with blocks over it: desktop and custom mobile media, overlay, `section_height`, `fetchpriority` on the image itself. Already on the homepage. | `ona-training-banner`, `ona-inner-banner` |
 | 4 | `carousel` | a static `group` header **above** a row of `_card`s. Both are direct children of `.section`, which puts them in the same grid column on separate rows — it is a header-over-cards layout, not a side-by-side one. | card rows. **Not** the five panel-plus-slider sections: their panel sits beside the slider |
-| 5 | `press-quotes` | quote carousel: logo, quote, attribution, arrows when blocks outnumber columns | `ona-cafe-testimonial` — **only once #246 is merged**, see below |
+| 5 | `press-quotes` | quote carousel: logo, quote, attribution, arrows when blocks outnumber columns | `ona-cafe-testimonial` — **blocked**: needs #246 for the café names, the #253 carousel layout, and a section-level image slot for the bus #278 added (see [Known gaps](#known-gaps)) |
 | 6 | `ona-faq-layout` | already Horizon-native, styles itself, takes `_faq-category` blocks | `ona-faq-lists`, the FAQ half of `ona-expressions` |
 | 7 | `ona-page-media-gallery` | already Horizon-native, styles itself | ad-hoc image grids |
 | 8 | **a page-header section** — *to write* | eyebrow, heading, optional sub-copy, optional visually-hidden variant | `ona-page-title`, `ona-sr-heading` |
@@ -214,6 +218,11 @@ here.
 Nothing else should be added. A ninth component needs an argument, not a page.
 
 ### Why `media-with-content` carries the weight
+
+**This section explains why the shape fits; it does not say the swap is ready.**
+Every one of these sections also renders an `.animated-svg` blob that
+`media-with-content` drops, so none of them converts until the decorative layer
+has a target — read this alongside [Known gaps](#known-gaps), not instead of it.
 
 Every `*-sourcing-v*` section hard-codes image-left-or-right, a heading, copy
 and a button. `media-with-content` is that, as settings:
@@ -309,7 +318,7 @@ Stage per page stays as [page-design-structure.md](page-design-structure.md)
 sets it. This is what stage 2 *might* mean for each — candidates, subject to
 the verification rule at the top and to the gaps above.
 
-| Page | Sections now | After | The work |
+| Page | Sections now | Distinct types after | The work |
 | --- | --- | --- | --- |
 | `/pages/wholesale` | 19 (all legacy) | ~10 | the five `*-sourcing-v*` clones have **no verified target** — every one carries an `.animated-svg` layer that `media-with-content` drops (see Known gaps); `ona-cafe-testimonial` has no verified target — #278 put the ONA bus in it (see Known gaps); the four panel-plus-slider composites and `ona-unique-coffees` have no verified target (see Known gaps); `ona-wholesale-brands` lost its target to #253 (see Known gaps); `ona-faq-lists`, `ona-training` and `ona-icon-and-content` have no verified target (see Known gaps); `ona-gust-r` stays until its subject and business fields have a home |
 | `/pages/barista-courses` | 10 (all legacy) | ~6 | the four `traning-sourcing-v*` clones have **no verified target**, same `.animated-svg` layer (see Known gaps); `ona-traning-supported` has no verified target (see Known gaps); `ona-training-banner` → `hero`, keeping the image and the back-link to Learn |
@@ -319,6 +328,12 @@ the verification rule at the top and to the gaps above.
 | `/pages/private-courses-and-experiences` | 3 | 3 | thin on content; layout swap only after the copy lands. Two of its three sections have no target anyway: `ona-expericences-content`'s form and `ona-bread-crumbs` (see Known gaps) |
 | `/pages/womenincoffee`, `/pages/recycled-boxes` | 2, 1 | — | same: content first |
 | bookings ×3 | 4 each | 4 each | **not** iframe framing only: `ona-training-iframe` is the iframe, but `ona-bookings-top` is a breadcrumb plus a metafield-backed two-column intro and has no target yet (see Known gaps) |
+
+**"Distinct types after" counts component types, not section instances.** Ten
+sourcing clones becoming ten `media-with-content` instances is nine fewer
+section *files* to maintain and the same number of sections on the page, so
+none of these conversions reduces usage against Shopify's 25-section limit.
+Only an explicit merge or deletion does that, and this table proposes none.
 
 The homepage and the PDP are not in this table: both are already Horizon-native
 apart from the 20 inline-`<style>` blocks listed above — one on the homepage and
@@ -346,8 +361,8 @@ component still diverge if each restates its own sizes.
    `h1…h6`, `paragraph`, `rte`. `custom` is for a genuine one-off and currently
    covers 77 blocks — that number should fall, not grow. No `font_size` in a
    template.
-2. **Spacing comes from a short scale.** Pick one from the 19 values in use —
-   the obvious ladder is **0 / 16 / 32 / 48 / 64 / 96 / 120** — and move every
+2. **Spacing comes from a short scale.** Pick one from the 15 values in use —
+   the obvious ladder is **0 / 24 / 48 / 72 / 96 / 120** — and move every
    section's `padding-block-*` onto it. With no gaps between sections, this
    scale *is* the page rhythm.
 3. **Colour comes from the palette.** `{{ settings.color_palette.* }}`, never a
@@ -384,7 +399,7 @@ next one to have happened.
    46 are referenced — so there is no up-front sweep to do. The four shared
    sections above are the only ones whose deletion needs more than one page
    converted.
-7. **Tokens**: the 77 `custom` presets and the 19 padding values, once the
+7. **Tokens**: the 77 `custom` presets and the 15 padding values, once the
    sections they live in have stopped moving. Doing this first means doing it
    twice.
 8. **The 20 inline `<style>` blocks**, independent of all of the above.

@@ -475,11 +475,19 @@ test('the kit does not call ona-bookings-top an iframe', () => {
  * values are the part a ladder is chosen from -- so assert the list.
  */
 test('the padding inventory is what the templates hold', () => {
+  /* "Between sections" is the claim, so the population is the block padding of TOP-LEVEL
+     sections -- not every setting whose name contains "padding". The first version of this
+     guard walked nested blocks too and matched on substring, which swept in button, badge and
+     inline padding and inflated the inventory from 15 values to 19 (4, 10, 12 and 16 are
+     component-internal). It passed, and it was certifying the wrong set -- a guard aimed at
+     the wrong population is worse than none, because the number now looks checked. */
+  const SECTION_PADDING = ['padding-block-start', 'padding-block-end'];
   const values = new Set();
   for (const [, parsed] of eachTemplate()) {
-    for (const settings of everySettings(parsed.sections)) {
-      for (const [key, value] of Object.entries(settings)) {
-        if (key.includes('padding') && typeof value === 'number') values.add(value);
+    for (const section of Object.values(parsed.sections ?? {})) {
+      for (const key of SECTION_PADDING) {
+        const value = (section.settings ?? {})[key];
+        if (typeof value === 'number') values.add(value);
       }
     }
   }
@@ -501,7 +509,9 @@ test('the padding inventory is what the templates hold', () => {
     `the spacing rule does not say ${sorted.length}`
   );
 
-  /* The suggested ladder is only usable if every rung is a value that exists. */
+  /* The document tells the reader to "pick one from the N values in use", so every rung of
+     the ladder it then proposes has to be one of them. The ladder was 0/16/32/48/64/96/120 and
+     16 is not a section padding anywhere -- it only looked valid against the inflated set. */
   const ladder = flat.match(/the obvious ladder is \*\*([0-9 /]+)\*\*/);
   assert.ok(ladder, 'the spacing rule no longer proposes a ladder');
   for (const rung of ladder[1].split('/').map((part) => Number(part.trim()))) {
