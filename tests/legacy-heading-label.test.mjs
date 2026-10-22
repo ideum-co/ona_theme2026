@@ -176,28 +176,70 @@ const rulesFor = (name) => {
  * eyebrows stayed inline with the suite green (Codex, #300). Each rule names a context; the
  * rules that apply there are the ones whose ancestors are all present in it.
  */
+/*
+ * Two media blocks can both match the same viewport and their declarations stack: 0.75
+ * opacity under one and 0.75 alpha under another render at 0.5625. Building one context per
+ * rule never measured a combination (Codex, #300), so the powerset of the constraints a
+ * label carries is generated instead -- minus the combinations no viewport can satisfy,
+ * since this stylesheet pairs `max-width:749px` with `min-width:750px`.
+ */
+const satisfiable = (conditions) => {
+  let low = 0;
+  let high = Infinity;
+  for (const condition of conditions) {
+    for (const [, feature, value] of condition.matchAll(/\((min|max)-width\s*:\s*(\d+)px\)/g)) {
+      if (feature === 'min') low = Math.max(low, Number(value));
+      else high = Math.min(high, Number(value));
+    }
+  }
+  return low <= high;
+};
+
 const contextsFor = (name) => {
   const all = rulesFor(name);
+
+  const constraints = [];
   const seen = new Set();
-  const out = [];
   for (const rule of all) {
     const key = JSON.stringify([rule.ancestors, rule.conditions]);
     if (seen.has(key)) continue;
     seen.add(key);
+    constraints.push(rule);
+  }
+  /* The powerset is exponential, so an unexpectedly branchy stylesheet stops the test rather
+     than quietly measuring a subset of the combinations. */
+  assert.ok(
+    constraints.length <= 12,
+    `.${name} is styled under ${constraints.length} distinct contexts, too many to enumerate ` +
+      'the combinations of -- narrow the model rather than leaving combinations unchecked'
+  );
+
+  const out = [];
+  const built = new Set();
+  for (let mask = 1; mask < 1 << constraints.length; mask += 1) {
+    const chosen = constraints.filter((_, at) => mask & (1 << at));
+    const ancestors = [...new Set(chosen.flatMap((rule) => rule.ancestors))];
+    const conditions = [...new Set(chosen.flatMap((rule) => rule.conditions))];
+    if (!satisfiable(conditions)) continue;
+
+    const key = JSON.stringify([[...ancestors].sort(), [...conditions].sort()]);
+    if (built.has(key)) continue;
+    built.add(key);
+
     /* A rule applies here when everything it asks for is present here -- its ancestors, and
        the at-rules it sits inside. An unconditional rule applies in every context; a media
-       rule only in the contexts that carry that media condition. */
+       rule only in the contexts that carry that condition. */
     const applicable = all.filter(
-      (other) =>
-        other.ancestors.every((ancestor) => rule.ancestors.includes(ancestor)) &&
-        other.conditions.every((condition) => rule.conditions.includes(condition))
+      (rule) =>
+        rule.ancestors.every((ancestor) => ancestors.includes(ancestor)) &&
+        rule.conditions.every((condition) => conditions.includes(condition))
     );
+    if (applicable.length === 0) continue;
+
     out.push({
-      where:
-        [rule.ancestors.join(' ') || 'any legacy page', ...rule.conditions].join(' inside ') ||
-        'any legacy page',
-      filled: applicable.filter((other) => !other.needsEmpty),
-      empty: applicable.filter((other) => !other.needsFilled),
+      where: [ancestors.join(' ') || 'any legacy page', ...conditions].join(' inside '),
+      filled: applicable.filter((rule) => !rule.needsEmpty),
+      empty: applicable.filter((rule) => !rule.needsFilled),
     });
   }
   return out;
