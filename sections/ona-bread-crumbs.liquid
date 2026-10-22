@@ -64,13 +64,13 @@
         {%- assign crumb_position = crumb_position | plus: 1 -%}
         {%- if crumb_position > 1 -%},{%- endif -%}
         {%- # block.settings.url is Shopify's "url" setting type, which stores a relative path
-             ("/collections/all") for anything picked from the internal link picker, a full
-             external URL if a merchant pastes one in directly, or a protocol-relative one
-             ("//docs.example.com/path") -- the only form `contains '://'` misses, since it has no
-             "://" at all. schema.org wants item as a fully qualified URL regardless of which form
-             was used, so origin is prepended only when the value doesn't already look absolute in
-             either sense. Getting this wrong means the schema's URL silently disagrees with the
-             visible <a href>, which is exactly what BreadcrumbList validators check for. -%}
+             # ("/collections/all") for anything picked from the internal link picker, a full
+             # external URL if a merchant pastes one in directly, or a protocol-relative one
+             # ("//docs.example.com/path") -- the only form `contains '://'` misses, since it has no
+             # "://" at all. schema.org wants item as a fully qualified URL regardless of which form
+             # was used, so origin is prepended only when the value doesn't already look absolute in
+             # either sense. Getting this wrong means the schema's URL silently disagrees with the
+             # visible <a href>, which is exactly what BreadcrumbList validators check for. -%}
         {%- assign crumb_target_prefix = crumb_target | slice: 0, 2 -%}
         {%- if crumb_target contains '://' or crumb_target_prefix == '//' -%}
           {%- assign crumb_url_raw = crumb_target -%}
