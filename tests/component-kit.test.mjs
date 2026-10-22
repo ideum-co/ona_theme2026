@@ -855,6 +855,16 @@ const everySettings = function* (sections) {
   }
 };
 
+/* Same walk, but yielding the node. A probe that sees only settings cannot tell which block
+   type holds them, which is how the drift list came to call the blocks `custom_liquid` -- the
+   setting key -- when the type is `custom-liquid` (Codex, #247). */
+const everyNode = function* (sections) {
+  for (const node of Object.values(sections ?? {})) {
+    yield node;
+    yield* everyNode(node.blocks);
+  }
+};
+
 test('the custom type_preset count is what the templates hold', () => {
   const counts = new Map();
   for (const [, parsed] of eachTemplate()) {
@@ -914,27 +924,39 @@ test('the custom type_preset count is what the templates hold', () => {
 });
 
 test('the inline <style> count is what the templates hold', () => {
+  const INLINE_STYLE_TYPE = 'custom-liquid';
   let inline = 0;
   /* The occurrence count alone understates the work: it was read as "one block duplicated four
      ways", when the four product templates each hold four *different* styled blocks. Distinct
      bodies are the number of decisions; occurrences are only how many places they land in. */
   const bodies = new Map();
-  for (const [, parsed] of eachTemplate()) {
-    for (const settings of everySettings(parsed.sections)) {
-      const styled = Object.values(settings).filter(
+  const strays = [];
+  for (const [file, parsed] of eachTemplate()) {
+    for (const node of everyNode(parsed.sections)) {
+      const settings = node.settings ?? {};
+      const styled = Object.values(settings).some(
         (value) => typeof value === 'string' && value.includes('<style')
       );
-      if (!styled.length) continue;
+      if (!styled) continue;
+      if (node.type !== INLINE_STYLE_TYPE) {
+        strays.push(`${file}: ${node.type}`);
+        continue;
+      }
       inline += 1;
-      const body = styled.join('\\u0000');
-      bodies.set(body, (bodies.get(body) ?? 0) + 1);
+      bodies.set(settings.custom_liquid, (bodies.get(settings.custom_liquid) ?? 0) + 1);
     }
   }
 
   assert.ok(inline > 0, 'the probe found no inline <style>, so it is broken');
+  /* Restricting the count to one type would hide a styled block of another; this says so. */
+  assert.deepEqual(strays, [], `these styled blocks are not ${INLINE_STYLE_TYPE}, so the drift list undercounts`);
+  assert.ok(
+    existsSync(join(root, 'blocks', `${INLINE_STYLE_TYPE}.liquid`)),
+    `${INLINE_STYLE_TYPE} is not a real block type; the name in the drift list would send an implementer nowhere`
+  );
   assert.match(
     doc,
-    new RegExp(`\\*\\*${inline} \`custom_liquid\` blocks carry an inline \`<style>\`\\*\\*`),
+    new RegExp(`\\*\\*${inline} \\\`${INLINE_STYLE_TYPE}\\\` blocks carry an inline \\\`<style>\\\`\\*\\*`),
     `the drift list does not say ${inline} inline <style> blocks`
   );
   assert.match(doc, new RegExp(`The ${inline} inline \`<style>\` blocks`), `step 7 does not say ${inline}`);

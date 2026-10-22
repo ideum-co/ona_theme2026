@@ -241,7 +241,9 @@ templates:
   12 and 16 — which are component-internal and not inter-section rhythm at all
   (Codex, #247). This counts `padding-block-start` and `padding-block-end` on
   top-level sections only.
-- **20 `custom_liquid` blocks carry an inline `<style>`** — `collection.json`
+- **20 `custom-liquid` blocks carry an inline `<style>`** — that is the block
+  type (`blocks/custom-liquid.liquid`); `custom_liquid` is its setting key, and
+  the style sits in that setting's value. `collection.json`
   ×3, `index.json` ×1, and ×4 in each of `product.json`,
   `product.equipment.json`, `product.merch.json` and `product.non-coffee.json`.
   Two of the four in `product.json` are superseded by #243. The three product
@@ -486,7 +488,7 @@ component still diverge if each restates its own sizes.
    ground and ink rather than repeating — the homepage has no dividers, so a
    colour change is the only boundary a reader gets.
 4. **CSS lives in `{% stylesheet %}`.** Never an inline `<style>` in a
-   `custom_liquid` block. On the PDP this is also a correctness rule: #236
+   `custom-liquid` block. On the PDP this is also a correctness rule: #236
    prunes an empty tab by `panel.textContent.trim() === ''`, and a `<style>`
    element's text defeats it.
 
