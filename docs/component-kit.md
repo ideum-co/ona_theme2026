@@ -285,6 +285,23 @@ theme needed both a visible page title and a visually-hidden H1. One section
 with an `eyebrow`, a `heading`, an optional `subheading` and a `visually_hidden`
 toggle covers both.
 
+It has to carry their *fallback*, not just their settings.
+`sections/ona-sr-heading.liquid:5` renders
+`section.settings.text | default: page.title | default: shop.name`, and
+`sections/ona-page-title.liquid:14` falls back to `page.title` when `title2` is
+blank — and **four of the six instances leave the setting blank**: the
+`ona-sr-heading`s on bookings, private courses and wholesale, and the
+`ona-page-title` on Learn. Those four H1s are the page's own title today, read
+at render time.
+
+`templates/page.bookings.json` is what makes this a requirement rather than a
+nicety. The `bookings` suffix is shop-wide and serves **three** separately
+titled pages — Canberra, Sydney and Melbourne Barista Courses Bookings — so
+there is no literal string that is correct on all three. `page-header`'s
+heading must fall back to the resource title when its setting is blank, or
+step 1 silently relabels two of those pages and strips the H1 the others
+derive.
+
 It does **not** cover `ona-training-banner`, which looks like a third heading
 section and is not one: it is a full-bleed image hero with a back-link to
 `/pages/learn` and a hand-written `<link rel="preload">` pair that #171, #172
@@ -433,8 +450,10 @@ Each step is shippable and reversible on its own, and none of them needs the
 next one to have happened.
 
 1. **Write `page-header`** and move `ona-page-title` and `ona-sr-heading` onto
-   it. Smallest possible proof of the pattern, touches six pages, no layout
-   risk.
+   it. Smallest possible proof of the pattern, touches six templates and
+   eight pages, no layout risk — provided the new section keeps the
+   `page.title` fallback the two it replaces have today. Four of the six
+   instances are blank and depend on it; do not convert them to literal text.
 2. **Solve the decorative layer**, because steps 3 and 4 are blocked on it.
    All ten sourcing clones and `ona-training-image-text` render an
    `.animated-svg` blob that `media-with-content` drops — and so do

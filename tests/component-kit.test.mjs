@@ -398,6 +398,64 @@ test('the media-slot count is the number of no rows in the table above it', () =
   );
 });
 
+/*
+ * page-header is the one section the kit says to write, and step 1 moves ona-page-title and
+ * ona-sr-heading onto it. Both derive the H1 from page.title when their own setting is blank
+ * -- ona-sr-heading.liquid:5 through a default filter chain, ona-page-title.liquid:14 through
+ * an if/else -- and most of the instances in templates/ are blank, so the fallback is what is
+ * actually rendering those headings today, not the settings.
+ *
+ * page.bookings.json is why this is a contract and not a note: the bookings suffix is
+ * shop-wide and serves three separately titled pages, so no literal heading is right for all
+ * of them. A contract that lists settings without the fallback lets step 1 convert a blank
+ * instance to literal text and relabel two live pages, which is exactly the kind of silent
+ * regression stage 2 is supposed to exclude. The blank count is derived so the prose cannot
+ * drift from the templates.
+ */
+test('the page-header contract keeps the dynamic title fallback', () => {
+  const dynamic = { 'ona-sr-heading': 'text', 'ona-page-title': 'title2' };
+  const templates = join(root, 'templates');
+  const blanks = [];
+
+  for (const file of readdirSync(templates)) {
+    if (!file.endsWith('.json')) continue;
+    let parsed;
+    try {
+      parsed = JSON.parse(stripBanner(readFileSync(join(templates, file), 'utf8')));
+    } catch {
+      continue;
+    }
+    for (const section of Object.values(parsed.sections ?? {})) {
+      const setting = dynamic[section.type];
+      if (!setting) continue;
+      const value = (section.settings ?? {})[setting];
+      if (value === undefined || String(value).trim() === '') blanks.push(`${file}:${section.type}`);
+    }
+  }
+
+  assert.ok(blanks.length > 0, 'no blank heading instances found at all, so the probe is broken');
+  assert.ok(
+    new RegExp(`\\*\\*${NUMBER_WORDS[blanks.length]} of the six instances leave the setting blank\\*\\*`).test(doc),
+    `the contract should say ${NUMBER_WORDS[blanks.length]} instances are blank, for ${blanks.join(', ')}`
+  );
+
+  /* The fallback each of those blanks relies on, cited where it lives. */
+  for (const [section, line] of [['ona-sr-heading', 5], ['ona-page-title', 14]]) {
+    const source = readFileSync(join(root, 'sections', `${section}.liquid`), 'utf8').split('\n')[line - 1];
+    assert.match(source, /page\.title/, `${section}.liquid:${line} no longer derives the title; the citation is stale`);
+    assert.ok(doc.includes(`sections/${section}.liquid:${line}`), `the contract should cite ${section}.liquid:${line}`);
+  }
+
+  assert.ok(
+    /must fall back to the resource title when its setting is blank/.test(doc),
+    'the page-header contract no longer requires the fallback'
+  );
+  assert.ok(
+    blanks.includes('page.bookings.json:ona-sr-heading') && /bookings` suffix is shop-wide and serves \*\*three\*\*/.test(doc),
+    'the contract no longer explains why one template serving three titled pages forbids a literal heading'
+  );
+});
+
 test('the duplication table still matches the schemas', () => {
   const groups = new Map();
 
