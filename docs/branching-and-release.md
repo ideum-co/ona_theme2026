@@ -23,14 +23,26 @@ point is that no one *chose* to deploy it.
 
 `staging` exists so that merging and deploying become two different decisions.
 
-> **Update, 2026-10-14 22:00:42Z — and this makes the case rather than weakening
-> it.** A third publish put theme **`160815546559`** ("PREVIEW - product media
-> fills column (PR #46)") live, so `154676789439` is unpublished again and a
-> merge to `main` no longer reaches customers *today*. Two unannounced publishes
-> in thirty hours is precisely the problem: the storefront changed twice without
-> a decision either time. Keep working on `staging` — the moment
-> `154676789439` is published again, `main` is production again, and nobody will
-> send a reminder. See `docs/post-publish-review-2026-10-15.md` §13.
+> **Superseded — read the next paragraph before acting on this one.**
+>
+> *2026-10-14 22:00:42Z.* A third publish put theme **`160815546559`**
+> ("PREVIEW - product media fills column (PR #46)") live, so `154676789439` was
+> unpublished again and a merge to `main` did not reach customers *that day*.
+> Two unannounced publishes in thirty hours is precisely the problem: the
+> storefront changed twice without a decision either time. See
+> `docs/archive/2026-10-go-live/post-publish-review-2026-10-15.md` §13.
+
+> **Current, as of 2026-10-22.** `154676789439` is **MAIN** — it is the
+> published theme, confirmed from the storefront
+> (`Shopify.theme = {"id":154676789439,...,"role":"main"}`). **A merge to `main`
+> is a deployment to the live store.** The paragraph above is the record of a
+> window that closed; it is not the state today. The warning it ends on turned
+> out to be the right one, and nobody did send a reminder — so check the role
+> rather than any document, this one included:
+>
+> ```bash
+> curl -s https://onacoffee.com.au | grep -o 'Shopify.theme = {[^}]*}'
+> ```
 
 ---
 
@@ -43,7 +55,7 @@ point is that no one *chose* to deploy it.
 > commits merged into `origin/staging` at 13:04Z and never arrived. Of eight
 > probed files only `layout/theme.liquid` exists on it; all six JSON templates
 > are missing. This is the same silent validation drop described in
-> `docs/victor-review-2026-10-16.md` §1 — a clean merge, no error anywhere, and
+> `docs/archive/2026-10-go-live/victor-review-2026-10-16.md` §1 — a clean merge, no error anywhere, and
 > a theme quietly a day behind its branch.
 >
 > **The branch fell behind and never came back.** §4 below already said *"`main`
@@ -71,7 +83,7 @@ point is that no one *chose* to deploy it.
 
 | branch | what it is | deploys to |
 |---|---|---|
-| `main` | the branch the 2026 theme tracks | theme `154676789439` — **unpublished again as of 2026-10-14 22:00:42Z**, so a merge currently reaches a theme no customer sees |
+| `main` | the branch the 2026 theme tracks | theme `154676789439` — **MAIN, the published theme, as of 2026-10-22**. A merge here deploys to the live store. |
 | `staging-v2` | the integration branch. Everything lands here first. | a staging theme — see §3 |
 | `feat/*`, `fix/*`, `docs/*` | one change each | nothing |
 
@@ -116,13 +128,29 @@ empty or partial first sync looks identical to a healthy one in the admin.
 > **Do not reuse an existing preview theme for this.** A theme can be connected
 > to only one branch, so the staging theme has to be a new one.
 >
-> ⚠️ **`160815546559` is NOT a clean-up candidate.** It was listed as one here
-> in an earlier draft, which was wrong and dangerous: it has been the
-> **published storefront** since 2026-10-14 22:00:42Z, and the release plan
-> names it as the rollback for the next attempt at publishing
-> `154676789439`. Deleting it would either take the store down or destroy the
-> rollback. Leave it alone until another theme is live **and** a replacement
-> rollback has been named.
+> ⚠️ **`160815546559`: do not delete it, but the reason has changed.**
+>
+> *Original warning, 2026-10-15.* It was listed as a clean-up candidate here in
+> an earlier draft, which was wrong and dangerous: it was the **published
+> storefront** from 2026-10-14 22:00:42Z, and the release plan named it as the
+> rollback for the next attempt at publishing `154676789439`.
+>
+> **As of 2026-10-22, the first half of that no longer holds.** The Admin API
+> reports `154676789439` (`ona_theme2026/main`) as **MAIN** and
+> `160815546559` ("PREVIEW - product media fills column (PR #46)") as
+> **UNPUBLISHED**, last updated 2026-10-19. Deleting it would **not** take the
+> store down.
+>
+> The second half is an open question, not a fact this document can settle:
+> whether `160815546559` is still the nominated rollback is ONA's call, and
+> nobody has made it since the roles swapped back. Until someone does, treat it
+> as the rollback and leave it alone — but do not repeat the "it is live"
+> reason, because an operator who checks will find it false and may discount
+> the warning entirely. Check the roles rather than this paragraph:
+>
+> ```bash
+> curl -s https://onacoffee.com.au | grep -o 'Shopify.theme = {[^}]*}'
+> ```
 >
 > `160861159615` ("PREVIEW - WFG counter on 2026 theme (PR #149)") is safe to
 > delete — it is unpublished, is not anyone's rollback, and its content is in
@@ -350,8 +378,14 @@ Paste into the body of every `staging-v2` → `main` PR:
       reconcile — record it as such
 - [ ] Section count ≤ 25 and blocks ≤ 50 for every JSON template changed
 - [ ] Rollback named — and check which theme is actually `MAIN` first; it has
-      changed twice without notice. `160335790271` is the pre-cutover theme;
-      `160815546559` is what is live as of 2026-10-14 22:00:42Z
+      changed three times without notice. **As of 2026-10-22 `MAIN` is
+      `154676789439` (`ona_theme2026/main`, Horizon 4.1.4)**, which is this
+      repository's own theme, so a rollback now means publishing a different
+      theme, not re-publishing the live one. `160815546559` ("PREVIEW -
+      product media fills column", Horizon 3.5.1) is the last pre-`main` theme
+      and is `UNPUBLISHED`; `160335790271` is older still. Resolve it at the
+      time — `curl -s https://onacoffee.com.au | grep -o 'Shopify.theme = {[^}]*}'`
+      answers it in one line and cannot be stale
 - [ ] Deploying at a sensible hour (AEDT), not into a promo window
 - [ ] If `templates/page.location.json` is in the diff: **re-enter the Google
       Maps API key in the theme editor immediately after merging**, then confirm
@@ -401,4 +435,4 @@ Paste into the body of every `staging-v2` → `main` PR:
   *Horizon-compatible* rebuild of those pages — that work has not been done yet,
   which is a backlog item, not a storage problem. **App embeds are the real
   not-in-git item**: they live in `config/settings_data.json` on each theme and
-  are listed in `docs/post-publish-review-2026-10-15.md` §4.
+  are listed in `docs/archive/2026-10-go-live/post-publish-review-2026-10-15.md` §4.
