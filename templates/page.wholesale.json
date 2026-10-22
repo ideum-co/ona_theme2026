@@ -695,15 +695,13 @@
         "363d6f41-bd60-44d0-8135-a26cdf7b2130"
       ]
     },
-    "sr_heading": {
-      "type": "ona-sr-heading",
-      "settings": {
-        "text": ""
-      }
+    "page_header": {
+      "type": "ona-page-title",
+      "settings": {}
     }
   },
   "order": [
-    "sr_heading",
+    "page_header",
     "wholesale_partnership",
     "wholesale_sourcing_v2",
     "icon_and_content",

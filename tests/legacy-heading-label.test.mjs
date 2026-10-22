@@ -155,3 +155,45 @@ test('the eyebrow takes its colour from the band it sits on', () => {
     }
   }
 });
+
+/*
+ * One H1 per page.
+ *
+ * /pages/wholesale had a visually-hidden H1 (`ona-sr-heading`) because no section on it
+ * exposed a visible one. Giving it a real page header is only an improvement if the hidden
+ * one goes at the same time -- two H1s is worse than a hidden one.
+ *
+ * Several templates legitimately have none here, because their heading comes from the page's
+ * own rich-text content rather than from a section, so the bound is one-sided.
+ */
+test('no page template renders more than one H1', () => {
+  const headings = new Set(
+    ['sections', 'blocks', 'snippets'].flatMap((dir) =>
+      readdirSync(join(root, dir))
+        .filter((file) => file.endsWith('.liquid'))
+        .filter((file) =>
+          /<h1\b/.test(readFileSync(join(root, dir, file), 'utf8').split(/\{%-?\s*schema\s*-?%\}/)[0])
+        )
+        .map((file) => file.slice(0, -'.liquid'.length))
+    )
+  );
+  assert.ok(headings.size > 0, 'nothing in the theme renders an H1, so the probe is broken');
+
+  for (const file of readdirSync(join(root, 'templates'))) {
+    if (!file.endsWith('.json')) continue;
+    let parsed;
+    try {
+      parsed = JSON.parse(readFileSync(join(root, 'templates', file), 'utf8').replace(/^\s*\/\*[\s\S]*?\*\//, ''));
+    } catch {
+      continue; // a .liquid-backed template, or one this parse cannot reach
+    }
+    const sections = parsed.sections ?? {};
+    const rendered = (parsed.order ?? Object.keys(sections)).filter(
+      (key) => sections[key] && !sections[key].disabled && headings.has(sections[key].type)
+    );
+    assert.ok(
+      rendered.length <= 1,
+      `${file} renders ${rendered.length} H1s (${rendered.map((key) => sections[key].type).join(', ')})`
+    );
+  }
+});
