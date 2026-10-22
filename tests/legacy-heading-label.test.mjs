@@ -48,8 +48,15 @@ const labels = (() => {
   return found;
 })();
 
-const selects = (name, suffix = '') =>
-  new RegExp(`\\.${name.replace(/-/g, '\\-')}(?![\\w-])[^{,]*${suffix}[^{]*\\{`).test(css);
+const selects = (name, suffix = '') => declarationsFor(name, suffix) !== null;
+
+/* The body of the first rule whose selector matches, or null. */
+function declarationsFor(name, suffix = '') {
+  const found = css.match(
+    new RegExp(`\\.${name.replace(/-/g, '\\-')}(?![\\w-])[^{,]*${suffix}[^{]*\\{([^}]*)\\}`)
+  );
+  return found ? found[1] : null;
+}
 
 test('the eyebrow above a heading is a class the stylesheet actually styles', () => {
   assert.ok(labels.size > 0, 'no section puts a labelled element above a heading any more');
@@ -64,14 +71,28 @@ test('the eyebrow above a heading is a class the stylesheet actually styles', ()
   }
 });
 
+/* `display:none` removes the box; so does a `content-visibility`-less zero-everything, but
+   nothing here does that, so the rule is the plain one. */
+const REMOVES_BOX = /display\s*:\s*none/;
+
 test('an eyebrow with nothing in it takes up no room', () => {
   for (const [name, sections] of labels) {
     /* The element ships whether or not its setting has a value -- four of the seven on
        /pages/wholesale render empty -- and an empty inline box still occupies a line box. */
+    const rule = declarationsFor(name, ':empty');
     assert.ok(
-      selects(name, ':empty'),
+      rule !== null,
       `.${name} is rendered unconditionally by ${[...sections].sort()[0]}, so it can be empty, ` +
         'but no rule hides it when it is'
+    );
+    /* Asking only whether a matching selector exists lets `.subtitle:empty { display: block }`
+       through with every test green and the empty eyebrows still holding a line (Codex, #300).
+       The declaration is what removes the box, so the declaration is what gets checked. */
+    assert.match(
+      rule,
+      REMOVES_BOX,
+      `.${name}:empty is styled but not hidden -- its rule is "{${rule.trim()}}", which still ` +
+        'leaves an empty eyebrow occupying a line'
     );
   }
 });
@@ -153,9 +174,20 @@ const opacityToken = (name) => {
 };
 
 const painted = (declarations) => {
-  /* An element's own opacity multiplies whatever colour it ends up with. */
-  const faded = declarations.match(/(?:^|;)\s*opacity\s*:\s*([0-9.]+)/);
-  let alpha = faded ? Number(faded[1]) : 1;
+  /* An element's own opacity multiplies whatever colour it ends up with. A value this cannot
+     read -- `opacity: var(--opacity-muted-text)` -- used to fall through to alpha 1 and report
+     the label as fully opaque, so an opacity present and unresolved now fails (Codex, #300). */
+  const faded = declarations.match(/(?:^|;)\s*opacity\s*:\s*([^;]+)/);
+  let alpha = 1;
+  if (faded) {
+    const literal = faded[1].trim().match(/^([0-9.]+)%?$/);
+    assert.ok(
+      literal,
+      `cannot read the eyebrow's opacity from "${faded[1].trim()}" -- extend this resolver ` +
+        'rather than treating the label as fully opaque'
+    );
+    alpha = faded[1].includes('%') ? Number(literal[1]) / 100 : Number(literal[1]);
+  }
 
   const declared = declarations.match(/(?:^|;)\s*color\s*:\s*([^;]+)/);
   if (!declared) return { alpha, literal: null, how: 'inherited' };
