@@ -133,4 +133,15 @@ test('a pending note write cannot be outrun by accelerated checkout', () => {
     accepted > awaited,
     'the note is recorded as accepted before the fetch resolves; a failed write would then be treated as saved and never retried'
   );
+
+  /* A resolved fetch is not an accepted note. A 429 or a 5xx with a JSON body resolves both
+     the request and `response.json()`, so the status has to be read before the note is
+     recorded -- otherwise a rejected update is treated as saved and never retried. */
+  const ok = script.indexOf('response.ok');
+  assert.ok(ok > awaited && ok < accepted, 'cart-note.js does not reject a non-2xx response before recording the note as accepted');
+  assert.match(
+    script,
+    /if \(!response\.ok\) throw/,
+    'a non-2xx response no longer takes the failure path, so a rejected update would release checkout as if it had worked'
+  );
 });

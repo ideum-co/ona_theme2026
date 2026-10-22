@@ -111,6 +111,11 @@ class CartNote extends Component {
         signal: abortController.signal,
       });
 
+      /* A 429 or a 5xx with a JSON body resolves both the fetch and `response.json()`, so
+         without this the note would be recorded as accepted on a request Shopify rejected --
+         and the shopper would then skip every retry and leave with the old note. */
+      if (!response.ok) throw new Error(`Cart note update rejected with ${response.status}`);
+
       const data = await response.json();
 
       /* Only now. Everything above can throw, and a value recorded as accepted before the
