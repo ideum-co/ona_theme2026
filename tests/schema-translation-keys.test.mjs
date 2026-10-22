@@ -32,6 +32,20 @@ const resolves = (key) => {
 
 const references = (() => {
   const found = new Map();
+  const note = (key, where) => {
+    if (!found.has(key)) found.set(key, new Set());
+    found.get(key).add(where);
+  };
+
+  /* The theme's own settings are a schema like any other, and the biggest single one -- every
+     label a merchant meets under Theme settings. Scanning only the section directories left it
+     able to ship a raw key (Codex, #303). It is plain JSON rather than a {% schema %} block,
+     so it is read directly rather than matched out of Liquid. */
+  const globals = 'config/settings_schema.json';
+  for (const [, key] of readFileSync(join(root, globals), 'utf8').matchAll(/"(t:[A-Za-z0-9_.]+)"/g)) {
+    note(key, globals);
+  }
+
   for (const dir of ['sections', 'blocks', 'snippets']) {
     for (const file of readdirSync(join(root, dir))) {
       if (!file.endsWith('.liquid')) continue;
@@ -39,8 +53,7 @@ const references = (() => {
       const schema = source.match(/\{%-?\s*schema\s*-?%\}([\s\S]*?)\{%-?\s*endschema\s*-?%\}/);
       if (!schema) continue;
       for (const [, key] of schema[1].matchAll(/"(t:[A-Za-z0-9_.]+)"/g)) {
-        if (!found.has(key)) found.set(key, new Set());
-        found.get(key).add(`${dir}/${file}`);
+        note(key, `${dir}/${file}`);
       }
     }
   }
