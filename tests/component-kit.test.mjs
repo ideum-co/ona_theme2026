@@ -744,6 +744,34 @@ test('the contact-form gap rows record the validation mismatch', () => {
     /A subject setting is necessary and\s+\*\*not sufficient\*\*/.test(doc),
     'the behavioural summary is back to implying a subject setting is all that is needed'
   );
+
+  /* The blocker has to travel to wherever someone acts on it. Recording it in the gap rows and
+     leaving the page plans and the order of work saying "the subject setting has to exist
+     first" is how it gets cleared and the forms change anyway. Rather than list the places,
+     derive them: every unit of the document that raises contact[subject] as a prerequisite has
+     to raise the field set too. A table row is a unit; so is a paragraph or a numbered step. */
+  const units = [];
+  let buffer = [];
+  for (const line of doc.split('\n')) {
+    if (line.startsWith('|')) {
+      if (buffer.length) { units.push(buffer.join('\n')); buffer = []; }
+      units.push(line);
+    } else if (line.trim() === '') {
+      if (buffer.length) { units.push(buffer.join('\n')); buffer = []; }
+    } else {
+      buffer.push(line);
+    }
+  }
+  if (buffer.length) units.push(buffer.join('\n'));
+
+  const prerequisite = units.filter((unit) => unit.includes('contact[subject]'));
+  assert.ok(prerequisite.length >= 3, `only ${prerequisite.length} units mention contact[subject]; the probe is broken`);
+  const silent = prerequisite.filter((unit) => !/required/.test(unit));
+  assert.deepEqual(
+    silent.map((unit) => unit.split('\n')[0].slice(0, 70)),
+    [],
+    'these units raise the fixed subject as a blocker without the field-set and validation mismatch beside it'
+  );
 });
 
 test('the duplication table still matches the schemas', () => {
