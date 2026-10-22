@@ -11,6 +11,121 @@ const schemaOf = (file) =>
   JSON.parse(read(file).match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/)[1]);
 
 /*
+ * The theme settings as the storefront sees them: what `config/settings_data.json`'s `current`
+ * scope holds, falling back to the schema default for a key it does not carry. Both halves
+ * matter for the one condition this exists to resolve -- `layout/theme.liquid` gates quick-add
+ * on `settings.quick_add or settings.mobile_quick_add`, and the committed config turns the
+ * first off explicitly while never mentioning the second, whose schema default is off.
+ */
+const SETTINGS = (() => {
+  const data = JSON.parse(stripBanner(read('config/settings_data.json')));
+  const current = typeof data.current === 'string' ? (data.presets ?? {})[data.current] : data.current;
+  const defaults = Object.fromEntries(
+    JSON.parse(stripBanner(read('config/settings_schema.json')))
+      .flatMap((group) => group.settings ?? [])
+      .filter((entry) => entry.id != null && Object.hasOwn(entry, 'default'))
+      .map((entry) => [entry.id, entry.default])
+  );
+  return { ...defaults, ...(current ?? {}) };
+})();
+
+const CLAUSE = /^settings\.([\w-]+)\s*(?:(==|!=)\s*(?:'([^']*)'|"([^"]*)"|(true|false|blank|empty)))?$/;
+
+/*
+ * Whether a single clause is CERTAINLY false at this commit.
+ *
+ * Everything this does not recognise -- another object, a filter, a comparison it cannot
+ * resolve -- is unknown, and unknown counts as rendered. The asymmetry is deliberate: calling a
+ * live id dead loses a collision and ships a link pointing at the wrong element, while calling
+ * a dead id live costs a merchant one anchor name they were never going to choose.
+ */
+const clauseFalse = (text) => {
+  const match = CLAUSE.exec(text.trim());
+  if (!match) return false;
+  const [, key, operator, single, double, keyword] = match;
+  if (!Object.hasOwn(SETTINGS, key)) return false;
+  const value = SETTINGS[key];
+  const blank = value === false || value === '' || value == null;
+  if (!operator) return blank;
+  const equal =
+    keyword === 'blank' || keyword === 'empty'
+      ? blank
+      : keyword === 'true'
+        ? value === true
+        : keyword === 'false'
+          ? value === false
+          : value === (single ?? double);
+  return operator === '==' ? !equal : equal;
+};
+
+const definitelyFalse = (expression) => {
+  const text = expression.trim();
+  if (!text) return false;
+  const hasAnd = /\sand\s/.test(text);
+  const hasOr = /\sor\s/.test(text);
+  /* Liquid has no operator precedence and folds right to left, so a mixed expression does not
+     group the way it reads. Not worth resolving here -- it enters as unknown. */
+  if (hasAnd && hasOr) return false;
+  if (hasOr) return text.split(/\sor\s/).every(clauseFalse);
+  if (hasAnd) return text.split(/\sand\s/).some(clauseFalse);
+  return clauseFalse(text);
+};
+
+const BRANCH = /\{%-?\s*(if|elsif|else|endif|unless|endunless)\b([^%]*?)-?%\}/g;
+
+/*
+ * The spans of a file this commit's settings certainly do not render.
+ *
+ * Without this, a conditional render reserves its snippet's ids anyway: `layout/theme.liquid`
+ * renders `quick-add-modal` only when quick add is on, it is off, and `quick-add-dialog` was
+ * being held against an anchor on every page although the element is not there. Only the
+ * outermost dead frame opens a span, so nesting does not produce overlapping ranges, and
+ * `unless` enters as unknown -- deciding it would mean deciding its condition is certainly
+ * true, which `definitelyFalse` does not do.
+ */
+const deadRanges = (source) => {
+  const ranges = [];
+  const stack = [];
+  let start = null;
+  const open = (at) => {
+    if (start === null) start = at;
+  };
+  const close = (at) => {
+    if (start !== null) ranges.push([start, at]);
+    start = null;
+  };
+  for (const match of source.matchAll(BRANCH)) {
+    const name = match[1];
+    const expression = match[2] ?? '';
+    const from = match.index;
+    const to = from + match[0].length;
+    const ancestorsDead = stack.some((frame) => frame.dead);
+
+    if (name === 'if' || name === 'unless') {
+      stack.push({ dead: name === 'if' && definitelyFalse(expression) });
+      if (!ancestorsDead && stack[stack.length - 1].dead) open(to);
+      continue;
+    }
+
+    if (name === 'elsif' || name === 'else') {
+      const frame = stack[stack.length - 1];
+      if (!frame) continue;
+      const outer = stack.slice(0, -1).some((entry) => entry.dead);
+      if (!outer && frame.dead) close(from);
+      frame.dead = name === 'elsif' && definitelyFalse(expression);
+      if (!outer && frame.dead) open(to);
+      continue;
+    }
+
+    const frame = stack.pop();
+    if (frame?.dead && !stack.some((entry) => entry.dead)) close(from);
+  }
+  return ranges;
+};
+
+const isDead = (ranges, index) => ranges.some(([from, to]) => index >= from && index < to);
+
+/*
  * What an href="#..." can actually reach.
  *
  * Almost nothing is excluded. An HTML id may start with a digit, and `| escape` is transparent
@@ -158,8 +273,13 @@ const emitted = (file, seen = new Set()) => {
   seen.add(file);
   const source = maybeRead(file);
   if (source === null) return [];
-  const ids = [...source.matchAll(ID_ATTRIBUTE)].map((m) => m[1]);
+  /* Whatever sits in a branch this commit's settings close off is not on the page, and an id
+     that is not on the page cannot be collided with. */
+  const dead = deadRanges(source);
+  const live = (match) => !isDead(dead, match.index);
+  const ids = [...source.matchAll(ID_ATTRIBUTE)].filter(live).map((m) => m[1]);
   for (const match of source.matchAll(/\{%-?\s*(?:render|include)\s+'([^']+)'/g)) {
+    if (!live(match)) continue;
     ids.push(...emitted(join('snippets', `${match[1]}.liquid`), seen));
   }
   return ids;
@@ -205,31 +325,85 @@ const idsIn = (file) => {
 };
 
 test('every stored anchor is reachable and unique on the page it renders on', () => {
-  /* Section groups reach every template through the layout; `header` is the only thing `section`
-     is disabled on, so a group can hold one too. */
-  const groups = [...read('layout/theme.liquid').matchAll(/\{%-?\s*sections\s+'([^']+)'/g)].map((m) => `sections/${m[1]}.json`);
-  assert.ok(groups.length >= 2, `the layout names ${groups.length} section groups; the probe is broken`);
-
   const templates = readdirSync(join(root, 'templates')).filter((name) => name.endsWith('.json')).map((name) => join('templates', name));
-  const everywhere = groups.map((file) => [file, idsIn(file)]);
 
-  /* The layout wraps every template, and its own ids -- `MainContent`, `header-group` -- are on
-     the page before a section renders. An anchor duplicating one sends `#MainContent` to the
-     wrapper instead of the section. (password.liquid is deliberately not here: it serves the
-     password page, which has no template JSON, so its ids are not on these pages.) */
-  /* Through its snippets too: `{% render 'search-modal' %}` at theme.liquid:216 puts
-     `id="search-modal"` on every page, and reading only the layout file misses it. */
-  const fromLayout = [...new Set(emitted('layout/theme.liquid'))].map((id) => [id, 'layout/theme.liquid']);
-  assert.ok(fromLayout.length >= 2, `the layout emits ${fromLayout.length} static ids; the probe is broken`);
+  const cache = new Map();
+  const idsFor = (file) => {
+    if (!cache.has(file)) cache.set(file, idsIn(file));
+    return cache.get(file);
+  };
+
+  /*
+   * A template chooses its layout, and one here does. `templates/password.json` sets
+   * `"layout": "password"`, and `layout/password.liquid` is a different page: it emits
+   * `password-form`, `password-dialog-heading` and `Password`, renders its own
+   * `{% section 'password-footer' %}`, and names neither of the theme's section groups.
+   * Seeding every template from `theme.liquid` both missed those three ids and lent the
+   * password page a header and footer it does not have. `"layout": false` means no layout.
+   */
+  const layoutFor = (file) => {
+    const chosen = JSON.parse(stripBanner(read(file))).layout;
+    if (chosen === false) return null;
+    return join('layout', `${typeof chosen === 'string' && chosen !== '' ? chosen : 'theme'}.liquid`);
+  };
+
+  /* What a layout puts on every page it wraps: its own ids and its snippets', any single
+     section it renders itself, and the section groups it names -- read out of the layout
+     rather than listed here, so moving a group does not quietly shrink the check. */
+  const wrappers = new Map();
+  const wrapper = (layoutFile) => {
+    if (layoutFile === null) return { ids: [], groups: [] };
+    if (!wrappers.has(layoutFile)) {
+      const source = read(layoutFile);
+      const own = [...source.matchAll(/\{%-?\s*section\s+'([^']+)'/g)].flatMap((m) =>
+        emitted(join('sections', `${m[1]}.liquid`))
+      );
+      wrappers.set(layoutFile, {
+        ids: [...new Set([...emitted(layoutFile), ...own])].map((id) => [id, layoutFile]),
+        groups: [...source.matchAll(/\{%-?\s*sections\s+'([^']+)'/g)].map((m) => `sections/${m[1]}.json`),
+      });
+    }
+    return wrappers.get(layoutFile);
+  };
+
+  const theme = wrapper('layout/theme.liquid');
+  assert.ok(theme.groups.length >= 2, `the theme layout names ${theme.groups.length} section groups; the probe is broken`);
+
+  /* The layout's ids -- `MainContent`, `header-group` -- are on the page before a section
+     renders. An anchor duplicating one sends `#MainContent` to the wrapper instead of the
+     section. Through its snippets too: `{% render 'search-modal' %}` puts `id="search-modal"`
+     on every page, and reading only the layout file misses it. */
+  assert.ok(theme.ids.length >= 2, `the theme layout emits ${theme.ids.length} static ids; the probe is broken`);
   assert.ok(
-    fromLayout.some(([id]) => id === 'search-modal'),
+    theme.ids.some(([id]) => id === 'search-modal'),
     'the layout scan no longer reaches its snippets; search-modal comes from snippets/search-modal.liquid'
   );
 
-  /* The groups reach every page, so their section types' own ids do too. Without this the set
-     holds only what the group JSON configures, and `header-component` -- which is on every page
-     from `sections/header.liquid` -- is absent. */
-  const fromGroupMarkup = everywhere.flatMap(([, { taken: ids }]) => ids).filter(([, where]) => where.endsWith('.liquid'));
+  /* Tripwire for the dead-branch gate. `quick-add-dialog` lives in `snippets/quick-add-modal
+     .liquid`, which theme.liquid renders only when quick add is on; it is off in the committed
+     config, so the element is not on the page and must not be reserved. If quick add is ever
+     turned on, this flips -- and the collision set should grow, which is the point. */
+  assert.ok(
+    !theme.ids.some(([id]) => id === 'quick-add-dialog'),
+    'quick-add-dialog is reserved although quick add is off; the dead-branch gate is not firing'
+  );
+  assert.ok(
+    SETTINGS.quick_add === false && SETTINGS.mobile_quick_add === false,
+    'quick add is now enabled, so the tripwire above no longer tests anything; re-point it at another dead branch'
+  );
+
+  const password = wrapper(layoutFor('templates/password.json'));
+  assert.ok(
+    password.ids.some(([id]) => id === 'password-form') && password.groups.length === 0,
+    'the password template no longer resolves to layout/password.liquid; the per-template layout lookup is broken'
+  );
+
+  /* The groups reach every page their layout wraps, so their section types' own ids do too.
+     Without this the set holds only what the group JSON configures, and `header-component` --
+     which is on every page from `sections/header.liquid` -- is absent. */
+  const fromGroupMarkup = theme.groups
+    .flatMap((file) => idsFor(file).taken)
+    .filter(([, where]) => where.endsWith('.liquid'));
   assert.ok(
     fromGroupMarkup.length >= 1,
     `the section groups instantiate no type that emits a static id; the probe is broken`
@@ -239,16 +413,15 @@ test('every stored anchor is reachable and unique on the page it renders on', ()
      set exactly once however many templates render it, and the previous form recognised a group
      owner and then added nothing -- so an anchor stored in `footer-group.json` left this at
      zero and the inertness claim went unchecked for the one file that reaches every page. */
-  const set = [...templates.map((file) => idsIn(file)), ...everywhere.map(([, ids]) => ids)].reduce(
-    (total, { anchors }) => total + anchors.length,
-    0
-  );
+  const everyGroup = [...new Set(templates.flatMap((file) => wrapper(layoutFor(file)).groups))];
+  const set = [...templates, ...everyGroup].reduce((total, file) => total + idsFor(file).anchors.length, 0);
 
   const unreachable = [];
   const collisions = [];
   for (const file of templates) {
-    const page = [[file, idsIn(file)], ...everywhere];
-    const taken = new Map(fromLayout);
+    const layout = wrapper(layoutFor(file));
+    const page = [[file, idsFor(file)], ...layout.groups.map((group) => [group, idsFor(group)])];
+    const taken = new Map(layout.ids);
     for (const [, { taken: ids }] of page) for (const [id, where] of ids) if (!taken.has(id)) taken.set(id, where);
 
     for (const [owner, { anchors }] of page) {
