@@ -62,49 +62,71 @@ test('the section renders an anchor only when one is set', () => {
 });
 
 /*
- * Two claims about stored anchors, in the one place that can see them all.
+ * Two claims about stored anchors, checked against the page a visitor actually gets.
  *
  * Shape: the editor writes "" for a text setting with no default -- `ona-wholesale-sourcing-v2`
  * declares `id` the same way and `page.wholesale.json` carries seven empty ones -- so a blank
  * anchor is the unset state, not a bad value. Anything else must be reachable by an href, which
  * also catches a merchant who typed the # the info text tells them to leave off.
  *
- * Uniqueness: two sections in one template claiming the same id is a link that reaches whichever
- * the browser happens to pick. Nothing is set today, so both assertions are vacuous at this
- * commit -- that vacuity is the inertness this PR rests on, and it is now measured rather than
- * asserted in a comment. The rebuild makes them real.
+ * Uniqueness: an id is unique per *rendered page*, not per file. `layout/theme.liquid` pulls in
+ * section groups on every template, and the legacy sections emit their `id` setting as a real
+ * element id (`sections/ona-supported.liquid:3`, and a `slider-` variant on the same value), so
+ * an anchor can collide with something declared in a different file and send a link to the wrong
+ * element. The universe below is each template plus the groups the layout names -- read out of
+ * the layout rather than listed here, so moving a group does not quietly shrink the check.
  *
- * Section groups are in scope: `section` is disabled only on `header`, so footer-group.json can
- * hold one.
+ * Nothing is set today, so both assertions are vacuous at this commit. That vacuity is the
+ * inertness this PR rests on, and the count at the end measures it instead of asserting it in a
+ * comment. The rebuild makes all three real.
  */
-test('every stored anchor is reachable and unambiguous', () => {
-  const files = [
-    ...readdirSync(join(root, 'templates')).filter((name) => name.endsWith('.json')).map((name) => join('templates', name)),
-    ...readdirSync(join(root, 'sections')).filter((name) => name.endsWith('.json')).map((name) => join('sections', name)),
-  ];
+const idsIn = (file) => {
+  const parsed = JSON.parse(stripBanner(read(file)));
+  const anchors = [];
+  const taken = [];
+  for (const [key, section] of Object.entries(parsed.sections ?? {})) {
+    const settings = section.settings ?? {};
+    const anchor = settings.anchor;
+    if (anchor != null && String(anchor).trim() !== '') anchors.push({ key, anchor });
+    const id = settings.id;
+    if (typeof id === 'string' && id.trim() !== '') taken.push([id, `${file} ${key} id`], [`slider-${id}`, `${file} ${key} slider`]);
+  }
+  return { anchors, taken };
+};
+
+test('every stored anchor is reachable and unique on the page it renders on', () => {
+  /* Section groups reach every template through the layout; `header` is the only thing `section`
+     is disabled on, so a group can hold one too. */
+  const groups = [...read('layout/theme.liquid').matchAll(/\{%-?\s*sections\s+'([^']+)'/g)].map((m) => `sections/${m[1]}.json`);
+  assert.ok(groups.length >= 2, `the layout names ${groups.length} section groups; the probe is broken`);
+
+  const templates = readdirSync(join(root, 'templates')).filter((name) => name.endsWith('.json')).map((name) => join('templates', name));
+  const everywhere = groups.map((file) => [file, idsIn(file)]);
 
   const unreachable = [];
-  const duplicated = [];
+  const collisions = [];
   let set = 0;
-  for (const file of files) {
-    const parsed = JSON.parse(stripBanner(read(file)));
-    const seen = new Map();
-    for (const [key, section] of Object.entries(parsed.sections ?? {})) {
-      const anchor = (section.settings ?? {}).anchor;
-      if (anchor == null || String(anchor).trim() === '') continue;
-      set += 1;
-      if (typeof anchor !== 'string' || !FRAGMENT.test(anchor)) {
-        unreachable.push(`${file} ${key}: ${JSON.stringify(anchor)}`);
-        continue;
+  for (const file of templates) {
+    const page = [[file, idsIn(file)], ...everywhere];
+    const taken = new Map();
+    for (const [, { taken: ids }] of page) for (const [id, where] of ids) if (!taken.has(id)) taken.set(id, where);
+
+    for (const [owner, { anchors }] of page) {
+      for (const { key, anchor } of anchors) {
+        if (owner === file || groups.includes(owner)) set += owner === file ? 1 : 0;
+        if (!FRAGMENT.test(anchor)) {
+          unreachable.push(`${owner} ${key}: ${JSON.stringify(anchor)}`);
+          continue;
+        }
+        if (taken.has(anchor)) collisions.push(`${file}: anchor ${anchor} on ${owner} ${key} already taken by ${taken.get(anchor)}`);
+        else taken.set(anchor, `${owner} ${key} anchor`);
       }
-      if (seen.has(anchor)) duplicated.push(`${file}: ${anchor} on both ${seen.get(anchor)} and ${key}`);
-      seen.set(anchor, key);
     }
   }
 
   assert.deepEqual(unreachable, [], 'these anchors are not usable as a URL fragment');
-  assert.deepEqual(duplicated, [], 'these templates give two sections the same anchor');
-  assert.ok(files.length >= 7, `only ${files.length} section-bearing JSON files scanned; the probe is broken`);
+  assert.deepEqual(collisions, [], 'these anchors collide with another id on the same rendered page');
+  assert.ok(templates.length >= 7, `only ${templates.length} templates scanned; the probe is broken`);
   assert.equal(set, 0, `${set} section(s) now set an anchor; this PR claimed none did, so re-check that claim before trusting it`);
 });
 
