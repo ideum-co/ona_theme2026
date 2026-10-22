@@ -1,5 +1,7 @@
 /*
- * Re-emitted 2026-10-22 to re-pull after product-origin-detail.liquid validates.
+ * Re-emitted 2026-10-22 to re-pull once product-origin-detail.liquid validates
+ * (its schema had a blank `heading` default that the theme sync rejected, which
+ * had dropped this template too). Comment is stripped at runtime.
  * ------------------------------------------------------------
  * IMPORTANT: The contents of this file are auto-generated.
  *
