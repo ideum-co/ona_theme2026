@@ -76,10 +76,157 @@
     pointer-events: none;
   }
 
-  /* Push the purchase controls to the bottom of cards with shorter copy.
-     Works regardless of whether a Subscribe button is rendered in the row. */
-  .product-card__content > .group-block:has(.buy-buttons-block) {
-    margin-block-start: auto;
+  /*
+    Product list / collection cards: reserve consistent text slots instead of
+    pushing the action row to the bottom of a carousel slide. The previous
+    margin-block-start:auto produced a large empty gap between picker and CTA.
+  */
+  :is(.product-grid__item, .resource-list__item) .product-card .product-title-link .text-block {
+    min-block-size: 2lh;
+  }
+
+  :is(.product-grid__item, .resource-list__item) .product-card .product-title-link .text-block > * {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+    overflow: hidden;
+  }
+
+  :is(.product-grid__item, .resource-list__item) .product-card .product-metafield-text {
+    min-block-size: 1lh;
+  }
+
+  :is(.product-grid__item, .resource-list__item) .product-card .product-metafield-text[data-metafield-key='tastes_like'] {
+    min-block-size: 2lh;
+  }
+
+  :is(.product-grid__item, .resource-list__item) .product-card .product-metafield-text__value {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  /* Match the space used by a real dropdown even if a product has only its
+     default variant. The empty slot is inert and hidden from accessibility. */
+  :is(.product-grid__item, .resource-list__item) .product-card .product-card__variant-placeholder {
+    block-size: 64px;
+  }
+
+  /* Homepage mixes tall coffee bags and short bundle imagery. Give every
+     gallery the same portrait canvas so card copy starts at the same baseline.
+     Contain keeps the full bundle artwork visible inside that common frame. */
+  .ui-test-product-list .product-card .card-gallery {
+    --gallery-aspect-ratio: 4 / 5 !important;
+    width: 100%;
+  }
+
+  .ui-test-product-list .product-card .card-gallery .product-media-container {
+    --product-media-fit: contain !important;
+  }
+
+  /* An absent promo tag, roast, or tasting note must not collapse its slot. */
+  .ui-test-product-list .product-card .ona-pdp-tags {
+    min-block-size: 1lh;
+  }
+
+  .ui-test-product-list .product-card .product-metafield-text--empty {
+    min-block-size: 1lh;
+  }
+
+  .ui-test-product-list .product-card .product-metafield-text--empty[data-metafield-key='tastes_like'] {
+    min-block-size: 2lh;
+  }
+
+  /*
+    Featured collection: eight predictable vertical slots for each carousel
+    slide, including products with no promo, roast, notes, or extra variants.
+    The gallery ratio is a FRAME ratio; images still use contain and are never
+    cropped. No auto margin between the picker and purchase buttons.
+  */
+  .ui-test-product-list .resource-list__carousel .product-card__content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    /* Explicit text tracks: missing content, short names, or a long product
+       name cannot change the purchase controls' vertical position. */
+    grid-template-rows:
+      minmax(0, auto) /* shared image frame */
+      32px /* promo tag, including absent ones */
+      84px /* title: two lines */
+      28px /* roast */
+      45px /* tasting notes */
+      24px /* price */
+      minmax(64px, auto) /* functional variant picker */
+      minmax(52px, auto); /* functional buttons */
+    align-content: start;
+    align-items: center;
+    min-width: 0;
+    height: 100%;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > .card-gallery {
+    grid-row: 1;
+    aspect-ratio: 4 / 5;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > .ona-pdp-tags {
+    grid-row: 2;
+    min-width: 0;
+  }
+
+  /* Product title link uses display:contents; its text element is the grid item. */
+  .ui-test-product-list .resource-list__carousel .product-card__content .product-title-link .text-block {
+    grid-row: 3;
+    min-width: 0;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > .product-metafield-text[data-metafield-key='roast'] {
+    grid-row: 4;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > .product-metafield-text[data-metafield-key='tastes_like'] {
+    grid-row: 5;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > product-price {
+    grid-row: 6;
+    min-width: 0;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > :is(variant-picker, .product-card__variant-placeholder) {
+    grid-row: 7;
+    min-width: 0;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > .group-block:has(.buy-buttons-block) {
+    grid-row: 8;
+    min-width: 0;
+    margin-block-start: 0;
+    align-self: stretch;
+  }
+
+  /* Prevent long labels or optional marketing text from expanding the
+     reserved tracks. Functional controls are intentionally not clipped. */
+  .ui-test-product-list .resource-list__carousel .product-card__content > :is(.ona-pdp-tags, .product-metafield-text, product-price),
+  .ui-test-product-list .resource-list__carousel .product-card__content .product-title-link .text-block {
+    max-block-size: 100%;
+    min-block-size: 0;
+    overflow: hidden;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content .product-title-link .text-block > * {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    max-block-size: 84px;
+    overflow: hidden;
+  }
+
+  .ui-test-product-list .resource-list__carousel .product-card__content > .card-gallery {
+    overflow: hidden;
   }
 
   /* Consistent action-row height with either one or two visible buttons. */
@@ -104,5 +251,57 @@
     .product-card slideshow-arrows .slideshow-control {
       display: none;
     }
+  }
+
+  /* ==========================================================================
+     Consistent cards: the purchase block is anchored to the bottom.
+
+     Across a row, every "Add to cart" lands on the same line whatever sits
+     above it. A row of coffees shows all of its copy, aligned; a merch item
+     with less to say stays compact and simply leaves one clean gap down to its
+     button, rather than reserving the roast/tasting-note slots it never uses.
+     Keep rows to one product type (coffees together, merch together) and the
+     gap disappears entirely, because the cards in a row then match.
+     ========================================================================== */
+
+  /* Both the collection grid and the Featured-collection carousel are one
+     flexible column. The carousel's fixed-track grid is what forced coffee-only
+     rows onto merch and left bundles out of step, so it gives way here. */
+  .ui-test-product-list .resource-list__carousel .product-card__content {
+    display: flex;
+    flex-direction: column;
+    grid-template-rows: none;
+  }
+
+  /* Anchor price -> variant -> buttons to the bottom. `margin-block-start: auto`
+     on the price absorbs the free space above it, so the three drop together
+     and the buttons line up across the row. */
+  :is(.product-grid__item, .resource-list__item) .product-card__content > product-price,
+  .ui-test-product-list .resource-list__carousel .product-card__content > product-price {
+    margin-block-start: auto;
+  }
+
+  /* Don't hold space for editorial slots a product doesn't have - that empty
+     reservation is the white space merch was carrying. Present roast/tasting
+     notes still reserve their lines (above), so a row of coffees stays aligned. */
+  .product-card .product-metafield-text--empty,
+  .ui-test-product-list .product-card .product-metafield-text--empty {
+    display: none;
+    min-block-size: 0;
+  }
+
+  .ui-test-product-list .product-card .ona-pdp-tags {
+    min-block-size: 0;
+  }
+
+  .ui-test-product-list .product-card .ona-pdp-tags:empty {
+    display: none;
+  }
+
+  /* With the buttons anchored, a single-variant product needs no reserved
+     selector slot; the empty placeholder collapses instead of adding a gap. */
+  .product-card .product-card__variant-placeholder {
+    block-size: 0;
+    min-block-size: 0;
   }
 {% endstylesheet %}

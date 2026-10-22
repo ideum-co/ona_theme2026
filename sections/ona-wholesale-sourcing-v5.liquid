@@ -1,0 +1,152 @@
+<section class="add-image-and-text-slider section-full-large" id="{{ section.settings.id }}">
+
+    <div class="content container">
+        <div class="img show-icon wowo fadeIn">
+            <svg xmlns="http://www.w3.org/2000/svg" class="animated-svg" viewBox="0 0 402.06 268.72">
+                <g id="Layer_1" data-name="Layer 1">
+                  <path class="start" d="M415.502,92.079 C442.261,173.051 327.304,279.952 215.483,295.976 107.83,310.823 21.326,235.696 4.78,148.555 -11.755,61.414 90.39,14.729 200.849,21.051 336.813,25.031 366.083,-16.636 415.498,92.076 z" fill="#dfa46d" data-original="m392.21,61.77c50.29,61.61-102.98,171.94-209.7,202.05C83.64,291.72,40.08,194.51,8.99,121.31-22.1,48.11,28.68-36.98,141.82,17.09c131.54,62.87,157.53-69.08,250.39,44.68Z"></path>
+                  <path class="medium" xmlns="http://www.w3.org/2000/svg" d="m442,126.56c0,103-71.36,206-189,206S0,282.56,0,179.56,160.6,73.54,268,25.56c141-63,174-2,174,101Z" fill="#dfa46d"></path>
+                  <path class="end" d="m392.21,61.77c50.29,61.61-102.98,171.94-209.7,202.05C83.64,291.72,40.08,194.51,8.99,121.31-22.1,48.11,28.68-36.98,141.82,17.09c131.54,62.87,157.53-69.08,250.39,44.68Z" fill="#dfa46d"></path>
+                </g>
+            </svg>
+            <img src="{{ section.settings.image | img_url: '800x' }}" alt="{{ section.settings.icon.image | escape }}" loading="lazy" decoding="async">
+        </div>
+        <div class="text wowo fadeInUp">
+            <span class="subtitle">{{ section.settings.title }}</span>
+            <h2>{{ section.settings.subtitle }}</h2>
+            {{ section.settings.content }}
+            {% if section.settings.button_text != blank %}
+            <p>
+              <a href="{{ section.settings.button_url }}" class="more-btn" target="_blank">{{ section.settings.button_text }}</a>
+            </p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="add-images-slider wowo fadeInUp">
+        {% for block in section.blocks %}
+        <div class="slider-block">
+			<div class="slider-block match-height">
+				<div class="block">
+                    <div class="img">
+                      <div class="bg-img" style="background-image: url('{{ block.settings.image | img_url: '600x' }}');"> </div>
+					</div>
+					<div class="text equal-height">
+						<blockquote>{{ block.settings.content }}</blockquote>
+						<cite>
+							{{ block.settings.title }}
+							{{ block.settings.subtitle }}
+						</cite>
+					</div>					
+				</div>
+			</div>
+        </div>
+        {% endfor %}
+    </div>
+
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Sourcing"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "id",
+      "label": {
+        "en": "ID"
+      }
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": {
+        "en": "Image"
+      }
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": {
+		"en": "Subtitle"
+      }
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": {
+		"en": "Content"
+      }
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": {
+		"en": "Button text"
+      }
+    },
+    {
+      "type": "url",
+      "id": "button_url",
+      "label": {
+		"en": "Button url"
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "type": "block",
+      "name": {
+        "en": "Block"
+      },
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": {
+            "en": "Image"
+          }
+        },
+        {
+          "type": "textarea",
+          "id": "content",
+          "label": {
+            "en": "Content"
+          }
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "label": {
+            "en": "Subtitle"
+          }
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": {
+        "en": "Sourcing"
+      },
+      "category": {
+        "en": "Text"
+      }
+    }
+  ]
+}
+{% endschema %}

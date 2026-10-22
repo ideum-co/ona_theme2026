@@ -1,0 +1,33 @@
+/*
+ * Keep third-party app embeds out of the header's stacking layer.
+ *
+ * App embeds ship z-index values chosen against a generic theme, with no
+ * knowledge of Horizon's layer scale. The Globo form app wraps its fields in
+ * `.panels { position: relative; z-index: 100 }`, while Horizon's header and
+ * its mega menu sit at `--layer-menu-drawer`, which resolves to 18. Neither
+ * `.page-wrapper` nor anything between them creates a stacking context, so
+ * both land in the root one, 100 beats 18, and the form paints straight
+ * through an open menu.
+ *
+ * Measured on the live /pages/contact, 2026-10-20, with the mega menu open:
+ * 18 of 324 sample points inside the panel hit Globo inputs and labels
+ * instead of the menu -- `input#62822-text-1` and `label.globo-label` sitting
+ * on top of `img.header-megamenu__card-image`. 0 of 324 with this rule.
+ *
+ * `isolation: isolate` gives the app its own stacking context, so its
+ * z-index is scoped to its own subtree. Checked before applying it: the only
+ * z-indexed descendants are `.panels` (100) and `.wizard__steps` (1), and
+ * neither paints outside the app's own box, so nothing is being trapped.
+ *
+ * The embed ships on every page of the store -- 220 occurrences in the markup
+ * of every page checked, including the home page -- so this is loaded
+ * globally rather than per template.
+ *
+ * Deliberately NOT a blanket rule over `#shopify-section-*`: sections/coffee-
+ * quiz.liquid opens a full-screen modal at z-index 1000 that has to escape its
+ * own section, and isolating every section would trap it. Add offenders here
+ * one at a time, each with the measurement that found it.
+ */
+.globo-form-app {
+  isolation: isolate;
+}

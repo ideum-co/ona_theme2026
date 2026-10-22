@@ -1,0 +1,52 @@
+{% style %}
+  .page-title .page-title__subtitle {
+    font-family: "Karla", sans-serif;
+    font-size: 30px;
+    line-height: 1.6;
+    margin: 24px 0 0;
+  }
+  @media (max-width: 575.98px) {
+    .page-title .page-title__subtitle { font-size: 24px; }
+  }
+{% endstyle %}
+<section class="page-title">
+  <div class="container">
+    <h1>{% if section.settings.title2 != blank %}{{ section.settings.title2 }}{% else %}{{ page.title }}{% endif %}</h1>
+    {%- if section.settings.subtitle != blank -%}
+      <h3 class="page-title__subtitle">{{ section.settings.subtitle }}</h3>
+    {%- endif -%}
+  </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Page title"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title2",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": {
+        "en": "Subtitle"
+      }
+    }
+  ],
+  "presets": [
+    {
+      "name": {
+        "en": "Page title"
+      },
+      "category": {
+        "en": "Text"
+      }
+    }
+  ]
+}
+{% endschema %}

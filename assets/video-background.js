@@ -27,7 +27,7 @@ export class VideoBackgroundComponent extends Component {
             if (source.dataset.videoSource && !source.src) source.setAttribute('src', source.dataset.videoSource);
           }
           videoElement.load();
-          videoElement.play().catch(() => {});
+          this.#autoplay(videoElement);
         } else {
           videoElement.pause();
         }
@@ -46,6 +46,35 @@ export class VideoBackgroundComponent extends Component {
     }
 
     videoElement.load();
+    this.#autoplay(videoElement);
+  }
+
+  /**
+   * Starts a muted inline video so it autoplays on mobile too.
+   *
+   * The `muted` and `playsinline` HTML attributes are not enough on iOS for a programmatic play:
+   * Safari honours the muted *property*, not the attribute, when `play()` is called from script, so
+   * it has to be set here. And `play()` is being called right after `load()`, before the video has
+   * any data, which rejects on mobile - so a rejection is retried once the video can actually play
+   * rather than swallowed.
+   *
+   * @param {HTMLVideoElement} video
+   */
+  #autoplay(video) {
+    video.muted = true;
+    video.playsInline = true;
+
+    const attempt = () => {
+      const started = video.play();
+
+      if (started && typeof started.catch === 'function') {
+        started.catch(() => {});
+      }
+    };
+
+    attempt();
+    // `canplay` fires once the browser has enough data; retrying there covers the load()/play() race.
+    video.addEventListener('canplay', attempt, { once: true });
   }
 
   disconnectedCallback() {

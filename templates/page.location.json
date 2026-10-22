@@ -15,7 +15,9 @@
     },
     "store_finder": {
       "type": "locations-store-finder",
-      "settings": {}
+      "settings": {
+        "default_view": "map"
+      }
     },
     "flagships": {
       "type": "locations-flagships",

@@ -1,0 +1,187 @@
+{
+  "sections": {
+    "training_banner": {
+      "type": "ona-training-banner",
+      "settings": {
+        "title2": "Barista Courses",
+        "image": "shopify://shop_images/2211151.jpg"
+      }
+    },
+    "training_image_text": {
+      "type": "ona-training-image-text",
+      "settings": {
+        "title2": "BARISTA TRAINING IN AUSTRALIA",
+        "content": "<p>Our barista courses and training sessions are specially developed to help teach you all aspects of coffee making and barista work. Whether you are just learning how to make the perfect cup at home, starting work at your local cafe or looking to take your coffee-making skills to the next level, we have you covered.</p>",
+        "image": "shopify://shop_images/flower.png"
+      },
+      "blocks": {
+        "926eb4d4-b14c-45c6-97a4-5f39810c8926": {
+          "type": "block",
+          "settings": {
+            "title": "Book Canberra Courses",
+            "link": "https://onacoffee.com.au/pages/canberra-bookings"
+          }
+        },
+        "3ec773cf-6069-4d28-b00a-274fc9343ba4": {
+          "type": "block",
+          "settings": {
+            "title": "Book SYDNEY Courses",
+            "link": "https://onacoffee.com.au/pages/sydney-bookings"
+          }
+        },
+        "feb1ab07-2004-46f1-8da0-2c5eec49bccb": {
+          "type": "block",
+          "settings": {
+            "title": "Book Melbourne Courses",
+            "link": "shopify://pages/melbourne-bookings"
+          }
+        }
+      },
+      "block_order": [
+        "926eb4d4-b14c-45c6-97a4-5f39810c8926",
+        "3ec773cf-6069-4d28-b00a-274fc9343ba4",
+        "feb1ab07-2004-46f1-8da0-2c5eec49bccb"
+      ]
+    },
+    "traning_sourcing": {
+      "type": "ona-traning-sourcing",
+      "settings": {
+        "id": "",
+        "image": "shopify://shop_images/IMG_7158.jpg",
+        "title": "",
+        "subtitle": "Explore Our Coffee-Making Courses",
+        "content": "<p>At ONA Coffee, we believe great coffee starts with knowledge, practice and passion. That's why our comprehensive barista lessons are built around real-world experience, personalised support and the pursuit of coffee excellence.</p><p>From one-on-one coaching to small group sessions and advanced workshops, each class is led by award-winning educators using professional equipment in a supportive, real-world environment. Looking for a specific focus like a latte art course or a deep dive into sensory skills? We’ll tailor the content to help you get the most out of every session.</p>",
+        "button_text": "",
+        "button_url": ""
+      }
+    },
+    "traning_supported": {
+      "type": "ona-traning-supported",
+      "settings": {
+        "id": "",
+        "title": "Choose a Coffee Barista Course That Fits Your Goals",
+        "content": "If you're a total beginner or ready to take your skills further, we offer a wide range of barista courses in Australia to suit every level. Here are just a few of our most popular coffee-making classes:",
+        "slider_autoplay": false
+      },
+      "blocks": {
+        "slider_rkLAg9": {
+          "type": "slider",
+          "settings": {
+            "media_type": "image",
+            "image": "shopify://shop_images/FincaDeborah_2.jpg",
+            "video_url": "",
+            "autoplay": false
+          }
+        },
+        "block_hkg9gN": {
+          "type": "block",
+          "settings": {
+            "title": "Ultimate Café Barista Course",
+            "content": "An intensive 5.5–6 hour workshop covering espresso fundamentals, milk texturing, workflow, setup, pack-down and machine maintenance. Perfect for those looking to work in cafés or gain real-world experience fast."
+          }
+        },
+        "block_Yc43wq": {
+          "type": "block",
+          "settings": {
+            "title": "Latte Art",
+            "content": "From hearts and tulips to advanced rosettas and swans, these courses help you master the techniques of milk texturing and free pouring through guided repetition and feedback."
+          }
+        },
+        "block_GdaGHz": {
+          "type": "block",
+          "settings": {
+            "title": "Pour-Over Basics",
+            "content": "Explore the fundamentals of manual brewing using the 4:6 method. Learn how to adjust your pour technique, water ratios and timing to unlock vibrant flavours in your cup."
+          }
+        },
+        "block_HWT4eW": {
+          "type": "block",
+          "settings": {
+            "title": "BYO Machine",
+            "content": "Learn on your own espresso setup under expert guidance. Ideal for home baristas who want to get the best results from their personal equipment."
+          }
+        }
+      },
+      "block_order": [
+        "slider_rkLAg9",
+        "block_hkg9gN",
+        "block_Yc43wq",
+        "block_GdaGHz",
+        "block_HWT4eW"
+      ]
+    },
+    "traning_sourcing_v2": {
+      "type": "ona-traning-sourcing-v2",
+      "settings": {
+        "id": "",
+        "image": "shopify://shop_images/DSCF5981.jpg",
+        "title": "",
+        "subtitle": "Want to Boost Your Café Team’s Barista Skills?",
+        "content": "<p>Check out our <a href=\"https://onacoffee.com.au/pages/wholesale\"><span style=\"text-decoration:underline\">wholesale partnerships</span></a>. When you work with us, you gain ongoing access to Masterclasses and our Research & Development Program where we test the latest trends and technologies shaping the specialty coffee world. These <a href=\"https://www.youtube.com/watch?v=dktspYuqEIg\"><span style=\"text-decoration:underline\">exclusive programs</span></a> are a core benefit, helping café teams grow together and elevate their service.</p><p>Join the ONA Coffee wholesale community, and you get more than exceptional beans — you get a team of industry experts committed to helping your business thrive.</p>",
+        "button_text": "",
+        "button_url": ""
+      }
+    },
+    "traning_sourcing_v3": {
+      "type": "ona-traning-sourcing-v3",
+      "settings": {
+        "id": "",
+        "image": "shopify://shop_images/ONA_pewpewstudio_240625__228_LR.jpg",
+        "title": "",
+        "subtitle": "Why Train with ONA Coffee",
+        "content": "<ul><li>Learn from Australia’s most awarded baristas and industry experts</li><li>Flexible course formats, including private, group and advanced sessions</li><li>Hands-on barista training using professional café equipment</li><li>In-depth coffee courses covering theory, sensory training and workflow</li><li>Customisable content for individual learners or café teams</li><li>Located in state-of-the-art training spaces at our flagship venues</li></ul><p>If you’re searching for a barista course in Australia to kickstart your journey or a coffee art course to add flair to your flat whites, we’re here to help you succeed.</p>",
+        "button_text": "",
+        "button_url": ""
+      }
+    },
+    "training_form": {
+      "type": "ona-training-form",
+      "settings": {
+        "image": "shopify://shop_images/barista_flat_white.jpg"
+      }
+    },
+    "training_text_two_images": {
+      "type": "ona-training-text-two-images",
+      "settings": {
+        "title2": "Private Sessions and Experiences",
+        "content": "<p>We offer a range of private and custom barista training sessions, ranging from 1–3 hours to suit any need. Whether it's a session run privately, specialised high-level training from a particular expert or a private coffee experience run by a national champion, we have a range of unique experiences on offer.</p><p>Not sure which experience is best for you? A private coffee barista course offers a personalised approach to coffee education, ideal for those wanting to build confidence or refine their technique in a focused setting. On the other hand, group sessions simulate real-world café environments and foster teamwork, which can help improve consistency. </p><p>Have something specific in mind that’s not listed? Reach out to us! We’ll let you know what’s possible based on your needs.</p>",
+        "url": "https://onacoffee.com.au/pages/private-courses-and-experiences",
+        "image": "shopify://shop_images/Nationals_sig_2.jpg",
+        "image2": "shopify://shop_images/barista-ona_beanie.jpg"
+      }
+    },
+    "training_text_image_bg": {
+      "type": "ona-training-text-image-bg",
+      "settings": {
+        "title2": "TUTORIALS",
+        "subtitle": "How to use Aeropress",
+        "video": "<iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/SM_PsTBal4Y\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>",
+        "image": "shopify://shop_images/Cover-Photo_low.jpg"
+      }
+    },
+    "traning_sourcing_v4": {
+      "type": "ona-traning-sourcing-v4",
+      "settings": {
+        "id": "",
+        "image": "shopify://shop_images/6_c1997037-286a-426f-bc96-0af899e9a4f0.jpg",
+        "title": "",
+        "subtitle": "Start Your Coffee Journey with ONA",
+        "content": "<p>If you’re ready to upskill, get in touch with us to learn more about <a href=\"https://onacoffee.com.au/pages/about\"><span style=\"text-decoration:underline\">our approach</span></a>. Slots for our barista courses can fill up quickly, so we recommend booking in advance to secure your spot! Let’s brew better coffee, together. </p>",
+        "button_text": "GET in touch",
+        "button_url": "https://forms.monday.com/forms/6b1a3a5478c16210a1dae4ae5b3f86dc?r=use1"
+      }
+    }
+  },
+  "order": [
+    "training_banner",
+    "training_image_text",
+    "traning_sourcing",
+    "traning_supported",
+    "traning_sourcing_v2",
+    "traning_sourcing_v3",
+    "training_form",
+    "training_text_two_images",
+    "training_text_image_bg",
+    "traning_sourcing_v4"
+  ]
+}

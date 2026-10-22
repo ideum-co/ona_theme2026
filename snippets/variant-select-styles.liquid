@@ -58,6 +58,21 @@
     gap: var(--gap-sm);
     inline-size: 100%;
     padding: 0;
+    /*
+     * A <button> does not inherit font from its parent -- browsers impose their
+     * own UA font on form controls. Without these two lines the trigger
+     * rendered in Arial at 13.333px, and .variant-select__trigger-value
+     * inherited Arial from it, so every variant dropdown on a product card
+     * showed its selected value ("200g", "1kg") in Arial instead of Karla.
+     * Measured on the deployed theme 2026-10-19: 8 on the home page and more
+     * on every collection and search page. The PDP picker is a different
+     * control and was never affected, which is why it reads correctly.
+     *
+     * The value's own font-size is set on .variant-select__trigger-value just
+     * below; this only restores the family and the button's own text size.
+     */
+    font-family: inherit;
+    font-size: inherit;
     background: transparent;
     color: var(--variant-option-label-color, currentcolor);
     border: 0;

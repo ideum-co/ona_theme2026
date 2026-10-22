@@ -1,0 +1,136 @@
+<section class="bread-crumbs-content">
+  <div class="container">
+    <ul>
+      {% for block in section.blocks %}
+        {% if block.type == 'link' %}
+          <li><a href="{{ block.settings.url }}">{{ block.settings.label }}</a></li>
+        {% endif %}
+      {% endfor %}
+      <li>{% if section.settings.current_label != blank %}{{ section.settings.current_label }}{% else %}{{ page.title }}{% endif %}</li>
+    </ul>
+  </div>
+</section>
+
+{%- comment -%}
+  Resent 2026-10-22: this file's content reached `main` in b8045f8 (#272) but never reached the
+  theme -- that merge's push event was lost in GitHub's 2026-10-21 webhook incident. The sync
+  carries only the files changed by the commits it actually processes, so the three later merges
+  that day stepped straight over it and a no-op commit is the only way to resend it.
+
+  BreadcrumbList for the trail above -- unlike the FAQ page's nested theme blocks, `section.blocks`
+  here IS a plain iterable array (this is a section-schema "blocks" array, the older block
+  architecture, not a theme block with content_for 'blocks'), so this can read every crumb directly
+  instead of running into the same wall SEO-26 did.
+
+  Both `label` and `url` are optional in this block's schema (no `required`), so a merchant can add
+  a link crumb and leave either blank -- the schema has to check content, not just block.type ==
+  'link', same discipline as blocks/product-faqs.liquid's blank-question/answer guard (Codex, PR
+  #272, round 2). crumb_position only increments inside that content guard, so a skipped blank
+  block cannot consume a position number or shift the current-page item's position, and the comma
+  logic (keyed off crumb_position, not forloop.index) cannot produce a leading or double comma for
+  the same reason the collection FAQPage capture can't.
+
+  Gated on crumb_link_items != blank, not on a counter: an earlier version of this gated on
+  crumb_position > 0, reading a variable assigned inside the {% for %}/{% capture %} back out
+  after {% endcapture %}. Liquid's scoping almost certainly leaks that (precedent elsewhere in the
+  theme assumes it does), but "almost certainly" is exactly the property a silent-failure gate
+  cannot run on: if the leak didn't hold, crumb_position would read nil at the gate, `nil > 0` is
+  false with no error in Liquid, and the whole BreadcrumbList would vanish from every page with a
+  green test suite, because a text-pattern test can't observe runtime scoping (Codex, PR #272
+  round 4 -- caught by the peer reviewing the rebased branch, not by any test here). Capturing only
+  the link crumbs into crumb_link_items and gating on that string's blankness removes the
+  dependency entirely: the capture's own target is guaranteed to exist as a string, same reasoning
+  as the collection FAQPage schema's own gate on its captured output rather than
+  collection_faqs.size. The current-page item is built separately, outside the capture, and still
+  reads crumb_position for its position NUMBER -- but a failure there just produces a visible,
+  debuggable wrong number on one item, not a missing script. That asymmetry (gate must not depend
+  on the leak; a cosmetic value can) is the actual fix, not merely moving code around.
+
+  Escaping matches blocks/product-faqs.liquid, sections/main-collection.liquid and
+  snippets/product-information-content.liquid, including the `| replace: '</', '<\/'` after
+  `| json` -- see product-faqs.liquid's comment for why it's defense-in-depth rather than a
+  required fix on this platform (Shopify's `json` filter already escapes `<` as the Unicode escape
+  before replace runs, so no literal `<` ever reaches a crumb label containing "</script>"). The
+  visible <li> above outputs block.settings.label unescaped for HTML, which this does not copy --
+  JSON-LD needs its own escaping regardless of what the surrounding markup does.
+{%- endcomment -%}
+{%- capture crumb_link_items -%}
+  {%- assign crumb_position = 0 -%}
+  {%- for block in section.blocks -%}
+    {%- if block.type == 'link' -%}
+      {%- assign crumb_label = block.settings.label | strip -%}
+      {%- assign crumb_target = block.settings.url -%}
+      {%- if crumb_label != blank and crumb_target != blank -%}
+        {%- assign crumb_position = crumb_position | plus: 1 -%}
+        {%- if crumb_position > 1 -%},{%- endif -%}
+        {%- # block.settings.url is Shopify's "url" setting type, which stores a relative path
+             # ("/collections/all") for anything picked from the internal link picker, a full
+             # external URL if a merchant pastes one in directly, or a protocol-relative one
+             # ("//docs.example.com/path") -- the only form `contains '://'` misses, since it has no
+             # "://" at all. schema.org wants item as a fully qualified URL regardless of which form
+             # was used, so origin is prepended only when the value doesn't already look absolute in
+             # either sense. Getting this wrong means the schema's URL silently disagrees with the
+             # visible <a href>, which is exactly what BreadcrumbList validators check for. -%}
+        {%- assign crumb_target_prefix = crumb_target | slice: 0, 2 -%}
+        {%- if crumb_target contains '://' or crumb_target_prefix == '//' -%}
+          {%- assign crumb_url_raw = crumb_target -%}
+        {%- else -%}
+          {%- assign crumb_url_raw = request.origin | append: crumb_target -%}
+        {%- endif -%}
+        {%- assign crumb_url = crumb_url_raw | json | replace: '</', '<\/' -%}
+        {%- assign crumb_name = crumb_label | json | replace: '</', '<\/' -%}
+        {"@type":"ListItem","position":{{ crumb_position }},"name":{{ crumb_name }},"item":{{ crumb_url }}}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- if crumb_link_items != blank -%}
+  {%- assign current_position = crumb_position | plus: 1 -%}
+  {%- assign current_crumb_label = section.settings.current_label | default: page.title -%}
+  {%- assign current_name = current_crumb_label | json | replace: '</', '<\/' -%}
+  {%- assign current_url = request.origin | append: page.url | json | replace: '</', '<\/' -%}
+  <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{{ crumb_link_items | strip }},{"@type":"ListItem","position":{{ current_position }},"name":{{ current_name }},"item":{{ current_url }}}]}
+  </script>
+{%- endif -%}
+
+{%- comment -%}
+  Schema's `enabled_on` restricts this section to page templates. Without it (the prior state --
+  no `enabled_on` key at all, Navigation-category preset) this is addable from the theme editor to
+  ANY template, including product/collection/blog ones where `page` is nil. On those, `page.url` is
+  nil so the current-page `item` collapses to a bare origin, and with current_label also blank
+  `page.title` is nil so `"name":null` -- both the visible <li> above and the schema break the same
+  way (Codex, PR #272 round 5). Verified this restriction breaks nothing live: the only template
+  that references this section is templates/page.private-courses-and-experiences.json (plus an
+  identical copy under docs/legacy-page-templates/, which the theme never reads).
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Breadcrumbs",
+  "enabled_on": {
+    "templates": ["page"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "current_label",
+      "label": "Current page label",
+      "info": "Leave blank to fall back to page.title"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "link",
+      "name": "Crumb",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Label" },
+        { "type": "url", "id": "url", "label": "URL" }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "Breadcrumbs", "category": "Navigation" }
+  ]
+}
+{% endschema %}

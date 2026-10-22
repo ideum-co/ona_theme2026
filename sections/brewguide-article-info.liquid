@@ -1,0 +1,253 @@
+{%- doc -%}
+  Restores content the 2026 theme migration dropped from individual Brew Guides blog articles:
+  the full brew recipe (intro + spec table) and the "running low on this coffee?" cross-sell
+  back to the matching product. The Tastes Like / Roast info that used to sit near the title is
+  blocks/brewguide-article-tasting-info.liquid, nested inside main-blog-post's own block_order
+  right after the title block -- see that file's doc comment for why it's a block there rather
+  than a second sibling section like this one. This section renders after the full article body
+  (main-blog-post), where the old recipe block and cross-sell sat too.
+
+  Source: sections/article-template.liquid in Shopify theme 147471433919 ("ONA - OLD
+  11/26/2025"), the last pre-cutover snapshot -- a straight content port adapted to this
+  theme's own components (dl/dt/dd spec list matching blocks/product-brew-guide.liquid, CSS
+  custom properties, {% stylesheet %}), not a copy of the old pre-Horizon markup (inline
+  <style>, decorative animated SVG, raw <table>s).
+
+  Scoped to the Brew Guides blog only (blog.handle == 'brewguides') so it stays inert on
+  News/Journal/other blogs that share templates/article.json. Gates on the global `blog` object,
+  not `article.blog.handle`: a live diagnostic (PR #286/#287, an unconditional debug comment
+  printing both) proved `article.blog.handle` resolves BLANK in this theme's actual rendering of
+  this page -- both here and in the sibling blocks/brewguide-article-tasting-info.liquid, so it
+  isn't specific to either file -- even though `article.metafields.*` on the very same object
+  reads correctly. `blog` is the simpler, standard Liquid context object for "the blog the
+  current page belongs to" and resolved correctly in the same diagnostic.
+
+  Metafield types, see reference_shopify_json_string_metafield_no_value:
+    - accentuate.content_brew_guide   string (raw HTML)            -> no .value, read directly
+    - accentuate.title_item           json_string (array)          -> no .value, read directly
+    - accentuate.content_item         json_string (array)          -> no .value, read directly
+    - accentuate.select_product       string (a product handle)    -> no .value, read directly
+
+  Cross-sell lookup: the old section looped every product in collections.all comparing handles,
+  which is an O(n) scan on every page render for what is a direct key lookup. all_products[handle]
+  does the same match via a hash lookup instead -- same matching behaviour (both return nothing
+  when accentuate.select_product is blank or points at a handle that no longer exists), no loop.
+{%- enddoc -%}
+
+{%- liquid
+  assign is_brewguide_article = false
+  if blog.handle == 'brewguides'
+    assign is_brewguide_article = true
+  endif
+-%}
+
+{%- if is_brewguide_article -%}
+  {%- liquid
+    assign guide_intro = article.metafields.accentuate.content_brew_guide
+    assign spec_labels = article.metafields.accentuate.title_item
+    assign spec_values = article.metafields.accentuate.content_item
+
+    # The two lists are maintained by hand on the article (same discipline as
+    # blocks/product-brew-guide.liquid's product-level pair), so pair only as far as both go
+    # rather than indexing past the end of the shorter one and printing empty rows.
+    assign spec_count = 0
+    if spec_labels.size > 0 and spec_values.size > 0
+      assign spec_count = spec_labels.size
+      if spec_values.size < spec_count
+        assign spec_count = spec_values.size
+      endif
+    endif
+
+    assign cross_sell_handle = article.metafields.accentuate.select_product
+    assign cross_sell_product = blank
+    if cross_sell_handle != blank
+      assign cross_sell_product = all_products[cross_sell_handle]
+    endif
+  -%}
+
+  {%- comment -%}
+    Codex, PR #282: spec_count > 0 only means both lists have that many entries, not that any
+    row actually survives the label/value blank guard below -- if every value happened to be
+    blank or whitespace, spec_count would still be > 0, has_recipe would be set, and the page
+    would render a standalone "Brew guide" heading over an empty <dl>. Captured and tested
+    directly here instead, same pattern as blocks/product-faqs.liquid's faq_items capture: one
+    test against the markup actually produced, not a count that can't see into it.
+  {%- endcomment -%}
+  {%- capture spec_rows -%}
+    {%- if spec_count > 0 -%}
+      {%- assign last_index = spec_count | minus: 1 -%}
+      {%- for index in (0..last_index) -%}
+        {%- assign label = spec_labels[index] | strip -%}
+        {%- assign value = spec_values[index] | strip -%}
+        {%- if label != blank and value != blank -%}
+          <div class="brewguide-article-recipe__row">
+            <dt class="brewguide-article-recipe__label">{{ label }}</dt>
+            <dd class="brewguide-article-recipe__value">{{ value }}</dd>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+  {%- endcapture -%}
+
+  {%- liquid
+    assign has_recipe = false
+    if guide_intro != blank or spec_rows != blank
+      assign has_recipe = true
+    endif
+
+    assign has_any_content = false
+    if has_recipe or cross_sell_product != blank
+      assign has_any_content = true
+    endif
+  -%}
+
+  {%- if has_any_content -%}
+    {%- comment -%}
+      .section is Horizon's own page-width grid wrapper (assets/base.css): a direct child of
+      it is auto-placed in the centred content column with the theme's standard gutters.
+      Without it this content would render edge-to-edge against the viewport, since it isn't
+      nested inside the existing main-blog-post section -- it's a sibling top-level section in
+      templates/article.json, so it needs its own instance of that wrapper.
+    {%- endcomment -%}
+    <div class="section">
+      {%- if has_recipe -%}
+        <div class="brewguide-article-recipe">
+          <h2 class="brewguide-article-recipe__heading">Brew guide</h2>
+          {%- if guide_intro != blank -%}
+            <div class="brewguide-article-recipe__intro rte">{{ guide_intro }}</div>
+          {%- endif -%}
+          {%- if spec_rows != blank -%}
+            <dl class="brewguide-article-recipe__spec">{{ spec_rows }}</dl>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- if cross_sell_product != blank -%}
+        <div class="brewguide-article-cross-sell">
+          {%- if cross_sell_product.featured_media != blank -%}
+            <a href="{{ cross_sell_product.url }}" class="brewguide-article-cross-sell__image" aria-hidden="true" tabindex="-1">
+              {{
+                cross_sell_product.featured_media
+                | image_url: width: 300
+                | image_tag: loading: 'lazy', widths: '150, 300'
+              }}
+            </a>
+          {%- endif -%}
+          <div class="brewguide-article-cross-sell__content">
+            <h3 class="brewguide-article-cross-sell__heading">Running low on this coffee?</h3>
+            <p class="brewguide-article-cross-sell__title">{{ cross_sell_product.title }}</p>
+            <a href="{{ cross_sell_product.url }}" class="button brewguide-article-cross-sell__link">Buy another bag</a>
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+{%- endif -%}
+
+{% stylesheet %}
+  .brewguide-article-recipe {
+    display: grid;
+    gap: var(--gap-lg);
+    max-width: 46rem;
+    margin-inline: auto;
+    margin-block: var(--gap-3xl);
+  }
+
+  .brewguide-article-recipe__heading {
+    margin: 0;
+    font-size: var(--font-h4--size);
+  }
+
+  .brewguide-article-recipe__intro > :first-child {
+    margin-block-start: 0;
+  }
+
+  .brewguide-article-recipe__intro > :last-child {
+    margin-block-end: 0;
+  }
+
+  .brewguide-article-recipe__spec {
+    margin: 0;
+    display: grid;
+    border-block-start: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
+  }
+
+  .brewguide-article-recipe__row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--gap-sm);
+    padding-block: var(--gap-md);
+    border-block-end: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
+  }
+
+  .brewguide-article-recipe__label {
+    font-size: var(--font-h6--size);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .brewguide-article-recipe__value {
+    margin: 0;
+    font-size: var(--font-paragraph--size);
+    text-align: end;
+  }
+
+  .brewguide-article-cross-sell {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--gap-lg);
+    padding: var(--padding-xl);
+    border: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
+    border-radius: var(--style-border-radius-popover);
+    max-width: 46rem;
+    margin-inline: auto;
+  }
+
+  .brewguide-article-cross-sell__image {
+    display: block;
+    flex-shrink: 0;
+    width: 96px;
+  }
+
+  .brewguide-article-cross-sell__image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--style-border-radius-popover);
+  }
+
+  .brewguide-article-cross-sell__content {
+    display: grid;
+    gap: var(--gap-xs);
+    flex: 1;
+    min-width: 12rem;
+  }
+
+  .brewguide-article-cross-sell__heading {
+    margin: 0;
+    font-size: var(--font-h6--size);
+  }
+
+  .brewguide-article-cross-sell__title {
+    margin: 0;
+    color: var(--color-foreground-subdued);
+  }
+
+  .brewguide-article-cross-sell__link {
+    justify-self: start;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Brew guide article info",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Brew guide article info"
+    }
+  ]
+}
+{% endschema %}

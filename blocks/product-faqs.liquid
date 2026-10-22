@@ -1,0 +1,231 @@
+{%- doc -%}
+  The product's own FAQs, with FAQPage structured data beside them.
+
+  Same contract as blocks/product-brew-guide.liquid and blocks/product-origin-story.liquid: built
+  for a product tab, where #236's pruning removes a tab whose panel renders nothing. The block
+  emits no markup at all unless the product references at least one answerable FAQ, so the tab
+  appears exactly on the products that have one.
+
+  Consequently the CSS lives in {% stylesheet %} and NOT in an inline <style>. The pruning test is
+  `panel.textContent.trim() === ''`, and a <style> element's text counts towards that, so an inline
+  sheet would keep every empty panel alive and put the tab on all 42 products with no FAQs. The
+  open/close icon is drawn with ::before/::after for the same reason the markup carries no <svg>:
+  `svg` is on the pruning whitelist, and one would keep an otherwise-empty panel alive.
+
+  The structured data is the point of the block, not a decoration. These answers are the only place
+  on the site that says, in prose a machine can lift, what a coffee tastes like with milk or which
+  grinder suits it -- so they are emitted as schema.org FAQPage for search, for answer engines and
+  for the LLM crawlers that read JSON-LD in preference to prose. It sits inside the same `if` as
+  the markup: structured data describing questions the page does not show is a markup violation,
+  and emitting it unconditionally would also defeat the pruning above.
+
+  Hidden behind a tab is fine. Google's own guidance allows FAQ content in expandable sections, and
+  the answers are reachable by keyboard and by search-in-page once the tab is open.
+
+  This replaces the disabled `faqs` section in templates/product.json, which rendered the same
+  accordion from an inline <style> and emitted no structured data.
+
+  Shapes, see reference_shopify_json_string_metafield_no_value:
+    - custom.accordion       list.metaobject_reference -> .value is the array of metaobjects
+    - accordion.title        single_line_text_field    -> plain string
+    - accordion.description  rich_text_field           -> | metafield_tag, no bare drop
+
+  A reference whose metaobject was deleted comes back nil, and an entry can be saved with a title
+  and no answer, so every row is checked for both before it is drawn or described.
+
+  Coverage on 2026-10-20: 18 of 60 active products reference at least one FAQ.
+{%- enddoc -%}
+
+{%- liquid
+  assign faqs = closest.product.metafields.custom.accordion.value
+  assign described = 0
+-%}
+
+{%- capture faq_items -%}
+  {%- for faq in faqs -%}
+    {%- assign question = faq.title | strip -%}
+    {%- capture answer -%}{{ faq.description | metafield_tag }}{%- endcapture -%}
+    {%- assign answer_text = answer | strip_html | strip -%}
+    {%- if question != blank and answer_text != blank -%}
+      <details class="product-faqs__item">
+        <summary class="product-faqs__question">
+          <span>{{ question | escape }}</span>
+          <span class="product-faqs__icon" aria-hidden="true"></span>
+        </summary>
+        <div class="product-faqs__answer rte">{{ answer }}</div>
+      </details>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- capture faq_questions -%}
+  {%- for faq in faqs -%}
+    {%- assign question = faq.title | strip -%}
+    {%- capture answer -%}{{ faq.description | metafield_tag }}{%- endcapture -%}
+    {%- assign answer_text = answer | strip_html | strip -%}
+    {%- if question != blank and answer_text != blank -%}
+      {%- if described > 0 -%},{%- endif -%}
+      {%- assign described = described | plus: 1 -%}
+      {%- comment -%}
+        The answer goes in as HTML, not as stripped text. Google's FAQPage spec allows
+        <p> <br> <ol> <ul> <li> <a> <b> <strong> <i> <em> inside acceptedAnswer.text, and
+        stripping them costs two things: strip_html removes tags but NOT entities, so
+        `Ona & Co's "house" blend` would reach the structured data as the literal
+        `Ona &amp; Co&#39;s &quot;house&quot; blend` with no Liquid filter able to undo it;
+        and it joins paragraphs without a separator, turning two sentences into
+        "...in the grinder.We recommend...". answer_text stays, as the emptiness test only.
+
+        `| replace: '</', '<\/'` is defense-in-depth, not a required fix on this platform: Shopify's
+        `json` filter already escapes `<` as the Unicode escape `\u003c` before this runs, so no
+        literal `<` ever reaches the output -- a question or answer containing `</script>` cannot
+        end the script element early on its own. Verified against the live storefront response, not
+        assumed from the filter's docs (Codex raised this as a possible gap on PR #272; it wasn't
+        one, once checked). The replace matches nothing, ever, on this platform, and stays anyway:
+        it's harmless, documents the intent, and a `json` filter that does NOT escape `<` on some
+        other platform would need exactly this -- so don't drop it if this idiom is ever ported.
+      {%- endcomment -%}
+      {%- assign question_json = question | json | replace: '</', '<\/' -%}
+      {%- assign answer_json = answer | strip | json | replace: '</', '<\/' -%}
+      {"@type":"Question","name":{{ question_json }},"acceptedAnswer":{"@type":"Answer","text":{{ answer_json }}}}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- comment -%}
+  Tested on the captured markup rather than on a counter. `assign` inside `capture` does carry
+  out, but one test against the thing actually being rendered cannot drift from it.
+{%- endcomment -%}
+{%- if faq_items != blank -%}
+  <div class="product-faqs">
+    {%- if block.settings.heading != blank -%}
+      <h3 class="product-faqs__heading">{{ block.settings.heading }}</h3>
+    {%- endif -%}
+
+    <div class="product-faqs__list">{{ faq_items }}</div>
+  </div>
+
+  <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{{ faq_questions | strip }}]}
+  </script>
+{%- endif -%}
+
+{% stylesheet %}
+  .product-faqs {
+    display: grid;
+    gap: var(--gap-lg);
+    width: 100%;
+    max-width: 46rem;
+    margin-inline: auto;
+  }
+
+  .product-faqs__heading {
+    margin: 0;
+    font-size: var(--font-h5--size);
+  }
+
+  /*
+   * currentColor throughout. The panel paints itself from the product's own
+   * pdp_background_color and sets the foreground to match, so a hard-coded rule would be invisible
+   * on at least one of the eleven product colours.
+   */
+  .product-faqs__list {
+    border-block-start: 1px solid currentColor;
+  }
+
+  .product-faqs__item {
+    border-block-end: 1px solid currentColor;
+  }
+
+  .product-faqs__question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-md);
+    padding-block: var(--gap-md);
+    cursor: pointer;
+    font-size: var(--font-paragraph--size);
+    font-weight: 600;
+    list-style: none;
+  }
+
+  .product-faqs__question::-webkit-details-marker {
+    display: none;
+  }
+
+  /*
+   * A plus drawn in CSS rather than an <svg>, on purpose: `svg` is on the pruning whitelist in
+   * sections/product-tabs.liquid, so an icon would stop an empty panel from ever being removed.
+   */
+  .product-faqs__icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+  }
+
+  .product-faqs__icon::before,
+  .product-faqs__icon::after {
+    content: '';
+    position: absolute;
+    background: currentColor;
+  }
+
+  .product-faqs__icon::before {
+    top: 6px;
+    left: 0;
+    width: 14px;
+    height: 2px;
+  }
+
+  .product-faqs__icon::after {
+    top: 0;
+    left: 6px;
+    width: 2px;
+    height: 14px;
+  }
+
+  .product-faqs__item[open] .product-faqs__icon::after {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .product-faqs__icon::after {
+      transition: opacity 0.15s ease;
+    }
+  }
+
+  .product-faqs__answer {
+    padding-block-end: var(--gap-md);
+    font-size: var(--font-paragraph--size);
+    line-height: 1.6;
+  }
+
+  .product-faqs__answer > :first-child {
+    margin-block-start: 0;
+  }
+
+  .product-faqs__answer > :last-child {
+    margin-block-end: 0;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Product FAQs",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Optional. The tab already labels the panel, so this is usually left empty."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product FAQs"
+    }
+  ]
+}
+{% endschema %}
+

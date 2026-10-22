@@ -1,0 +1,100 @@
+<section class="training-bookings">
+  <div class="container">
+    <div class="content">
+      <div class="left-box wowo fadeInUp">
+        <h2>{{ section.settings.title2 }}</h2>
+        <img src="{{ section.settings.image | img_url: '1630x' }}" alt="{{ section.settings.image.alt | escape }}">
+        <div class="lead-text">
+          {{ section.settings.leadtext }}
+        </div>
+        {{ section.settings.content }}
+      </div>
+      <div class="right-box wowo fadeInUp">
+        <div class="form">
+          <h2>Get in touch</h2>
+          {%- assign form_id = 'ona-experiences-' | append: section.id -%}
+          {%- comment -%}
+            SYNC HAZARD -- read before editing.
+
+            This is one of three files the Shopify GitHub integration has twice failed to
+            deliver to theme 154676789439. PR #175's copy was genuinely invalid (a filter
+            pipeline inside the form tag's argument list). PR #183's copy is valid: on
+            2026-10-19 these exact bytes were upserted to a scratch theme through the Admin
+            API and accepted, with a checksum matching the repository file. The integration
+            is not objecting to the content -- it skipped these three files and does not
+            revisit a file until its content changes again, which is what this comment is
+            for.
+
+            AFTER MERGING, COMPARE THE THEME'S checksumMd5 AGAINST md5sum OF THIS FILE. A
+            clean merge is not evidence the storefront received it; until those match, the
+            page still renders the literal app shortcode to customers.
+          {%- endcomment -%}
+          {% form 'contact', id: form_id, class: 'ona-legacy-contact-form' %}
+            <input type="hidden" name="contact[id]" value="{{ form_id }}">
+            {%- liquid
+              comment
+                Shopify exposes one form result to every contact form on the page, so an
+                unguarded success or error message appears on forms the customer never
+                submitted. Match on the posted contact[id], as blocks/contact-form.liquid does.
+              endcomment
+              assign form_matches = false
+              if form.id == form_id or form.id == blank
+                assign form_matches = true
+              endif
+            -%}
+            {% if form.posted_successfully? and form_matches %}
+              <p role="status">Thank you. Your enquiry has been sent.</p>
+            {% elsif form.errors and form_matches %}
+              <div role="alert">{{ form.errors | default_errors }}</div>
+            {% endif %}
+            <input type="hidden" name="contact[subject]" value="Private courses and experiences enquiry">
+            <label for="ona-experiences-name-{{ section.id }}">Name</label>
+            <input required type="text" id="ona-experiences-name-{{ section.id }}" name="contact[name]" autocomplete="name" value="{{ form.name | escape }}">
+            <label for="ona-experiences-email-{{ section.id }}">Email</label>
+            <input required type="email" id="ona-experiences-email-{{ section.id }}" name="contact[email]" autocomplete="email" value="{{ form.email | escape }}">
+            <label for="ona-experiences-message-{{ section.id }}">How can we help?</label>
+            <textarea required id="ona-experiences-message-{{ section.id }}" name="contact[body]" rows="5">{{ form.body | escape }}</textarea>
+            <button type="submit" class="button">Send enquiry</button>
+          {% endform %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Content"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title2",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": {
+		"en": "Image"
+      }
+    },
+    {
+      "type": "richtext",
+      "id": "leadtext",
+      "label": {
+		"en": "Lead text"
+      }
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": {
+		"en": "Content"
+      }
+    }
+  ]
+}
+{% endschema %}

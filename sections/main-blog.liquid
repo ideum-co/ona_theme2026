@@ -27,9 +27,23 @@
   >
     {% content_for 'blocks' %}
 
+    {%- comment -%}
+      Without {% paginate %}, Liquid hands back only the first 50 articles and
+      ignores ?page= entirely. Measured on the deployed theme on 2026-10-20:
+      /blogs/brewguides has 747 articles, served 50, and page=2, 5, 15 and 16
+      each returned the identical 50 -- 697 guides reachable only by direct URL
+      or the sitemap, with no way to browse to them. /blogs/news is under the
+      cap today and would have broken silently at its 51st article.
+
+      main-blog is the only listing section in Horizon that shipped without
+      pagination; main-collection, search-results, product-list and
+      featured-blog-posts all have it. This follows main-collection's pattern
+      and renders the theme's own pagination-controls.
+    {%- endcomment -%}
+    {% paginate blog.articles by section.settings.articles_per_page %}
     <div
       ref="grid"
-      class="blog-posts-container"
+      class="blog-posts-container blog-posts-container--{{ section.settings.card_layout | default: 'featured' }}"
     >
       {% liquid
         assign items_on_page = blog.articles.size
@@ -41,6 +55,17 @@
           assign scale = 0.6
           assign is_horizontal = false
 
+          # A catalogue, not a journal: every card the same size, like a
+          # collection grid. `brewguides` carries 747 articles, and the
+          # featured sizing below turns that into a mosaic.
+          assign uniform = false
+          if section.settings.card_layout == 'uniform'
+            assign uniform = true
+            assign col_span = 2
+            assign scale = 1
+          endif
+
+          unless uniform
           case items_on_page
             when 1
               # Single post: full width hero
@@ -89,6 +114,7 @@
                 assign scale = 0.6
               endif
           endcase
+          endunless
         %}
         {% style %}
           [data-blog-index="{{ section.id }}-{{ forloop.index }}"] {
@@ -112,6 +138,9 @@
         </div>
       {% endfor %}
     </div>
+
+    {% render 'pagination-controls', paginate: paginate %}
+    {% endpaginate %}
   </div>
 </blog-posts-list>
 
@@ -157,6 +186,19 @@
     border: none;
     padding: 0;
   }
+
+  /*
+   * The cropping itself is Victor's, in blocks/_blog-post-image.liquid (#214):
+   * an `image_fit` setting whose `contain` option stops a portrait bag being
+   * decapitated by `object-fit: cover` in a fixed-height frame. This template
+   * turns it on rather than restating the rule here -- one owner for that
+   * decision, and it stays editable in the theme editor.
+   *
+   * The hero variant is a journal device; a catalogue row is never horizontal.
+   */
+  .blog-posts-container--uniform .blog-post-item--horizontal {
+    display: block;
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -198,6 +240,27 @@
     "groups": ["header"]
   },
   "settings": [
+    {
+      "type": "range",
+      "id": "articles_per_page",
+      "label": "Articles per page",
+      "min": 6,
+      "max": 48,
+      "step": 6,
+      "default": 24,
+      "info": "Liquid caps an unpaginated blog at 50 articles and ignores the page parameter, so this must stay set."
+    },
+    {
+      "type": "select",
+      "id": "card_layout",
+      "label": "Card layout",
+      "info": "Uniform shows every article at the same size with the whole image visible, like a collection grid.",
+      "options": [
+        { "value": "featured", "label": "Featured (hero + mixed sizes)" },
+        { "value": "uniform", "label": "Uniform grid" }
+      ],
+      "default": "featured"
+    },
     {
       "type": "color",
       "id": "background_color",

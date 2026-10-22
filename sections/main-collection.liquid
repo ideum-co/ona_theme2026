@@ -90,10 +90,110 @@
           paginate: paginate,
           enable_infinite_scroll: section.settings.enable_infinite_scroll
         %}
+
+        {%- comment -%}
+          ItemList JSON-LD scoped to the page of products actually rendered above, not the whole
+          collection -- infinite scroll and pagination both mean "the whole collection" is not what
+          a visitor or a crawler sees at this URL. numberOfItems is set from the same count driving
+          itemListElement rather than from collection.products_count, so the two can never disagree;
+          a mismatch between a claimed total and what is actually listed is exactly the kind of
+          structured-data defect that gets a page's schema distrusted or ignored.
+
+          Escaping mirrors blocks/product-faqs.liquid, including the `| replace: '</', '<\/'` after
+          `| json` -- see that file's comment for why it's defense-in-depth rather than a required
+          fix on this platform (Shopify's `json` filter already escapes `<` as `\u003c` before
+          replace runs, so no literal `<` ever reaches a product title containing "</script>").
+        {%- endcomment -%}
+        {%- capture item_list_entries -%}
+          {%- for product in collection.products -%}
+            {%- if forloop.index > 1 -%},{%- endif -%}
+            {%- assign item_url = request.origin | append: product.url | json | replace: '</', '<\/' -%}
+            {%- assign item_name = product.title | json | replace: '</', '<\/' -%}
+            {
+              "@type": "ListItem",
+              "position": {{ forloop.index }},
+              "url": {{ item_url }},
+              "name": {{ item_name }}
+              {%- if product.featured_image != blank -%}
+                ,"image": {{ product.featured_image | image_url: width: 600 | prepend: "https:" | json }}
+              {%- endif -%}
+            }
+          {%- endfor -%}
+        {%- endcapture -%}
+
+        {%- if item_list_entries != blank -%}
+          <script type="application/ld+json">
+            {
+              "@context": "https://schema.org",
+              "@type": "ItemList",
+              "numberOfItems": {{ collection.products.size }},
+              "itemListElement": [{{ item_list_entries | strip }}]
+            }
+          </script>
+        {%- endif -%}
       {% endpaginate %}
     </div>
   </results-list>
 </collection-component>
+
+{%- comment -%}
+  FAQPage schema for the collection FAQs that templates/collection.json's "faqs" section already
+  renders (a custom-liquid block reading this same metafield -- grep for "faq" with --include=*.liquid
+  will not find it, since it lives as a string inside a JSON template, not a .liquid file. Learned
+  that the hard way: an earlier version of this change assumed that content was unrendered and
+  proposed building it from scratch).
+
+  Deliberately NOT scoped inside the {% paginate %} block above: collection.metafields.custom.faqs
+  is collection-level content, independent of which page of products is showing, so it belongs
+  outside pagination entirely -- unlike the ItemList, which is correctly re-scoped per page.
+
+  tests/collection-faqs-section.test.mjs pins that templates/collection.json's "faqs" section still
+  exists, is still in `order`, and its block still reads this same metafield -- the one guard this
+  file cannot provide on its own, since that section lives in a shop-owned JSON template an editor
+  can change without this file knowing.
+
+  Blank-question/answer filtering and the described counter mirror blocks/product-faqs.liquid
+  exactly (Codex, PR #271): a metaobject reference whose entry is half-filled in the admin comes
+  back with a blank field, not an absent one, so the guard has to check content, not presence.
+  Using `described` rather than `forloop.index` for the comma matters specifically because a
+  *skipped* entry must not leave a stray comma -- `{%- if forloop.index > 1 -%}` would emit a
+  leading comma if entry 1 were skipped, and a double comma if a middle entry were, both of which
+  are malformed JSON. The `<script>` tag is guarded on the captured string itself
+  (collection_faq_questions != blank), not on collection_faqs.size > 0, because the metafield can
+  hold entries that all fail the content check -- size alone does not mean anything will render.
+
+  Does NOT dedupe questions. An earlier version of this did, defending against the faq_item
+  metaobject type's one known duplicate pair (can-i-choose-the-exact-coffee / -1, ONAIN-47) --
+  cut after checking all 25 collections with a populated custom.faqs: none of them reference both
+  members of that pair, so the guard defended a condition that does not exist. It was also wrong
+  on its own terms -- `seen_faq_questions contains question` is substring containment, not
+  equality, so it would have silently dropped any question that happens to be a substring of an
+  earlier one in the same list ("What is espresso?" after "What is espresso style coffee?"), the
+  same class of silent-drop bug this file exists to avoid. The duplicate metaobject pair is admin
+  data and belongs fixed on ONAIN-47, not papered over in a schema emitter.
+{%- endcomment -%}
+{%- assign collection_faqs = collection.metafields.custom.faqs.value -%}
+{%- capture collection_faq_questions -%}
+  {%- assign described = 0 -%}
+  {%- for faq in collection_faqs -%}
+    {%- assign question = faq.question | strip -%}
+    {%- capture answer -%}{{ faq.answer | metafield_tag }}{%- endcapture -%}
+    {%- assign answer_text = answer | strip_html | strip -%}
+    {%- if question != blank and answer_text != blank -%}
+      {%- if described > 0 -%},{%- endif -%}
+      {%- assign described = described | plus: 1 -%}
+      {%- assign question_json = question | json | replace: '</', '<\/' -%}
+      {%- assign answer_json = answer | strip | json | replace: '</', '<\/' -%}
+      {"@type":"Question","name":{{ question_json }},"acceptedAnswer":{"@type":"Answer","text":{{ answer_json }}}}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- if collection_faq_questions != blank -%}
+  <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{{ collection_faq_questions | strip }}]}
+  </script>
+{%- endif -%}
 
 {% schema %}
 {

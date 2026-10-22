@@ -1,6 +1,21 @@
 const HTMLElementBase = globalThis.HTMLElement ?? class {};
 const EARTH_RADIUS_KM = 6371;
 const MAPS_LOAD_TIMEOUT_MS = 15000;
+// Australia's centroid at country zoom -- the framing production opens on.
+/**
+ * Venue type and state are radio groups rather than selects, so reading and
+ * writing them goes through these two helpers instead of `.value`. An empty
+ * value is the "All ..." choice, which is always the first input in the group.
+ */
+const choiceValue = (group) => group?.querySelector('input:checked')?.value ?? '';
+
+const setChoiceValue = (group, value) => {
+  const inputs = [...(group?.querySelectorAll('input') ?? [])];
+  const match = inputs.find((input) => input.value === value) ?? inputs[0];
+  if (match) match.checked = true;
+};
+
+const NATIONAL_VIEW = { center: { lat: -25.2744, lng: 133.7751 }, zoom: 4 };
 let mapsPromise;
 let mapsCallbackSequence = 0;
 const mapsAuthSubscribers = new Set();
@@ -340,6 +355,10 @@ export class LocationsStoreFinder extends HTMLElementBase {
     this.origin = null;
     this.map = null;
     this.markers = [];
+    // Seed from what the server actually rendered. Without this the boot path
+    // cannot tell "already showing the map" from "not initialised", and resets
+    // a correctly served map view to the list before the Maps API resolves.
+    this.activeView = this.dataset.activeView === 'map' ? 'map' : 'list';
     this.visibleLocations = [...this.locations];
 
     if (this.locations.length !== this.cards.length) {
@@ -380,38 +399,52 @@ export class LocationsStoreFinder extends HTMLElementBase {
     unsubscribeFromMapsAuthFailure(this);
   }
 
+  /**
+   * Rebuilds a radio group's choices, keeping the leading "All ..." input the
+   * server rendered. The caller restores the selection afterwards.
+   *
+   * @param {Element} group - The fieldset carrying data-choice-name.
+   * @param {{value: string, label: string}[]} choices - Choices after the first.
+   */
+  renderChoices(group, choices) {
+    const container = group.querySelector('[data-choice-options]');
+    if (!container) return;
+    const allChoice = container.firstElementChild;
+    const name = group.dataset?.choiceName ?? '';
+
+    container.replaceChildren(allChoice);
+    for (const { value, label } of choices) {
+      const wrapper = this.ownerDocument.createElement('label');
+      wrapper.className = 'locations-store-finder__choice';
+      const input = this.ownerDocument.createElement('input');
+      input.type = 'radio';
+      input.name = name;
+      input.value = value;
+      const text = this.ownerDocument.createElement('span');
+      text.textContent = label;
+      wrapper.append(input, text);
+      container.append(wrapper);
+    }
+  }
+
   populateStateFilter() {
     if (!this.stateFilter) return;
-    const firstOption = this.stateFilter.options[0];
-    const selectedState = this.stateFilter.value;
+    const selectedState = choiceValue(this.stateFilter);
     const states = [...new Set(this.locations.map(({ state }) => String(state ?? '').trim()).filter(Boolean))].sort(
       (first, second) => first.localeCompare(second),
     );
 
-    this.stateFilter.replaceChildren(firstOption);
-    for (const state of states) {
-      const option = this.ownerDocument.createElement('option');
-      option.value = state;
-      option.textContent = state;
-      this.stateFilter.append(option);
-    }
-    if (states.includes(selectedState)) this.stateFilter.value = selectedState;
+    this.renderChoices(this.stateFilter, states.map((state) => ({ value: state, label: state })));
+    setChoiceValue(this.stateFilter, states.includes(selectedState) ? selectedState : '');
   }
 
   populateTagFilter() {
     if (!this.tagFilter) return;
-    const firstOption = this.tagFilter.options[0];
-    const selectedTag = this.tagFilter.value;
+    const selectedTag = choiceValue(this.tagFilter);
     const options = locationTagOptions(this.locations, this.config.tags);
 
-    this.tagFilter.replaceChildren(firstOption);
-    for (const { label, slug } of options) {
-      const option = this.ownerDocument.createElement('option');
-      option.value = slug;
-      option.textContent = label;
-      this.tagFilter.append(option);
-    }
-    if (options.some(({ slug }) => slug === selectedTag)) this.tagFilter.value = selectedTag;
+    this.renderChoices(this.tagFilter, options.map(({ label, slug }) => ({ value: slug, label })));
+    setChoiceValue(this.tagFilter, options.some(({ slug }) => slug === selectedTag) ? selectedTag : '');
   }
 
   bindEvents() {
@@ -429,8 +462,8 @@ export class LocationsStoreFinder extends HTMLElementBase {
   currentCriteria() {
     return {
       query: this.searchInput?.value ?? '',
-      state: this.stateFilter?.value ?? '',
-      tag: this.tagFilter?.value ?? '',
+      state: choiceValue(this.stateFilter),
+      tag: choiceValue(this.tagFilter),
       origin: this.origin,
       radiusKm: radiusForFilter(this.origin, this.radiusFilter?.value ?? null),
     };
@@ -519,14 +552,14 @@ export class LocationsStoreFinder extends HTMLElementBase {
 
   hasActiveFilters() {
     return Boolean(
-      this.searchInput?.value || this.stateFilter?.value || this.tagFilter?.value || this.origin,
+      this.searchInput?.value || choiceValue(this.stateFilter) || choiceValue(this.tagFilter) || this.origin,
     );
   }
 
   resetFilters() {
     if (this.searchInput) this.searchInput.value = '';
-    if (this.stateFilter) this.stateFilter.value = '';
-    if (this.tagFilter) this.tagFilter.value = '';
+    setChoiceValue(this.stateFilter, '');
+    setChoiceValue(this.tagFilter, '');
     if (this.radiusFilter) this.radiusFilter.value = String(this.settings.defaultRadius ?? '50');
     this.origin = null;
     this.setStatus('');
@@ -582,7 +615,10 @@ export class LocationsStoreFinder extends HTMLElementBase {
       return;
     }
 
-    this.showListView();
+    // Only fall back to the list while the map loads if the list is what the
+    // visitor is currently looking at. Resetting a served map view produces a
+    // map -> list -> map flip and, on narrow screens, a layout jump.
+    if (this.activeView !== 'map') this.showListView();
     try {
       await this.initializeMap(apiKey);
       if (this.requestedView !== 'map' || this.finderConnected === false) return;
@@ -643,13 +679,16 @@ export class LocationsStoreFinder extends HTMLElementBase {
         throw new Error('The location finder disconnected before Maps became ready.');
       }
       if (!maps || !this.mapElement) throw new Error('Google Maps is unavailable.');
-      const firstMappedLocation = locationsWithCoordinates(this.visibleLocations)[0];
-      const center = firstMappedLocation
-        ? { lat: Number(firstMappedLocation.latitude), lng: Number(firstMappedLocation.longitude) }
-        : { lat: -25.2744, lng: 133.7751 };
+      // Open on the whole country, which is what production does
+      // (sections/ona-store-finder.liquid: center {-25.2744, 133.7751}, zoom 4).
+      // This used to centre on whichever location happened to be first in the
+      // metaobject order, at zoom 12 -- so the map opened deep inside one
+      // suburb, and fitBounds then yanked it out to take in Dubai.
       this.map = new maps.Map(this.mapElement, {
-        center,
-        zoom: firstMappedLocation ? 12 : 4,
+        center: NATIONAL_VIEW.center,
+        zoom: NATIONAL_VIEW.zoom,
+        minZoom: 3,
+        maxZoom: 18,
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: true,
@@ -698,11 +737,27 @@ export class LocationsStoreFinder extends HTMLElementBase {
       this.markers.push(marker);
     }
 
+    // Re-frame only once the visitor has narrowed things down. Fitting the
+    // unfiltered set spans Canberra to Dubai, so the opening view was the
+    // Indian Ocean with Australia in a corner. Until there is a reason to move,
+    // the national view the map was created with is the better answer.
+    const mappedTotal = locationsWithCoordinates(this.locations).length;
+    const isNarrowed = Boolean(this.origin) || mappedLocations.length < mappedTotal;
+
     if (mappedLocations.length === 1) {
       this.map.setCenter(bounds.getCenter());
       this.map.setZoom(14);
-    } else {
+    } else if (isNarrowed) {
       this.map.fitBounds(bounds, 48);
+    } else {
+      // Back to the full set with no origin -- which happens on first paint and
+      // again whenever a filter is CLEARED. Clearing has to put the camera back:
+      // the markers all return, but without this the map is still framed on
+      // whatever suburb the filter had zoomed into, so most of them sit
+      // off-screen with nothing explaining why. On first paint this re-asserts
+      // the framing the map was created with and nothing moves. Codex, PR #191.
+      this.map.setCenter(NATIONAL_VIEW.center);
+      this.map.setZoom(NATIONAL_VIEW.zoom);
     }
   }
 

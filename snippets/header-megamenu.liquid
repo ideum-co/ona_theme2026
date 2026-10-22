@@ -185,8 +185,16 @@
     <div class="header-megamenu__panels">
       {%- for link in linklist.links -%}
         {%- liquid
+          # Products come from a collection the menu item points at. First choice is a collection
+          # among its children - the convention the drawer uses, and what keeps working for an item
+          # like Shop whose own link is a page. But a new item such as Merch is usually pointed
+          # straight at its collection with no children, so fall back to the item's own link when it
+          # is a collection. That way "point the item at a collection" is all it takes to fill it.
           assign collection_link = link.links | where: 'type', 'collection_link' | first
           assign featured_collection = collection_link.object
+          if featured_collection == blank and link.type == 'collection_link'
+            assign featured_collection = link.object
+          endif
         -%}
         <div
           class="header-megamenu__content"

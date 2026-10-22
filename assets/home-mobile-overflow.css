@@ -1,0 +1,27 @@
+/* Homepage carousel: keep its own horizontal scroll without enlarging the document. */
+@media screen and (max-width: 749px) {
+  body:has([data-testid="product-list"]) { overflow-x: clip; }
+  .page-wrapper:has([data-testid="product-list"]),
+  main:has([data-testid="product-list"]) { min-width: 0; max-width: 100%; overflow-x: clip; }
+  .ui-test-product-list,
+  .ui-test-product-list [data-testid="product-list"],
+  .ui-test-product-list .resource-list,
+  .ui-test-product-list .resource-list-carousel-viewport,
+  .ui-test-product-list slideshow-component,
+  .ui-test-product-list slideshow-container { min-width: 0; max-width: 100%; }
+  .ui-test-product-list .resource-list__carousel { width: 100%; }
+  .ui-test-product-list .resource-list__slide {
+    --slide-width: min(88cqw, calc(100vw - 40px));
+    min-width: 0;
+    max-width: calc(100vw - 40px);
+  }
+  .ui-test-product-list .resource-list__item,
+  .ui-test-product-list .product-card,
+  .ui-test-product-list .product-card__content,
+  .ui-test-product-list .group-block,
+  .ui-test-product-list .group-block-content { min-width: 0; max-width: 100%; }
+  .ui-test-product-list :is(.variant-picker,.variant-select,.variant-select__field,.buy-buttons-block,.subscribe-block) {
+    min-width: 0; max-width: 100%;
+  }
+  .ui-test-product-list .group-block-content:has(.buy-buttons-block) { flex-wrap: wrap; }
+}

@@ -3,6 +3,11 @@
 
   @param {string} [accelerated_checkout_buttons_layout] - { 'vertical' } Forced layout of the additional checkout buttons, instead of relying on platform's layout.
   @param {string} [section_id] - The section ID for cart discount component.
+  @param {string} [context] - { 'drawer' } When 'drawer', renders the "View cart" link back to the
+    standalone /cart page. This snippet is rendered from two places: snippets/cart-drawer.liquid
+    (passes context: 'drawer') and blocks/_cart-summary.liquid, which backs the standalone /cart
+    page itself (templates/cart.json -> sections/main-cart.liquid) and passes no context. Without
+    this gate the link would show on /cart too, pointing at the page the shopper is already on.
 {%- enddoc -%}
 
 {% render 'text-component-shimmer-styles' %}
@@ -258,6 +263,29 @@
 </div>
 
 <div class="cart__ctas">
+  {% comment %}
+    Horizon's stock cart drawer ships no way back to the full /cart page -- only a checkout
+    button. The theme already localizes 'content.view_cart' ("View cart") and uses it on
+    sections/quick-order-list.liquid's own cart link, just never in the drawer. This reuses that
+    same string and the theme's existing button-secondary convention (same pairing as
+    quick-order-list's "View cart" link) rather than inventing new copy or styling.
+
+    Gated on context == 'drawer' (see this file's own doc comment): this snippet is ALSO
+    rendered by blocks/_cart-summary.liquid, which backs the standalone /cart page itself --
+    without this gate the link would show there too, pointing at the page the shopper is
+    already on. Caught by independent review on the first version of this change, which had no
+    gate at all.
+  {% endcomment %}
+  {%- if context == 'drawer' -%}
+    <a
+      href="{{ routes.cart_url }}"
+      class="button-secondary cart__view-cart-link"
+      data-testid="cart-view-cart-link"
+    >
+      {{ 'content.view_cart' | t }}
+    </a>
+  {%- endif -%}
+
   <button
     type="submit"
     id="checkout"
@@ -481,6 +509,10 @@
     width: 100%;
     height: clamp(25px, var(--height-buy-buttons), 55px);
     padding-inline: var(--padding-4xl);
+  }
+
+  .cart__view-cart-link {
+    justify-self: center;
   }
 
   .cart-drawer__summary .cart-totals:not(:has(.cart-totals__original-container:empty)) {

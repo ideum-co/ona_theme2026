@@ -282,3 +282,157 @@ if (globalThis.customElements && !customElements.get('locations-flagship-gallery
 if (globalThis.customElements && !customElements.get('locations-flagships-loader')) {
   customElements.define('locations-flagships-loader', LocationsFlagshipsLoader);
 }
+
+/*
+ * Venue tablist.
+ *
+ * The previous theme listed ONA's own venues as clickable names beside the
+ * gallery; the Horizon port rendered every venue expanded instead. This
+ * restores the one-at-a-time behaviour.
+ *
+ * The buttons are built here rather than in Liquid because
+ * LocationsFlagshipsLoader calls list.replaceChildren() once it has aggregated
+ * venues from every paginated page. Markup-rendered buttons would then point at
+ * panels that no longer exist, a per-page Liquid counter would emit duplicate
+ * ids across pages, and any venue arriving after the first page would have a
+ * panel with no tab -- which, with the collapsed layout active, means a venue
+ * nobody can reach. Building from the cards and rebuilding on mutation keeps
+ * tabs and panels in step by construction.
+ *
+ * Progressive enhancement: the nav is display:none and every card is visible
+ * until this connects and adds `is-enhanced`.
+ */
+class LocationsFlagshipsTabs extends HTMLElementBase {
+  connectedCallback() {
+    this.nav = this.querySelector('[data-flagship-nav]');
+    this.list = this.querySelector('[data-flagship-list]');
+    if (!this.nav || !this.list) return;
+
+    this.addEventListener('click', this.#onClick);
+    this.addEventListener('keydown', this.#onKeydown);
+
+    this.refresh();
+
+    if (globalThis.MutationObserver) {
+      this.observer = new MutationObserver(() => this.refresh());
+      this.observer.observe(this.list, { childList: true });
+    }
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('click', this.#onClick);
+    this.removeEventListener('keydown', this.#onKeydown);
+    this.observer?.disconnect();
+  }
+
+  /**
+   * Rebuilds the tablist from whatever cards are in the list right now, keeping
+   * the selected venue if it is still present.
+   */
+  refresh() {
+    const selected = this.tabs?.[this.activeIndex ?? 0]?.dataset.locationId ?? null;
+    /*
+     * A rebuild replaces the buttons, which destroys the focused one. The
+     * loader can finish while a keyboard user is part-way along the tablist,
+     * and focus would then fall back to <body> mid-interaction -- so remember
+     * whether focus was ours and put it back on the equivalent tab.
+     */
+    const hadFocus = this.tabs?.some((tab) => tab === document.activeElement) ?? false;
+    this.panels = Array.from(this.list.querySelectorAll('[data-flagship-card]'));
+
+    /*
+     * One venue needs no tablist, and zero means the loader has not finished.
+     * Either way the collapsed layout comes off, so nothing is left hidden
+     * behind a control that is not there.
+     */
+    if (this.panels.length < 2) {
+      this.classList.remove('is-enhanced');
+      this.nav.replaceChildren();
+      /*
+       * Strip the semantics too. Leaving role="tabpanel" and an
+       * aria-labelledby pointing at a button that no longer exists gives a
+       * screen reader a panel with no tab and no name -- worse than the plain
+       * <article> this started as.
+       */
+      this.panels.forEach((panel) => {
+        panel.removeAttribute('role');
+        panel.removeAttribute('aria-labelledby');
+        panel.classList.remove('is-active');
+      });
+      this.tabs = [];
+      return;
+    }
+
+    const uid = this.dataset.uid ?? (this.dataset.uid = Math.random().toString(36).slice(2, 8));
+    const buttons = this.panels.map((panel, i) => {
+      const panelId = `FlagshipPanel-${uid}-${i + 1}`;
+      const tabId = `FlagshipTab-${uid}-${i + 1}`;
+      panel.id = panelId;
+      panel.setAttribute('role', 'tabpanel');
+      panel.setAttribute('aria-labelledby', tabId);
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'locations-flagships__nav-item';
+      button.setAttribute('role', 'tab');
+      button.id = tabId;
+      button.setAttribute('aria-controls', panelId);
+      button.dataset.locationId = panel.dataset.locationId ?? '';
+      button.textContent = panel.querySelector('.locations-flagships__title')?.textContent?.trim() ?? `Venue ${i + 1}`;
+      return button;
+    });
+
+    this.nav.replaceChildren(...buttons);
+    this.tabs = buttons;
+    this.classList.add('is-enhanced');
+
+    const keep = buttons.findIndex((b) => selected && b.dataset.locationId === selected);
+    const index = keep >= 0 ? keep : 0;
+    this.select(index);
+    if (hadFocus) buttons[index].focus();
+  }
+
+  #onClick = (event) => {
+    const tab = event.target.closest('[role="tab"]');
+    if (!tab || !this.contains(tab)) return;
+    this.select(this.tabs.indexOf(tab));
+  };
+
+  #onKeydown = (event) => {
+    const tab = event.target.closest('[role="tab"]');
+    if (!tab || !this.contains(tab)) return;
+
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+    let next = null;
+    if (step) next = (this.tabs.indexOf(tab) + step + this.tabs.length) % this.tabs.length;
+    if (event.key === 'Home') next = 0;
+    if (event.key === 'End') next = this.tabs.length - 1;
+    if (next === null) return;
+
+    event.preventDefault();
+    this.select(next);
+    this.tabs[next].focus();
+  };
+
+  /**
+   * Moves the selection. Panel visibility, the accessibility tree and the
+   * roving tabindex all change in the same pass -- splitting them is how a
+   * tablist ends up announcing one venue while showing another.
+   */
+  select(index) {
+    this.activeIndex = index;
+    this.tabs.forEach((tab, i) => {
+      const isActive = i === index;
+      tab.classList.toggle('is-active', isActive);
+      tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      tab.tabIndex = isActive ? 0 : -1;
+    });
+    this.panels.forEach((panel, i) => {
+      panel.classList.toggle('is-active', i === index);
+    });
+  }
+}
+
+if (globalThis.customElements && !customElements.get('locations-flagships-tabs')) {
+  customElements.define('locations-flagships-tabs', LocationsFlagshipsTabs);
+}

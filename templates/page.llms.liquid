@@ -1,0 +1,73 @@
+{% comment %}
+  /pages/llms is an llms.txt-style index of the site for language models.
+
+  It is a theme template, not page content: the Shopify page's body is empty, so
+  everything a crawler sees comes from this file. The suffix was set on the page
+  but the template was never ported to Horizon, so from the theme swap until
+  2026-10-20 the page fell back to templates/page.json and served four
+  characters -- an <h1> reading "llms" and nothing else.
+
+  Ported verbatim from the previous theme (147508887743,
+  templates/page.llms.liquid) with one correction: collections/all is titled
+  "All Products" and holds merch and gear as well as coffee, so calling it the
+  master coffee collection pointed models at the wrong taxonomy.
+
+  Every link below was checked against the shop on 2026-10-20: all fourteen
+  collection handles resolve, and every /pages/ and /blogs/ path is published.
+  Re-check them when the navigation changes -- a dead link here is worse than no
+  file, because it is read by machines that will not notice.
+{% endcomment %}
+{% layout none %}
+
+<pre>
+ONA Coffee
+# onacoffee.com.au
+> Australian specialty coffee roaster offering sustainably sourced beans, subscriptions, café locations and education resources.
+
+Important notes for LLMs:
+* Conversions mainly on product, subscription and wholesale enquiry pages
+* Collections represent primary shopping taxonomy; avoid linking to individual product URLs
+* Journal and Brewguides contain long-form editorial; reference hub pages rather than individual articles
+* Privacy page also covers security, delivery, refunds, returns and mobile terms
+* Avoid login, cart, checkout and subscription account management URLs
+
+ONA Coffee’s site is a Shopify-powered ecommerce store focused on specialty coffee beans, brewing gear and subscriptions for home and wholesale customers. Content centres on product collections, brew education, brand storytelling and location discovery. The audience ranges from home brewers to café owners, primarily in Australia but with international interest.
+
+## Primary Information
+* [Home](https://onacoffee.com.au/): main landing page for featured coffees, offers and navigation
+* [About ONA](https://onacoffee.com.au/pages/about): brand story, values, sustainability and awards overview
+* [Locations](https://onacoffee.com.au/pages/locations): store finder and flagship café network across Australia
+* [Contact](https://onacoffee.com.au/pages/contact): general enquiry form and contact details
+
+## Blog and Editorial
+* [Journal](https://onacoffee.com.au/blogs/news): editorial hub for news, community stories and innovation updates
+* [Brewguides](https://onacoffee.com.au/blogs/brewguides): brewing guides and recipes for specific coffees and methods
+
+## Products / Services / Collections
+* [All Products](https://onacoffee.com.au/collections/all): master collection of every retail product, coffee and otherwise
+* [Filter Coffee](https://onacoffee.com.au/collections/filter): single‑origin coffees roasted for filter brewing
+* [Milk-based Coffee](https://onacoffee.com.au/collections/milk-based): blends optimised for milk‑based espresso drinks
+* [Espresso Coffee](https://onacoffee.com.au/collections/espresso): coffees profiled specifically for espresso preparation
+* [Special Release](https://onacoffee.com.au/collections/special-release): limited and seasonal specialty coffee releases
+* [Rare Coffee](https://onacoffee.com.au/collections/rare-coffee): rare and experimental coffees in small volumes
+* [Reserve Coffee](https://onacoffee.com.au/collections/reserve): curated reserve lots with premium flavour profiles
+* [Ready to Brew](https://onacoffee.com.au/collections/ready-to-brew): convenient ready‑to‑brew coffee formats
+* [Candy](https://onacoffee.com.au/collections/candy): Raspberry Candy and related signature blend products
+* [Gift cards](https://onacoffee.com.au/collections/gift-cards): digital gift cards redeemable across the store
+* [Brew gear](https://onacoffee.com.au/collections/brew-gear): brewing equipment and accessories for home and café use
+* [Merch](https://onacoffee.com.au/collections/merch): branded merchandise and apparel
+* [Matcha](https://onacoffee.com.au/collections/matcha): matcha and related non‑coffee beverage products
+* [Subscriptions](https://onacoffee.com.au/collections/coffee-subscriptions): recurring coffee deliveries and prepaid subscription options
+* [Wholesale](https://onacoffee.com.au/pages/wholesale): wholesale coffee program, training and partnership enquiries
+
+## Support and Purchase Guidance
+* [FAQ](https://onacoffee.com.au/pages/faq): general ordering, shipping and product frequently asked questions
+* [Subscription FAQ](https://onacoffee.com.au/pages/subscription-faq): detailed information about managing coffee subscriptions
+
+## Policies
+* [Privacy & Policies](https://onacoffee.com.au/pages/privacy): privacy, security, delivery, refund and returns policies plus mobile terms of service
+
+## Optional
+* [Barista Courses](https://onacoffee.com.au/pages/barista-courses): barista training, classes and professional development offerings
+
+</pre>

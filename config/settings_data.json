@@ -13,6 +13,7 @@
     "logo_inverse": "shopify://shop_images/ona_logo_white.svg",
     "logo_height": 70,
     "logo_height_mobile": 36,
+    "favicon": "shopify://shop_images/ONA-logo-favicon.png",
     "type_body_font": "inter_n4",
     "type_subheading_font": "inter_n5",
     "type_heading_font": "inter_n7",
@@ -49,13 +50,13 @@
     "card_hover_effect": "none",
     "badge_position": "top-left",
     "badge_corner_radius": 0,
-    "pills_border_radius": 0,
     "badge_sold_out_background_color": "{{ settings.color_palette.color2 }}",
     "badge_text_transform": "uppercase",
     "primary_button_border_width": 0,
     "button_border_radius_primary": 0,
     "secondary_button_border_width": 1,
     "button_border_radius_secondary": 0,
+    "pills_border_radius": 0,
     "cart_type": "drawer",
     "cart_price_font": "subheading",
     "show_cart_note": false,
@@ -82,6 +83,84 @@
     "variant_button_radius": 0,
     "variant_button_width": "equal-width-buttons",
     "content_for_index": [],
+    "blocks": {
+      "14060646107696862457": {
+        "type": "shopify://apps/judge-me-reviews/blocks/judgeme_core/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
+        "disabled": false,
+        "settings": {}
+      },
+      "13047258039897440615": {
+        "type": "shopify://apps/judge-me-reviews/blocks/cart_drawer_widget/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
+        "disabled": false,
+        "settings": {
+          "widget_type": "review-widget"
+        }
+      },
+      "14295488718882623590": {
+        "type": "shopify://apps/dotdigital/blocks/tracking/c700cfad-505e-4909-b824-9f4209a2754e",
+        "disabled": false,
+        "settings": {}
+      },
+      "14553338588657095991": {
+        "type": "shopify://apps/dotdigital/blocks/chat/c700cfad-505e-4909-b824-9f4209a2754e",
+        "disabled": false,
+        "settings": {
+          "region": "none"
+        }
+      },
+      "9573800597631519415": {
+        "type": "shopify://apps/dotdigital/blocks/back-in-stock/c700cfad-505e-4909-b824-9f4209a2754e",
+        "disabled": false,
+        "settings": {}
+      },
+      "12645857707859633983": {
+        "type": "shopify://apps/promap-rp/blocks/findonline-embed-block/acff8fd9-34cc-4a4d-98ed-d7fdb5d3605f",
+        "disabled": false,
+        "settings": {}
+      },
+      "17288229127477420511": {
+        "type": "shopify://apps/promap-rp/blocks/stockistform-embed-block/acff8fd9-34cc-4a4d-98ed-d7fdb5d3605f",
+        "disabled": false,
+        "settings": {}
+      },
+      "18020446634262408591": {
+        "type": "shopify://apps/promap-rp/blocks/storelocator-embed-block/acff8fd9-34cc-4a4d-98ed-d7fdb5d3605f",
+        "disabled": false,
+        "settings": {}
+      },
+      "16934432316630173842": {
+        "type": "shopify://apps/promap-rp/blocks/wheretobuy-embed-block/acff8fd9-34cc-4a4d-98ed-d7fdb5d3605f",
+        "disabled": false,
+        "settings": {}
+      },
+      "10436698916776057164": {
+        "type": "shopify://apps/appstle-subscription/blocks/appstle-subscription-helper/fe257d39-6f88-4f35-ab08-bd437e3aa94e",
+        "disabled": true,
+        "settings": {
+          "load_selling_plans_separately": true
+        }
+      },
+      "13768625480086291342": {
+        "type": "shopify://apps/forms/blocks/forms/8744a304-fcb1-4347-b211-bb6b4759a76a",
+        "disabled": false,
+        "settings": {}
+      },
+      "2567389343055140935": {
+        "type": "shopify://apps/microsoft-clarity/blocks/clarity_js/31c3d126-8116-4b4a-8ba1-baeda7c4aeea",
+        "disabled": false,
+        "settings": {}
+      },
+      "2200952712151285029": {
+        "type": "shopify://apps/microsoft-clarity/blocks/brandAgents_js/31c3d126-8116-4b4a-8ba1-baeda7c4aeea",
+        "disabled": false,
+        "settings": {}
+      },
+      "6279071938380501511": {
+        "type": "shopify://apps/powerful-form-builder/blocks/app-embed/e4bcb1eb-35b2-42e6-bc37-bfe0e1542c9d",
+        "disabled": false,
+        "settings": {}
+      }
+    },
     "color_palette": {
       "background": "#f4f3e9",
       "foreground": "#470a12",
@@ -167,5 +246,10 @@
         "color3": "#762d0d"
       }
     }
+  },
+  "platform_customizations": {
+    "custom_css": [
+      ".spacing-style.sticky-content.media-gallery--two-column.media-gallery--grid,slideshow-container {align-content: center;}"
+    ]
   }
 }
