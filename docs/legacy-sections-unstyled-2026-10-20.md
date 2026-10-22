@@ -72,24 +72,24 @@ this document said they had "no matching rules in `assets/`" — that was wrong
 (Codex, PR #203), and it pointed the fix in a direction that would have
 duplicated or fought the shared sheet.
 
-What is true is that the coverage is **partial**. **85** distinct selectors
-used by these sections have no rule in that stylesheet — recounted against the
-current sheet after #204 and #209 shipped, which took it down from the 95 an
-earlier draft reported by covering `.block`, `.slider-block` and `.bg-img`
-(Codex, #203). Rerun the count rather than trusting this number after the next
-fix lands.
+What is true is that the coverage is **partial**. **81** distinct selectors
+used by these sections have no rule in that stylesheet, measured 2026-10-22.
+The measure is: a class used by an `ona-*` section with no rule in
+`assets/legacy-page-layout.css` and none in that section's own scoped block.
 
-**It has already drifted, exactly as warned: the same count is 81 as of
-2026-10-22**, and was 84 at `09e0293` (#249), the most recent commit to that
-stylesheet. The methodology stands — a class used by an `ona-*` section with no
-rule in `legacy-page-layout.css` and none in that section's own scoped block —
-so the figure is not wrong, it is stale by four as #228, #232 and #249 landed.
-The per-selector counts below are guarded by
-`tests/legacy-sections-scoped-css.test.mjs`; this total deliberately is not,
-because a test that pins it would have to be edited by every PR that covers a
-selector, which is the work this number is meant to measure.
+This number moves every time someone covers a selector, and it has. The
+2026-10-20 draft reported 95; covering `.block`, `.slider-block` and `.bg-img`
+in #204 and #209 took it to 85, which is the figure this document carried
+until today; #228, #232 and #249 took it to 84 and then 81. None of those
+revisions found the method wrong — the count is just a moving target, so
+**rerun it rather than quoting it** once the next fix lands.
 
-Of the 85, the ones that still cost layout are `.section-full-large`
+That is also why this one total is deliberately left unguarded while the
+per-selector counts below are not: a test pinning it would have to be edited
+by every PR that covers a selector, which is the work the number exists to
+measure.
+
+Of the 81, the ones that still cost layout are `.section-full-large`
 (17 uses), `.match-height` / `.equal-height` (12 / 11) and the `.start` /
 `.medium` / `.end` trio (14 each). `.more-btn` (14) was on this list and is
 now covered by `assets/legacy-page-layout.css` (Codex, #203) — another reason
@@ -157,7 +157,7 @@ Two things fall out:
    and are kept as the record of what was wrong, not as work to do. **Remeasure
    before picking up item 2.** (Codex, #203.)
 2. **Extend `assets/legacy-page-layout.css` to the remaining uncovered
-   selectors** (85 at the last count, and recount before starting),
+   selectors** (81 as of 2026-10-22, and recount before starting),
    rebuilt on the theme's own tokens rather than copied from the legacy sheet —
    the legacy CSS depends on a cascade this theme does not have. Extend the
    shared sheet rather than adding scoped `{% stylesheet %}` blocks: the sheet is
