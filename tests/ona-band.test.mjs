@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -31,18 +31,18 @@ test('every bandable section on the page both declares the setting and renders t
   for (const { type } of live) {
     const source = sectionSource.get(type);
     const settings = schemaOf(source).settings ?? [];
-    const declared = settings.filter((setting) => setting.id === 'band_background');
+    const declared = settings.filter((setting) => setting.id === 'background_color');
 
-    assert.equal(declared.length, 1, `${type}: band_background declared ${declared.length} times`);
-    assert.equal(declared[0].type, 'color', `${type}: band_background must be a color setting`);
+    assert.equal(declared.length, 1, `${type}: background_color declared ${declared.length} times`);
+    assert.equal(declared[0].type, 'color', `${type}: background_color must be a color setting`);
     assert.ok(
       !('default' in declared[0]),
-      `${type}: band_background carries a default -- an unset band has to fall through to the page background`
+      `${type}: background_color carries a default -- an unset band has to fall through to the page background`
     );
     assert.match(
       source,
       /\{%-?\s*render\s+'ona-band',\s*section:\s*section\s*-?%\}/,
-      `${type}: declares band_background but never renders 'ona-band', so the setting does nothing`
+      `${type}: declares background_color but never renders 'ona-band', so the setting does nothing`
     );
   }
 });
@@ -58,8 +58,8 @@ test('the setting sits in the schema itself, never in a block', () => {
   for (const { type } of live) {
     const schema = schemaOf(sectionSource.get(type));
     for (const block of schema.blocks ?? []) {
-      const stray = (block.settings ?? []).filter((setting) => setting.id === 'band_background');
-      assert.equal(stray.length, 0, `${type}: band_background landed on block "${block.type}"`);
+      const stray = (block.settings ?? []).filter((setting) => setting.id === 'background_color');
+      assert.equal(stray.length, 0, `${type}: background_color landed on block "${block.type}"`);
     }
   }
 });
@@ -122,7 +122,7 @@ test('every banded section has vertical padding to fill', () => {
   const hasPadding = new Set([...padded, ...paddedSingly]);
 
   for (const { key, type, settings } of live) {
-    if (!settings.band_background) continue;
+    if (!settings.background_color) continue;
     const rootClasses = sectionSource
       .get(type)
       .match(/<(?:section|div)\b[^>]*class="([^"]+)"/)[1]
@@ -142,7 +142,7 @@ test('every banded section has vertical padding to fill', () => {
  * avoid -- and it is invisible in a diff, because each section reads fine on its own.
  */
 test('no two neighbouring sections share a band colour', () => {
-  const sequence = template.order.map((key) => template.sections[key].settings?.band_background ?? 'page');
+  const sequence = template.order.map((key) => template.sections[key].settings?.background_color ?? 'page');
   for (let i = 1; i < sequence.length; i += 1) {
     if (sequence[i] === 'page') continue;
     assert.notEqual(
@@ -156,10 +156,67 @@ test('no two neighbouring sections share a band colour', () => {
 test('the bands use the three agreed tones and no others', () => {
   const PALETTE = new Set(['#ebe4d4', '#470a12']);
   const used = new Set(
-    template.order.map((key) => template.sections[key].settings?.band_background).filter(Boolean)
+    template.order.map((key) => template.sections[key].settings?.background_color).filter(Boolean)
   );
   for (const colour of used) {
     assert.ok(PALETTE.has(colour), `${colour} is not one of the agreed band tones`);
   }
   assert.equal(used.size, 2, 'the page should carry exactly the sand and maroon bands');
+});
+
+/*
+ * The band is a background colour, which is a thing Horizon already has a setting for.
+ *
+ * The first version invented one -- id `band_background`, label "Band background" -- so a
+ * merchant met a control named and worded unlike the identical control on every Horizon
+ * section, in English whatever language they work in. The shape is read off a Horizon-native
+ * section rather than written out here, so the two cannot drift apart.
+ */
+const horizonBackground = (() => {
+  const source = readFileSync(join(root, 'sections/media-with-content.liquid'), 'utf8');
+  const schema = JSON.parse(
+    source.match(/\{%-?\s*schema\s*-?%\}([\s\S]*?)\{%-?\s*endschema\s*-?%\}/)[1]
+  );
+  const found = schema.settings.find((setting) => setting.id === 'background_color');
+  assert.ok(found, 'media-with-content no longer declares background_color to compare against');
+  return found;
+})();
+
+const bandedTypes = readdirSync(join(root, 'sections'))
+  .filter((file) => file.endsWith('.liquid'))
+  .filter((file) => /render\s+'ona-band'/.test(read(`sections/${file}`)))
+  .map((file) => file.slice(0, -'.liquid'.length));
+
+test('a band is declared the way Horizon declares a background colour', () => {
+  assert.ok(bandedTypes.length > 0, 'no section renders ona-band');
+
+  for (const type of bandedTypes) {
+    const setting = (schemaOf(read(`sections/${type}.liquid`)).settings ?? []).find(
+      (entry) => entry.id === 'background_color'
+    );
+    assert.ok(setting, `${type}: renders ona-band but does not declare background_color`);
+    for (const key of ['type', 'label', 'placeholder']) {
+      assert.equal(
+        setting[key],
+        horizonBackground[key],
+        `${type}: background_color.${key} is ${JSON.stringify(setting[key])}, but Horizon's own ` +
+          `sections use ${JSON.stringify(horizonBackground[key])}`
+      );
+    }
+  }
+});
+
+test('a band that re-points the foreground re-points --color with it', () => {
+  const snippet = readFileSync(join(root, 'snippets/ona-band.liquid'), 'utf8');
+  /* `assets/base.css` paints every heading with `color: var(--color)`. Nothing defines --color
+     globally today, so an unset one falls through to the inherited colour and the headings
+     happen to be right; the day anything defines it at a wider scope they take the page
+     foreground and vanish on the maroon bands. contrast-override sets it; so must this. */
+  for (const token of ['--color:', '--color-rgb:', '--color-foreground:', '--color-foreground-rgb:']) {
+    assert.ok(
+      snippet.includes(token),
+      `ona-band does not set ${token} -- headings resolve color: var(--color), so a band that ` +
+        'sets only --color-foreground is relying on --color being undefined theme-wide'
+    );
+  }
 });
