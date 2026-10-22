@@ -1,6 +1,6 @@
 {
   "source": "templates/page.wholesale.json",
-  "generated_from": "f80865e12ca17401d2f83bc252ad3cab539bca49",
+  "generated_from": "ccb7eed748747baa2c7cb52bbbce2997091c47fa",
   "required": [
     {
       "where": "wholesale_partnership(ona-wholesale-partnership)",
@@ -781,6 +781,11 @@
       "where": "gust_r(ona-gust-r)",
       "key": "liquid",
       "value": "As a cafe partner, you'll have exclusive access to an exceptional range of quality coffee selections."
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid@src",
+      "value": "https://www.youtube.com/embed/42flR1Iwun4"
     },
     {
       "where": "wholesale_brands(ona-wholesale-brands)",

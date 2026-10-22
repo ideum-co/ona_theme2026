@@ -279,9 +279,24 @@ export function literalsIn(type) {
     return [];
   }
 
-  const hrefs = [...source.matchAll(/(?:href|action)="(\/[^"{]*|https?:\/\/[^"{]*)"/g)]
+  /* Script and style elements are not content, and their sources must not become things the
+     rebuild has to preserve. The text pass below strips them; the attribute passes read this
+     copy so they strip them too. */
+  const markup = source
+    .replace(/<(style|script)[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<script\b[^>]*\/?>/gi, ' ');
+
+  const hrefs = [...markup.matchAll(/(?:href|action)="(\/[^"{]*|https?:\/\/[^"{]*)"/g)]
     .map((match) => match[1])
     .filter((href) => !href.startsWith('javascript:'));
+
+  /* A static `src` on a visible media element is a destination like any other, and reading
+     only `href` and `action` missed a whole video: `sections/ona-gust-r.liquid:63` hardcodes
+     `<iframe src="https://www.youtube.com/embed/42flR1Iwun4">`, and blanking it left both
+     preservation tests green -- a rebuild could keep the promo's copy and drop the film. */
+  const sources = [
+    ...markup.matchAll(/<(?:iframe|img|video|source|audio|embed)\b[^>]*?\bsrc="(\/[^"{]*|https?:\/\/[^"{]*)"/gi),
+  ].map((match) => match[1]);
 
   const stripped = source
     .replace(/\{%-?\s*schema\s*-?%\}[\s\S]*?\{%-?\s*endschema\s*-?%\}/g, ' ')
@@ -304,6 +319,7 @@ export function literalsIn(type) {
   return [
     ...[...new Set(text)].map((value) => ({ key: 'liquid', value })),
     ...[...new Set(hrefs)].map((value) => ({ key: 'liquid@href', value })),
+    ...[...new Set(sources)].map((value) => ({ key: 'liquid@src', value })),
   ];
 }
 

@@ -9,7 +9,7 @@ import { extract } from './extract-page-content.mjs';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 /* sha256 of the frozen fixture's content, pinned here so regenerating the fixture cannot
    silently move the baseline. See the note in the baseline test below. */
-const FROZEN_DIGEST = 'd8ae6d1093d5079cef47f680150a97a91a026ffb3884d8cfd673db1ca20972ae';
+const FROZEN_DIGEST = 'd5e27c84d85264628b7aa581b8b93f5e9d10e571a9aff7ffbac93e912a985150';
 
 const fixture = JSON.parse(readFileSync(join(root, 'tests/fixtures/wholesale-content.json'), 'utf8'));
 
@@ -109,12 +109,15 @@ test('every piece of wholesale copy, media and destination survives the rebuild'
  * drops below it and fails here instead.
  */
 test('the wholesale baseline has not been quietly weakened', () => {
-  /* 177 at the first freeze, 175 now. The two that left were never on the page: a `video_url`
-     on an `ona-supported` block whose `media_type` is `image`, and the uploaded `.mov` on a
-     partnership section set to `embed`. Both are absent from the live HTML, which is the test
-     applied before lowering this -- a floor may only come down for a value the page never
-     rendered, never for one that stopped rendering. */
-  const FROZEN_COUNT = 175;
+  /* 177 at the first freeze, 175 after two removals, 176 now. The two that left were never on
+     the page: a `video_url` on an `ona-supported` block whose `media_type` is `image`, and the
+     uploaded `.mov` on a partnership section set to `embed`. Both are absent from the live
+     HTML, which is the test applied before lowering this -- a floor may only come down for a
+     value the page never rendered, never for one that stopped rendering. The one that arrived
+     was always on the page and the extractor could not see it: `ona-gust-r`'s promo is a
+     hardcoded `<iframe src="https://www.youtube.com/embed/42flR1Iwun4">`, and the attribute
+     pass read only `href` and `action`. */
+  const FROZEN_COUNT = 176;
   assert.ok(
     fixture.required.length >= FROZEN_COUNT,
     `the fixture now holds ${fixture.required.length} required values, down from ${FROZEN_COUNT}; ` +
