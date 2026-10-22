@@ -718,9 +718,11 @@ test('the contact-form gap rows record the validation mismatch', () => {
   }
 
   const horizon = readFileSync(join(root, 'blocks', 'contact-form.liquid'), 'utf8');
-  assert.equal(
-    (horizon.match(/[^-]\brequired=/g) ?? []).length,
-    0,
+  /* A boolean attribute is normally written bare, so matching `required=` would miss the very
+     edit this is here to catch. aria-required="true" is present and is not validation. */
+  assert.deepEqual(
+    horizon.match(/(?<!aria-)\brequired\b/g) ?? [],
+    [],
     'contact-form now has a required attribute; the gap rows say it has none on any field'
   );
   assert.match(horizon, /class="visually-hidden"/, 'contact-form no longer hides its labels; the gap rows say it does');
