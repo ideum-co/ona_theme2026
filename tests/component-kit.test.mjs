@@ -1016,6 +1016,23 @@ test('an order-of-work step names the blockers step 2 does not clear', () => {
     return lines.slice(start, rest === -1 ? undefined : start + 1 + rest).join('\n');
   };
 
+  /* Step 2 restates this set in the prose an implementer actually reads, and the first time I
+     corrected it I corrected step 5 and left step 2 saying all four carriers "carry their own
+     gap rows for other reasons as well" (Codex, #247). One fact, two places, so check they
+     agree rather than fixing the one that was quoted at me. */
+  const stepTwo = stepText(/^2\. \*\*Solve the decorative layer\*\*/);
+  const claim = stepTwo
+    .split(/(?<=\.)\s+/)
+    .find((sentence) => sentence.includes(INDEPENDENT));
+  assert.ok(claim, `step 2 no longer says which carriers are ${INDEPENDENT}`);
+
+  const claimed = [...claim.matchAll(/`(ona-[a-z0-9-]+)`/g)].map((match) => match[1]).sort();
+  assert.deepEqual(
+    claimed,
+    [...doubly].sort(),
+    'step 2 names a different set of independently-blocked carriers than the gap rows mark'
+  );
+
   const missing = [];
   for (const [file, marker] of ORDER_STEPS) {
     const parsed = JSON.parse(stripBanner(readFileSync(join(root, file), 'utf8')));

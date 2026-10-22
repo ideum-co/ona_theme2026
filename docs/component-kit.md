@@ -417,9 +417,13 @@ next one to have happened.
 2. **Solve the decorative layer**, because steps 3 and 4 are blocked on it.
    All ten sourcing clones and `ona-training-image-text` render an
    `.animated-svg` blob that `media-with-content` drops — and so do
-   `ona-content`, `ona-careers`, `ona-awards` and `ona-training-form`, which
-   carry their own gap rows for other reasons as well, making 15 sections in
-   all. So every conversion
+   `ona-content`, `ona-careers`, `ona-awards` and `ona-training-form`, each of
+   which also has a gap row of its own, making 15 sections in all. Two of
+   those four rows name a blocker **independent of the decorative layer**, so
+   this step does not release them: `ona-awards` and `ona-training-form`.
+   `ona-content` and `ona-careers` have gap rows that identify the shape and
+   name the blob as the blocker, so this step *does* release them — do not go
+   looking for a further decision on either. So every conversion
    those two steps were going to make is a visible regression until the blob
    has a target — either a component that carries a decorative layer, or the
    layer moving to CSS on the new section. This is a decision, not a
