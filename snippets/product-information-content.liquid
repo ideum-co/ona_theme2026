@@ -189,6 +189,10 @@
   </div>
 
   {%- comment -%}
+  Resent 2026-10-22: this file's content reached `main` in b8045f8 (#272) but never reached the
+  theme -- that merge's push event was lost in GitHub's 2026-10-21 webhook incident. The sync
+  carries only the files changed by the commits it actually processes, so the three later merges
+  that day stepped straight over it and a no-op commit is the only way to resend it.
     BreadcrumbList mirrors the &lt;ol&gt; above item for item -- same root/collection/product
     sequence, same collection-presence condition (settings.breadcrumb_show_collection and
     breadcrumb_collection != blank), so the schema can never list a trail the visitor doesn't

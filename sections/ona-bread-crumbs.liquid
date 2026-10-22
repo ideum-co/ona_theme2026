@@ -12,6 +12,11 @@
 </section>
 
 {%- comment -%}
+  Resent 2026-10-22: this file's content reached `main` in b8045f8 (#272) but never reached the
+  theme -- that merge's push event was lost in GitHub's 2026-10-21 webhook incident. The sync
+  carries only the files changed by the commits it actually processes, so the three later merges
+  that day stepped straight over it and a no-op commit is the only way to resend it.
+
   BreadcrumbList for the trail above -- unlike the FAQ page's nested theme blocks, `section.blocks`
   here IS a plain iterable array (this is a section-schema "blocks" array, the older block
   architecture, not a theme block with content_for 'blocks'), so this can read every crumb directly
