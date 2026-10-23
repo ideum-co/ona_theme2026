@@ -214,6 +214,7 @@
                   id="{{ trigger_id }}"
                   class="variant-select__trigger"
                   popovertarget="{{ panel_id }}"
+                  aria-label="{{ panel_title }}: {{ product_option.selected_value | escape }}"
                 >
                   <span class="variant-select__trigger-value">{{ product_option.selected_value }}</span>
                   <span
