@@ -26,6 +26,7 @@
   -%}
 {%- endcapture -%}
 {%- assign ona_tags_trimmed = ona_tags_markup | strip -%}
+<!-- ONADEBUG pr_blank="{{ product_resource == blank }}" title="{{ product_resource.title }}" ts="{{ product_resource.metafields.custom_product.tag_status }}" tsval="{{ product_resource.metafields.custom_product.tag_status.value }}" markupblank="{{ ona_tags_trimmed == blank }}" markuplen="{{ ona_tags_markup | strip | size }}" -->
 {%- if ona_tags_trimmed != blank -%}
   {{ ona_tags_markup }}
 {%- elsif request.design_mode -%}
