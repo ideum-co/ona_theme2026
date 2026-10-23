@@ -28,11 +28,30 @@
     if (played && typeof played.catch === 'function') played.catch(() => {});
   };
 
+  /*
+   * Sizes an embed. An <iframe> has no intrinsic height, so its HTML default of
+   * 150px wins unless something sets one -- which left the video a thin letterboxed
+   * strip. Make the `.scale-video` container a 16:9 box and have the iframe fill it,
+   * so the video shows at full height with no side bars. Scoped to the container so
+   * it does not disturb the sections' own layout.
+   */
+  const fill16by9 = (iframe) => {
+    const container = iframe.closest('.scale-video');
+    if (container) {
+      container.style.position = 'relative';
+      container.style.aspectRatio = '16 / 9';
+      container.style.height = 'auto';
+      container.style.minHeight = '0';
+    }
+    iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;display:block;';
+  };
+
   const startVimeo = (iframe) => {
     const src = iframe.getAttribute('src') || '';
     if (!src.includes('autoplay=1')) {
       iframe.src = src + (src.includes('?') ? '&' : '?') + 'autoplay=1';
     }
+    fill16by9(iframe);
   };
 
   const startYouTube = (placeholder, videoId) => {
@@ -43,8 +62,8 @@
     iframe.setAttribute('allowfullscreen', '');
     iframe.setAttribute('frameborder', '0');
     iframe.setAttribute('title', 'Video');
-    iframe.style.cssText = 'width:100%;height:100%;border:0;display:block;';
     placeholder.replaceWith(iframe);
+    fill16by9(iframe);
   };
 
   document.addEventListener('click', (event) => {
