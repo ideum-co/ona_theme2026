@@ -417,8 +417,8 @@
             }
           },
           "block_order": [
-            "ona_promo_tags",
             "pdp_product_summary",
+            "ona_promo_tags",
             "variant_picker_R3rGDr",
             "purchase_options_SbK4qN",
             "buy_buttons_eYQEYi",
