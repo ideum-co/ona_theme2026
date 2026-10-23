@@ -70,7 +70,16 @@
   }
 
   #MainContent .col-4-icons .icon-c { block-size: auto; }
-  #MainContent .col-4-icons .icon-c img { max-height: 48px; }
+  /*
+   * The icons are SVGs exported with a viewBox but no width/height, so they have no
+   * intrinsic size. With only a max-height the <img> collapses to 0x0 and the icons
+   * vanish. Give it an explicit height and let the width follow the viewBox ratio.
+   */
+  #MainContent .col-4-icons .icon-c img {
+    height: 48px;
+    width: auto;
+    max-width: 100%;
+  }
 {% endstylesheet %}
 
 {% schema %}
