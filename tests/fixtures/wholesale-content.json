@@ -1,0 +1,1085 @@
+{
+  "source": "templates/page.wholesale.json",
+  "generated_from": "ccb7eed748747baa2c7cb52bbbce2997091c47fa",
+  "required": [
+    {
+      "where": "wholesale_partnership(ona-wholesale-partnership)",
+      "key": "main_title",
+      "value": "Become a wholesale partner"
+    },
+    {
+      "where": "wholesale_partnership(ona-wholesale-partnership)",
+      "key": "title",
+      "value": "JOIN OUR COMMUNITY"
+    },
+    {
+      "where": "wholesale_partnership(ona-wholesale-partnership)",
+      "key": "subtitle2",
+      "value": "A wholesale partnership with us means elevating your café's specialty coffee experience."
+    },
+    {
+      "where": "wholesale_partnership(ona-wholesale-partnership)",
+      "key": "content",
+      "value": "Join us for a purposeful and meaningful coffee partnership fuelled by connection and constant evolution through world-class coffee training and support.\nAs a café partner, you'll have exclusive access to an exceptional range of quality coffee selections—one of the widest in the specialty market."
+    },
+    {
+      "where": "wholesale_partnership(ona-wholesale-partnership)",
+      "key": "image",
+      "value": "shopify://shop_images/rostery-desktop.webp"
+    },
+    {
+      "where": "wholesale_partnership(ona-wholesale-partnership)",
+      "key": "video_url",
+      "value": "https://www.youtube.com/watch?v=42flR1Iwun4"
+    },
+    {
+      "where": "wholesale_partnership(ona-wholesale-partnership)",
+      "key": "liquid",
+      "value": "Get In Touch"
+    },
+    {
+      "where": "wholesale_partnership(ona-wholesale-partnership)",
+      "key": "liquid@href",
+      "value": "https://forms.monday.com/forms/6b1a3a5478c16210a1dae4ae5b3f86dc?r=use1"
+    },
+    {
+      "where": "wholesale_sourcing_v2(ona-wholesale-sourcing-v2)",
+      "key": "image",
+      "value": "shopify://shop_images/ONA_pewpewstudio_240625__245_LR.jpg"
+    },
+    {
+      "where": "wholesale_sourcing_v2(ona-wholesale-sourcing-v2)",
+      "key": "title",
+      "value": "Our Premium Wholesale Coffee Bean Supply"
+    },
+    {
+      "where": "wholesale_sourcing_v2(ona-wholesale-sourcing-v2)",
+      "key": "content",
+      "value": "With over 150 retailers and cafés across Australia, ONA Coffee is ready to help you serve something remarkable.\nAs one of Australia's leading wholesale coffee distributors, ONA Coffee proudly offers a diverse and dynamic range of wholesale coffee beans to suit every café style, customer base and brewing method. Whether you're after bold espresso blends, vibrant single origins or filter-roasted standouts, our curated selection ensures you’ll always have access to fresh, flavour-driven coffee.\nFrom sourcing to roasting and delivery, our approach is built on quality, consistency and traceability, making us the trusted coffee wholesale dealers for hundreds of cafés nationwide. You can count on us to supply excellent coffee with the flexibility, support and knowledge that sets your venue apart.\nThe best way to experience our coffee is to taste it for yourself — see how it fits your menu and meets your standards. Find a location or flagship store near you today."
+    },
+    {
+      "where": "wholesale_sourcing_v2(ona-wholesale-sourcing-v2)",
+      "key": "content@href",
+      "value": "https://onacoffee.com.au/pages/about"
+    },
+    {
+      "where": "wholesale_sourcing_v2(ona-wholesale-sourcing-v2)",
+      "key": "content@href",
+      "value": "https://onacoffee.com.au/pages/locations"
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)",
+      "key": "title",
+      "value": "You get more than just great coffee..."
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)/a72fe227-f312-4bda-932b-baa94412a94d",
+      "key": "icon",
+      "value": "shopify://shop_images/wholesale-5.svg"
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)/a72fe227-f312-4bda-932b-baa94412a94d",
+      "key": "title",
+      "value": "Complete coffee training through our educational programs"
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)/a72fe227-f312-4bda-932b-baa94412a94d",
+      "key": "url",
+      "value": "#complete-training"
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)/2e8cf8a0-6e89-4dd9-8202-d2bb2b8212fc",
+      "key": "icon",
+      "value": "shopify://shop_images/wholesale-4.svg"
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)/2e8cf8a0-6e89-4dd9-8202-d2bb2b8212fc",
+      "key": "title",
+      "value": "Broad and unique coffee offerings"
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)/2e8cf8a0-6e89-4dd9-8202-d2bb2b8212fc",
+      "key": "url",
+      "value": "#unique-coffees"
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)/c0b15f9e-d277-4bb0-a2c5-5a5a55675edc",
+      "key": "icon",
+      "value": "shopify://shop_images/wholesale-6.svg"
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)/c0b15f9e-d277-4bb0-a2c5-5a5a55675edc",
+      "key": "title",
+      "value": "Advice and support from café and coffee experts"
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)/c0b15f9e-d277-4bb0-a2c5-5a5a55675edc",
+      "key": "url",
+      "value": "#supported"
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)/fe4d2944-ae21-49bb-9559-37eaa679ee5c",
+      "key": "icon",
+      "value": "shopify://shop_images/Wholesale_Page_Icons-02.svg"
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)/fe4d2944-ae21-49bb-9559-37eaa679ee5c",
+      "key": "title",
+      "value": "Access to exclusive content, events and masterclasses"
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)/fe4d2944-ae21-49bb-9559-37eaa679ee5c",
+      "key": "url",
+      "value": "#exclusive-access"
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)/aead289f-c5b3-477a-8b49-21d66e21cf40",
+      "key": "icon",
+      "value": "shopify://shop_images/Tech_and_Marketing_Support-01.svg"
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)/aead289f-c5b3-477a-8b49-21d66e21cf40",
+      "key": "title",
+      "value": "Technical, business and marketing support"
+    },
+    {
+      "where": "icon_and_content(ona-icon-and-content)/aead289f-c5b3-477a-8b49-21d66e21cf40",
+      "key": "url",
+      "value": "#supported"
+    },
+    {
+      "where": "training(ona-training)",
+      "key": "id",
+      "value": "complete-training"
+    },
+    {
+      "where": "training(ona-training)",
+      "key": "title",
+      "value": "Complete Training"
+    },
+    {
+      "where": "training(ona-training)",
+      "key": "content",
+      "value": "ONA Coffee goes above and beyond as a coffee bean wholesale supplier. When you choose our wholesale coffee beans, you gain access to world-class training programs that empower your team and elevate your café's coffee experience. Discover more about our programs — exclusive to our wholesale clients."
+    },
+    {
+      "where": "training(ona-training)",
+      "key": "content@href",
+      "value": "https://www.youtube.com/watch?v=dktspYuqEIg"
+    },
+    {
+      "where": "training(ona-training)",
+      "key": "image",
+      "value": "shopify://shop_images/hugh-k-2.png"
+    },
+    {
+      "where": "training(ona-training)",
+      "key": "video_url",
+      "value": "https://youtu.be/dktspYuqEIg"
+    },
+    {
+      "where": "training(ona-training)/8567fbfe-f6c8-48ca-abc9-931b07259ff2",
+      "key": "title",
+      "value": "barista training"
+    },
+    {
+      "where": "training(ona-training)/8567fbfe-f6c8-48ca-abc9-931b07259ff2",
+      "key": "content",
+      "value": "Our barista training covers everything from long-standing, tried-and-tested fundamental coffee knowledge to the most current techniques to set your café apart."
+    },
+    {
+      "where": "training(ona-training)/0aa8bb1c-edcf-4f19-a895-faf0284848c2",
+      "key": "title",
+      "value": "excellence program"
+    },
+    {
+      "where": "training(ona-training)/0aa8bb1c-edcf-4f19-a895-faf0284848c2",
+      "key": "content",
+      "value": "Our one-of-a-kind 'Excellence Program' covers best-practice foundational principles, all the way to competition-level, boundary-pushing innovations to elevate your knowledge and distinguish you as a leader in the coffee industry.\nThis three-stage coffee training system meets your team exactly where they are and takes them further. Here's how our step-by-step training system gives café teams a clear path forward and ensures your coffee service grows stronger at every level:\nStage 1: Foundation covers essential skills for baristas just starting out.\nStage 2: Progressive dives deeper into specialty techniques like frozen coffee, filter brewing and advanced workflow.\nStage 3: Professional unlocks boundary-pushing, competition-level methods that raise your café’s profile and elevate what’s possible behind the bar."
+    },
+    {
+      "where": "training(ona-training)/2e827d35-3bcf-4dc8-8599-9f29284efa1d",
+      "key": "title",
+      "value": "research and development"
+    },
+    {
+      "where": "training(ona-training)/2e827d35-3bcf-4dc8-8599-9f29284efa1d",
+      "key": "content",
+      "value": "Explore innovation with ONA Coffee's Research and Development Program. Led by our expert sales team, we examine new and established coffee topics. We rigorously test current practices, explore new areas and share valuable insights. Here's how we turn research into real-world impact:\nInnovation that fuels growth — Our R&D Program drives innovation across everything we teach and do. Each month, we rigorously test current best practices, explore emerging ideas and feed those findings directly into our training and Masterclasses. This ensures every wholesale coffee partner has access to industry-leading support and the most up-to-date thinking in coffee today.\nMasterclasses — In 2024, we relaunched our Masterclasses, which are in-person events planned exclusively for our café partners. These immersive sessions go beyond the everyday to explore advanced techniques, flavour development and the broader culture of specialty coffee. It’s also a chance to connect, cup and learn together with others in the ONA community at our flagship venues."
+    },
+    {
+      "where": "training(ona-training)",
+      "key": "liquid",
+      "value": "Get In Touch"
+    },
+    {
+      "where": "training(ona-training)",
+      "key": "liquid@href",
+      "value": "https://forms.monday.com/forms/6b1a3a5478c16210a1dae4ae5b3f86dc?r=use1"
+    },
+    {
+      "where": "wholesale_sourcing_v3(ona-wholesale-sourcing-v3)",
+      "key": "image",
+      "value": "shopify://shop_images/HA-Ona-110.jpg"
+    },
+    {
+      "where": "wholesale_sourcing_v3(ona-wholesale-sourcing-v3)",
+      "key": "subtitle",
+      "value": "Exclusive to Our Wholesale Partners"
+    },
+    {
+      "where": "wholesale_sourcing_v3(ona-wholesale-sourcing-v3)",
+      "key": "content",
+      "value": "Access to the Excellence Program, Masterclasses and R&D insights is available only to our wholesale partners, making our offering one of the most comprehensive and future-forward in the specialty coffee industry.\nIf you're a café owner, barista or someone who simply lives and breathes coffee, you’ll find purpose, progression and community in a partnership with ONA."
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)",
+      "key": "id",
+      "value": "unique-coffees"
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)",
+      "key": "title",
+      "value": "Unique Coffees"
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)",
+      "key": "subtitle",
+      "value": "We roast coffee that best suits the intended extraction method. Our wholesale coffees are defined by 3 roast profiles."
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)",
+      "key": "content",
+      "value": "Our coffees are defined by 3 roast profiles."
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)/52069e9e-d9bc-47f1-8a05-204d5eb7b4dc",
+      "key": "title",
+      "value": "filter"
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)/52069e9e-d9bc-47f1-8a05-204d5eb7b4dc",
+      "key": "content",
+      "value": "These coffees are specifically selected and roasted with the goal of expressing their unique qualities. Slightly lower development allows for bright and balanced filter coffee."
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)/52069e9e-d9bc-47f1-8a05-204d5eb7b4dc",
+      "key": "image",
+      "value": "shopify://shop_images/coffee_hero_sof_61242cec-c3d1-4259-9623-8e81dc0f7853.png"
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)/52069e9e-d9bc-47f1-8a05-204d5eb7b4dc",
+      "key": "image2",
+      "value": "shopify://shop_images/coffee_hero_sof_a1241092-f749-4be0-8306-c4b1abad13a0.png"
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)/52069e9e-d9bc-47f1-8a05-204d5eb7b4dc",
+      "key": "image3",
+      "value": "shopify://shop_images/coffee_hero_sof_1162c804-bbbe-48d2-92f8-ba7db8a2fc1d.png"
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)/5594624f-8df1-478d-9e6e-aa737bd4d81e",
+      "key": "title",
+      "value": "milk-based"
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)/5594624f-8df1-478d-9e6e-aa737bd4d81e",
+      "key": "content",
+      "value": "Designed to be brewed on an espresso machine and blended with milk, these coffees feature the presence, body, sweetness, and texture that make a great milk coffee."
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)/5594624f-8df1-478d-9e6e-aa737bd4d81e",
+      "key": "image",
+      "value": "shopify://shop_images/Maple_168a30eb-8c29-4484-99f8-4d0a81fae4f9.png"
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)/5594624f-8df1-478d-9e6e-aa737bd4d81e",
+      "key": "image2",
+      "value": "shopify://shop_images/Raspberry-Candy_fe2a7355-15f3-474c-b3a2-43956e9a48dc.png"
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)/5594624f-8df1-478d-9e6e-aa737bd4d81e",
+      "key": "image3",
+      "value": "shopify://shop_images/Aspen_5026993b-83ac-470f-971d-6865d25f7888.png"
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)/b2cd906d-aae9-419e-9af1-9b4f8625b22f",
+      "key": "title",
+      "value": "espresso"
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)/b2cd906d-aae9-419e-9af1-9b4f8625b22f",
+      "key": "content",
+      "value": "Our espresso-roasted coffees are driven by structure and texture, allowing for controlled brewing to showcase each coffee origin's best qualities."
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)/b2cd906d-aae9-419e-9af1-9b4f8625b22f",
+      "key": "image",
+      "value": "shopify://shop_images/coffee_hero_soe_d5c2410b-c7f9-40f2-9d6c-796a579fd999.png"
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)/b2cd906d-aae9-419e-9af1-9b4f8625b22f",
+      "key": "image2",
+      "value": "shopify://shop_images/coffee_hero_soe_d338f093-4bf9-4422-86ff-eab35b813e65.png"
+    },
+    {
+      "where": "unique_coffees(ona-unique-coffees)/b2cd906d-aae9-419e-9af1-9b4f8625b22f",
+      "key": "image3",
+      "value": "shopify://shop_images/coffee_hero_soe_590cb420-cdfb-45cd-9beb-97811ce5850e.png"
+    },
+    {
+      "where": "expressions(ona-expressions)",
+      "key": "id",
+      "value": "expersion-block-elements"
+    },
+    {
+      "where": "expressions(ona-expressions)",
+      "key": "title",
+      "value": "Our coffee offering is designed to preserve their unique expressions."
+    },
+    {
+      "where": "expressions(ona-expressions)/324ff6f7-dbb0-4757-a4fd-caf0921421da",
+      "key": "image",
+      "value": "shopify://shop_images/roastery.png"
+    },
+    {
+      "where": "expressions(ona-expressions)/324ff6f7-dbb0-4757-a4fd-caf0921421da",
+      "key": "video_url",
+      "value": "https://youtu.be/nNF0FjGef7Q"
+    },
+    {
+      "where": "expressions(ona-expressions)/e3b20a66-9541-41ce-b0bb-4d0314e869bf",
+      "key": "title",
+      "value": "single origin program"
+    },
+    {
+      "where": "expressions(ona-expressions)/e3b20a66-9541-41ce-b0bb-4d0314e869bf",
+      "key": "content",
+      "value": "We are dedicated to continuously provide a diverse range of coffee in our 'Single Origin Program'. Drawing from all major coffee producing regions, these coffees allow our partners to explore the world of coffee one flavour at a time."
+    },
+    {
+      "where": "expressions(ona-expressions)/0f591c66-fd16-47e2-996f-027d67cbb309",
+      "key": "title",
+      "value": "reserve coffee"
+    },
+    {
+      "where": "expressions(ona-expressions)/0f591c66-fd16-47e2-996f-027d67cbb309",
+      "key": "content",
+      "value": "Reserve selection coffees are uncompromisingly excellent. Both filter and espresso options represent the absolute pinnacle of quality and process."
+    },
+    {
+      "where": "expressions(ona-expressions)/faq_NTkGhY",
+      "key": "title",
+      "value": "Drip bags"
+    },
+    {
+      "where": "expressions(ona-expressions)/faq_NTkGhY",
+      "key": "content",
+      "value": "A new way to showcase and celebrate origin with ease. Drip bags make an excellent product for home brewers and coffee lovers on the go. We offer two green labels and two reserve options every quarter."
+    },
+    {
+      "where": "expressions(ona-expressions)/faq_7VjfHd",
+      "key": "title",
+      "value": "special releases"
+    },
+    {
+      "where": "expressions(ona-expressions)/faq_7VjfHd",
+      "key": "content",
+      "value": "These are fun ways of highlighting interesting, exciting, and new coffee combinations, demonstrating the flexibility and innovation of specialty coffee."
+    },
+    {
+      "where": "wholesale_sourcing_v4(ona-wholesale-sourcing-v4)",
+      "key": "image",
+      "value": "shopify://shop_images/00205708-low.jpg"
+    },
+    {
+      "where": "wholesale_sourcing_v4(ona-wholesale-sourcing-v4)",
+      "key": "subtitle",
+      "value": "Explore Our Wholesale Coffee Range"
+    },
+    {
+      "where": "wholesale_sourcing_v4(ona-wholesale-sourcing-v4)",
+      "key": "content",
+      "value": "Looking to serve something extraordinary? Shop our wholesale coffee offerings and discover a rotating menu of single origins, blends and reserve coffees in our collection — all roasted to perform brilliantly in your café."
+    },
+    {
+      "where": "wholesale_sourcing_v4(ona-wholesale-sourcing-v4)",
+      "key": "content@href",
+      "value": "https://onacoffee.com.au/collections/all"
+    },
+    {
+      "where": "sourcing(ona-sourcing)",
+      "key": "id",
+      "value": "sourcing-block-elements"
+    },
+    {
+      "where": "sourcing(ona-sourcing)",
+      "key": "image",
+      "value": "shopify://shop_images/cover-farmers_0e185c64-9e79-43f4-adb9-a944da98e26f.png"
+    },
+    {
+      "where": "sourcing(ona-sourcing)",
+      "key": "title",
+      "value": "SOURCING"
+    },
+    {
+      "where": "sourcing(ona-sourcing)",
+      "key": "subtitle",
+      "value": "Connecting with Origin"
+    },
+    {
+      "where": "sourcing(ona-sourcing)",
+      "key": "content",
+      "value": "Sasa Sestic's well-known work at the farm level, amplified globally, has set deep roots at its origin, fostering connections that have given rise to some of the most innovative coffees in the world.\nWith the visionary leadership and expertise of Sasa Sestic and Sam Corra, we're committed to cultivating the highest quality coffees and partnerships. As leading wholesale coffee dealers, we seek out coffee producers who share a collective vision for shaping the future of specialty coffee."
+    },
+    {
+      "where": "supported(ona-supported)",
+      "key": "id",
+      "value": "supported"
+    },
+    {
+      "where": "supported(ona-supported)",
+      "key": "title",
+      "value": "Always Supported"
+    },
+    {
+      "where": "supported(ona-supported)",
+      "key": "content",
+      "value": "When you join ONA Coffee, you enter a network of coffee professionals with years of experience as baristas, roasters, café owners and managers and competition coaches. As one of Australia’s most trusted wholesale coffee suppliers, we offer hands-on, personalised support that grows with your business."
+    },
+    {
+      "where": "supported(ona-supported)/26779b51-4f1b-4fc0-bec8-969d26bf13b7",
+      "key": "image",
+      "value": "shopify://shop_images/roasterers.png"
+    },
+    {
+      "where": "supported(ona-supported)/5d892d58-745a-4dfd-93e9-15ca94869c88",
+      "key": "image",
+      "value": "shopify://shop_images/hugh-k-2.png"
+    },
+    {
+      "where": "supported(ona-supported)/slider_YKhwYT",
+      "key": "image",
+      "value": "shopify://shop_images/warehouse.png"
+    },
+    {
+      "where": "supported(ona-supported)/3ef83964-3891-42ae-a42e-6c2a9e90ab1e",
+      "key": "title",
+      "value": "account managers"
+    },
+    {
+      "where": "supported(ona-supported)/3ef83964-3891-42ae-a42e-6c2a9e90ab1e",
+      "key": "content",
+      "value": "You will receive full support from setting up your café to selecting the right equipment to create the best business specific for you and your café vision."
+    },
+    {
+      "where": "supported(ona-supported)/64816267-2edc-4f8b-924e-45a2a900f928",
+      "key": "title",
+      "value": "tech support"
+    },
+    {
+      "where": "supported(ona-supported)/64816267-2edc-4f8b-924e-45a2a900f928",
+      "key": "content",
+      "value": "Our tech support team is always available to help you set up your café equipment and troubleshoot any issues, ensuring smooth daily operations."
+    },
+    {
+      "where": "supported(ona-supported)/2c6c9d38-8103-45b7-ba3e-9fa59ce23b36",
+      "key": "title",
+      "value": "marketing"
+    },
+    {
+      "where": "supported(ona-supported)/2c6c9d38-8103-45b7-ba3e-9fa59ce23b36",
+      "key": "content",
+      "value": "Benefit from our collaborative approach. We provide strategic guidance, engaging content, and promotional assets to amplify your brand presence."
+    },
+    {
+      "where": "supported(ona-supported)/4931a9ca-dec4-46e5-9f5a-c1e0f3ac373b",
+      "key": "title",
+      "value": "competitions"
+    },
+    {
+      "where": "supported(ona-supported)/4931a9ca-dec4-46e5-9f5a-c1e0f3ac373b",
+      "key": "content",
+      "value": "Are you interested in taking your coffee career to the next level? As an ONA wholesale coffee partner, our team of coffee professionals will coach and guide you through the world of coffee competition"
+    },
+    {
+      "where": "wholesale_sourcing_v5(ona-wholesale-sourcing-v5)",
+      "key": "image",
+      "value": "shopify://shop_images/4_a01b08af-a94c-4a7d-98a0-456a0361728d.jpg"
+    },
+    {
+      "where": "wholesale_sourcing_v5(ona-wholesale-sourcing-v5)",
+      "key": "subtitle",
+      "value": "What Sets Our Program and Wholesale Coffee Partnerships Apart"
+    },
+    {
+      "where": "wholesale_sourcing_v5(ona-wholesale-sourcing-v5)",
+      "key": "content",
+      "value": "At ONA Coffee, we believe being great coffee wholesalers means offering more than just exceptional beans — it’s about empowering every café we work with to grow, innovate and lead. That’s why we’ve developed one of the most comprehensive coffee education ecosystems in Australia, available only to our wholesale coffee partners.\nHere’s why our wholesale clients keep choosing us as their coffee supplier of choice:\nWe give back to the coffee community through ongoing education, events and long-term partnerships.\nWe push the boundaries with advanced training and forward-thinking techniques that elevate every aspect of your coffee program.\nWe innovate with purpose, pioneering methods like frozen specialty coffee and driving change through our R&D program.\nWe stay current and challenge norms, rigorously testing new ideas while ensuring best practices are always upheld.\nWe offer one of the most curated coffee selections in the industry, including rare single origins, seasonal rotations and reserve lots.\nWe grow café teams systematically with our step-by-step Excellence Program tailored to every experience level.\nWe support your business holistically, from barista development and equipment advice to marketing and technical support.\nWe create meaningful connections through Masterclasses, flagship café events and personal account management."
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)",
+      "key": "id",
+      "value": "testimomnial-block"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)",
+      "key": "title",
+      "value": "Café Partners Testimonials"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)",
+      "key": "content",
+      "value": "We value our café partnerships. Our upcoming video spills the beans on the incredible friendships we've brewed with some of our café partners. We're shining a light on those legendary teams that have been rocking our coffee scene for ages. It's not just about pouring the perfect cup – it's about the laughs, the conversations, and the caffeinated love we've shared along the way."
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_XLNrMd",
+      "key": "image",
+      "value": "shopify://shop_images/testimonial_epi1_video1.png"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_XLNrMd",
+      "key": "video_url",
+      "value": "https://youtu.be/haf_k2RI1rI?si=sTFiVYeQ3BWxR3wI"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_XLNrMd",
+      "key": "video_title",
+      "value": "Quality product to help your café succeed"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_eQPbmY",
+      "key": "image",
+      "value": "shopify://shop_images/testimonial_epi2_video2.png"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_eQPbmY",
+      "key": "video_url",
+      "value": "https://youtu.be/_Pp-4P6Fjbw?si=Ys0JKmVsWpaQidyC"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_eQPbmY",
+      "key": "video_title",
+      "value": "Café support through excellence program"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_AHwXJX",
+      "key": "image",
+      "value": "shopify://shop_images/testimonial_epi3_video3.png"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_AHwXJX",
+      "key": "video_url",
+      "value": "https://youtu.be/T_kJUre3KSo?si=snlkPXIZ2w8T8kXE"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_AHwXJX",
+      "key": "video_title",
+      "value": "Increasing café revenue with retail coffee"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_hGFzTd",
+      "key": "image",
+      "value": "shopify://shop_images/calere-testimonial-cover.png"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_hGFzTd",
+      "key": "video_url",
+      "value": "https://youtu.be/MqoZxrjpgnM?si=7ts9Tu_bZEFL8K9y"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_hGFzTd",
+      "key": "video_title",
+      "value": "The value of offering a wide range of coffee"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)",
+      "key": "liquid",
+      "value": "Episode"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)",
+      "key": "liquid",
+      "value": "Get In Touch"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)",
+      "key": "liquid",
+      "value": "Episode Select"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)",
+      "key": "liquid",
+      "value": "Ep ."
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)",
+      "key": "liquid@href",
+      "value": "https://forms.monday.com/forms/6b1a3a5478c16210a1dae4ae5b3f86dc?r=use1"
+    },
+    {
+      "where": "cafe_testimonial(ona-cafe-testimonial)",
+      "key": "id",
+      "value": "cafe-testimonials"
+    },
+    {
+      "where": "cafe_testimonial(ona-cafe-testimonial)",
+      "key": "bottom_image",
+      "value": "shopify://shop_images/ONA_Bus.png"
+    },
+    {
+      "where": "cafe_testimonial(ona-cafe-testimonial)/block_DQmeeF",
+      "key": "image",
+      "value": "shopify://shop_images/ginny.jpg"
+    },
+    {
+      "where": "cafe_testimonial(ona-cafe-testimonial)/block_DQmeeF",
+      "key": "content",
+      "value": "We are delighted to have partner with Ona Coffee. a brand that not only enhances our coffee offerings but also symbolises a commitment to excellence in the art of brewing.\nThe support we received from Ona is invaluable, elevating our focus on delivering exceptional coffee experiences in this area of Canberra."
+    },
+    {
+      "where": "cafe_testimonial(ona-cafe-testimonial)/block_DQmeeF",
+      "key": "title",
+      "value": "Ginnindery Espresso"
+    },
+    {
+      "where": "cafe_testimonial(ona-cafe-testimonial)/block_Mm8pzk",
+      "key": "image",
+      "value": "shopify://shop_images/faducci_logo.jpg"
+    },
+    {
+      "where": "cafe_testimonial(ona-cafe-testimonial)/block_Mm8pzk",
+      "key": "content",
+      "value": "Choosing Ona Coffee for Cafe Faducci over the past five years, has been one of the best decisions we've made.\nTheir commitment to sourcing the finest beans and their unwavering dedication to quality is evident in every cup we serve.\nOur customers continually rave about the rich, complex flavours of Ona Coffee, make it a cornerstone of our cafe's success."
+    },
+    {
+      "where": "cafe_testimonial(ona-cafe-testimonial)/block_Mm8pzk",
+      "key": "title",
+      "value": "Cafe Faducci"
+    },
+    {
+      "where": "cafe_testimonial(ona-cafe-testimonial)/block_7GKY9J",
+      "key": "image",
+      "value": "shopify://shop_images/precinct_37_logo.jpg"
+    },
+    {
+      "where": "cafe_testimonial(ona-cafe-testimonial)/block_7GKY9J",
+      "key": "content",
+      "value": "Undeniably coffee is one of the main elements in our business. The quality of the coffee beans and service we've received from Ona are always excellent and consistent which is in line with our business values. Now we're known around the area for quality coffee. We could not have done it without them."
+    },
+    {
+      "where": "cafe_testimonial(ona-cafe-testimonial)/block_7GKY9J",
+      "key": "title",
+      "value": "Precinct 37"
+    },
+    {
+      "where": "cafe_testimonial(ona-cafe-testimonial)/block_4ynkHb",
+      "key": "image",
+      "value": "shopify://shop_images/freestate.jpg"
+    },
+    {
+      "where": "cafe_testimonial(ona-cafe-testimonial)/block_4ynkHb",
+      "key": "content",
+      "value": "We are community based cafe obsessed with Ona and its sustainability programs. Their support its out of this world and we have such a great friendship with Scott too."
+    },
+    {
+      "where": "cafe_testimonial(ona-cafe-testimonial)/block_4ynkHb",
+      "key": "title",
+      "value": "Freestate"
+    },
+    {
+      "where": "exclusive_access(ona-exclusive-access)",
+      "key": "id",
+      "value": "exclusive-access"
+    },
+    {
+      "where": "exclusive_access(ona-exclusive-access)",
+      "key": "title",
+      "value": "Exclusive Access"
+    },
+    {
+      "where": "exclusive_access(ona-exclusive-access)",
+      "key": "content",
+      "value": "As a wholesale partner, you receive exclusive access to the latest coffee trends, news, findings, and educational content.\n50+ café focused video content\nResearch and development reports\nFree passes for events and masterclasses\nSpecial releases and merchandise"
+    },
+    {
+      "where": "exclusive_access(ona-exclusive-access)/d4523970-1abb-4bba-becf-7e9e1903cda0",
+      "key": "image",
+      "value": "shopify://shop_images/Exclusive_Access-01_826e7dc4-7cc0-4dcb-9729-ad72744080fb.jpg"
+    },
+    {
+      "where": "exclusive_access(ona-exclusive-access)/d4523970-1abb-4bba-becf-7e9e1903cda0",
+      "key": "video_url",
+      "value": "https://youtu.be/jc-yYFQ5MK4?si=IEichiL2i2gLzKji"
+    },
+    {
+      "where": "wholesale_sourcing_v6(ona-wholesale-sourcing-v6)",
+      "key": "image",
+      "value": "shopify://shop_images/6_c1997037-286a-426f-bc96-0af899e9a4f0.jpg"
+    },
+    {
+      "where": "wholesale_sourcing_v6(ona-wholesale-sourcing-v6)",
+      "key": "subtitle",
+      "value": "1 Month — Wholesale Trial Join us for a full month of wholesale coffee benefits!"
+    },
+    {
+      "where": "wholesale_sourcing_v6(ona-wholesale-sourcing-v6)",
+      "key": "content",
+      "value": "Hey there!\nWe're all about meaningful partnerships, so we have something exciting for you. How about featuring our coffee as a guest in your shop for a one-month trial? You'll receive full wholesale benefits and dive into our fantastic coffee range. We're sure you'll love ONA Coffee, and we're excited about the possibility of partnering with your café. Ready to explore world-class coffee together? Let us know! You’ll get a true taste of what sets us apart as coffee beans wholesale suppliers — not just in the cup but in the care, service and support we bring to the table."
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Get in touch"
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Thank you. Your enquiry has been sent."
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Name"
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Email"
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Business name"
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "How can we help?"
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Send enquiry"
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Join our community"
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "A wholesale partnership with us means elevating your cafe's specialty coffee experience."
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "Join us for a purposeful and meaningful coffee partnership fuelled by connection and constant evolution through world-class coffee training and support."
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid",
+      "value": "As a cafe partner, you'll have exclusive access to an exceptional range of quality coffee selections."
+    },
+    {
+      "where": "gust_r(ona-gust-r)",
+      "key": "liquid@src",
+      "value": "https://www.youtube.com/embed/42flR1Iwun4"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)",
+      "key": "title",
+      "value": "Brands we work with"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)/block_G4NHXD",
+      "key": "title",
+      "value": "Nucleus"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)/block_G4NHXD",
+      "key": "image",
+      "value": "shopify://shop_images/Brands_We_Work_With-01.png"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)/block_G4NHXD",
+      "key": "link",
+      "value": "https://nucleuscoffeetools.com/"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)/block_QE7Gha",
+      "key": "title",
+      "value": "Sanremo"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)/block_QE7Gha",
+      "key": "image",
+      "value": "shopify://shop_images/Brands_We_Work_With-02.png"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)/block_QE7Gha",
+      "key": "link",
+      "value": "https://sanremomachines.com.au/"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)/block_Wihzr3",
+      "key": "title",
+      "value": "La Marzocco"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)/block_Wihzr3",
+      "key": "image",
+      "value": "shopify://shop_images/Brands_We_Work_With-03.png"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)/block_Wihzr3",
+      "key": "link",
+      "value": "https://au.lamarzocco.com/"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)/block_3VYWUW",
+      "key": "title",
+      "value": "Mahlkönig"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)/block_3VYWUW",
+      "key": "image",
+      "value": "shopify://shop_images/mahlkonig-logo.png"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)/block_3VYWUW",
+      "key": "link",
+      "value": "https://www.mahlkoenig.com/"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)/block_xPgWG6",
+      "key": "title",
+      "value": "Ubermilk"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)/block_xPgWG6",
+      "key": "image",
+      "value": "shopify://shop_images/Ubermilk-logo-large-2_ee791684-e6b6-484c-9a13-ef129f6ad923.png"
+    },
+    {
+      "where": "wholesale_brands(ona-wholesale-brands)/block_xPgWG6",
+      "key": "link",
+      "value": "https://baristagroup.com.au/ubermilk/"
+    },
+    {
+      "where": "faq_lists(ona-faq-lists)",
+      "key": "title2",
+      "value": "Need help?"
+    },
+    {
+      "where": "faq_lists(ona-faq-lists)",
+      "key": "tips",
+      "value": "Get in contact with admin at: admin@onacoffee.com.au ."
+    },
+    {
+      "where": "faq_lists(ona-faq-lists)",
+      "key": "tips@href",
+      "value": "mailto:admin@onacoffee.com.au"
+    }
+  ],
+  "chrome": [
+    {
+      "where": "training(ona-training)",
+      "key": "play_icon",
+      "value": "shopify://shop_images/play_button.svg"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_XLNrMd",
+      "key": "play_icon",
+      "value": "shopify://shop_images/play_button.svg"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_eQPbmY",
+      "key": "play_icon",
+      "value": "shopify://shop_images/play_button.svg"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_AHwXJX",
+      "key": "play_icon",
+      "value": "shopify://shop_images/play_button.svg"
+    },
+    {
+      "where": "wholesale_testimonial(ona-wholesale-testimonial)/block_hGFzTd",
+      "key": "play_icon",
+      "value": "shopify://shop_images/play_button.svg"
+    },
+    {
+      "where": "exclusive_access(ona-exclusive-access)/d4523970-1abb-4bba-becf-7e9e1903cda0",
+      "key": "play_icon",
+      "value": "shopify://shop_images/play_button_beige.svg"
+    },
+    {
+      "where": "exclusive_access(ona-exclusive-access)/b64d1d98-84d3-4265-a7c0-01386acae25a",
+      "key": "play_icon",
+      "value": "shopify://shop_images/play_button_beige.svg"
+    }
+  ],
+  "disabled": [
+    {
+      "where": "wholesale_partnership(ona-wholesale-partnership)",
+      "key": "video",
+      "value": "shopify://files/videos/Become a wholesale partner video.mov"
+    },
+    {
+      "where": "sourcing(ona-sourcing)/88a78ac7-62e1-4735-81c5-ca1868a196fb",
+      "key": "image",
+      "value": "shopify://shop_images/wholesale-11-2_a80c3ce2-3add-43fe-85d0-4b974d4187c0.png"
+    },
+    {
+      "where": "sourcing(ona-sourcing)/88a78ac7-62e1-4735-81c5-ca1868a196fb",
+      "key": "content",
+      "value": "Over the years, our partnership has not onlyelevated the quality of our coffee but has alsoempowered our community. It's a beautifulblend of cultures and passion that has brewedSuccess in every cup."
+    },
+    {
+      "where": "sourcing(ona-sourcing)/88a78ac7-62e1-4735-81c5-ca1868a196fb",
+      "key": "title",
+      "value": "VENVSTE MVCIRANEZA"
+    },
+    {
+      "where": "sourcing(ona-sourcing)/88a78ac7-62e1-4735-81c5-ca1868a196fb",
+      "key": "subtitle",
+      "value": "TWMBA(RWANDA)"
+    },
+    {
+      "where": "sourcing(ona-sourcing)/5579a3ae-3142-4752-827a-f9ffd7302494",
+      "key": "image",
+      "value": "shopify://shop_images/wholesale-11-2_7a92d034-4763-4acd-be05-7cfbca4c0191.png"
+    },
+    {
+      "where": "sourcing(ona-sourcing)/5579a3ae-3142-4752-827a-f9ffd7302494",
+      "key": "content",
+      "value": "Over the years, our partnership has not onlyelevated the quality of our coffee but has alsoempowered our community. It's a beautifulblend of cultures and passion that has brewedSuccess in every cup."
+    },
+    {
+      "where": "sourcing(ona-sourcing)/5579a3ae-3142-4752-827a-f9ffd7302494",
+      "key": "title",
+      "value": "VENVSTE MVCIRANEZA"
+    },
+    {
+      "where": "sourcing(ona-sourcing)/5579a3ae-3142-4752-827a-f9ffd7302494",
+      "key": "subtitle",
+      "value": "TWMBA(RWANDA)"
+    },
+    {
+      "where": "sourcing(ona-sourcing)/42de4cdf-763b-456d-80ab-1b378e1a9900",
+      "key": "image",
+      "value": "shopify://shop_images/wholesale-11-2_5300f174-e7df-45e9-86db-f26362f0ffc0.png"
+    },
+    {
+      "where": "sourcing(ona-sourcing)/42de4cdf-763b-456d-80ab-1b378e1a9900",
+      "key": "content",
+      "value": "Over the years, our partnership has not onlyelevated the quality of our coffee but has alsoempowered our community. It's a beautifulblend of cultures and passion that has brewedSuccess in every cup."
+    },
+    {
+      "where": "sourcing(ona-sourcing)/42de4cdf-763b-456d-80ab-1b378e1a9900",
+      "key": "title",
+      "value": "VENVSTE MVCIRANEZA"
+    },
+    {
+      "where": "sourcing(ona-sourcing)/42de4cdf-763b-456d-80ab-1b378e1a9900",
+      "key": "subtitle",
+      "value": "TWMBA(RWANDA)"
+    },
+    {
+      "where": "sourcing(ona-sourcing)/a86ac57b-2d07-4709-ad5e-01198b53077b",
+      "key": "image",
+      "value": "shopify://shop_images/wholesale-11-2_5f50da8a-8da4-459a-aead-c82775600902.png"
+    },
+    {
+      "where": "sourcing(ona-sourcing)/a86ac57b-2d07-4709-ad5e-01198b53077b",
+      "key": "content",
+      "value": "Over the years, our partnership has not onlyelevated the quality of our coffee but has alsoempowered our community. It's a beautifulblend of cultures and passion that has brewedSuccess in every cup."
+    },
+    {
+      "where": "sourcing(ona-sourcing)/a86ac57b-2d07-4709-ad5e-01198b53077b",
+      "key": "title",
+      "value": "VENVSTE MVCIRANEZA"
+    },
+    {
+      "where": "sourcing(ona-sourcing)/a86ac57b-2d07-4709-ad5e-01198b53077b",
+      "key": "subtitle",
+      "value": "TWMBA(RWANDA)"
+    },
+    {
+      "where": "supported(ona-supported)/5d892d58-745a-4dfd-93e9-15ca94869c88",
+      "key": "video_url",
+      "value": "https://youtu.be/WCNi3BFGLX0?si=M1FhiXlpLbjxgP-f"
+    },
+    {
+      "where": "exclusive_access(ona-exclusive-access)/b64d1d98-84d3-4265-a7c0-01386acae25a",
+      "key": "image",
+      "value": "shopify://shop_images/Exclusive_Access-02_1dcbaa45-aa15-4c83-a55e-748f8db4942b.jpg"
+    },
+    {
+      "where": "exclusive_access(ona-exclusive-access)/b64d1d98-84d3-4265-a7c0-01386acae25a",
+      "key": "video_url",
+      "value": "https://youtu.be/jc-yYFQ5MK4"
+    },
+    {
+      "where": "faq_lists(ona-faq-lists)/614a771f-8b8e-45c7-a4b4-0c1ea5f42c30",
+      "key": "title",
+      "value": "Do you have a minimum order quantity?"
+    },
+    {
+      "where": "faq_lists(ona-faq-lists)/614a771f-8b8e-45c7-a4b4-0c1ea5f42c30",
+      "key": "content",
+      "value": "For wholesale we work off a 20kg minimum order/week.Guest roaster program is $200 min order."
+    },
+    {
+      "where": "faq_lists(ona-faq-lists)/d6ab246b-7634-473a-a490-0ef1b8c9226e",
+      "key": "title",
+      "value": "Do you wholesale internationally?"
+    },
+    {
+      "where": "faq_lists(ona-faq-lists)/d6ab246b-7634-473a-a490-0ef1b8c9226e",
+      "key": "content",
+      "value": "For wholesale we work off a 20kg minimum order/week.Guest roaster program is $200 min order."
+    },
+    {
+      "where": "faq_lists(ona-faq-lists)/c3ac1f4a-f7d3-4e71-894b-54e6f0d727ff",
+      "key": "title",
+      "value": "What is the ordering and roasting schedule?"
+    },
+    {
+      "where": "faq_lists(ona-faq-lists)/c3ac1f4a-f7d3-4e71-894b-54e6f0d727ff",
+      "key": "content",
+      "value": "For wholesale we work off a 20kg minimum order/week.Guest roaster program is $200 min order."
+    },
+    {
+      "where": "faq_lists(ona-faq-lists)/72dfa075-e1e4-465f-b08f-e664e306e28c",
+      "key": "title",
+      "value": "What is your coffee packaged in? Are the bags recyclable?"
+    },
+    {
+      "where": "faq_lists(ona-faq-lists)/72dfa075-e1e4-465f-b08f-e664e306e28c",
+      "key": "content",
+      "value": "For wholesale we work off a 20kg minimum order/week.Guest roaster program is $200 min order."
+    },
+    {
+      "where": "faq_lists(ona-faq-lists)/08a3ca8a-21f1-4b29-83e9-b276ae55665a",
+      "key": "title",
+      "value": "Can I collect my order from the roastery?"
+    },
+    {
+      "where": "faq_lists(ona-faq-lists)/08a3ca8a-21f1-4b29-83e9-b276ae55665a",
+      "key": "content",
+      "value": "For wholesale we work off a 20kg minimum order/week.Guest roaster program is $200 min order."
+    },
+    {
+      "where": "faq_lists(ona-faq-lists)/363d6f41-bd60-44d0-8135-a26cdf7b2130",
+      "key": "title",
+      "value": "Do you offer coffee training?"
+    },
+    {
+      "where": "faq_lists(ona-faq-lists)/363d6f41-bd60-44d0-8135-a26cdf7b2130",
+      "key": "content",
+      "value": "For wholesale we work off a 20kg minimum order/week.Guest roaster program is $200 min order."
+    }
+  ]
+}
