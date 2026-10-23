@@ -872,6 +872,14 @@
     .locations-store-finder[data-active-view='map'] .locations-store-finder__map-panel {
       order: 1;
       block-size: min(50vh, 26rem);
+      /*
+       * Here the results switch from a grid to a flex column, and the panel's
+       * `align-self: start` (set for the desktop grid) stops stretching it to the
+       * row width and starts sizing it to its content instead -- which, for an
+       * empty map container, is 0. Google Maps then renders into a zero-width box
+       * and the map is invisible on mobile. Force the full width back.
+       */
+      inline-size: 100%;
     }
 
     .locations-store-finder[data-active-view='map'] .locations-store-finder__list-panel {
