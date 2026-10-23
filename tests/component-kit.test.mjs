@@ -616,9 +616,11 @@ test('the text-image-bg row describes the markup and the dead trigger', () => {
     assert.ok(!new RegExp(`\\.${klass}\\b`).test(js), `.${klass} is now scripted; the row says the anchor is inert`);
   }
 
-  /* The comparison the note draws: .play-video is styled but equally unhandled. */
+  /* The comparison the note draws: .play-video is styled in legacy-page-layout.css, and it now
+     also has a handler (assets/ona-video-play.js, added when ONA decided the videos should play
+     on click). The text-image-bg anchor below is the one still left inert. */
   assert.ok(/\.play-video\b/.test(css), 'the note says .play-video has CSS in legacy-page-layout.css, and it no longer does');
-  assert.ok(!/play-video/.test(js), 'the note says .play-video has no handler, and it now does');
+  assert.ok(/play-video/.test(js), 'the note says .play-video now has a handler, and it no longer does');
 
   assert.ok(
     /\*\*not\*\* a background image/.test(doc) && /the anchor is a removal, not behaviour to reproduce/.test(doc),
@@ -1822,9 +1824,12 @@ test('every live embed that renders nothing is recorded as a behaviour change', 
     /* (?<!auto) so assets/autoplay-video.js, which exists and is unrelated, cannot trip this. */
     .some((name) => /(?<!auto)play-video|iframe_api|YT\.Player|player_id/.test(readFileSync(join(root, 'assets', name), 'utf8')));
 
-  if (handled) {
-    assert.fail('a script now drives the legacy embeds; the "nothing plays" gap row no longer holds');
-  }
+  /* ONA decided the videos should play on click, and assets/ona-video-play.js now drives the
+     legacy `.play-video` covers. The gap is closed on purpose, so this guard flips: if the
+     handler is ever removed the covers go dead again, and that must fail here. The inventory
+     below still runs, because the Liquid still emits the empty `<div id="{{ player_id }}">`
+     that the handler fills at runtime -- so the counts in the gap row stay honest. */
+  assert.ok(handled, 'the legacy embeds lost their play handler (assets/ona-video-play.js); the covers no longer play on click');
 
   /* Exact, not a lower bound. The lower bound passed while the document claimed eight total,
      six on blocks and seven enabled, when the template holds nine configured -- two on sections

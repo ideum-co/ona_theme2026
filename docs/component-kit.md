@@ -121,8 +121,8 @@ Shopify-hosted video — and five of the eight do not fit it:
 | `ona-our-philosophy` (about) | one image | yes |
 | `ona-careers` (about) | one image, over an `.animated-svg` blob | yes for the photo, no for the blob — see [Known gaps](#known-gaps) |
 | `ona-expericences-content` | one image — but beside a live `{% form 'contact' %}`, see below | no |
-| `ona-training` | `media_type: embed`, a youtu.be URL — **and nothing plays**, see below | no — external |
-| `ona-wholesale-partnership` | `media_type: embed`, a YouTube watch URL — **and nothing plays**, see below | no — external |
+| `ona-training` | `media_type: embed`, a youtu.be URL — **plays on click** via `assets/ona-video-play.js`, see below | no — external |
+| `ona-wholesale-partnership` | `media_type: embed`, a YouTube watch URL — **plays on click** via `assets/ona-video-play.js`, see below | no — external |
 | `ona-training-text-image-bg` | a pasted `<iframe>` in the text column, beside a plain `<img>` in the other — **not** a background image, and the `Watch videos` link above the embed is inert | no — external, and the embed sits beside the copy rather than in a media slot |
 | `ona-training-text-two-images` | `image` **and** `image2`, rendered together | no — two |
 
@@ -143,14 +143,16 @@ The anchor is also dead. `.training-bg`, `.video-link` and `.a-link` have no rul
 in any stylesheet and no handler in any script, so the link does nothing and the
 embed renders inline rather than behind it. Component 1 carries what is actually
 there — a `video` block for the embed, an `image` block for the photo, both in
-one row `group` — and the anchor is a removal, not behaviour to reproduce. It is
-inert for the same reason as the `.play-video` anchors in five other sections,
-which have CSS in `assets/legacy-page-layout.css` but no handler either; this one
-has neither.
+one row `group` — and the anchor is a removal, not behaviour to reproduce. It
+was inert for the same reason as the `.play-video` anchors in five other
+sections, which have CSS in `assets/legacy-page-layout.css`; those now also have
+a handler (`assets/ona-video-play.js`, added when ONA chose to let the videos
+play on click), so this `.video-link` anchor is the one still left inert.
 
-`media_type: embed` is the behaviour change, and it is not two sections. Every
-non-Vimeo embed on `/pages/wholesale` renders nothing, and there are **eight of
-them across five sections** — two set on the section, six set on blocks:
+`media_type: embed` was the behaviour change, and it is not two sections. Every
+non-Vimeo embed on `/pages/wholesale` used to render nothing, and there are
+**eight of them across five sections** — two set on the section, six set on
+blocks:
 
 - `ona-wholesale-partnership` — 1, on the section: `youtube.com/watch?v=42flR1Iwun4`
 - `ona-training` — 1, on the section: `youtu.be/dktspYuqEIg`
@@ -158,24 +160,24 @@ them across five sections** — two set on the section, six set on blocks:
 - `ona-expressions` — 1, on a block: `youtu.be/nNF0FjGef7Q`
 - `ona-exclusive-access` — 2, on blocks: 1 enabled, 1 disabled
 
-All seven enabled instances carry `autoplay: true`. None plays. The five
-sections share one branch, byte for byte —
-`sections/ona-wholesale-partnership.liquid:20-23`,
+All seven enabled instances carry `autoplay: true`. The five sections share one
+branch, byte for byte — `sections/ona-wholesale-partnership.liquid:20-23`,
 `sections/ona-training.liquid:22-25`,
 `sections/ona-wholesale-testimonial.liquid:31-34`,
 `sections/ona-expressions.liquid:28-30` and
 `sections/ona-exclusive-access.liquid:27-29` — which emits an `<iframe>` only
 when the URL contains `vimeo` and otherwise falls to an empty
-`<div id="{{ player_id }}">`. No script in the theme looks that id up;
+`<div id="{{ player_id }}">`. Nothing used to look that id up —
 `assets/media.js` is Horizon's own `deferred-media` component and binds to
-`<deferred-media>`, not to these. The `.play-video` cover anchor above each one
-is inert, and these five sections are exactly the five that render it. So what
-the page shows is a cover image and a dead play button, eight times.
+`<deferred-media>`, not to these — so the page showed a cover image and a dead
+play button, eight times.
 
-A `video` block takes the same YouTube URL and actually plays it. That is the
-right end state and it is also not a like-for-like swap: it turns eight silent
-covers into working video, with autoplay already set in the template. ONA has to
-be told, and asked whether autoplay stays, before any of the five moves — see
+ONA chose to keep the covers and play on click, so `assets/ona-video-play.js`
+now drives them: clicking a `.play-video` cover hides the poster, builds the
+YouTube player (or starts the uploaded/Vimeo one) by that same id, and plays it.
+The block `autoplay: true` is a play-on-click, not play-on-load — the video
+starts only when the cover is clicked. Moving these to a `video` block remains
+the tidier end state, but is no longer what makes them work — see
 [Known gaps](#known-gaps).
 
 The first version of this note said two, because its probe read section-level
@@ -375,8 +377,8 @@ The kit is for **layout**. Some sections carry behaviour, and behaviour does
 not collapse into a generic block. They are findable rather than
 remembered — a section that contains a `{% form %}`, reads a metafield, or
 loads its own script is doing something a `text` block cannot. Those three
-probes find **16** sections. The eight whose behaviour needs a decision of its
-own are in the table; the paragraph after it says where the other eight are
+probes find **18** sections. The ones whose behaviour needs a decision of its
+own are in the table; the paragraph after it says where the others are
 already answered:
 
 | Section | Behaviour | Target |
@@ -436,7 +438,7 @@ needs a decision before the page it is on can reach stage 2.
 | every media/text section carrying `.animated-svg` — **15 of them** | the image is two layers, not one. `sections/ona-training-image-text.liquid:5-10` renders a blob behind the photo, and `assets/legacy-page-layout.css` absolutely positions it behind the image with `z-index: -1` (the `#MainContent :has(> .animated-svg):has(img)` pair — cited by selector because PR #249 inserts ~38 lines above it). `media-with-content`'s `_media-without-appearance` renders one image or one video, so that target removes the blob — visible, and stage 2 requires invisible. This is not one section: `grep -l animated-svg sections/*.liquid` returns 15, and **all ten** members of the largest duplication group are among them, so it applies to the kit's biggest mapping, not an edge case. **Solved for 14 of the 15** — `blocks/image.liquid` now takes an optional background shape, rendered by `snippets/decorative-shape.liquid` with the positioning and the intrinsic size the legacy markup already uses. **`ona-content` is the exception and stays blocked:** it is the only one of the 15 with no image at all — two text columns and the SVG, `<img>` count zero and no `image_picker` in its schema — so there is nothing for an image block to attach the shape to, `blocks/image.liquid:54-57` would draw a placeholder photo where there is none, and `assets/legacy-page-layout.css:69-70` gives that section's blob its own positioning and `opacity: .6` which no setting here reproduces. It needs a section- or group-level decorative layer, which this does not provide (Codex, #293). **Two things this row used to get wrong, and they matter to anyone converting one of the 15.** It is not one blob: there are **six** distinct shapes, and they are not one colour either — `#dfa46d` on all ten sourcing clones, `#BDD6E6` on `ona-content`, `ona-awards` and `ona-training-form`, `#D0994D` on `ona-careers` and `ona-training-image-text`. This row previously described a single mustard `#D0994D` blob, which is two of the fifteen. And nothing animates, despite the class name: `.start`, `.medium` and `.end` have no rule in any stylesheet and no script binds them, so the three paths paint in one colour and the page shows their union. **One condition survives:** the setting is on the public `image` block, not on `_media-without-appearance`, so a converted section goes to **component 1** — a `section` holding a `group` of `image` and `text` — rather than to `media-with-content`. Row 2 of the kit now says so too. `tests/decorative-shape.test.mjs` compares every viewBox, fill and path against the section it came from, so the shapes cannot drift from the sections they reproduce. |
 | `ona-expericences-content` | the live form posts `contact[subject]` = "Private courses and experiences enquiry" (`sections/ona-expericences-content.liquid:50`). Horizon's `contact-form` block has no subject setting — its schema is width, colour, input style, border and padding — so the swap would silently merge these enquiries into the untagged pile. The same loss is already treated as blocking for `ona-gust-r`; it is blocking here too. **The field set and validation differ too**: this form marks `name`, `email` and `body` `required` with visible labels, while `blocks/contact-form.liquid` has no `required` attribute on any field, hides every label behind `visually-hidden` for placeholders, and adds a `tel` phone field. **The response states differ too**: the legacy forms announce an ONA-specific success line in `role="status"` and every validation error through `default_errors` in `role="alert"`, while `blocks/contact-form.liquid:34-55` renders a translated success string and **only the email error**, both in `autofocus` divs with no live-region role — so a missing name or message fails silently and a screen reader is moved rather than told. A subject setting alone does not make this a mapping. |
 | `ona-training-form` | same loss again, third instance: `sections/ona-training-form.liquid:51` posts `contact[subject]` = "Barista training enquiry". This is **independent of the decorative layer**, so step 2 does not release this one even though the section carries a blob. All three `{% form 'contact' %}` sections in the theme post a fixed subject that `contact-form` cannot carry, so "move the forms to `contact-form`" is not a mapping any of them can take as it stands — the block needs a subject setting first. **The field set and validation differ too**: this form marks `name`, `email` and `body` `required` with visible labels, while `blocks/contact-form.liquid` has no `required` attribute on any field, hides every label behind `visually-hidden` for placeholders, and adds a `tel` phone field. **The response states differ too**: the legacy forms announce an ONA-specific success line in `role="status"` and every validation error through `default_errors` in `role="alert"`, while `blocks/contact-form.liquid:34-55` renders a translated success string and **only the email error**, both in `autofocus` divs with no live-region role — so a missing name or message fails silently and a screen reader is moved rather than told. A subject setting alone does not make this a mapping. |
-| the five silent-embed sections — `ona-wholesale-partnership`, `ona-training`, `ona-wholesale-testimonial`, `ona-expressions`, `ona-exclusive-access` | every live non-Vimeo `media_type: embed` on the page renders **no video at all** — the branch emits an empty `<div>` and nothing in the theme drives it, so each one shows a cover image and an inert `.play-video` anchor. There are nine configured — two on sections and seven on blocks — one of the `ona-exclusive-access` blocks is disabled, so **eight are live**, and all eight carry `autoplay: true`. A `video` block plays the URL. The swap is therefore a visible behaviour change, not a reproduction, for every one of these five sections: it needs ONA's decision on whether the videos should start playing and whether autoplay stays. Three of the five are also panel-plus-slider composites with no verified target, so this is not the only thing blocking them — but it is the one that changes what a visitor sees. |
+| the five silent-embed sections — `ona-wholesale-partnership`, `ona-training`, `ona-wholesale-testimonial`, `ona-expressions`, `ona-exclusive-access` | **Resolved (plays on click).** Every live non-Vimeo `media_type: embed` on the page used to render **no video at all** — the branch emits an empty `<div>` and nothing in the theme drove it, so each one showed a cover image and an inert `.play-video` anchor. There are nine configured — two on sections and seven on blocks — one of the `ona-exclusive-access` blocks is disabled, so **eight are live**, and all eight carry `autoplay: true`. Making them play was a visible **behaviour change**, and ONA chose it: `assets/ona-video-play.js` now drives the `.play-video` anchors, building the player by its id and playing it on click (autoplay-on-load stays off). Moving these to a `video` block is still the tidier end state, but is no longer what makes them work. Three of the five are also panel-plus-slider composites with no verified target, so that remains open — but the videos themselves now play. |
 | `ona-training` (wholesale) | the text column is not ordinary text: `templates/page.wholesale.json` gives the live instance three enabled blocks, and `sections/ona-training.liquid:40-56` renders each as a `faqs-toggle` button with `aria-expanded`, followed by a "Get In Touch" link to a Monday form. **This row used to call that a no-target gap, measured against `media-with-content`, and that was the wrong target** — the mapping sends this section to component 1, and component 1 holds both: `sections/section.liquid` and `blocks/group.liquid` each accept `@theme`, `blocks/accordion.liquid` is public, has a preset and takes `_accordion-row` children, and `blocks/button.liquid` carries `label` and `link` for the CTA (Codex, #247). So the interaction and the link are a build, not a design problem. What is left blocking this section is the other two rows that name it: the embed renders no video today, and the anchor row above. |
 | `ona-wholesale-brands` | #253 replaced the static logo grid with a marquee: a duplicated `aria-hidden inert` track, a `-webkit-mask-image` fade at both edges, a pause on hover and `:focus-within`, and a `prefers-reduced-motion` branch that turns the row into a plain `overflow-x: auto` strip. `section` + linked `image` blocks render none of that, and Horizon's `marquee` has no hover or focus pause (see the two absent components above). The mapping this row replaces — "`section` + linked `image` blocks, kept static" — was written against the pre-#253 section and would now be a visible regression. |
 | `ona-faq-lists` (wholesale) | all six FAQ blocks on the live instance are **disabled**, but `title2` ("Need help?") and `tips` (the admin mailto) are populated, so what the page actually renders is the tips, not a FAQ list. `ona-faq-layout` has a left-column `body` and `_faq-category` blocks and no slot for trailing copy, so the replacement cannot be invisible here. #253 confirms the reading from the other side: it styles the call-out behind `:not(:has(.faqs-toggle))`, "a page with no FAQ rows (e.g. /pages/wholesale)", and centres the heading, constrains the paragraph to `48ch` and underlines the mailto. Whatever replaces the section has to carry that treatment, not just the text. The bookings instance has to be checked separately before the section is retired. |
