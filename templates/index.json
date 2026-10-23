@@ -1,8 +1,4 @@
 /*
- * Re-emitted 2026-10-22: #302 fixed blocks/subscribe-button.liquid, which had blocked
- * every template using the `subscribe` block from syncing to the connected theme. The theme
- * sync only re-pulls changed files, so this one-line touch re-pulls this template now that the
- * block compiles. Invisible at runtime (Shopify strips template comments).
  * ------------------------------------------------------------
  * IMPORTANT: The contents of this file are auto-generated.
  *
@@ -222,6 +218,22 @@
         "reflection_opacity": 75,
         "padding-block-start": 64,
         "padding-block-end": 64
+      }
+    },
+    "wfg_campaign_banner": {
+      "type": "ona-campaign-banner",
+      "settings": {
+        "bg_color": "#f9f8f3",
+        "logo": "shopify://shop_images/WFG2_-_stacked.png",
+        "logo_alt": "Water for Good",
+        "title": "Coffee That Supports Clean Water",
+        "title_preset": "h2",
+        "title_font": "",
+        "campaign_label": "Campaign running now until",
+        "campaign_note": "",
+        "description": "<p>Together with <a href=\"https://waterforgood.org/\">Water for Good</a> and Project Origin, we’re continuing our long-term commitment to support safe, reliable water in coffee-growing communities.</p><p>From <strong>1–31 October</strong>, we’ll make a fixed contribution from every participating purchase toward our <strong>$20,000 fundraising goal</strong>. You don’t need to make a separate donation—simply choose a participating coffee or product and be part of the impact.</p><p>This campaign brings us closer to our longer-term goal of helping support <strong>250 community water points over seven years</strong>, creating lasting, community-led access to clean water.</p>",
+        "cta_text": "Learn more",
+        "cta_url": "shopify://blogs/news/coffee-community-and-clean-water-continuing-our-work-with-water-for-good"
       }
     },
     "wfg_donation_counter": {
@@ -458,7 +470,6 @@
       },
       "name": "t:names.media_with_text",
       "settings": {
-        "motion_reveal": true,
         "mobile_padding_inline": 16,
         "mobile_text_center": true,
         "content_padding_custom": true,
@@ -477,6 +488,7 @@
         "max_width": 1360,
         "extend_media": true,
         "background_color": "{{ settings.color_palette.color1 }}",
+        "motion_reveal": true,
         "padding-block-start": 0,
         "padding-block-end": 0
       }
@@ -1068,7 +1080,6 @@
       "disabled": true,
       "name": "t:names.media_with_text",
       "settings": {
-        "motion_reveal": true,
         "mobile_padding_inline": 0,
         "mobile_text_center": false,
         "content_padding_custom": false,
@@ -1087,6 +1098,7 @@
         "max_width": 1280,
         "extend_media": false,
         "background_color": "{{ settings.color_palette.foreground }}",
+        "motion_reveal": true,
         "padding-block-start": 80,
         "padding-block-end": 80
       }
@@ -1727,7 +1739,7 @@
             "text_BN78NP": {
               "type": "text",
               "settings": {
-                "text": "<p>Sweet berries, creamy white chocolate and a sliky finish have made Raspberry Candy one of ONA's most iconic coffees.</p>",
+                "text": "<p>Sweet berries, creamy white chocolate and a silky finish have made Raspberry Candy one of ONA's most iconic coffees.</p>",
                 "width": "fit-content",
                 "max_width": "narrow",
                 "alignment": "left",
@@ -1894,7 +1906,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 40,
-        "padding-block-end": 40
+        "padding-block-end": 40,
+        "anchor": ""
       }
     },
     "product_intro_k9p6yn": {
@@ -2341,7 +2354,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 80,
-        "padding-block-end": 80
+        "padding-block-end": 80,
+        "anchor": ""
       }
     },
     "raspberry_candy": {
@@ -2682,7 +2696,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 80,
-        "padding-block-end": 80
+        "padding-block-end": 80,
+        "anchor": ""
       }
     },
     "story_video_URBFL6": {
@@ -3171,7 +3186,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 60,
-        "padding-block-end": 80
+        "padding-block-end": 80,
+        "anchor": ""
       }
     },
     "press_quotes_4kW9eF": {
@@ -3589,7 +3605,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 64,
-        "padding-block-end": 64
+        "padding-block-end": 64,
+        "anchor": ""
       }
     },
     "find_ona": {
@@ -3820,7 +3837,6 @@
       },
       "name": "t:names.media_with_text",
       "settings": {
-        "motion_reveal": true,
         "mobile_padding_inline": 0,
         "mobile_text_center": false,
         "content_padding_custom": true,
@@ -3839,6 +3855,7 @@
         "max_width": 1280,
         "extend_media": false,
         "background_color": "{{ settings.color_palette.color1 }}",
+        "motion_reveal": true,
         "padding-block-start": 60,
         "padding-block-end": 80
       }
@@ -4425,7 +4442,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 80,
-        "padding-block-end": 80
+        "padding-block-end": 80,
+        "anchor": ""
       }
     },
     "coffee_quiz": {
@@ -4689,20 +4707,6 @@
         "padding_inline": 0,
         "padding_inline_mobile": 0
       }
-    },
-    "wfg_campaign_banner": {
-      "type": "ona-campaign-banner",
-      "settings": {
-        "bg_color": "#f9f8f3",
-        "logo": "shopify://shop_images/WFG2_-_stacked.png",
-        "logo_alt": "Water for Good",
-        "title": "Coffee That Supports Clean Water",
-        "campaign_label": "Campaign running now until",
-        "campaign_note": "",
-        "description": "<p>Together with <a href=\"https://waterforgood.org/\">Water for Good</a> and Project Origin, we’re continuing our long-term commitment to support safe, reliable water in coffee-growing communities.</p><p>From <strong>1–31 October</strong>, we’ll make a fixed contribution from every participating purchase toward our <strong>$20,000 fundraising goal</strong>. You don’t need to make a separate donation—simply choose a participating coffee or product and be part of the impact.</p><p>This campaign brings us closer to our longer-term goal of helping support <strong>250 community water points over seven years</strong>, creating lasting, community-led access to clean water.</p>",
-        "cta_text": "Learn more",
-        "cta_url": "shopify://blogs/news/coffee-community-and-clean-water-continuing-our-work-with-water-for-good"
-      }
     }
   },
   "order": [
@@ -4732,4 +4736,3 @@
     "collection_carousel_GRkRhJ"
   ]
 }
-
