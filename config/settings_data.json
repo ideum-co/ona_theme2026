@@ -159,6 +159,11 @@
         "settings": {
           "load_selling_plans_separately": true
         }
+      },
+      "9928572688182724177": {
+        "type": "shopify://apps/accentuate/blocks/recently-viewed-embed/428a4822-57b4-4291-92b3-3f34bc7a240e",
+        "disabled": false,
+        "settings": {}
       }
     },
     "color_palette": {
@@ -251,7 +256,7 @@
     "custom_css": [
       ".spacing-style.sticky-content.media-gallery--two-column.media-gallery--grid,slideshow-container {align-content: center;}",
       ".product-recommendations .resource-list.force-full-width.resource-list__carousel {max-width: 1440px; margin: 0 auto;}",
-      ".purchase-options__list, .purchase-options {display: none;}"
+      ".purchase-options__list,.purchase-options {display: none;}"
     ]
   }
 }
