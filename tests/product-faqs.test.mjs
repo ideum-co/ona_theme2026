@@ -203,19 +203,44 @@ const parseColorSetting = (value) => {
 
 /*
  * A translucent band lets the page ground show through, so the colour a reader actually sees is
- * the composite. Read the ground from the palette rather than hardcoding it: a hardcoded
- * `[244, 243, 233]` matches today's storefront measurement, but it would keep matching after
- * someone changed the palette, which is the same silent-failure shape this whole guard exists
- * to close. Compositing rather than rejecting means a half-opacity dark band is judged on what
- * it renders as, not on its alpha.
+ * the composite. Resolve the ground the way the theme does rather than guessing it.
+ *
+ * `snippets/color-palette.liquid` sets the rendered `--color-background` from
+ * `settings.page_background_color` -- NOT from the palette. The palette is only that setting's
+ * schema default (config/settings_schema.json, group `page_layout`). So reading the palette
+ * directly is right only while nobody has set an explicit page background, which is exactly the
+ * kind of accidentally-correct read this guard exists to catch. Resolve in the theme's own
+ * order: the stored value, else the schema default, resolving a `{{ settings.color_palette.* }}`
+ * reference either way, and fail loudly if the result is not an opaque hex.
  */
+const readJsonConfig = (path) =>
+  JSON.parse(read(path).replace(/^\s*\/\*[\s\S]*?\*\/\s*/, ''));
+
 const PAGE_GROUND = (() => {
-  const settings = JSON.parse(read('config/settings_data.json').replace(/^\s*\/\*[\s\S]*?\*\/\s*/, ''));
-  const ground = settings.current?.color_palette?.background;
-  const parsed = /^#([0-9a-fA-F]{6})$/.exec(String(ground ?? '').trim());
-  assert.ok(parsed, `config/settings_data.json: expected an opaque palette background, got ${JSON.stringify(ground)}`);
+  const settings = readJsonConfig('config/settings_data.json');
+  const schema = readJsonConfig('config/settings_schema.json');
+  const palette = settings.current?.color_palette ?? {};
+
+  const schemaDefault = schema
+    .flatMap((group) => group.settings ?? [])
+    .find((setting) => setting.id === 'page_background_color')?.default;
+
+  const stored = settings.current?.page_background_color;
+  let value = stored ?? schemaDefault;
+
+  const reference = /^\{\{\s*settings\.color_palette\.([a-z0-9_]+)\s*\}\}$/i.exec(
+    String(value ?? '').trim(),
+  );
+  if (reference) value = palette[reference[1]];
+
+  const parsed = /^#([0-9a-fA-F]{6})$/.exec(String(value ?? '').trim());
+  assert.ok(
+    parsed,
+    `could not resolve an opaque page background: page_background_color=${JSON.stringify(stored)}, schema default=${JSON.stringify(schemaDefault)}, resolved=${JSON.stringify(value)}`,
+  );
   return [0, 2, 4].map((i) => parseInt(parsed[1].slice(i, i + 2), 16));
 })();
+
 const overPageGround = ({ rgb, alpha }) =>
   rgb.map((channel, i) => Math.round(channel * alpha + PAGE_GROUND[i] * (1 - alpha)));
 
