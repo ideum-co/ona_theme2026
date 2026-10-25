@@ -132,6 +132,17 @@
   margin: 0;
 }
 
+/* The Learn page has a title directly above its two cards. The shared page
+   gap on both sections otherwise adds up to nearly 200px before the cards. */
+#MainContent:has(.learn-list) .page-title {
+  padding-block-start: clamp(40px, 5vw, 68px);
+  padding-block-end: 0;
+}
+
+#MainContent:has(.learn-list) .learn-list {
+  padding-block-start: clamp(32px, 4vw, 56px);
+}
+
 /*
  * The eyebrow above a section heading.
  *
