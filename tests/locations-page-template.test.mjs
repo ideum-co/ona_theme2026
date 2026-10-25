@@ -18,8 +18,12 @@ const locationSectionTypes = [
   'locations-flagships',
 ];
 
+/* The live store uses the `location` suffix (singular) -- verified against all 26
+   Shopify pages: exactly one uses `location`, none uses `locations`. The plural
+   template was an orphan and was removed, so this guard now follows the template
+   the storefront actually renders. */
 test('keeps locations in a dedicated alternate page template', () => {
-  const templatePath = 'templates/page.locations.json';
+  const templatePath = 'templates/page.location.json';
   assert.ok(existsSync(resolve(themeRoot, templatePath)), `${templatePath} must exist`);
 
   const template = readTemplate(templatePath);
