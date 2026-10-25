@@ -70,7 +70,7 @@
             "height": "fit",
             "details_position": "flex-start",
             "gap": 12,
-            "sticky_details_desktop": true,
+            "sticky_details_desktop": false,
             "background_media": "none",
             "background_color": "",
             "video_position": "cover",
@@ -98,8 +98,9 @@
                 "namespace": "accentuate",
                 "description_key": "tastes_like",
                 "badge_size": 18,
-                "title_size": 64,
-                "title_size_mobile": 48,
+                "fluid_title": true,
+                "title_size": 50,
+                "title_size_mobile": 36,
                 "description_size": 22,
                 "price_size": 32,
                 "rating_size": 20,
@@ -209,32 +210,6 @@
                 }
               },
               "block_order": []
-            },
-            "text_aEtTtq": {
-              "type": "text",
-              "name": "t:names.product_description",
-              "settings": {
-                "text": "{{ closest.product.description }}",
-                "width": "100%",
-                "max_width": "normal",
-                "alignment": "left",
-                "type_preset": "rte",
-                "font": "var(--font-body--family)",
-                "font_size": "",
-                "line_height": "normal",
-                "letter_spacing": "normal",
-                "case": "none",
-                "wrap": "pretty",
-                "text_color": "",
-                "background": false,
-                "background_color": "#00000026",
-                "corner_radius": 0,
-                "padding-block-start": 0,
-                "padding-block-end": 0,
-                "padding-inline-start": 0,
-                "padding-inline-end": 0
-              },
-              "blocks": {}
             },
             "properties_table": {
               "type": "custom-liquid",
@@ -411,7 +386,6 @@
             "variant_picker_R3rGDr",
             "purchase_options_SbK4qN",
             "buy_buttons_eYQEYi",
-            "text_aEtTtq",
             "properties_table",
             "group_icgrde",
             "divider_VJhene",
@@ -615,6 +589,7 @@
                       "name": "t:names.text",
                       "settings": {
                         "text": "{{ closest.product.metafields.custom.profile_intro | metafield_tag }}",
+                        "fallback_to_product_description": true,
                         "width": "fit-content",
                         "max_width": "normal",
                         "alignment": "left",
@@ -659,9 +634,7 @@
           "blocks": {
             "brew_guide_Qm4rTp": {
               "type": "product-brew-guide",
-              "settings": {
-                "link_label": "Full brewing guide"
-              }
+              "settings": {}
             }
           },
           "block_order": [
