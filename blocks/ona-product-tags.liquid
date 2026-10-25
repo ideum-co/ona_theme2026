@@ -9,6 +9,15 @@
 {%- endcomment -%}
 {%- liquid
   assign product_resource = closest.product
+  case block.settings.tag_alignment
+    when 'center'
+      assign ona_tags_justify = 'center'
+    when 'right'
+      assign ona_tags_justify = 'flex-end'
+    else
+      assign ona_tags_justify = 'flex-start'
+  endcase
+  assign ona_tags_font_size = block.settings.tag_font_size | default: 14
 -%}
 {%- comment -%}
   margin-top is zeroed inline because `.product_single_custom_tag_black` carries
@@ -16,7 +25,8 @@
   already supplies its own gap, so the class margin would double the spacing.
   Inline beats the class regardless of stylesheet order.
 {%- endcomment -%}
-{%- capture ona_tags_style -%}margin-top: 0;{% render 'spacing-style', settings: block.settings %}{%- endcapture -%}
+{%- capture ona_tags_vars -%}--ona-tags-justify: {{ ona_tags_justify }}; --ona-tags-font-size: {{ ona_tags_font_size }}px;{%- endcapture -%}
+{%- capture ona_tags_style -%}margin-top: 0; {{ ona_tags_vars }}{% render 'spacing-style', settings: block.settings %}{%- endcapture -%}
 {%- capture ona_tags_markup -%}
   {%- render 'ona-product-tags-pdp',
     product: product_resource,
@@ -29,7 +39,7 @@
 {%- if ona_tags_trimmed != blank -%}
   {{ ona_tags_markup }}
 {%- elsif request.design_mode -%}
-  <div class="product_single_custom_tag_black ona-pdp-tags ona-pdp-tags--placeholder" style="margin-top: 0;" {{ block.shopify_attributes }}>
+  <div class="product_single_custom_tag_black ona-pdp-tags ona-pdp-tags--placeholder" style="margin-top: 0; {{ ona_tags_vars }}" {{ block.shopify_attributes }}>
     <span class="custom_product_tags"><h5>Promo tag — none active</h5></span>
   </div>
 {%- elsif product_resource != blank and section.settings.layout_type == 'carousel' -%}
@@ -50,7 +60,7 @@
   .ona-pdp-tags .custom_product_tags {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: var(--ona-tags-justify, flex-start);
     margin-bottom: 5px;
   }
 
@@ -67,7 +77,7 @@
 
   .ona-pdp-tags .custom_product_tags h5 {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--ona-tags-font-size, 14px);
     text-transform: uppercase;
   }
 
@@ -86,6 +96,40 @@
     {
       "type": "paragraph",
       "content": "Shows the scheduled promo badges set on the product (New In, Low Stock, Sold Out and any custom label). Nothing renders while no badge is active."
+    },
+    {
+      "type": "header",
+      "content": "t:content.appearance"
+    },
+    {
+      "type": "select",
+      "id": "tag_alignment",
+      "label": "t:settings.alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "center",
+          "label": "t:options.center"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "tag_font_size",
+      "label": "t:settings.size",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 14
     },
     {
       "type": "header",
