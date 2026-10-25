@@ -144,11 +144,30 @@ test('the FAQ tab sits before Reviews and holds the block', () => {
   const types = (tab.block_order ?? []).map((id) => tab.blocks[id]?.type);
   assert.deepEqual(types, ['product-faqs'], 'the tab must hold the FAQ block');
 
-  // Our own answers come before other people's.
+  // Our own answers come before other people's. Reviews stopped being a tab on
+  // 2026-10-26 and became `product_reviews_bottom`, a section after
+  // "You might also like", which is where the mock puts it -- so the ordering
+  // this guards is now "FAQs is the last tab, and Reviews is below the strip"
+  // rather than two indexes in the same block_order.
   const order = section.block_order;
+  assert.equal(
+    order[order.length - 1],
+    'product_tab_faqs_Jv4Wmd',
+    'FAQs is the last tab, so our own answers come before other people\'s',
+  );
   assert.ok(
-    order.indexOf('product_tab_faqs_Jv4Wmd') < order.indexOf('product_tab_dFwTTp'),
-    'FAQs come before Reviews',
+    !Object.hasOwn(section.blocks, 'product_tab_dFwTTp'),
+    'Reviews must not be a tab any more; it is the bottom section',
+  );
+
+  const template = readTemplate('product.json');
+  const reviews = template.sections.product_reviews_bottom;
+  assert.ok(reviews, 'the Reviews section must exist');
+  assert.ok(!reviews.disabled, 'Reviews disabled would hide every review on the PDP');
+  assert.ok(
+    template.order.indexOf('product_reviews_bottom') >
+      template.order.indexOf('product_recommendations_qggXJq'),
+    'the mock puts Reviews after "You might also like"',
   );
 });
 

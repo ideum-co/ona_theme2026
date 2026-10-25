@@ -237,16 +237,16 @@ disabled placeholder testimonials on the homepage.
 So: before converting any section, read its Liquid. The schema tells you what
 a merchant can set, not what the page draws.
 
-Alongside that, three kinds of drift, measured across all 152 sections in
+Alongside that, three kinds of drift, measured across all 156 sections in
 `templates/*.json` and guarded by `tests/component-kit.test.mjs` so they do not
 go stale again — they already did once, when #276 added three product
 templates:
 
-- **77 settings sit on `type_preset: "custom"`** — nearly three times the next
-  most common preset (`paragraph` 28, `h2` 18, `rte` 16, `h4` 14, `h6` 14).
+- **76 settings sit on `type_preset: "custom"`** — nearly three times the next
+  most common preset (`paragraph` 27, `h2` 18, `rte` 15, `h4` 14, `h6` 14).
   Each one opts out of the type scale and restates a size; there are **11
   distinct literal `font_size` values** in the templates. They are not all
-  blocks: **70 are block settings and 7 are section settings** —
+  blocks: **69 are block settings and 7 are section settings** —
   `product-highlight` and `club-invite` on the homepage, and `story-video` on
   the homepage plus all four product templates. A cleanup that walks only
   blocks misses those seven, which is also why the first count of this figure
@@ -280,7 +280,7 @@ has to be written.
 
 | # | Component | What it is | Replaces |
 | --- | --- | --- | --- |
-| 1 | `section` + `group`/`text`/`image`/`video`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×115, `group` ×40, `button` ×16, `image` ×14. A `group` has `content_direction`, so a row of two blocks is a media/text layout; `image` carries a `link` and `video` carries a YouTube/Vimeo URL. | anything that is just stacked copy, and the five media/text variants `media-with-content` cannot hold (below) |
+| 1 | `section` + `group`/`text`/`image`/`video`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×112, `group` ×40, `button` ×16, `image` ×14. A `group` has `content_direction`, so a row of two blocks is a media/text layout; `image` carries a `link` and `video` carries a YouTube/Vimeo URL. | anything that is just stacked copy, and the five media/text variants `media-with-content` cannot hold (below) |
 | 2 | `media-with-content` | one fixed media slot + a content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones and `ona-training-image-text` are **no longer this component's mapping**. The decorative layer that blocked them is solved, but the shape is a setting on the public `image` block, so all 11 convert to **component 1** — a `section` holding a `group` of `image` and `text` — and not to this one (see [Known gaps](#known-gaps)). What is left for this component is media/text sections carrying no decorative layer |
 | 3 | `hero` | full-bleed media with blocks over it: desktop and custom mobile media, overlay, `section_height`, `fetchpriority` on the image itself. Already on the homepage. | `ona-training-banner`, `ona-inner-banner` |
 | 4 | `carousel` | a static `group` header **above** a row of `_card`s. Both are direct children of `.section`, which puts them in the same grid column on separate rows — it is a header-over-cards layout, not a side-by-side one. | card rows. **Not** the five panel-plus-slider sections: their panel sits beside the slider |
@@ -499,7 +499,7 @@ component still diverge if each restates its own sizes.
 
 1. **Type comes from the preset, not a literal.** `type_preset` is one of
    `h1…h6`, `paragraph`, `rte`. `custom` is for a genuine one-off and currently
-   covers 77 settings — 70 on blocks and 7 on sections, so a cleanup that walks
+   covers 76 settings — 69 on blocks and 7 on sections, so a cleanup that walks
    only blocks stops seven short. That number should fall, not grow. No
    `font_size` in a template.
 2. **Spacing comes from a short scale.** Pick one from the 15 values in use —
@@ -574,7 +574,7 @@ next one to have happened.
    46 are referenced — so there is no up-front sweep to do. The four shared
    sections above are the only ones whose deletion needs more than one page
    converted.
-7. **Tokens**: the 77 `custom` presets and the 15 padding values, once the
+7. **Tokens**: the 76 `custom` presets and the 15 padding values, once the
    sections they live in have stopped moving. Doing this first means doing it
    twice.
 8. **The 20 inline `<style>` blocks**, independent of all of the above.
