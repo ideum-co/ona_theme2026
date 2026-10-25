@@ -202,8 +202,33 @@ small ones in two hours is how the first staging branch died (§1a).
 
 ## 5. The rule that matters most: shop-owned JSON
 
-Eight files on the live theme are written by the **theme editor**, not by this
-repository:
+**Shop-owned is a rule, not a list.** The theme editor can write every one of
+these, so all of them are shop-owned and every one of them is one unreconciled
+merge away from overwriting a merchant's decision:
+
+- every `templates/*.json`
+- every `sections/*-group.json`
+- `config/settings_data.json`
+
+That is 34 files today. Do not read the named files below as the set — they are
+the ones whose history is worth knowing, nothing more.
+`tests/shop-owned-templates.test.mjs` derives the real set from disk, so a
+template added tomorrow is covered the day it lands without anyone remembering
+to edit this section.
+
+> **This section used to be a list of eight, and the list is how the class
+> stayed invisible.** On 2026-10-25 a content comparison of the five templates
+> whose checksums differed from the live theme found 171 keys live-only, 22
+> git-only and 4 outright conflicts. `sections/header-group.json` was in neither
+> this section nor the test, and `templates/search.json`, `templates/page.about.json`
+> and `templates/page.wholesale.json` were undeclared too — 25 of the 34
+> editor-writable files were. The 22 git-only keys were a single block,
+> `button_L6TiwU`, a "Shop now" button removed in the theme editor and still
+> sitting in the repository: any merge touching `templates/product.json` would
+> have put it back on every product page. An enumeration only ever protects what
+> somebody remembered.
+
+The files with history worth knowing:
 
 - `templates/index.json`
 - `templates/product.json`
