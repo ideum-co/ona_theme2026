@@ -5,6 +5,24 @@
 ></script>
 
 {% liquid
+  assign is_brew_guide_blog = false
+  if blog.handle == 'brewguides'
+    assign is_brew_guide_blog = true
+  endif
+
+  assign selected_coffee_type = ''
+  assign selected_brew_method = ''
+  if is_brew_guide_blog
+    for tag in current_tags
+      assign tag_handle = tag | handleize
+      if tag_handle contains 'coffee-type-'
+        assign selected_coffee_type = tag_handle
+      elsif tag_handle contains 'brew-method-'
+        assign selected_brew_method = tag_handle
+      endif
+    endfor
+  endif
+
   if section.settings.background_color != blank
     render 'contrast-override', background_color: section.settings.background_color, section_id: section.id
   endif
@@ -19,12 +37,20 @@
       section
       {% if section.settings.background_color != blank %}color-custom-{{ section.id }}{% endif %}
       blog-posts
+      {% if is_brew_guide_blog %}blog-posts--brewguides{% endif %}
       spacing-style
       size-style
     "
     data-testid="blog-posts"
     style="{% render 'spacing-style', settings: section.settings %}"
   >
+    {% if is_brew_guide_blog %}
+      <nav class="brew-guide-breadcrumb" aria-label="Breadcrumb">
+        <a href="{{ routes.root_url }}">Home</a>
+        <span aria-hidden="true">/</span>
+        <a href="/pages/learn">Learn</a>
+      </nav>
+    {% endif %}
     {% content_for 'blocks' %}
 
     {%- comment -%}
@@ -41,6 +67,69 @@
       and renders the theme's own pagination-controls.
     {%- endcomment -%}
     {% paginate blog.articles by section.settings.articles_per_page %}
+    {% if is_brew_guide_blog %}
+      <nav class="brew-guide-filters" aria-label="Filter brew guides">
+        <div class="brew-guide-filters__group">
+          <span class="brew-guide-filters__label">Coffee type</span>
+          {% assign type_all_url = blog.url %}
+          {% if selected_brew_method != blank %}
+            {% assign type_all_url = blog.url | append: '/tagged/' | append: selected_brew_method %}
+          {% endif %}
+          <a href="{{ type_all_url }}" class="brew-guide-filters__option{% if selected_coffee_type == blank %} is-active{% endif %}"{% if selected_coffee_type == blank %} aria-current="page"{% endif %}>All</a>
+          {% assign type_options = 'coffee-type-espresso:Espresso|coffee-type-filter:Filter|coffee-type-milk:Milk' | split: '|' %}
+          {% for option in type_options %}
+            {% assign option_parts = option | split: ':' %}
+            {% assign option_handle = option_parts[0] %}
+            {% assign option_label = option_parts[1] %}
+            {% assign available_tag = '' %}
+            {% for tag in blog.all_tags %}
+              {% assign available_handle = tag | handleize %}
+              {% if available_handle == option_handle %}
+                {% assign available_tag = tag %}
+                {% break %}
+              {% endif %}
+            {% endfor %}
+            {% if available_tag != blank %}
+              {% assign option_url = blog.url | append: '/tagged/' | append: option_handle %}
+              {% if selected_brew_method != blank %}
+                {% assign option_url = option_url | append: '+' | append: selected_brew_method %}
+              {% endif %}
+              <a href="{{ option_url }}" class="brew-guide-filters__option{% if selected_coffee_type == option_handle %} is-active{% endif %}"{% if selected_coffee_type == option_handle %} aria-current="page"{% endif %}>{{ option_label }}</a>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <div class="brew-guide-filters__group">
+          <span class="brew-guide-filters__label">Brew method</span>
+          {% assign method_all_url = blog.url %}
+          {% if selected_coffee_type != blank %}
+            {% assign method_all_url = blog.url | append: '/tagged/' | append: selected_coffee_type %}
+          {% endif %}
+          <a href="{{ method_all_url }}" class="brew-guide-filters__option{% if selected_brew_method == blank %} is-active{% endif %}"{% if selected_brew_method == blank %} aria-current="page"{% endif %}>All</a>
+          {% assign method_options = 'brew-method-espresso:Espresso|brew-method-moka-pot:Moka Pot|brew-method-aeropress:Aeropress|brew-method-pour-over:Pour Over' | split: '|' %}
+          {% for option in method_options %}
+            {% assign option_parts = option | split: ':' %}
+            {% assign option_handle = option_parts[0] %}
+            {% assign option_label = option_parts[1] %}
+            {% assign available_tag = '' %}
+            {% for tag in blog.all_tags %}
+              {% assign available_handle = tag | handleize %}
+              {% if available_handle == option_handle %}
+                {% assign available_tag = tag %}
+                {% break %}
+              {% endif %}
+            {% endfor %}
+            {% if available_tag != blank %}
+              {% assign option_url = blog.url | append: '/tagged/' | append: option_handle %}
+              {% if selected_coffee_type != blank %}
+                {% assign option_url = blog.url | append: '/tagged/' | append: selected_coffee_type | append: '+' | append: option_handle %}
+              {% endif %}
+              <a href="{{ option_url }}" class="brew-guide-filters__option{% if selected_brew_method == option_handle %} is-active{% endif %}"{% if selected_brew_method == option_handle %} aria-current="page"{% endif %}>{{ option_label }}</a>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <span class="brew-guide-filters__count">{{ paginate.items }} guides</span>
+      </nav>
+    {% endif %}
     <div
       ref="grid"
       class="blog-posts-container blog-posts-container--{{ section.settings.card_layout | default: 'featured' }}"
@@ -198,6 +287,124 @@
    */
   .blog-posts-container--uniform .blog-post-item--horizontal {
     display: block;
+  }
+
+  /* Brew Guides uses the mockup's catalogue rhythm without changing the
+     editor-owned section or card background colours. */
+  .blog-posts--brewguides {
+    --page-content-width: var(--normal-page-width);
+    --columns-gap: 28px;
+    --rows-gap: 54px;
+  }
+
+  .brew-guide-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-block-start: 54px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .brew-guide-breadcrumb a {
+    color: currentColor;
+    text-decoration: none;
+  }
+
+  .brew-guide-breadcrumb a:hover {
+    text-decoration: underline;
+  }
+
+  .brew-guide-filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px 28px;
+    margin-block: 0 44px;
+    padding-block: 12px;
+    border-block: 1px solid currentColor;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .brew-guide-filters__group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .brew-guide-filters__label {
+    margin-inline-end: 2px;
+    white-space: nowrap;
+  }
+
+  .brew-guide-filters__option {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding-inline: 12px;
+    border: 1px solid currentColor;
+    color: currentColor;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .brew-guide-filters__option:hover,
+  .brew-guide-filters__option.is-active {
+    background: var(--color-foreground);
+    color: var(--color-background);
+  }
+
+  .brew-guide-filters__count {
+    margin-inline-start: auto;
+    white-space: nowrap;
+  }
+
+  .blog-posts--brewguides .blog-posts-container {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .blog-posts--brewguides .blog-post-item {
+    grid-column: span 1;
+  }
+
+  .blog-posts--brewguides .blog-post-card__image {
+    height: 214px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .blog-posts--brewguides {
+      --columns-gap: 14px;
+      --rows-gap: 32px;
+    }
+
+    .brew-guide-breadcrumb {
+      padding-block-start: 28px;
+    }
+
+    .brew-guide-filters {
+      gap: 12px;
+      margin-block-end: 28px;
+    }
+
+    .brew-guide-filters__group {
+      width: 100%;
+    }
+
+    .brew-guide-filters__count {
+      margin-inline-start: 0;
+    }
+
+    .blog-posts--brewguides .blog-posts-container {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .blog-posts--brewguides .blog-post-card__image {
+      height: 170px;
+    }
   }
 {% endstylesheet %}
 

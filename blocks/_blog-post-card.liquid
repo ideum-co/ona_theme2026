@@ -23,6 +23,28 @@
   {% endif %}
 
   <div class="blog-post-card__content">
+    {% if blog.handle == 'brewguides' %}
+      {% liquid
+        assign guide_category = 'Brew guide'
+        for tag in article.tags
+          assign tag_handle = tag | handleize
+          if tag_handle == 'coffee-type-espresso'
+            assign guide_category = 'Espresso'
+            break
+          elsif tag_handle == 'coffee-type-filter'
+            assign guide_category = 'Filter'
+            break
+          elsif tag_handle == 'coffee-type-milk'
+            assign guide_category = 'Milk'
+            break
+          endif
+        endfor
+      %}
+      <div class="brew-guide-card__meta">
+        <span>{{ guide_category }}</span>
+        <time datetime="{{ article.published_at | date: '%Y-%m-%d' }}">{{ article.published_at | date: '%e %b %Y' | strip }}</time>
+      </div>
+    {% endif %}
     <a
       class="blog-post-card__title-link"
       href="{{ article.url }}"
@@ -31,14 +53,18 @@
       {%- content_for 'block', id: 'heading', type: '_heading', text: article.title -%}
     </a>
 
-    {% content_for 'block',
-      id: 'blog-post-details',
-      type: '_blog-post-info-text',
-      alignment: block_settings.alignment,
-      article: article
-    %}
+    {% if blog.handle == 'brewguides' %}
+      <a class="brew-guide-card__read-more" href="{{ article.url }}">Read more</a>
+    {% else %}
+      {% content_for 'block',
+        id: 'blog-post-details',
+        type: '_blog-post-info-text',
+        alignment: block_settings.alignment,
+        article: article
+      %}
 
-    {% content_for 'block', id: 'content', type: '_blog-post-description', article: article, show_read_more: true %}
+      {% content_for 'block', id: 'content', type: '_blog-post-description', article: article, show_read_more: true %}
+    {% endif %}
   </div>
 </div>
 
@@ -108,6 +134,29 @@
     &:hover {
       color: var(--color-foreground-subdued);
     }
+  }
+
+  .brew-guide-card__meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding-block: 10px 3px;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .brew-guide-card__meta time {
+    white-space: nowrap;
+  }
+
+  .blog-posts--brewguides .blog-post-card__content a.brew-guide-card__read-more {
+    display: inline-block;
+    align-self: flex-start;
+    padding-block-start: 6px;
+    font-size: 13px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 {% endstylesheet %}
 
