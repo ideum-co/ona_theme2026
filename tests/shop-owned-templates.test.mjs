@@ -211,7 +211,16 @@ test('product.json keeps the editor-wired PDP', () => {
   // product tabs.
   assert.deepEqual(disabledPaths(sections), [
     'brew_guide',
+    // Disabled 2026-10-25 at Felipe's instruction: everything below the
+    // product-tabs section stays off until the PDP content below the Profile
+    // tab is reviewed and approved. This includes `product_recommendations_qggXJq`
+    // ("You may also like"), which is a deliberate, commercially-visible choice
+    // and not an oversight -- re-enable it with the rest when the page is signed
+    // off. The rule applied was "every section after `product_tabs_fW4maV` in
+    // `order`", applied to all four product templates.
+    'coffee_quiz_VLVDpw',
     'faqs',
+    'inline_cta_8ann9f',
     // Superseded by blocks/pdp-product-summary.liquid; re-enabling these
     // double-renders the summary. See the 2026-theme notes on group_icgrde.
     'main.product-details.best_for_pdp',
@@ -219,6 +228,12 @@ test('product.json keeps the editor-wired PDP', () => {
     'main.product-details.group_icgrde',
     'main.product-details.tastes_like_pdp',
     'product_dna_trxBBN',
+    // The three PDP enrichment sections from #304/#309, off under the same
+    // 2026-10-25 instruction as the entries above.
+    'product_media_with_text_Vy9RW6',
+    'product_origin_detail',
+    'product_producer_quote',
+    'product_recommendations_qggXJq',
     'product_tabs_XnTEpK',
     // Disabled in the theme editor on 2026-10-21, in the same save that added
     // `product_media_with_text_Vy9RW6`. That section supersedes this one: #259
@@ -316,11 +331,20 @@ test('product.merch.json keeps the editor-wired merch PDP', () => {
   assert.deepEqual(disabledPaths(sections), [
     'brew_guide',
     'faqs',
+    // Disabled 2026-10-25 at Felipe's instruction: everything below the
+    // product-tabs section stays off until the PDP content below the Profile
+    // tab is reviewed and approved. This includes `product_recommendations_qggXJq`
+    // ("You may also like"), which is a deliberate, commercially-visible choice
+    // and not an oversight -- re-enable it with the rest when the page is signed
+    // off. The rule applied was "every section after `product_tabs_fW4maV` in
+    // `order`", applied to all four product templates.
+    'inline_cta_8ann9f',
     'main.product-details.best_for_pdp',
     'main.product-details.divider_VJhene',
     'main.product-details.group_icgrde',
     'main.product-details.tastes_like_pdp',
     'product_dna_trxBBN',
+    'product_recommendations_qggXJq',
     'product_tabs_XnTEpK',
     'product_tabs_fW4maV.product_tab_4tzPxX',
     'product_tabs_fW4maV.product_tab_ePcCkQ',
@@ -420,6 +444,41 @@ test('page.location.json is declared shop-owned, and never carries the Maps key'
   const doc = readFileSync(resolve(root, 'docs/branching-and-release.md'), 'utf8');
   const shopOwned = doc.slice(doc.indexOf('## 5.'), doc.indexOf('## 6.'));
 
+  // §5 must define the class by RULE, not by listing names. A list only ever
+  // protects what somebody remembered: on 2026-10-25 the list held eight files
+  // while 34 were editor-writable, and `sections/header-group.json` -- which
+  // had in fact diverged -- was in neither the list nor this test. The three
+  // patterns below are Shopify's own: the theme editor writes every JSON
+  // template, every section group, and the theme settings.
+  for (const pattern of ['templates/*.json', 'sections/*-group.json', 'config/settings_data.json']) {
+    assert.ok(
+      shopOwned.includes(`\`${pattern}\``),
+      `§5 must declare the shop-owned class by the rule \`${pattern}\`, not by listing files`,
+    );
+  }
+  assert.match(
+    shopOwned,
+    /rule, not a list/i,
+    '§5 must say outright that shop-owned is a rule, so the named files are not read as the set',
+  );
+
+  // And the rule has to be true of the repository as it actually is. This
+  // derives the class from disk rather than restating it, so a template added
+  // tomorrow is covered the day it lands.
+  const editorWritable = [
+    ...readdirSync(resolve(root, 'templates')).filter((f) => f.endsWith('.json')).map((f) => `templates/${f}`),
+    ...readdirSync(resolve(root, 'sections')).filter((f) => f.endsWith('-group.json')).map((f) => `sections/${f}`),
+    'config/settings_data.json',
+  ];
+  assert.ok(editorWritable.length >= 30, `only ${editorWritable.length} editor-writable files found; the probe is broken`);
+  assert.match(
+    shopOwned,
+    new RegExp(`That is ${editorWritable.length} files today`),
+    `§5 must quote the derived count (${editorWritable.length}), so the rule is checked against the repo and not just asserted`,
+  );
+
+  // The named files are the ones carrying history, and the one that held a
+  // credential still has to say so.
   for (const file of [
     'templates/index.json',
     'templates/product.json',
@@ -429,7 +488,7 @@ test('page.location.json is declared shop-owned, and never carries the Maps key'
   ]) {
     assert.ok(
       shopOwned.includes(`\`${file}\``),
-      `${file} must be listed as shop-owned in docs/branching-and-release.md §5`,
+      `${file} has history worth keeping in docs/branching-and-release.md §5`,
     );
   }
   assert.match(shopOwned, /page\.location\.json.*credential/is, '§5 must say why this one is different');

@@ -92,7 +92,15 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 48,
-        "padding-block-end": 48
+        "padding-block-end": 48,
+        "limit_content_width": false,
+        "max_width": 1280,
+        "mobile_min_height": 600,
+        "mobile_content_top": 0,
+        "mobile_text_scrim": true,
+        "mobile_scrim_color": "#470a12",
+        "mobile_video_position": "contain",
+        "anchor": ""
       }
     },
     "main": {
@@ -274,7 +282,10 @@
                 "padding-block-start": 0,
                 "padding-block-end": 8,
                 "padding-inline-start": 0,
-                "padding-inline-end": 0
+                "padding-inline-end": 0,
+                "option_gap": 16,
+                "value_gap": 11,
+                "label_gap": 8
               },
               "blocks": {}
             },
@@ -398,8 +409,11 @@
               "type": "ona-product-tags",
               "settings": {
                 "padding-block-start": 0,
-                "padding-block-end": 0
-              }
+                "padding-block-end": 0,
+                "tag_alignment": "center",
+                "tag_font_size": 14
+              },
+              "blocks": {}
             }
           },
           "block_order": [
@@ -418,7 +432,7 @@
         "layout_type": "grid",
         "product_card_size": "medium",
         "mobile_product_card_size": "medium",
-        "enable_infinite_scroll": true,
+        "enable_infinite_scroll": false,
         "products_per_page": 24,
         "product_grid_width": "centered",
         "full_width_on_mobile": true,
@@ -472,7 +486,15 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 8,
-        "padding-block-end": 48
+        "padding-block-end": 48,
+        "limit_content_width": false,
+        "max_width": 1280,
+        "mobile_min_height": 600,
+        "mobile_content_top": 0,
+        "mobile_text_scrim": true,
+        "mobile_scrim_color": "#470a12",
+        "mobile_video_position": "contain",
+        "anchor": ""
       }
     },
     "faqs": {
@@ -516,7 +538,15 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 8,
-        "padding-block-end": 64
+        "padding-block-end": 64,
+        "limit_content_width": false,
+        "max_width": 1280,
+        "mobile_min_height": 600,
+        "mobile_content_top": 0,
+        "mobile_text_scrim": true,
+        "mobile_scrim_color": "#470a12",
+        "mobile_video_position": "contain",
+        "anchor": ""
       }
     }
   },

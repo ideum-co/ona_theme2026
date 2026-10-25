@@ -115,30 +115,23 @@
       },
       "12645857707859633983": {
         "type": "shopify://apps/promap-rp/blocks/findonline-embed-block/acff8fd9-34cc-4a4d-98ed-d7fdb5d3605f",
-        "disabled": false,
+        "disabled": true,
         "settings": {}
       },
       "17288229127477420511": {
         "type": "shopify://apps/promap-rp/blocks/stockistform-embed-block/acff8fd9-34cc-4a4d-98ed-d7fdb5d3605f",
-        "disabled": false,
+        "disabled": true,
         "settings": {}
       },
       "18020446634262408591": {
         "type": "shopify://apps/promap-rp/blocks/storelocator-embed-block/acff8fd9-34cc-4a4d-98ed-d7fdb5d3605f",
-        "disabled": false,
+        "disabled": true,
         "settings": {}
       },
       "16934432316630173842": {
         "type": "shopify://apps/promap-rp/blocks/wheretobuy-embed-block/acff8fd9-34cc-4a4d-98ed-d7fdb5d3605f",
-        "disabled": false,
-        "settings": {}
-      },
-      "10436698916776057164": {
-        "type": "shopify://apps/appstle-subscription/blocks/appstle-subscription-helper/fe257d39-6f88-4f35-ab08-bd437e3aa94e",
         "disabled": true,
-        "settings": {
-          "load_selling_plans_separately": true
-        }
+        "settings": {}
       },
       "13768625480086291342": {
         "type": "shopify://apps/forms/blocks/forms/8744a304-fcb1-4347-b211-bb6b4759a76a",
@@ -157,6 +150,18 @@
       },
       "6279071938380501511": {
         "type": "shopify://apps/powerful-form-builder/blocks/app-embed/e4bcb1eb-35b2-42e6-bc37-bfe0e1542c9d",
+        "disabled": false,
+        "settings": {}
+      },
+      "10436698916776057164": {
+        "type": "shopify://apps/appstle-subscription/blocks/appstle-subscription-helper/fe257d39-6f88-4f35-ab08-bd437e3aa94e",
+        "disabled": false,
+        "settings": {
+          "load_selling_plans_separately": true
+        }
+      },
+      "9928572688182724177": {
+        "type": "shopify://apps/accentuate/blocks/recently-viewed-embed/428a4822-57b4-4291-92b3-3f34bc7a240e",
         "disabled": false,
         "settings": {}
       }
@@ -249,7 +254,9 @@
   },
   "platform_customizations": {
     "custom_css": [
-      ".spacing-style.sticky-content.media-gallery--two-column.media-gallery--grid,slideshow-container {align-content: center;}"
+      ".spacing-style.sticky-content.media-gallery--two-column.media-gallery--grid,slideshow-container {align-content: center;}",
+      ".product-recommendations .resource-list.force-full-width.resource-list__carousel {max-width: 1440px; margin: 0 auto;}",
+      ".purchase-options__list,.purchase-options {display: none;}"
     ]
   }
 }
