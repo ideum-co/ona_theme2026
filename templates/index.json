@@ -1358,7 +1358,9 @@
                 "padding-block-start": 0,
                 "padding-block-end": 0,
                 "padding-inline-start": 0,
-                "padding-inline-end": 0
+                "padding-inline-end": 0,
+                "decorative_shape": "none",
+                "decorative_shape_color": ""
               },
               "blocks": {}
             },
@@ -1649,7 +1651,9 @@
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
-            "padding-inline-end": 0
+            "padding-inline-end": 0,
+            "decorative_shape": "none",
+            "decorative_shape_color": ""
           },
           "blocks": {}
         },
@@ -1888,7 +1892,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 40,
-        "padding-block-end": 40
+        "padding-block-end": 40,
+        "anchor": ""
       }
     },
     "product_intro_k9p6yn": {
@@ -2335,7 +2340,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 80,
-        "padding-block-end": 80
+        "padding-block-end": 80,
+        "anchor": ""
       }
     },
     "raspberry_candy": {
@@ -2676,7 +2682,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 80,
-        "padding-block-end": 80
+        "padding-block-end": 80,
+        "anchor": ""
       }
     },
     "story_video_URBFL6": {
@@ -2897,7 +2904,9 @@
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0
+                    "padding-inline-end": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": ""
                   },
                   "blocks": {}
                 },
@@ -2990,7 +2999,9 @@
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0
+                    "padding-inline-end": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": ""
                   },
                   "blocks": {}
                 },
@@ -3083,7 +3094,9 @@
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0
+                    "padding-inline-end": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": ""
                   },
                   "blocks": {}
                 },
@@ -3165,7 +3178,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 60,
-        "padding-block-end": 80
+        "padding-block-end": 80,
+        "anchor": ""
       }
     },
     "press_quotes_4kW9eF": {
@@ -3583,7 +3597,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 64,
-        "padding-block-end": 64
+        "padding-block-end": 64,
+        "anchor": ""
       }
     },
     "find_ona": {
@@ -3815,7 +3830,7 @@
       "name": "t:names.media_with_text",
       "settings": {
         "mobile_padding_inline": 0,
-        "mobile_text_center": false,
+        "mobile_text_center": true,
         "content_padding_custom": true,
         "content_padding_inline": 100,
         "content_padding_block_start": 0,
@@ -3962,7 +3977,9 @@
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0
+                    "padding-inline-end": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": ""
                   },
                   "blocks": {}
                 },
@@ -4055,7 +4072,9 @@
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0
+                    "padding-inline-end": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": ""
                   },
                   "blocks": {}
                 },
@@ -4148,7 +4167,9 @@
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0
+                    "padding-inline-end": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": ""
                   },
                   "blocks": {}
                 },
@@ -4241,7 +4262,9 @@
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0
+                    "padding-inline-end": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": ""
                   },
                   "blocks": {}
                 },
@@ -4334,7 +4357,9 @@
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0
+                    "padding-inline-end": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": ""
                   },
                   "blocks": {}
                 },
@@ -4418,7 +4443,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 80,
-        "padding-block-end": 80
+        "padding-block-end": 80,
+        "anchor": ""
       }
     },
     "coffee_quiz": {
@@ -4694,7 +4720,9 @@
         "campaign_note": "",
         "description": "<p>Together with <a href=\"https://waterforgood.org/\">Water for Good</a> and Project Origin, we’re continuing our long-term commitment to support safe, reliable water in coffee-growing communities.</p><p>From <strong>1–31 October</strong>, we’ll make a fixed contribution from every participating purchase toward our <strong>$20,000 fundraising goal</strong>. You don’t need to make a separate donation—simply choose a participating coffee or product and be part of the impact.</p><p>This campaign brings us closer to our longer-term goal of helping support <strong>250 community water points over seven years</strong>, creating lasting, community-led access to clean water.</p>",
         "cta_text": "Learn more",
-        "cta_url": "shopify://blogs/news/coffee-community-and-clean-water-continuing-our-work-with-water-for-good"
+        "cta_url": "shopify://blogs/news/coffee-community-and-clean-water-continuing-our-work-with-water-for-good",
+        "title_preset": "h2",
+        "title_font": "var(--font-heading--family)"
       }
     }
   },
