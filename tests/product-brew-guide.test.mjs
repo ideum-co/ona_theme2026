@@ -108,13 +108,14 @@ test('product descriptions live in Profile on templates that have a Profile tab'
     const details = template.sections.main.blocks['product-details'];
     const content = template.sections.product_tabs_fW4maV.blocks.product_tab_ePcCkQ.blocks
       .media_with_text_NwxVtm.blocks.content;
-    const texts = Object.values(content.blocks).map((b) => b.settings?.text ?? '');
-
     assert.ok(!details.block_order.includes('text_aEtTtq'), `${name}: description must not extend the purchase column`);
-    assert.ok(content.block_order.includes('text_aEtTtq'), `${name}: description must be available in Profile`);
-    assert.equal(content.blocks.text_aEtTtq.settings.text, '{{ closest.product.description }}');
-    assert.ok(texts.some((t) => t.includes('{{ closest.product.metafields.custom.profile_intro | metafield_tag }}')),
-      `${name}: keep the existing profile copy`);
+    assert.ok(!content.block_order.includes('text_aEtTtq'), `${name}: description must not duplicate the profile copy`);
+    assert.equal(content.blocks.text_aEtTtq, undefined, `${name}: remove the duplicated description block`);
+    assert.equal(
+      content.blocks.text_C78MjG.settings.text,
+      '{{ closest.product.metafields.custom.profile_intro | metafield_tag | default: closest.product.description }}',
+      `${name}: use the profile copy when present and the description otherwise`,
+    );
     assert.equal(details.settings.sticky_details_desktop, false, `${name}: long purchase columns must scroll with the page`);
   }
 });

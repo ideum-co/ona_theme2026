@@ -243,7 +243,7 @@ go stale again — they already did once, when #276 added three product
 templates:
 
 - **77 settings sit on `type_preset: "custom"`** — nearly three times the next
-  most common preset (`paragraph` 28, `h2` 18, `rte` 18, `h4` 14, `h6` 14).
+  most common preset (`paragraph` 28, `h2` 18, `rte` 16, `h4` 14, `h6` 14).
   Each one opts out of the type scale and restates a size; there are **11
   distinct literal `font_size` values** in the templates. They are not all
   blocks: **70 are block settings and 7 are section settings** —
@@ -280,7 +280,7 @@ has to be written.
 
 | # | Component | What it is | Replaces |
 | --- | --- | --- | --- |
-| 1 | `section` + `group`/`text`/`image`/`video`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×117, `group` ×40, `button` ×16, `image` ×14. A `group` has `content_direction`, so a row of two blocks is a media/text layout; `image` carries a `link` and `video` carries a YouTube/Vimeo URL. | anything that is just stacked copy, and the five media/text variants `media-with-content` cannot hold (below) |
+| 1 | `section` + `group`/`text`/`image`/`video`/`button`/`spacer` | Horizon's generic container. Already the most-used thing in the theme: `text` ×115, `group` ×40, `button` ×16, `image` ×14. A `group` has `content_direction`, so a row of two blocks is a media/text layout; `image` carries a `link` and `video` carries a YouTube/Vimeo URL. | anything that is just stacked copy, and the five media/text variants `media-with-content` cannot hold (below) |
 | 2 | `media-with-content` | one fixed media slot + a content slot holding arbitrary theme blocks. Already on the homepage three times. | the **10** `*-sourcing-v*` clones and `ona-training-image-text` are **no longer this component's mapping**. The decorative layer that blocked them is solved, but the shape is a setting on the public `image` block, so all 11 convert to **component 1** — a `section` holding a `group` of `image` and `text` — and not to this one (see [Known gaps](#known-gaps)). What is left for this component is media/text sections carrying no decorative layer |
 | 3 | `hero` | full-bleed media with blocks over it: desktop and custom mobile media, overlay, `section_height`, `fetchpriority` on the image itself. Already on the homepage. | `ona-training-banner`, `ona-inner-banner` |
 | 4 | `carousel` | a static `group` header **above** a row of `_card`s. Both are direct children of `.section`, which puts them in the same grid column on separate rows — it is a header-over-cards layout, not a side-by-side one. | card rows. **Not** the five panel-plus-slider sections: their panel sits beside the slider |
