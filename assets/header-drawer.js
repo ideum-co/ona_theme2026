@@ -132,6 +132,9 @@ class HeaderDrawer extends Component {
         } else {
           trapFocus(this.refs.details);
         }
+        // The focus trap targets <details>, which is not itself focusable.
+        // Return keyboard focus to the control that opened this menu level.
+        summary.focus();
       },
       { subtree: false }
     );
