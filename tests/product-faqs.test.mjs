@@ -171,6 +171,138 @@ test('the FAQ tab sits before Reviews and holds the block', () => {
   );
 });
 
+/*
+ * WCAG 2.x relative luminance and contrast ratio, over [r, g, b] channels in 0-255.
+ * Inlined because the alternative is a guard that cannot tell `#470a12` from `#f4f3e9`.
+ */
+const relativeLuminance = ([r, g, b]) => {
+  const channel = (v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+};
+const contrastRatio = (a, b) => {
+  const [lighter, darker] = [relativeLuminance(a), relativeLuminance(b)].sort((m, n) => n - m);
+  return (lighter + 0.05) / (darker + 0.05);
+};
+
+/*
+ * Shopify `color` settings are stored as `#rrggbb` or `#rrggbbaa` -- this repo holds 22 of the
+ * eight-digit form in product.json alone, `background_color: "#00000026"` among them. So alpha
+ * is part of the setting's contract, not an edge case, and `#470a12ff` must be treated as the
+ * same colour as `#470a12` rather than rejected for its spelling.
+ */
+const parseColorSetting = (value) => {
+  const match = /^#([0-9a-fA-F]{6})([0-9a-fA-F]{2})?$/.exec(value.trim());
+  if (!match) return null;
+  const rgb = [0, 2, 4].map((i) => parseInt(match[1].slice(i, i + 2), 16));
+  const alpha = match[2] === undefined ? 1 : parseInt(match[2], 16) / 255;
+  return { rgb, alpha };
+};
+
+/*
+ * A translucent band lets the page ground show through, so the colour a reader actually sees is
+ * the composite. Resolve the ground the way the theme does rather than guessing it.
+ *
+ * `snippets/color-palette.liquid` sets the rendered `--color-background` from
+ * `settings.page_background_color` -- NOT from the palette. The palette is only that setting's
+ * schema default (config/settings_schema.json, group `page_layout`). So reading the palette
+ * directly is right only while nobody has set an explicit page background, which is exactly the
+ * kind of accidentally-correct read this guard exists to catch. Resolve in the theme's own
+ * order: the stored value, else the schema default, resolving a `{{ settings.color_palette.* }}`
+ * reference either way, and fail loudly if the result is not an opaque hex.
+ */
+const readJsonConfig = (path) =>
+  JSON.parse(read(path).replace(/^\s*\/\*[\s\S]*?\*\/\s*/, ''));
+
+const PAGE_GROUND = (() => {
+  const settings = readJsonConfig('config/settings_data.json');
+  const schema = readJsonConfig('config/settings_schema.json');
+  const palette = settings.current?.color_palette ?? {};
+
+  const schemaDefault = schema
+    .flatMap((group) => group.settings ?? [])
+    .find((setting) => setting.id === 'page_background_color')?.default;
+
+  const stored = settings.current?.page_background_color;
+  let value = stored ?? schemaDefault;
+
+  const reference = /^\{\{\s*settings\.color_palette\.([a-z0-9_]+)\s*\}\}$/i.exec(
+    String(value ?? '').trim(),
+  );
+  if (reference) value = palette[reference[1]];
+
+  /*
+   * Same parser as the band, deliberately. Writing a second one here is how the eight-digit
+   * form came to be accepted for `background_color` and rejected for `page_background_color`
+   * in the same file -- and this one throws at module load, so it would take every test in
+   * the file with it.
+   *
+   * Alpha must be 1: a translucent page background composites over whatever the browser puts
+   * behind the document, which this test cannot know. Fail loudly instead of assuming white.
+   */
+  const parsed = parseColorSetting(String(value ?? ''));
+  const chain = `page_background_color=${JSON.stringify(stored)}, schema default=${JSON.stringify(schemaDefault)}, resolved=${JSON.stringify(value)}`;
+  assert.ok(parsed, `could not resolve a page background colour: ${chain}`);
+  assert.equal(
+    parsed.alpha,
+    1,
+    `the page background must be opaque for this guard to know what the band composites over: ${chain}`,
+  );
+  return parsed.rgb;
+})();
+
+const overPageGround = ({ rgb, alpha }) =>
+  rgb.map((channel, i) => Math.round(channel * alpha + PAGE_GROUND[i] * (1 - alpha)));
+
+test('the Reviews section background contrasts with the widget\'s own light text', () => {
+  /*
+   * The Judge.me widget brings its own colours and they are configured light-on-colour -- it
+   * used to sit inside `product_tabs_fW4maV`, which paints the per-product colour. Measured on
+   * the storefront, its review text renders `#ffffff`, and that is an app-level setting we do
+   * not control from this repo: `contrast-override.liquid` sets theme foreground tokens, which
+   * the widget does not consume. So the only lever the theme has is the ground underneath.
+   *
+   * That shipped broken on 2026-10-26: the section existed, was enabled and sat in the right
+   * place, and every guard above passed, because none of them looks at colour.
+   *
+   * Assert contrast, not a specific hex. A non-blank check is not enough -- cream `#f4f3e9`
+   * is non-blank and just as unreadable as no background at all. Templates are shop-owned
+   * (the theme editor and `shopify theme pull` both rewrite them), so that is a live path,
+   * not a hypothetical.
+   *
+   * If the widget's own text colour is ever darkened in the Judge.me admin, this guard is the
+   * thing that should be updated -- deliberately, with the new colour measured on the
+   * storefront, rather than relaxed to make a template change pass.
+   */
+  const WIDGET_TEXT = [255, 255, 255];
+
+  for (const name of [
+    'product.json',
+    'product.merch.json',
+    'product.equipment.json',
+    'product.non-coffee.json',
+  ]) {
+    const reviews = readTemplate(name).sections.product_reviews_bottom;
+    assert.ok(reviews, `${name} must carry the Reviews section`);
+
+    const background = (reviews.settings.background_color ?? '').trim();
+    const parsed = parseColorSetting(background);
+    assert.ok(
+      parsed,
+      `${name}: Reviews needs a background colour (got ${JSON.stringify(background)}) or the widget's white text lands on the cream page`,
+    );
+
+    const rendered = overPageGround(parsed);
+    const ratio = contrastRatio(rendered, WIDGET_TEXT);
+    assert.ok(
+      ratio >= 4.5,
+      `${name}: Reviews background ${background} renders as rgb(${rendered}) and gives ${ratio.toFixed(2)}:1 against the widget's white text; needs >= 4.5:1`,
+    );
+  }
+});
+
 test('the page still carries only one FAQPage', () => {
   /*
    * Two FAQPage documents on one URL is a structured-data error, and the PDP already emits
