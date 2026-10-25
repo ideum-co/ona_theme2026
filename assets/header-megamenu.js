@@ -95,8 +95,7 @@ export class HeaderMegaMenu extends Component {
     const { primaryLinks, contents } = this.refs;
 
     for (const link of primaryLinks) {
-      if (link.dataset.index === index) link.setAttribute('aria-current', 'true');
-      else link.removeAttribute('aria-current');
+      link.toggleAttribute('data-active', link.dataset.index === index);
     }
 
     for (const content of contents) {
