@@ -93,7 +93,7 @@
             "height": "fit",
             "details_position": "flex-start",
             "gap": 12,
-            "sticky_details_desktop": true,
+            "sticky_details_desktop": false,
             "background_media": "none",
             "background_color": "",
             "video_position": "cover",
@@ -241,32 +241,6 @@
                 }
               },
               "block_order": []
-            },
-            "text_aEtTtq": {
-              "type": "text",
-              "name": "t:names.product_description",
-              "settings": {
-                "text": "{{ closest.product.description }}",
-                "width": "100%",
-                "max_width": "normal",
-                "alignment": "left",
-                "type_preset": "rte",
-                "font": "var(--font-body--family)",
-                "font_size": "",
-                "line_height": "normal",
-                "letter_spacing": "normal",
-                "case": "none",
-                "wrap": "pretty",
-                "text_color": "",
-                "background": false,
-                "background_color": "#00000026",
-                "corner_radius": 0,
-                "padding-block-start": 0,
-                "padding-block-end": 0,
-                "padding-inline-start": 0,
-                "padding-inline-end": 0
-              },
-              "blocks": {}
             },
             "properties_table": {
               "type": "custom-liquid",
@@ -435,7 +409,6 @@
             "variant_picker_R3rGDr",
             "purchase_options_SbK4qN",
             "buy_buttons_eYQEYi",
-            "text_aEtTtq",
             "properties_table",
             "group_icgrde",
             "divider_VJhene",
@@ -664,12 +637,39 @@
                         "padding-inline-end": 0
                       },
                       "blocks": {}
+                    },
+                    "text_aEtTtq": {
+                      "type": "text",
+                      "name": "t:names.product_description",
+                      "settings": {
+                        "text": "{{ closest.product.description }}",
+                        "width": "100%",
+                        "max_width": "normal",
+                        "alignment": "left",
+                        "type_preset": "rte",
+                        "font": "var(--font-body--family)",
+                        "font_size": "",
+                        "line_height": "normal",
+                        "letter_spacing": "normal",
+                        "case": "none",
+                        "wrap": "pretty",
+                        "text_color": "",
+                        "background": false,
+                        "background_color": "#00000026",
+                        "corner_radius": 0,
+                        "padding-block-start": 0,
+                        "padding-block-end": 0,
+                        "padding-inline-start": 0,
+                        "padding-inline-end": 0
+                      },
+                      "blocks": {}
                     }
                   },
                   "block_order": [
                     "text_ytRgY6",
                     "text_dMNeWR",
-                    "text_C78MjG"
+                    "text_C78MjG",
+                    "text_aEtTtq"
                   ]
                 }
               },
@@ -688,9 +688,7 @@
           "blocks": {
             "brew_guide_Qm4rTp": {
               "type": "product-brew-guide",
-              "settings": {
-                "link_label": "Full brewing guide"
-              },
+              "settings": {},
               "blocks": {}
             }
           },
