@@ -36,15 +36,15 @@
     ref="trigger"
     style="anchor-name: {{ anchor_name }};"
   >
-    <legend class="variant-select__legend">{{ panel_title }}</legend>
+    <legend id="{{ trigger_id }}-label" class="variant-select__legend">{{ panel_title }}</legend>
     <button
       type="button"
       id="{{ trigger_id }}"
       class="variant-select__trigger"
       popovertarget="{{ panel_id }}"
-      aria-label="{{ panel_title }}: {{ selected_variant.title | escape }}"
+      aria-labelledby="{{ trigger_id }}-label {{ trigger_id }}-value"
     >
-      <span class="variant-select__trigger-value">{{ selected_variant.title }}</span>
+      <span id="{{ trigger_id }}-value" class="variant-select__trigger-value">{{ selected_variant.title }}</span>
       <span
         aria-hidden="true"
         class="variant-select__trigger-icon"

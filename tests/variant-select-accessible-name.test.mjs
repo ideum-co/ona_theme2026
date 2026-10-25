@@ -6,18 +6,14 @@ import test from 'node:test';
 const root = resolve(import.meta.dirname, '..');
 const read = (path) => readFileSync(resolve(root, path), 'utf8');
 
-test('custom variant dropdown triggers include their option context in the accessible name', () => {
-  const cardDropdown = read('snippets/variant-select-dropdown.liquid');
-  const mainPicker = read('snippets/variant-main-picker.liquid');
+test('custom variant dropdown names follow the visible selection', () => {
+  for (const path of ['snippets/variant-select-dropdown.liquid', 'snippets/variant-main-picker.liquid']) {
+    const source = read(path);
+    assert.match(source, /<legend id="\{\{ trigger_id \}\}-label" class="variant-select__legend">\{\{ panel_title \}\}<\/legend>/);
+    assert.match(source, /aria-labelledby="\{\{ trigger_id \}\}-label \{\{ trigger_id \}\}-value"/);
+    assert.match(source, /<span id="\{\{ trigger_id \}\}-value" class="variant-select__trigger-value">/);
+    assert.doesNotMatch(source, /class="variant-select__trigger"[^>]*aria-label=/);
+  }
 
-  assert.match(
-    cardDropdown,
-    /class="variant-select__trigger"[\s\S]*?aria-label="\{\{ panel_title \}\}: \{\{ selected_variant\.title \| escape \}\}"/,
-    'product-card dropdowns must announce both the option and selected variant',
-  );
-  assert.match(
-    mainPicker,
-    /class="variant-select__trigger"[\s\S]*?aria-label="\{\{ panel_title \}\}: \{\{ product_option\.selected_value \| escape \}\}"/,
-    'main-picker dropdowns must announce both the option and selected value',
-  );
+  assert.match(read('assets/variant-select.js'), /target\.textContent =/);
 });
