@@ -171,19 +171,42 @@ test('the FAQ tab sits before Reviews and holds the block', () => {
   );
 });
 
-test('the Reviews section keeps a background in every product template', () => {
+/*
+ * WCAG 2.x relative luminance and contrast ratio. Small enough to inline, and the alternative
+ * is trusting a guard that cannot tell `#470a12` from `#f4f3e9`.
+ */
+const relativeLuminance = (hex) => {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const channel = (c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+};
+const contrastRatio = (a, b) => {
+  const [x, y] = [relativeLuminance(a), relativeLuminance(b)].sort((m, n) => n - m);
+  return (x + 0.05) / (y + 0.05);
+};
+
+test('the Reviews section background contrasts with the widget\'s own light text', () => {
   /*
-   * The Judge.me widget brings its own colours, and they are configured light-on-colour --
-   * it used to sit inside `product_tabs_fW4maV`, which paints the per-product colour. So on
-   * the cream page ground its text renders white on cream and every review on the PDP is
-   * invisible. That shipped on 2026-10-26: the section existed, was enabled, sat in the right
-   * place, and the guards above all passed, because none of them looks at colour.
+   * The Judge.me widget brings its own colours and they are configured light-on-colour -- it
+   * used to sit inside `product_tabs_fW4maV`, which paints the per-product colour. Measured on
+   * the storefront, its review text renders `#ffffff`, and that is an app-level setting we do
+   * not control from this repo: `contrast-override.liquid` sets theme foreground tokens, which
+   * the widget does not consume. So the only lever the theme has is the ground underneath.
    *
-   * Templates are shop-owned -- the theme editor and `shopify theme pull` both rewrite them --
-   * so a merchant touching this section can blank the setting and silently restore the bug.
-   * Assert non-blank rather than a specific hex: the value is a design decision, the
-   * not-invisible part is the contract.
+   * That shipped broken on 2026-10-26: the section existed, was enabled and sat in the right
+   * place, and every guard above passed, because none of them looks at colour.
+   *
+   * Assert contrast, not a specific hex. A non-blank check is not enough -- cream `#f4f3e9`
+   * is non-blank and just as unreadable as no background at all. Templates are shop-owned
+   * (the theme editor and `shopify theme pull` both rewrite them), so that is a live path,
+   * not a hypothetical.
+   *
+   * If the widget's own text colour is ever darkened in the Judge.me admin, this guard is the
+   * thing that should be updated -- deliberately, with the new colour measured on the
+   * storefront, rather than relaxed to make a template change pass.
    */
+  const WIDGET_TEXT = '#ffffff';
+
   for (const name of [
     'product.json',
     'product.merch.json',
@@ -192,9 +215,18 @@ test('the Reviews section keeps a background in every product template', () => {
   ]) {
     const reviews = readTemplate(name).sections.product_reviews_bottom;
     assert.ok(reviews, `${name} must carry the Reviews section`);
+
+    const background = (reviews.settings.background_color ?? '').trim();
+    assert.match(
+      background,
+      /^#[0-9a-fA-F]{6}$/,
+      `${name}: Reviews needs an opaque background or the widget's white text lands on the cream page`,
+    );
+
+    const ratio = contrastRatio(background, WIDGET_TEXT);
     assert.ok(
-      (reviews.settings.background_color ?? '').trim() !== '',
-      `${name}: Reviews needs a background or the widget's light text lands on the cream page`,
+      ratio >= 4.5,
+      `${name}: Reviews background ${background} gives ${ratio.toFixed(2)}:1 against the widget's ${WIDGET_TEXT} text; needs >= 4.5:1`,
     );
   }
 });
