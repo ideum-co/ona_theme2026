@@ -203,11 +203,19 @@ const parseColorSetting = (value) => {
 
 /*
  * A translucent band lets the page ground show through, so the colour a reader actually sees is
- * the composite -- measured on the storefront as `rgb(244, 243, 233)`, the palette's
- * `background` in config/settings_data.json. Compositing rather than rejecting means a
- * half-opacity dark band is judged on what it renders as, not on its alpha.
+ * the composite. Read the ground from the palette rather than hardcoding it: a hardcoded
+ * `[244, 243, 233]` matches today's storefront measurement, but it would keep matching after
+ * someone changed the palette, which is the same silent-failure shape this whole guard exists
+ * to close. Compositing rather than rejecting means a half-opacity dark band is judged on what
+ * it renders as, not on its alpha.
  */
-const PAGE_GROUND = [244, 243, 233];
+const PAGE_GROUND = (() => {
+  const settings = JSON.parse(read('config/settings_data.json').replace(/^\s*\/\*[\s\S]*?\*\/\s*/, ''));
+  const ground = settings.current?.color_palette?.background;
+  const parsed = /^#([0-9a-fA-F]{6})$/.exec(String(ground ?? '').trim());
+  assert.ok(parsed, `config/settings_data.json: expected an opaque palette background, got ${JSON.stringify(ground)}`);
+  return [0, 2, 4].map((i) => parseInt(parsed[1].slice(i, i + 2), 16));
+})();
 const overPageGround = ({ rgb, alpha }) =>
   rgb.map((channel, i) => Math.round(channel * alpha + PAGE_GROUND[i] * (1 - alpha)));
 
