@@ -33,7 +33,9 @@ class HeaderDrawer extends Component {
   #onKeyUp = (event) => {
     if (event.key !== 'Escape') return;
 
-    this.#close(this.#getDetailsElement(event));
+    // A previous Escape may have closed the focused submenu.
+    const details = this.#getDetailsElement(event);
+    this.#close(details.open ? details : this.refs.details);
   };
 
   /**
