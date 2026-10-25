@@ -172,18 +172,44 @@ test('the FAQ tab sits before Reviews and holds the block', () => {
 });
 
 /*
- * WCAG 2.x relative luminance and contrast ratio. Small enough to inline, and the alternative
- * is trusting a guard that cannot tell `#470a12` from `#f4f3e9`.
+ * WCAG 2.x relative luminance and contrast ratio, over [r, g, b] channels in 0-255.
+ * Inlined because the alternative is a guard that cannot tell `#470a12` from `#f4f3e9`.
  */
-const relativeLuminance = (hex) => {
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
-  const channel = (c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+const relativeLuminance = ([r, g, b]) => {
+  const channel = (v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
   return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
 };
 const contrastRatio = (a, b) => {
-  const [x, y] = [relativeLuminance(a), relativeLuminance(b)].sort((m, n) => n - m);
-  return (x + 0.05) / (y + 0.05);
+  const [lighter, darker] = [relativeLuminance(a), relativeLuminance(b)].sort((m, n) => n - m);
+  return (lighter + 0.05) / (darker + 0.05);
 };
+
+/*
+ * Shopify `color` settings are stored as `#rrggbb` or `#rrggbbaa` -- this repo holds 22 of the
+ * eight-digit form in product.json alone, `background_color: "#00000026"` among them. So alpha
+ * is part of the setting's contract, not an edge case, and `#470a12ff` must be treated as the
+ * same colour as `#470a12` rather than rejected for its spelling.
+ */
+const parseColorSetting = (value) => {
+  const match = /^#([0-9a-fA-F]{6})([0-9a-fA-F]{2})?$/.exec(value.trim());
+  if (!match) return null;
+  const rgb = [0, 2, 4].map((i) => parseInt(match[1].slice(i, i + 2), 16));
+  const alpha = match[2] === undefined ? 1 : parseInt(match[2], 16) / 255;
+  return { rgb, alpha };
+};
+
+/*
+ * A translucent band lets the page ground show through, so the colour a reader actually sees is
+ * the composite -- measured on the storefront as `rgb(244, 243, 233)`, the palette's
+ * `background` in config/settings_data.json. Compositing rather than rejecting means a
+ * half-opacity dark band is judged on what it renders as, not on its alpha.
+ */
+const PAGE_GROUND = [244, 243, 233];
+const overPageGround = ({ rgb, alpha }) =>
+  rgb.map((channel, i) => Math.round(channel * alpha + PAGE_GROUND[i] * (1 - alpha)));
 
 test('the Reviews section background contrasts with the widget\'s own light text', () => {
   /*
@@ -205,7 +231,7 @@ test('the Reviews section background contrasts with the widget\'s own light text
    * thing that should be updated -- deliberately, with the new colour measured on the
    * storefront, rather than relaxed to make a template change pass.
    */
-  const WIDGET_TEXT = '#ffffff';
+  const WIDGET_TEXT = [255, 255, 255];
 
   for (const name of [
     'product.json',
@@ -217,16 +243,17 @@ test('the Reviews section background contrasts with the widget\'s own light text
     assert.ok(reviews, `${name} must carry the Reviews section`);
 
     const background = (reviews.settings.background_color ?? '').trim();
-    assert.match(
-      background,
-      /^#[0-9a-fA-F]{6}$/,
-      `${name}: Reviews needs an opaque background or the widget's white text lands on the cream page`,
+    const parsed = parseColorSetting(background);
+    assert.ok(
+      parsed,
+      `${name}: Reviews needs a background colour (got ${JSON.stringify(background)}) or the widget's white text lands on the cream page`,
     );
 
-    const ratio = contrastRatio(background, WIDGET_TEXT);
+    const rendered = overPageGround(parsed);
+    const ratio = contrastRatio(rendered, WIDGET_TEXT);
     assert.ok(
       ratio >= 4.5,
-      `${name}: Reviews background ${background} gives ${ratio.toFixed(2)}:1 against the widget's ${WIDGET_TEXT} text; needs >= 4.5:1`,
+      `${name}: Reviews background ${background} renders as rgb(${rendered}) and gives ${ratio.toFixed(2)}:1 against the widget's white text; needs >= 4.5:1`,
     );
   }
 });
