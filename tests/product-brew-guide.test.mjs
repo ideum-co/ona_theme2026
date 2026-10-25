@@ -113,9 +113,15 @@ test('product descriptions live in Profile on templates that have a Profile tab'
     assert.equal(content.blocks.text_aEtTtq, undefined, `${name}: remove the duplicated description block`);
     assert.equal(
       content.blocks.text_C78MjG.settings.text,
-      '{{ closest.product.metafields.custom.profile_intro | metafield_tag | default: closest.product.description }}',
-      `${name}: use the profile copy when present and the description otherwise`,
+      '{{ closest.product.metafields.custom.profile_intro | metafield_tag }}',
+      `${name}: keep Shopify's supported dynamic metafield source`,
     );
+    assert.equal(content.blocks.text_C78MjG.settings.fallback_to_product_description, true,
+      `${name}: opt into the description fallback in the text block`);
     assert.equal(details.settings.sticky_details_desktop, false, `${name}: long purchase columns must scroll with the page`);
   }
+
+  const textBlock = read('blocks/text.liquid');
+  assert.match(textBlock, /if block\.settings\.fallback_to_product_description[\s\S]*?assign fallback_text = closest\.product\.description/);
+  assert.match(textBlock, /render 'text', block: block, fallback_text: fallback_text/);
 });
