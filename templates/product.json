@@ -21,14 +21,16 @@
         "map_color": "#751132",
         "padding_block_start": 0,
         "padding_block_end": 0
-      }
+      },
+      "disabled": true
     },
     "product_producer_quote": {
       "type": "product-producer-quote",
       "settings": {
         "background_color": "#c17d88",
         "text_color": "#f4f3e9"
-      }
+      },
+      "disabled": true
     },
     "main": {
       "type": "product-information",
@@ -1685,7 +1687,8 @@
         "background_color": "",
         "padding-block-start": 48,
         "padding-block-end": 48
-      }
+      },
+      "disabled": true
     },
     "inline_cta_8ann9f": {
       "type": "inline-cta",
@@ -1719,7 +1722,8 @@
         "padding_bottom": 96,
         "padding_inline": 40,
         "padding_inline_mobile": 20
-      }
+      },
+      "disabled": true
     },
     "coffee_quiz_VLVDpw": {
       "type": "coffee-quiz",
@@ -1834,7 +1838,8 @@
         "text_color": "#f5f4ea",
         "accent_background": "#f5f4ea",
         "accent_color": "#6b1235"
-      }
+      },
+      "disabled": true
     },
     "product_media_with_text_Vy9RW6": {
       "type": "product-media-with-text",
@@ -2004,7 +2009,8 @@
         "padding-block-start": 64,
         "padding-block-end": 64,
         "section_width": "page-width"
-      }
+      },
+      "disabled": true
     }
   },
   "order": [
