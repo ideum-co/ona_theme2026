@@ -347,7 +347,18 @@ test('product.merch.json keeps the editor-wired merch PDP', () => {
     'product_recommendations_qggXJq',
     'product_tabs_XnTEpK',
     'product_tabs_fW4maV.product_tab_4tzPxX',
-    'product_tabs_fW4maV.product_tab_ePcCkQ',
+    // `product_tab_ePcCkQ` (Profile) was taken off this list on 2026-10-26.
+    // It is a tab *inside* `product_tabs_fW4maV`, so the "everything after the
+    // tabs section" rule above never covered it. It was disabled because it
+    // held a stale copy of the Maple design -- a hard-coded `maple.webp`, a
+    // "TASTES LIKE" label and the literal notes "Caramel, biscuts, nuts and
+    // spices" -- which would have printed Maple's tasting notes on every
+    // t-shirt. That content is gone: the tab now holds one text block that
+    // renders the product's own description via the
+    // `fallback_to_product_description` flag #381 added to `blocks/text.liquid`.
+    // Enabling it finishes that containment instead of undoing it, and it is
+    // what keeps merch descriptions on the page now that the duplicate below
+    // Add to cart is removed. The mock specifies Profile + FAQs for non-coffee.
     'section_EhyeAD',
     'story',
     'story_video_VUwQ6f',
