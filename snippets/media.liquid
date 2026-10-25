@@ -49,9 +49,13 @@
         {% liquid
           assign image_loading = 'lazy'
           assign image_sizes = 'auto'
-          if section.index == blank or section.index <= 2
+          if section and section.index <= 2
             assign image_loading = 'eager'
-            assign image_sizes = '100vw'
+            assign image_sizes = '(min-width: 750px) 60vw, 100vw'
+            if section.settings.media_width_ratio > 0
+              assign media_width = section.settings.media_width_ratio | append: 'vw'
+              assign image_sizes = '(min-width: 750px) ' | append: media_width | append: ', 100vw'
+            endif
           endif
           assign image_style = ''
           if unset_image_tag
