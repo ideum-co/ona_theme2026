@@ -616,7 +616,8 @@
                       "type": "text",
                       "name": "t:names.text",
                       "settings": {
-                        "text": "{{ closest.product.metafields.custom.profile_intro | metafield_tag | default: closest.product.description }}",
+                        "text": "{{ closest.product.metafields.custom.profile_intro | metafield_tag }}",
+                        "fallback_to_product_description": true,
                         "width": "fit-content",
                         "max_width": "normal",
                         "alignment": "left",

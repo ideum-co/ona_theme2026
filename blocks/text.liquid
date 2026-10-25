@@ -1,4 +1,11 @@
-{% render 'text', block: block %}
+{% liquid
+  assign fallback_text = blank
+  if block.settings.fallback_to_product_description
+    assign fallback_text = closest.product.description
+  endif
+%}
+
+{% render 'text', block: block, fallback_text: fallback_text %}
 
 {% schema %}
 {
@@ -9,6 +16,12 @@
       "type": "richtext",
       "id": "text",
       "label": "t:settings.text"
+    },
+    {
+      "type": "checkbox",
+      "id": "fallback_to_product_description",
+      "label": "Use product description when text is empty",
+      "default": false
     },
     {
       "type": "header",
