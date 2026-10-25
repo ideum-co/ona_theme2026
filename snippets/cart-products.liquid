@@ -283,20 +283,19 @@
                         <p>{{ item.selling_plan_allocation.selling_plan.name }}</p>
                       {%- endif -%}
 
-                    {%- endif -%}
-
-                    {%- if item.line_level_discount_allocations.size > 0 -%}
-                      <ul
-                        class="list-unstyled"
-                        role="list"
-                      >
-                        {%- for discount in item.line_level_discount_allocations -%}
-                          <li>
-                            {{ discount.discount_application.title | escape }}
-                            (-{{ discount.amount | money }})
-                          </li>
-                        {%- endfor -%}
-                      </ul>
+                      {%- if item.line_level_discount_allocations.size > 0 -%}
+                        <ul
+                          class="list-unstyled"
+                          role="list"
+                        >
+                          {%- for discount in item.line_level_discount_allocations -%}
+                            <li>
+                              {{ discount.discount_application.title | escape }}
+                              (-{{ discount.amount | money }})
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+                      {%- endif -%}
                     {%- endif -%}
                   </div>
 
