@@ -221,8 +221,10 @@ to edit this section.
 > whose checksums differed from the live theme found 171 keys live-only, 22
 > git-only and 4 outright conflicts. `sections/header-group.json` was in neither
 > this section nor the test, and `templates/search.json`, `templates/page.about.json`
-> and `templates/page.wholesale.json` were undeclared too — 25 of the 34
-> editor-writable files were. The 22 git-only keys were a single block,
+> and `templates/page.wholesale.json` were undeclared too — 26 of the 34
+> editor-writable files were. (`sections/footer-group.json` appears in this
+> section's prose as a checksum example, which is not the same as declaring it
+> shop-owned; it was undeclared too.) The 22 git-only keys were a single block,
 > `button_L6TiwU`, a "Shop now" button removed in the theme editor and still
 > sitting in the repository: any merge touching `templates/product.json` would
 > have put it back on every product page. An enumeration only ever protects what
@@ -357,7 +359,7 @@ Before any release PR that touches a `templates/*.json` or
    (`new import — live is the baseline`), and keep any deliberate change to it
    in a separate commit so the import itself stays reviewable as a pure copy.
 
-> **Why an unequal checksum proves nothing for these eight files.** The theme
+> **Why an unequal checksum proves nothing for an editor-saved file.** The theme
 > editor stores JSON **minified**; this repository carries it pretty-printed.
 > On 2026-10-21 `templates/index.json` reported `size` 115283 against a body of
 > 188663 bytes, and `templates/product.json` 54655 against 85018 — the same
