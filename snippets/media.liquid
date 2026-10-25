@@ -46,11 +46,33 @@
   {%- if show_image -%}
     {% capture image_tag %}
       {% if block_settings.image != blank %}
-        {% render 'image',
-          image: block_settings.image,
-          class: 'media-block__media border-style',
-          unset_image_tag: unset_image_tag
+        {% liquid
+          assign image_loading = 'lazy'
+          assign image_sizes = 'auto'
+          if section and section.index <= 2
+            assign image_loading = 'eager'
+            assign image_sizes = '(min-width: 750px) 60vw, 100vw'
+            if section.settings.media_width_ratio > 0
+              assign media_width = section.settings.media_width_ratio | append: 'vw'
+              assign image_sizes = '(min-width: 750px) ' | append: media_width | append: ', 100vw'
+            endif
+          endif
+          assign image_style = ''
+          if unset_image_tag
+            assign image_style = 'object-position: inherit;'
+          endif
         %}
+        {{
+          block_settings.image
+          | image_url: width: 2400
+          | image_tag:
+            widths: '400, 600, 800, 1200, 1600, 2400',
+            sizes: image_sizes,
+            loading: image_loading,
+            class: 'media-block__media border-style',
+            style: image_style,
+            alt: block_settings.image.alt
+        }}
       {% else %}
         <div class="media-block__media border-style">
           {{ 'detailed-apparel-1' | placeholder_svg_tag: 'media-block__placeholder' }}
