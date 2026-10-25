@@ -233,12 +233,24 @@ const PAGE_GROUND = (() => {
   );
   if (reference) value = palette[reference[1]];
 
-  const parsed = /^#([0-9a-fA-F]{6})$/.exec(String(value ?? '').trim());
-  assert.ok(
-    parsed,
-    `could not resolve an opaque page background: page_background_color=${JSON.stringify(stored)}, schema default=${JSON.stringify(schemaDefault)}, resolved=${JSON.stringify(value)}`,
+  /*
+   * Same parser as the band, deliberately. Writing a second one here is how the eight-digit
+   * form came to be accepted for `background_color` and rejected for `page_background_color`
+   * in the same file -- and this one throws at module load, so it would take every test in
+   * the file with it.
+   *
+   * Alpha must be 1: a translucent page background composites over whatever the browser puts
+   * behind the document, which this test cannot know. Fail loudly instead of assuming white.
+   */
+  const parsed = parseColorSetting(String(value ?? ''));
+  const chain = `page_background_color=${JSON.stringify(stored)}, schema default=${JSON.stringify(schemaDefault)}, resolved=${JSON.stringify(value)}`;
+  assert.ok(parsed, `could not resolve a page background colour: ${chain}`);
+  assert.equal(
+    parsed.alpha,
+    1,
+    `the page background must be opaque for this guard to know what the band composites over: ${chain}`,
   );
-  return [0, 2, 4].map((i) => parseInt(parsed[1].slice(i, i + 2), 16));
+  return parsed.rgb;
 })();
 
 const overPageGround = ({ rgb, alpha }) =>
