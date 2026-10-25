@@ -81,21 +81,11 @@
             {% assign option_parts = option | split: ':' %}
             {% assign option_handle = option_parts[0] %}
             {% assign option_label = option_parts[1] %}
-            {% assign available_tag = '' %}
-            {% for tag in blog.all_tags %}
-              {% assign available_handle = tag | handleize %}
-              {% if available_handle == option_handle %}
-                {% assign available_tag = tag %}
-                {% break %}
-              {% endif %}
-            {% endfor %}
-            {% if available_tag != blank %}
-              {% assign option_url = blog.url | append: '/tagged/' | append: option_handle %}
-              {% if selected_brew_method != blank %}
-                {% assign option_url = option_url | append: '+' | append: selected_brew_method %}
-              {% endif %}
-              <a href="{{ option_url }}" class="brew-guide-filters__option{% if selected_coffee_type == option_handle %} is-active{% endif %}"{% if selected_coffee_type == option_handle %} aria-current="page"{% endif %}>{{ option_label }}</a>
+            {% assign option_url = blog.url | append: '/tagged/' | append: option_handle %}
+            {% if selected_brew_method != blank %}
+              {% assign option_url = option_url | append: '+' | append: selected_brew_method %}
             {% endif %}
+            <a href="{{ option_url }}" class="brew-guide-filters__option{% if selected_coffee_type == option_handle %} is-active{% endif %}"{% if selected_coffee_type == option_handle %} aria-current="page"{% endif %}>{{ option_label }}</a>
           {% endfor %}
         </div>
         <div class="brew-guide-filters__group">
@@ -110,21 +100,11 @@
             {% assign option_parts = option | split: ':' %}
             {% assign option_handle = option_parts[0] %}
             {% assign option_label = option_parts[1] %}
-            {% assign available_tag = '' %}
-            {% for tag in blog.all_tags %}
-              {% assign available_handle = tag | handleize %}
-              {% if available_handle == option_handle %}
-                {% assign available_tag = tag %}
-                {% break %}
-              {% endif %}
-            {% endfor %}
-            {% if available_tag != blank %}
-              {% assign option_url = blog.url | append: '/tagged/' | append: option_handle %}
-              {% if selected_coffee_type != blank %}
-                {% assign option_url = blog.url | append: '/tagged/' | append: selected_coffee_type | append: '+' | append: option_handle %}
-              {% endif %}
-              <a href="{{ option_url }}" class="brew-guide-filters__option{% if selected_brew_method == option_handle %} is-active{% endif %}"{% if selected_brew_method == option_handle %} aria-current="page"{% endif %}>{{ option_label }}</a>
+            {% assign option_url = blog.url | append: '/tagged/' | append: option_handle %}
+            {% if selected_coffee_type != blank %}
+              {% assign option_url = blog.url | append: '/tagged/' | append: selected_coffee_type | append: '+' | append: option_handle %}
             {% endif %}
+            <a href="{{ option_url }}" class="brew-guide-filters__option{% if selected_brew_method == option_handle %} is-active{% endif %}"{% if selected_brew_method == option_handle %} aria-current="page"{% endif %}>{{ option_label }}</a>
           {% endfor %}
         </div>
         <span class="brew-guide-filters__count">{{ paginate.items }} guides</span>
@@ -289,8 +269,6 @@
     display: block;
   }
 
-  /* Brew Guides uses the mockup's catalogue rhythm without changing the
-     editor-owned section or card background colours. */
   .blog-posts--brewguides {
     --page-content-width: var(--normal-page-width);
     --columns-gap: 28px;
