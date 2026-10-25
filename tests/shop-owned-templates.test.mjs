@@ -211,7 +211,16 @@ test('product.json keeps the editor-wired PDP', () => {
   // product tabs.
   assert.deepEqual(disabledPaths(sections), [
     'brew_guide',
+    // Disabled 2026-10-25 at Felipe's instruction: everything below the
+    // product-tabs section stays off until the PDP content below the Profile
+    // tab is reviewed and approved. This includes `product_recommendations_qggXJq`
+    // ("You may also like"), which is a deliberate, commercially-visible choice
+    // and not an oversight -- re-enable it with the rest when the page is signed
+    // off. The rule applied was "every section after `product_tabs_fW4maV` in
+    // `order`", applied to all four product templates.
+    'coffee_quiz_VLVDpw',
     'faqs',
+    'inline_cta_8ann9f',
     // Superseded by blocks/pdp-product-summary.liquid; re-enabling these
     // double-renders the summary. See the 2026-theme notes on group_icgrde.
     'main.product-details.best_for_pdp',
@@ -219,6 +228,12 @@ test('product.json keeps the editor-wired PDP', () => {
     'main.product-details.group_icgrde',
     'main.product-details.tastes_like_pdp',
     'product_dna_trxBBN',
+    // The three PDP enrichment sections from #304/#309, off under the same
+    // 2026-10-25 instruction as the entries above.
+    'product_media_with_text_Vy9RW6',
+    'product_origin_detail',
+    'product_producer_quote',
+    'product_recommendations_qggXJq',
     'product_tabs_XnTEpK',
     // Disabled in the theme editor on 2026-10-21, in the same save that added
     // `product_media_with_text_Vy9RW6`. That section supersedes this one: #259
@@ -316,11 +331,20 @@ test('product.merch.json keeps the editor-wired merch PDP', () => {
   assert.deepEqual(disabledPaths(sections), [
     'brew_guide',
     'faqs',
+    // Disabled 2026-10-25 at Felipe's instruction: everything below the
+    // product-tabs section stays off until the PDP content below the Profile
+    // tab is reviewed and approved. This includes `product_recommendations_qggXJq`
+    // ("You may also like"), which is a deliberate, commercially-visible choice
+    // and not an oversight -- re-enable it with the rest when the page is signed
+    // off. The rule applied was "every section after `product_tabs_fW4maV` in
+    // `order`", applied to all four product templates.
+    'inline_cta_8ann9f',
     'main.product-details.best_for_pdp',
     'main.product-details.divider_VJhene',
     'main.product-details.group_icgrde',
     'main.product-details.tastes_like_pdp',
     'product_dna_trxBBN',
+    'product_recommendations_qggXJq',
     'product_tabs_XnTEpK',
     'product_tabs_fW4maV.product_tab_4tzPxX',
     'product_tabs_fW4maV.product_tab_ePcCkQ',

@@ -636,39 +636,12 @@
                         "padding-inline-end": 0
                       },
                       "blocks": {}
-                    },
-                    "button_L6TiwU": {
-                      "type": "button",
-                      "name": "t:names.button",
-                      "settings": {
-                        "label": "Shop now",
-                        "link": "shopify://collections/all",
-                        "open_in_new_tab": false,
-                        "style_class": "button",
-                        "custom_button_background": "{{ settings.color_palette.foreground }}",
-                        "custom_button_text": "{{ settings.color_palette.background }}",
-                        "custom_button_border": "{{ settings.color_palette.background }}",
-                        "link_text_color": "",
-                        "text_color": "",
-                        "text_size": 0,
-                        "text_size_mobile": 0,
-                        "padding_block": 0,
-                        "padding_block_mobile": 0,
-                        "padding_inline": 0,
-                        "padding_inline_mobile": 0,
-                        "width": "fit-content",
-                        "custom_width": 100,
-                        "width_mobile": "fit-content",
-                        "custom_width_mobile": 100
-                      },
-                      "blocks": {}
                     }
                   },
                   "block_order": [
                     "text_ytRgY6",
                     "text_dMNeWR",
-                    "text_C78MjG",
-                    "button_L6TiwU"
+                    "text_C78MjG"
                   ]
                 }
               },
@@ -1649,7 +1622,8 @@
         "background_color": "",
         "padding-block-start": 48,
         "padding-block-end": 48
-      }
+      },
+      "disabled": true
     },
     "inline_cta_8ann9f": {
       "type": "inline-cta",
@@ -1683,7 +1657,8 @@
         "padding_bottom": 96,
         "padding_inline": 40,
         "padding_inline_mobile": 20
-      }
+      },
+      "disabled": true
     }
   },
   "order": [
