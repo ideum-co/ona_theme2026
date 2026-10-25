@@ -171,6 +171,34 @@ test('the FAQ tab sits before Reviews and holds the block', () => {
   );
 });
 
+test('the Reviews section keeps a background in every product template', () => {
+  /*
+   * The Judge.me widget brings its own colours, and they are configured light-on-colour --
+   * it used to sit inside `product_tabs_fW4maV`, which paints the per-product colour. So on
+   * the cream page ground its text renders white on cream and every review on the PDP is
+   * invisible. That shipped on 2026-10-26: the section existed, was enabled, sat in the right
+   * place, and the guards above all passed, because none of them looks at colour.
+   *
+   * Templates are shop-owned -- the theme editor and `shopify theme pull` both rewrite them --
+   * so a merchant touching this section can blank the setting and silently restore the bug.
+   * Assert non-blank rather than a specific hex: the value is a design decision, the
+   * not-invisible part is the contract.
+   */
+  for (const name of [
+    'product.json',
+    'product.merch.json',
+    'product.equipment.json',
+    'product.non-coffee.json',
+  ]) {
+    const reviews = readTemplate(name).sections.product_reviews_bottom;
+    assert.ok(reviews, `${name} must carry the Reviews section`);
+    assert.ok(
+      (reviews.settings.background_color ?? '').trim() !== '',
+      `${name}: Reviews needs a background or the widget's light text lands on the cream page`,
+    );
+  }
+});
+
 test('the page still carries only one FAQPage', () => {
   /*
    * Two FAQPage documents on one URL is a structured-data error, and the PDP already emits
