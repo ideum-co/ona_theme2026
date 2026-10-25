@@ -1543,7 +1543,7 @@
         "mobile_text_scrim": false,
         "mobile_scrim_color": "#470a12",
         "background_media": "none",
-        "background_color": "",
+        "background_color": "{{ settings.color_palette.foreground }}",
         "mobile_video_position": "contain",
         "video_position": "cover",
         "background_image_position": "cover",
