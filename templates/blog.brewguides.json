@@ -16,7 +16,7 @@
           "type": "text",
           "name": "t:names.title",
           "settings": {
-            "text": "<h1>{{ closest.blog.title | replace: 'Guides', '<em>Guides</em>' }}</h1>",
+            "text": "<h1>Brew <em>Guides</em></h1>",
             "width": "fit-content",
             "max_width": "narrow",
             "alignment": "left",
