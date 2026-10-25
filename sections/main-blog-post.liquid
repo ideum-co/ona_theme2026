@@ -15,6 +15,7 @@
       layout-panel-flex--column
       section-content-wrapper
       mobile-column
+      {% if blog.handle == 'brewguides' %}section-content-wrapper--brewguide{% endif %}
     "
     style="
       {% render 'layout-panel-style', settings: section.settings %}
@@ -59,6 +60,10 @@
 </script>
 
 {% stylesheet %}
+  .section-content-wrapper--brewguide > .blog-post-featured-image {
+    order: 1;
+  }
+
   .blog-post-comments-container {
     width: 100%;
     max-width: var(--normal-content-width);
