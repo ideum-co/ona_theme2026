@@ -202,8 +202,35 @@ small ones in two hours is how the first staging branch died (§1a).
 
 ## 5. The rule that matters most: shop-owned JSON
 
-Eight files on the live theme are written by the **theme editor**, not by this
-repository:
+**Shop-owned is a rule, not a list.** The theme editor can write every one of
+these, so all of them are shop-owned and every one of them is one unreconciled
+merge away from overwriting a merchant's decision:
+
+- every `templates/*.json`
+- every `sections/*-group.json`
+- `config/settings_data.json`
+
+That is 34 files today. Do not read the named files below as the set — they are
+the ones whose history is worth knowing, nothing more.
+`tests/shop-owned-templates.test.mjs` derives the real set from disk, so a
+template added tomorrow is covered the day it lands without anyone remembering
+to edit this section.
+
+> **This section used to be a list of eight, and the list is how the class
+> stayed invisible.** On 2026-10-25 a content comparison of the five templates
+> whose checksums differed from the live theme found 171 keys live-only, 22
+> git-only and 4 outright conflicts. `sections/header-group.json` was in neither
+> this section nor the test, and `templates/search.json`, `templates/page.about.json`
+> and `templates/page.wholesale.json` were undeclared too — 26 of the 34
+> editor-writable files were. (`sections/footer-group.json` appears in this
+> section's prose as a checksum example, which is not the same as declaring it
+> shop-owned; it was undeclared too.) The 22 git-only keys were a single block,
+> `button_L6TiwU`, a "Shop now" button removed in the theme editor and still
+> sitting in the repository: any merge touching `templates/product.json` would
+> have put it back on every product page. An enumeration only ever protects what
+> somebody remembered.
+
+The files with history worth knowing:
 
 - `templates/index.json`
 - `templates/product.json`
@@ -332,7 +359,7 @@ Before any release PR that touches a `templates/*.json` or
    (`new import — live is the baseline`), and keep any deliberate change to it
    in a separate commit so the import itself stays reviewable as a pure copy.
 
-> **Why an unequal checksum proves nothing for these eight files.** The theme
+> **Why an unequal checksum proves nothing for an editor-saved file.** The theme
 > editor stores JSON **minified**; this repository carries it pretty-printed.
 > On 2026-10-21 `templates/index.json` reported `size` 115283 against a body of
 > 188663 bytes, and `templates/product.json` 54655 against 85018 — the same
