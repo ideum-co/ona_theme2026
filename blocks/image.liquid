@@ -2,6 +2,13 @@
   assign block_settings = block.settings
   assign ratio = 1
 
+  if block_settings.link != blank and block_settings.image.alt == blank
+    assign link_label = block_settings.link | split: '?' | first | remove: '#' | split: '/' | last | replace: '-', ' ' | replace: '_', ' ' | capitalize
+    if link_label == blank
+      assign link_label = block_settings.link
+    endif
+  endif
+
   case block_settings.image_ratio
     when 'landscape'
       assign ratio = '16 / 9'
@@ -83,6 +90,7 @@
 {% else %}
   <a
     href="{{ block_settings.link }}"
+    {% if link_label != blank %}aria-label="{{ link_label | escape }}"{% endif %}
     class="{{ class }}{% if shape != blank %} image-block--decorated{% endif %}"
     style="{{ style }}"
     {{ block.shopify_attributes }}
