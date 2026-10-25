@@ -87,7 +87,13 @@ class FacetsFormComponent extends Component {
     const url = new URL(window.location.href);
     const urlParameters = this.createURLParameters();
 
-    url.search = '';
+    // Replace only the parameters owned by facets. Campaign and referral
+    // parameters must survive a filter or sort interaction.
+    for (const param of new Set(url.searchParams.keys())) {
+      if (param.startsWith('filter.') || ['sort_by', 'page', 'grid', SEARCH_QUERY].includes(param)) {
+        url.searchParams.delete(param);
+      }
+    }
     for (const [param, value] of urlParameters.entries()) {
       url.searchParams.append(param, value);
     }
