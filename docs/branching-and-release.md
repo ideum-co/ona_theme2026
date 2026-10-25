@@ -419,10 +419,16 @@ more often than it is used:
    shop-owned files only when §5 step 2 already says *equal*. If it says
    unequal, fix it in the editor and let the next sync carry it back. Do not
    reconcile a 186 KB template in order to change a sentence.
-3. **The post-merge read-back is not optional and not manual.** §5 step 3 and
-   `docs/deploy-verification.md` §0 both require it; it has been skipped often
-   enough to produce `resend …, dropped by the sync on #NNN` five times. It
-   belongs in the scheduled digest, where it costs nobody anything.
+3. **The post-merge read-back stays manual and mandatory until something else
+   actually does it.** §5 step 3 and `docs/deploy-verification.md` §0 both
+   require it; it has been skipped often enough to produce
+   `resend …, dropped by the sync on #NNN` five times. It *should* move into the
+   scheduled digest, where it costs nobody anything — but **no such digest or
+   verification workflow exists in this repository today**
+   (`.github/workflows/tests.yml` is the only workflow). Until a scheduled
+   verifier is running and has been seen to catch a real drop, do the read-back
+   by hand after every merge that touches a served file. Do not treat this
+   bullet as permission to stop.
 
 ### What this does not fix
 
