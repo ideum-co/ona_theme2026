@@ -296,32 +296,27 @@
                     {%- endif -%}
                   </div>
 
+                  {%- liquid
+                    assign cart_compare_at_price = item.original_price
+                    if item.variant.compare_at_price > cart_compare_at_price
+                      assign cart_compare_at_price = item.variant.compare_at_price
+                    endif
+                    if item.selling_plan_allocation
+                      if item.selling_plan_allocation.compare_at_price > cart_compare_at_price
+                        assign cart_compare_at_price = item.selling_plan_allocation.compare_at_price
+                      endif
+                    endif
+                  -%}
                   <div class="cart-items__unit-price-wrapper">
                     <div>
-                      {% if item.original_price != item.final_price %}
+                      {% if cart_compare_at_price > item.final_price %}
                         <span class="visually-hidden">{{ 'content.price_sale' | t }}</span>
                         <span>{{ item.final_price | money }}</span>
                         <span class="visually-hidden">{{ 'content.price_regular' | t }}</span>
-                        <s class="compare-at-price">
-                          {% if item.variant.compare_at_price > item.original_price %}
-                            {{ item.variant.compare_at_price | money }}
-                          {% else %}
-                            {{ item.original_price | money }}
-                          {% endif %}
-                        </s>
+                        <s class="compare-at-price">{{ cart_compare_at_price | money }}</s>
                       {% else %}
-                        {% if item.variant.compare_at_price > item.original_price %}
-                          <span class="visually-hidden">{{ 'content.price_sale' | t }}</span>
-                        {% else %}
-                          <span class="visually-hidden">{{ 'content.price' | t }}</span>
-                        {% endif %}
-
-                        <span>{{ item.original_price | money }}</span>
-
-                        {% if item.variant.compare_at_price > item.original_price %}
-                          <span class="visually-hidden">{{ 'content.price_regular' | t }}</span>
-                          <s class="compare-at-price">{{ item.variant.compare_at_price | money }}</s>
-                        {% endif %}
+                        <span class="visually-hidden">{{ 'content.price' | t }}</span>
+                        <span>{{ item.final_price | money }}</span>
                       {% endif %}
                     </div>
                   </div>
