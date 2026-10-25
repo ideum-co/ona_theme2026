@@ -11,6 +11,26 @@ import { CollectionUpdateEvent, SearchUpdateEvent, StandardEvents } from '@shopi
 const SEARCH_QUERY = 'q';
 
 /**
+ * Replaces the query parameters managed by the facets form while retaining
+ * campaign, referral, and other unrelated parameters from the current URL.
+ * @param {string} currentURL
+ * @param {URLSearchParams} facetParameters
+ * @returns {URL}
+ */
+function buildFacetsURL(currentURL, facetParameters) {
+  const url = new URL(currentURL);
+  for (const param of new Set(url.searchParams.keys())) {
+    if (param.startsWith('filter.') || ['sort_by', 'page', 'grid', SEARCH_QUERY].includes(param)) {
+      url.searchParams.delete(param);
+    }
+  }
+  for (const [param, value] of facetParameters.entries()) {
+    url.searchParams.append(param, value);
+  }
+  return url;
+}
+
+/**
  * Handles the main facets form functionality
  *
  * @typedef {Object} FacetsFormRefs
@@ -84,19 +104,8 @@ class FacetsFormComponent extends Component {
    * Updates the URL hash with current filter parameters
    */
   #updateURLHash() {
-    const url = new URL(window.location.href);
     const urlParameters = this.createURLParameters();
-
-    // Replace only the parameters owned by facets. Campaign and referral
-    // parameters must survive a filter or sort interaction.
-    for (const param of new Set(url.searchParams.keys())) {
-      if (param.startsWith('filter.') || ['sort_by', 'page', 'grid', SEARCH_QUERY].includes(param)) {
-        url.searchParams.delete(param);
-      }
-    }
-    for (const [param, value] of urlParameters.entries()) {
-      url.searchParams.append(param, value);
-    }
+    const url = buildFacetsURL(window.location.href, urlParameters);
 
     history.pushState({ urlParameters: urlParameters.toString() }, '', url.toString());
   }
@@ -288,9 +297,7 @@ class FacetInputsComponent extends Component {
     if (!inputElement.checked) formData.append(inputElement.name, inputElement.value);
 
     const urlParameters = facetsForm.createURLParameters(formData);
-    const url = new URL(window.location.pathname, window.location.origin);
-
-    for (const [key, value] of urlParameters) url.searchParams.append(key, value);
+    const url = buildFacetsURL(window.location.href, urlParameters);
 
     if (inputElement.checked) url.searchParams.delete(inputElement.name, inputElement.value);
 
