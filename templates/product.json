@@ -11,11 +11,24 @@
   "sections": {
     "product_origin_detail": {
       "type": "product-origin-detail",
-      "settings": {}
+      "settings": {
+        "heading": "",
+        "heading_preset": "h4",
+        "media_position": "left",
+        "show_map": true,
+        "map_size": 180,
+        "background_color": "#f4f3e9",
+        "map_color": "#751132",
+        "padding_block_start": 0,
+        "padding_block_end": 0
+      }
     },
     "product_producer_quote": {
       "type": "product-producer-quote",
-      "settings": {}
+      "settings": {
+        "background_color": "#c17d88",
+        "text_color": "#f4f3e9"
+      }
     },
     "main": {
       "type": "product-information",
@@ -128,7 +141,8 @@
                 "minimum_space": 72,
                 "commerce_gap": 24,
                 "text_color": "",
-                "badge_border_color": ""
+                "badge_border_color": "",
+                "badge_field": ""
               },
               "blocks": {}
             },
@@ -453,7 +467,12 @@
         "enable_sticky_add_to_cart": true,
         "background_color": "{{ product.metafields.custom.product_color.value }}",
         "padding-block-start": 0,
-        "padding-block-end": 0
+        "padding-block-end": 0,
+        "text_color": "",
+        "color_source": "product",
+        "color_namespace": "custom",
+        "background_color_key": "pdp_background_color",
+        "text_color_key": "pdp_text_color"
       }
     },
     "product_tabs_XnTEpK": {
@@ -643,39 +662,12 @@
                         "padding-inline-end": 0
                       },
                       "blocks": {}
-                    },
-                    "button_L6TiwU": {
-                      "type": "button",
-                      "name": "t:names.button",
-                      "settings": {
-                        "label": "Shop now",
-                        "link": "shopify://collections/all",
-                        "open_in_new_tab": false,
-                        "style_class": "button",
-                        "custom_button_background": "{{ settings.color_palette.foreground }}",
-                        "custom_button_text": "{{ settings.color_palette.background }}",
-                        "custom_button_border": "{{ settings.color_palette.background }}",
-                        "link_text_color": "",
-                        "text_color": "",
-                        "text_size": 0,
-                        "text_size_mobile": 0,
-                        "padding_block": 0,
-                        "padding_block_mobile": 0,
-                        "padding_inline": 0,
-                        "padding_inline_mobile": 0,
-                        "width": "fit-content",
-                        "custom_width": 100,
-                        "width_mobile": "fit-content",
-                        "custom_width_mobile": 100
-                      },
-                      "blocks": {}
                     }
                   },
                   "block_order": [
                     "text_ytRgY6",
                     "text_dMNeWR",
-                    "text_C78MjG",
-                    "button_L6TiwU"
+                    "text_C78MjG"
                   ]
                 }
               },
@@ -696,7 +688,8 @@
               "type": "product-brew-guide",
               "settings": {
                 "link_label": "Full brewing guide"
-              }
+              },
+              "blocks": {}
             }
           },
           "block_order": [
@@ -734,7 +727,8 @@
               "settings": {
                 "origin_heading": "Origin",
                 "sourcing_heading": "Sourcing"
-              }
+              },
+              "blocks": {}
             }
           },
           "block_order": [
@@ -751,7 +745,8 @@
               "type": "product-faqs",
               "settings": {
                 "heading": ""
-              }
+              },
+              "blocks": {}
             }
           },
           "block_order": [
@@ -1138,7 +1133,9 @@
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
-            "padding-inline-end": 0
+            "padding-inline-end": 0,
+            "decorative_shape": "none",
+            "decorative_shape_color": ""
           },
           "blocks": {}
         }
@@ -1181,7 +1178,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 40,
-        "padding-block-end": 40
+        "padding-block-end": 40,
+        "anchor": ""
       },
       "disabled": true
     },
@@ -1234,7 +1232,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 0,
-        "padding-block-end": 0
+        "padding-block-end": 0,
+        "anchor": ""
       }
     },
     "brew_guide": {
@@ -1286,7 +1285,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 80,
-        "padding-block-end": 80
+        "padding-block-end": 80,
+        "anchor": ""
       }
     },
     "faqs": {
@@ -1338,7 +1338,8 @@
         "border_color": "",
         "border_radius": 0,
         "padding-block-start": 48,
-        "padding-block-end": 48
+        "padding-block-end": 48,
+        "anchor": ""
       }
     },
     "product_recommendations_qggXJq": {
@@ -2001,7 +2002,8 @@
       "name": "Product media with text",
       "settings": {
         "padding-block-start": 64,
-        "padding-block-end": 64
+        "padding-block-end": 64,
+        "section_width": "page-width"
       }
     }
   },
