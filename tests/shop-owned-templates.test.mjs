@@ -444,6 +444,41 @@ test('page.location.json is declared shop-owned, and never carries the Maps key'
   const doc = readFileSync(resolve(root, 'docs/branching-and-release.md'), 'utf8');
   const shopOwned = doc.slice(doc.indexOf('## 5.'), doc.indexOf('## 6.'));
 
+  // §5 must define the class by RULE, not by listing names. A list only ever
+  // protects what somebody remembered: on 2026-10-25 the list held eight files
+  // while 34 were editor-writable, and `sections/header-group.json` -- which
+  // had in fact diverged -- was in neither the list nor this test. The three
+  // patterns below are Shopify's own: the theme editor writes every JSON
+  // template, every section group, and the theme settings.
+  for (const pattern of ['templates/*.json', 'sections/*-group.json', 'config/settings_data.json']) {
+    assert.ok(
+      shopOwned.includes(`\`${pattern}\``),
+      `§5 must declare the shop-owned class by the rule \`${pattern}\`, not by listing files`,
+    );
+  }
+  assert.match(
+    shopOwned,
+    /rule, not a list/i,
+    '§5 must say outright that shop-owned is a rule, so the named files are not read as the set',
+  );
+
+  // And the rule has to be true of the repository as it actually is. This
+  // derives the class from disk rather than restating it, so a template added
+  // tomorrow is covered the day it lands.
+  const editorWritable = [
+    ...readdirSync(resolve(root, 'templates')).filter((f) => f.endsWith('.json')).map((f) => `templates/${f}`),
+    ...readdirSync(resolve(root, 'sections')).filter((f) => f.endsWith('-group.json')).map((f) => `sections/${f}`),
+    'config/settings_data.json',
+  ];
+  assert.ok(editorWritable.length >= 30, `only ${editorWritable.length} editor-writable files found; the probe is broken`);
+  assert.match(
+    shopOwned,
+    new RegExp(`That is ${editorWritable.length} files today`),
+    `§5 must quote the derived count (${editorWritable.length}), so the rule is checked against the repo and not just asserted`,
+  );
+
+  // The named files are the ones carrying history, and the one that held a
+  // credential still has to say so.
   for (const file of [
     'templates/index.json',
     'templates/product.json',
@@ -453,7 +488,7 @@ test('page.location.json is declared shop-owned, and never carries the Maps key'
   ]) {
     assert.ok(
       shopOwned.includes(`\`${file}\``),
-      `${file} must be listed as shop-owned in docs/branching-and-release.md §5`,
+      `${file} has history worth keeping in docs/branching-and-release.md §5`,
     );
   }
   assert.match(shopOwned, /page\.location\.json.*credential/is, '§5 must say why this one is different');
