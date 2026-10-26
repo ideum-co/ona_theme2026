@@ -184,8 +184,8 @@ Two things fall out:
    a property of those templates, not of the theme: `sections/hero.liquid`,
    `locations-flagships.liquid`, `product-dna.liquid` and the shared image
    snippets already go through `image_tag`. (Scope corrected after Codex, #203.)
-4. Retire `wowo` / `fadeInUp`. They are on **28 of these 30** sections —
-   `ona-bread-crumbs` and `ona-gust-r` are the exceptions — and the library
+4. Retire `wowo` / `fadeInUp`. They are on **28 of these 29** sections —
+   `ona-bread-crumbs` is the exception — and the library
    behind them is not in this theme, so they are inert markup.
    `animate__heartBeat` is **not** part of this sweep: it occurs exactly once
    theme-wide, on `sections/ona-icon-and-content.liquid:15`, which is one of
