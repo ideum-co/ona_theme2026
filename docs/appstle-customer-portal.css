@@ -68,6 +68,29 @@
  * on the strength of their names would have been wrong on design grounds alone.
  *
  *
+ * APPSTLE REWRITES WHAT YOU PASTE — THE SHIPPED CSS IS NOT THIS FILE
+ *
+ * Read back off the live page 2026-10-26, the rule below is delivered as:
+ *
+ *   :is(.as-cp-wrapper, .as-cp-modal):is(.appstle-customer-portal),
+ *   :is(.as-cp-wrapper, .as-cp-modal) :is(.appstle-customer-portal),
+ *   :is(.as-cp-wrapper, .as-cp-modal):is(.appstle-wrapper),
+ *   :is(.as-cp-wrapper, .as-cp-modal) :is(.appstle-wrapper) { ... }
+ *
+ * Appstle wraps every selector you paste in `:is(.as-cp-wrapper, .as-cp-modal)`, so custom CSS
+ * only ever applies to that container or something inside it. Two consequences:
+ *
+ *   - A selector outside that subtree silently matches nothing. `.appstle-wrapper` is one:
+ *     it sits above `.as-cp-wrapper`, so that half of the pair below is inert. The rule works
+ *     because of the other half — `div.app-main.appstle-customer-portal`, inside the wrapper —
+ *     and Karla inherits down from there. Both selectors stay: which one survives the rewrite
+ *     is Appstle's markup to change, not ours.
+ *   - The rewrite raises specificity. A rule you reason about at (0,2,0) ships at more than
+ *     that, so specificity arithmetic done against this file is wrong by construction.
+ *     Read the delivered rule off document.styleSheets before concluding anything about
+ *     which rule wins.
+ *
+ *
  * IF YOU ARE ABOUT TO ADD A RULE
  *
  * Re-measure first, on the live portal, signed in, with contracts present. If Appstle stops

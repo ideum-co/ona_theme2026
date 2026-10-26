@@ -78,6 +78,11 @@ account page is the one that does not match.**
    live: the three `Inter var` elements became Karla, the two Silk Serif headings were
    untouched, and nothing moved below AA. The file's header carries the full reasoning and the
    one condition that would justify adding colour rules.
+
+   Note that Appstle rewrites what you paste: every selector ships wrapped in
+   `:is(.as-cp-wrapper, .as-cp-modal)`, so custom CSS only reaches that container and its
+   descendants, and at a higher specificity than the file reads. Verify a rule by reading it
+   back off `document.styleSheets` on the live portal, not by reasoning about the pasted text.
 3. **Checkout branding, profile `585302207`** — reaches the Shopify account shell: its fonts,
    background and brand colour. **This is the same configuration that styles checkout.**
    `CheckoutBrandingCustomizations` exposes no customer-account-only fields, and the Customize
