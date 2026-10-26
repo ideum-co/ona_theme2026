@@ -377,7 +377,8 @@
       "subscribe_and_save": "Subscribe and save",
       "save_percentage": "Save {{ percentage }}%",
       "delivery_frequency": "Delivery frequency",
-      "subscription_details": "Subscription details"
+      "subscription_details": "Subscription details",
+      "subscription_unavailable_for_variant": "Not available as a subscription in this size."
     }
   }
 }

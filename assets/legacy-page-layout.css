@@ -144,6 +144,36 @@
 }
 
 /*
+ * The wholesale page's first screen.
+ *
+ * Measured on live at 1373x752: the header band ran 139-412 and spent 96px of padding above
+ * and 96px below a single 60px line of type, then the partnership section opened with another
+ * 96px before its eyebrow. The first enquiry action -- the Get In Touch that goes to the
+ * Monday form -- started at y=856, 104px below the fold, so the page asked to be scrolled
+ * before it offered anything to do.
+ *
+ * Same treatment, and the same reasoning, as the Learn page above: a header carrying one line
+ * of type does not need a full gap on both sides of it when the next section brings its own.
+ * Scoped through `.col-4-icons`, which `ona-icon-and-content` renders and only this page runs
+ * -- `.page-title` itself also opens faq and faq-subscriptions, which are not being changed.
+ * The second rule reaches the partnership through the section wrapper that follows the
+ * header's, so it tightens the first section on the page and no later one: both selectors
+ * match exactly one element on the rendered page.
+ *
+ * Re-measured with these applied: the action moves to y=690, 62px above the fold, 166px
+ * saved. At 390px it is still below the fold -- the mock answers that with a photo hero
+ * carrying the action inside it, which is a content decision and not this change.
+ */
+#MainContent:has(.col-4-icons) .page-title {
+  padding-block-start: clamp(40px, 5vw, 68px);
+  padding-block-end: 0;
+}
+
+#MainContent:has(.col-4-icons) .shopify-section:has(.page-title) + .shopify-section .add-image-and-text {
+  padding-block-start: clamp(32px, 4vw, 56px);
+}
+
+/*
  * The eyebrow above a section heading.
  *
  * Eleven legacy sections open with `<span class="subtitle">`, and nothing in this theme ever

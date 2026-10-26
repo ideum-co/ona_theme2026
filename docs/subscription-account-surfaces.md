@@ -1,0 +1,116 @@
+# The two subscription doors, and how to keep them feeling like one
+
+Measured on live 2026-10-26. This extends `customer-accounts-and-subscriptions.md`, which
+records *that* customer accounts live outside the theme. This one records *what a customer
+sees* once they are there, and which lever changes each part.
+
+## The surfaces
+
+A customer can reach their subscriptions by two routes. Both are Appstle; neither is ours.
+
+| | **Portal** | **Account page** |
+|---|---|---|
+| URL | `onacoffee.com.au/apps/subscriptions` | `shopify.com/46448246934/account` → Subscriptions |
+| How it is served | Shopify app proxy, inside **this theme's layout** | Shopify-hosted, customer-account UI extension |
+| Chrome around it | our header, our footer | Shopify's account shell |
+| Who styles the frame | the theme | checkout branding, profile `585302207` |
+| Who styles the content | Appstle (inherits our tokens) | Appstle (inherits Shopify's) |
+| Reachable by | magic-link email, FAQ links, direct URL | footer "My Account", header account icon |
+
+There is a third entry point that is not a third surface: a **Manage Subscription** button on
+the account Orders page, which links to `ona-coffee.myshopify.com/apps/subscriptions`. That
+301s to the primary domain, so it is one wasted hop, not a leak. It renders for every signed-in
+customer, including the ~284 who hold no active subscription (837 total, 553 active).
+
+## Which one customers are used to
+
+The portal. This is not a preference, it is what we have published:
+
+- `templates/page.faq-subscriptions.json` links to `/apps/subscriptions` **eight times**, and is
+  the page that answers "how do I pause / skip / change my coffee".
+- The subscription magic-link email sends customers there.
+- **No file in this theme links to `/account` at all.** The footer "My Account" entry comes from
+  the Shopify navigation menu, not from theme code.
+
+So the portal is the primary door and should stay the primary door. The account page is the one
+people arrive at by accident — from the header icon, or after checkout — and it has to lead
+somewhere that feels like the same place.
+
+## Where they diverge today
+
+Both render the same Appstle application, so the *functions* match: skip, reschedule, swap
+product, change frequency, add product, ship next order now, and the Details / Upcoming Orders /
+Past Orders tabs. The divergence is entirely presentation.
+
+| | Portal (in our layout) | Account page (Shopify-hosted) |
+|---|---|---|
+| Headings | Silk Serif | Karla |
+| Body | Karla | falls back to `-apple-system` |
+| Background | `#f4f3e9` | `#F2F0EB` |
+| Ink | `#470a12` | `#862041` brand, `#651D32` accent |
+| Nav / secondary text | `#470a12` | `rgba(0,0,0,.56)` — 4.76:1 |
+
+The portal already inherits the theme's Karla and `#470a12`, because it sits inside our page and
+Appstle honours the inherited tokens (the same reason the PDP widget does — see
+`snippets/appstle-widget-styles.liquid`). **The portal is the on-brand surface. The Shopify
+account page is the one that does not match.**
+
+## The levers, and what each one costs
+
+1. **Theme CSS** — reaches the portal only. Free, reviewable, ours. Used by
+   `snippets/appstle-portal-styles.liquid`.
+2. **Appstle → Customer Portal → Custom CSS** — holds **one rule**: a font normalisation.
+   Reaches Appstle's own
+   markup on the **portal only**. It does *not* reach the account-embedded Subscriptions page:
+   checked on live 2026-10-26, that page carries zero `appstle`/`as-` classes, its markup is
+   Shopify's own with hashed class names, and the page's only iframe is a 0x0 worker from
+   `extensions.shopifycdn.com`. It is a customer-account UI extension — Appstle declares the UI
+   and Shopify renders it. No merchant CSS can style it. Canonical copy of our portal CSS lives
+   at `appstle-customer-portal.css` beside this file.
+
+   It is one rule because that is all the portal needs. Appstle samples the theme at runtime
+   and writes `--appstle-primary: #470a12`, `--appstle-on-primary: #f4f3e9` and
+   `--appstle-accent-on-surface: #470a12` onto `<html>`, so with the field still empty the
+   portal already measured on-brand and AA-clean end to end — including four probe buttons
+   carrying Appstle's real `.as-button--*` classes, all at 14.27:1 in ONA maroon. The only
+   measured divergence was typographic: Appstle's `customer-v3.css` sets `Inter var` on its
+   containers. The rule points those containers at `--font-body--family` instead. Verified on
+   live: the three `Inter var` elements became Karla, the two Silk Serif headings were
+   untouched, and nothing moved below AA. The file's header carries the full reasoning and the
+   one condition that would justify adding colour rules.
+
+   Note that Appstle rewrites what you paste: every selector ships wrapped in
+   `:is(.as-cp-wrapper, .as-cp-modal)`, so custom CSS only reaches that container and its
+   descendants, and at a higher specificity than the file reads. Verify a rule by reading it
+   back off `document.styleSheets` on the live portal, not by reasoning about the pasted text.
+3. **Checkout branding, profile `585302207`** — reaches the Shopify account shell: its fonts,
+   background and brand colour. **This is the same configuration that styles checkout.**
+   `CheckoutBrandingCustomizations` exposes no customer-account-only fields, and the Customize
+   button on Settings → Customer accounts navigates to `settings/checkout#checkoutprofiles`.
+   There is no way to restyle the account pages without also restyling checkout.
+
+Those two findings together are the constraint that shapes everything: the account-embedded
+Subscriptions page cannot be styled by us at all, and the only lever that changes it — checkout
+branding — changes checkout with it. There is no CSS route to making that page match the theme.
+That is a decision about the money path, not a styling tweak, and it is not made in this repo.
+
+So the realistic shape is: make the **portal** excellent, because it is both the door customers
+already use and the only one we can actually style, and accept that the account page looks like
+Shopify unless checkout is rebranded.
+
+## Keeping it manageable
+
+Levers 2 and 3 live in admin text fields with no version control and no review. The rule we
+follow: **anything pasted into Appstle Custom CSS has its canonical copy in this repo**, so a
+change is reviewable and a drift is visible. The theme-side half is
+`snippets/appstle-portal-styles.liquid`; a future Appstle-side block belongs beside it with a
+test pinning the shared tokens.
+
+## Known, not fixed here
+
+- The Manage Subscription button shows to customers with no subscription. Appstle account-page
+  extension placement, not theme.
+- "Subscriptions" in the account nav, "Subscription" as the Appstle page heading, "My Account"
+  in our footer, "< My Account" inside the portal — four labels for two places.
+- `#862041` is a third maroon in the system, alongside the theme's `#470a12` and the account
+  accent `#651D32`. It is also the Judge.me star colour already recorded at 1.74:1 on the PDP.
