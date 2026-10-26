@@ -1,4 +1,6 @@
 import { AnchoredPopoverComponent } from '@theme/anchored-popover';
+import { morph } from '@theme/morph';
+import { StandardEvents } from '@shopify/events';
 
 /**
  * A custom element that presents a product option as an anchored dropdown panel instead of a
@@ -29,6 +31,11 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
     // ownership, which is the only relationship that actually ties them to this dropdown.
     if (this.dataset.subscriptionOnly === 'true') {
       document.addEventListener('change', this.#handlePlanChange);
+
+      // The card carries its own variant picker beside this panel, and picking a size there is the
+      // same decision as picking one in here. Without this the panel would keep the previous
+      // size's plans while the rest of the card moved on.
+      this.closest('product-card')?.addEventListener(StandardEvents.productSelect, this.#handleCardSelect);
     }
   }
 
@@ -36,6 +43,7 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
     super.disconnectedCallback();
 
     document.removeEventListener('change', this.#handlePlanChange);
+    this.closest('product-card')?.removeEventListener(StandardEvents.productSelect, this.#handleCardSelect);
     this.removeEventListener('click', this.#handleOptionClick);
     this.removeEventListener('change', this.#showSelectedValue);
   }
@@ -60,6 +68,24 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
 
     if (!(input instanceof HTMLInputElement) || input.type !== 'radio') return;
 
+    this.#applySelection(input);
+  };
+
+  /**
+   * Everything a picked variant has to change, whoever picked it.
+   *
+   * Shared with the card's own variant picker, so a size chosen out there goes through the same
+   * label update, the same form pointer, the same allocation gate and the same plan refresh as one
+   * chosen in this dropdown.
+   *
+   * @param {HTMLInputElement} input - The selected variant radio.
+   */
+  #applySelection(input) {
+    // Supersedes anything still resolving. The card's answer arrives asynchronously, and the
+    // dropdown stays interactive while it does - the pending style covers `.purchase-options`, not
+    // this picker - so a size chosen here has to be able to outrank a card answer still in flight.
+    this.#selectionGeneration += 1;
+
     const target = this.querySelector('.variant-select__trigger-value');
 
     if (target) {
@@ -68,6 +94,62 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
     }
 
     if (this.dataset.mode === 'cart') this.#pointFormAtVariant(input);
+
+    this.#refreshPlans(input);
+  }
+
+  /**
+   * Follows the card's own variant picker.
+   *
+   * `product-form.js` deliberately leaves this panel's form alone - it would otherwise write the
+   * new variant id in and enable the button while the panel still showed the previous size's
+   * plans - so the panel is responsible for keeping up with the card itself.
+   *
+   * @param {import('@shopify/events').ProductSelectEvent} event
+   */
+  #handleCardSelect = (event) => {
+    const card = this.closest('product-card');
+
+    if (!card || !(event.target instanceof Element) || event.target.closest('product-card') !== card) return;
+
+    // Held shut from the moment the card's picker moves, not from when the answer arrives: the
+    // shopper can open Subscribe in between, and until then every plan on screen is the old size's.
+    const panel = this.closest('subscribe-popover-component');
+
+    if (panel) this.#setPlansPending(panel, true);
+
+    // A refresh already in flight describes the size the shopper has just moved off. Left running,
+    // it would land while this selection is still resolving, and its success path clears pending,
+    // morphs that size's plans back in and points the form at its variant - the panel offering one
+    // size with the card showing the other, and the button open over it. `#refreshPlans` aborts
+    // too, but not until the answer arrives, which is the whole length of the window.
+    this.#plansController?.abort();
+
+    const generation = ++this.#selectionGeneration;
+
+    event.promise
+      .then(({ detail }) => {
+        // Aborting the fetch does not cancel this callback. Without the check, an answer for the
+        // size the shopper asked for first would land after a later dropdown pick and overwrite
+        // it - applying the older size and aborting the newer one's refresh, so Subscribe ends up
+        // submitting a size the shopper has moved off.
+        if (generation !== this.#selectionGeneration) return;
+
+        const variantId = detail?.resource?.id;
+        const input = [...this.querySelectorAll('.variant-select__input')].find(
+          (candidate) => candidate instanceof HTMLInputElement && candidate.value === String(variantId ?? '')
+        );
+
+        // A variant this dropdown does not list is not one it can follow. The pending state stays,
+        // so the panel keeps refusing rather than offering the previous size's plans.
+        if (!(input instanceof HTMLInputElement)) return;
+
+        input.checked = true;
+        this.#applySelection(input);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   /**
@@ -158,7 +240,24 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
 
     const submit = form.querySelector('button[type="submit"]');
 
-    if (submit instanceof HTMLButtonElement) submit.disabled = unavailable || this.#missingPlanFor(input, form);
+    // Pending is part of the gate, not a one-off write when the request starts. Every path that
+    // re-evaluates the button runs through here - including `#handlePlanChange`, which a keyboard
+    // user reaches while the panel is pending because `pointer-events: none` stops pointers and
+    // nothing else. Without this term, changing a focused frequency mid-flight re-enabled the
+    // button whenever the new variant happened to share the checked plan id, and the previous
+    // size's price and frequency could be submitted.
+    if (submit instanceof HTMLButtonElement) {
+      submit.disabled = unavailable || this.#plansPending() || this.#missingPlanFor(input, form);
+    }
+  }
+
+  /**
+   * Whether this panel is still waiting to be told what the picked variant can be bought on.
+   *
+   * @returns {boolean}
+   */
+  #plansPending() {
+    return this.closest('subscribe-popover-component')?.hasAttribute('data-plans-pending') ?? false;
   }
 
   /**
@@ -207,6 +306,183 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
     const allocated = (input.dataset.variantPlans ?? '').split(',').filter(Boolean);
 
     return !allocated.includes(checked.value);
+  }
+
+  /**
+   * Replaces the panel's purchase options with the ones the server renders for the picked variant.
+   *
+   * Which plans a variant can be bought on is a Liquid question - `selling_plan_allocations` is
+   * held per variant, and on this store every subscribable product answers it differently per
+   * size: not one of the six shares a plan id between its variants. The panel used to render for
+   * whichever variant was current when the card rendered and then stay as it was, so moving the
+   * dropdown left the frequencies, prices and plan ids of the previous size on screen. Asking the
+   * server for the new size is the same answer the product page gives, rather than a second copy
+   * of the rule in JavaScript.
+   *
+   * Only for a subscribe panel in a card. The product page re-renders its own section on a variant
+   * change and would get a redundant request, and a dropdown that is not subscription-only has
+   * nothing to refresh.
+   *
+   * @param {HTMLInputElement} input - The selected variant radio.
+   */
+  #refreshPlans(input) {
+    if (this.dataset.subscriptionOnly !== 'true') return;
+
+    const panel = this.closest('subscribe-popover-component');
+    const current = panel?.querySelector('.purchase-options');
+    const productUrl = this.dataset.productUrl;
+
+    if (!panel || !current || !productUrl || !input.value) return;
+
+    // Everything on screen belongs to the variant being replaced, so nothing may be bought until
+    // the answer arrives. `#missingPlanFor` would catch most of it - the checked plan usually is
+    // not allocated to the new variant - but a plan the two sizes happened to share would slip
+    // through, and a shopper who submits mid-flight should not be racing the panel either way.
+    this.#setPlansPending(panel, true);
+
+    this.#plansController?.abort();
+    this.#plansController = new AbortController();
+
+    const { signal } = this.#plansController;
+    const url = `${productUrl.split('?')[0]}?section_id=section-rendering-subscribe-panel&variant=${encodeURIComponent(
+      input.value
+    )}`;
+
+    fetch(url, { signal })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Subscribe panel render failed: ${response.status}`);
+
+        return response.text();
+      })
+      .then((text) => {
+        // A response that lost the race must not touch the panel: the controller it was started
+        // with has been replaced, so its result describes a variant the shopper has moved on from.
+        if (signal.aborted) return;
+
+        const incoming = new DOMParser().parseFromString(text, 'text/html').querySelector('.purchase-options');
+
+        if (!incoming) throw new Error('Subscribe panel render carried no purchase options');
+
+        if (!this.#adoptPanelIds(current, incoming)) {
+          throw new Error('Subscribe panel has no form to point the fetched plans at');
+        }
+
+        this.#morphPreservingFocus(current, incoming);
+        this.#setPlansPending(panel, false);
+
+        // The server preselects a plan this variant really is allocated, so the gate should now
+        // open the button - but it is the gate that decides, not this assumption.
+        this.#pointFormAtVariant(input);
+      })
+      .catch((error) => {
+        if (signal.aborted) return;
+
+        // Pending is deliberately left set. The panel on screen does not describe the picked
+        // variant, so there is nothing here it is safe to buy - and clearing it would fall back on
+        // `#missingPlanFor` alone, which lets a plan the two sizes happen to share through beside
+        // the wrong price. The next variant change retries. Re-run the gate so the button is shut
+        // now rather than at the next event.
+        this.#pointFormAtVariant(input);
+        console.error(error);
+      });
+  }
+
+  /**
+   * Counts selections so an answer that arrives late can tell it has been superseded.
+   *
+   * Both entry points share it: every applied selection advances it, and the card handler keeps
+   * the value it started with to compare against when its answer comes back.
+   *
+   * @type {number}
+   */
+  #selectionGeneration = 0;
+
+  /** @type {AbortController | undefined} */
+  #plansController;
+
+  /**
+   * Marks the panel as waiting and keeps the submit shut while it is.
+   *
+   * @param {Element} panel - The `subscribe-popover-component`.
+   * @param {boolean} pending - Whether a render is in flight.
+   */
+  #setPlansPending(panel, pending) {
+    panel.toggleAttribute('data-plans-pending', pending);
+
+    const form = document.getElementById(this.dataset.formId ?? '');
+    const submit = form?.querySelector('button[type="submit"]');
+
+    if (submit instanceof HTMLButtonElement && pending) submit.disabled = true;
+  }
+
+  /**
+   * Copies the live panel's own identifiers onto the fetched markup.
+   *
+   * The Section Rendering API cannot be told the calling block's id, so the section renders
+   * placeholders. `form` is what reaches the add to cart form from outside it, and markup left
+   * carrying the placeholder would belong to no form at all: nothing would be posted, and the gate
+   * would read no checked plan and hold the button shut.
+   *
+   * The form is resolved through the `product-form-component` this dropdown already points at,
+   * never from the markup being replaced. A variant with no allocations renders no radios and so
+   * no `[form]` element anywhere in the panel, so reading it from there would come back empty the
+   * next time the shopper picked a size that does subscribe - and, the panel having no `[form]`
+   * left to read, would stay empty for every change after it. The button would be shut for good on
+   * a variant whose plans were on screen.
+   *
+   * Written before the morph, so the two trees agree and the panel is never briefly pointed at a
+   * form that does not exist.
+   *
+   * @param {Element} current - The purchase options on screen.
+   * @param {Element} incoming - The purchase options just fetched.
+   * @returns {boolean} Whether the fetched markup can be trusted to belong to this panel.
+   */
+  #adoptPanelIds(current, incoming) {
+    const uniqueId = current.getAttribute('data-purchase-options-id');
+
+    if (uniqueId != null) incoming.setAttribute('data-purchase-options-id', uniqueId);
+
+    // `getAttribute('id')`, never `.id`. Every Shopify product form carries an `<input name="id">`
+    // for the variant, and a form's named controls shadow its own properties - so `form.id` hands
+    // back that input element, not the string. Stringified into the `form` attribute it becomes
+    // "[object HTMLInputElement]", the radios belong to no form at all, nothing is posted, and the
+    // gate reads no checked plan and shuts the button for good. Measured on the preview theme.
+    const formId = document.getElementById(this.dataset.formId ?? '')?.querySelector('form')?.getAttribute('id');
+
+    // Without it the radios would be owned by the placeholder. Better to keep the stale panel and
+    // let the gate refuse than to show plans that cannot be submitted.
+    if (!formId) return false;
+
+    for (const element of incoming.querySelectorAll('[form]')) element.setAttribute('form', formId);
+
+    return true;
+  }
+
+  /**
+   * Morphs the new purchase options in, putting focus back where the shopper left it.
+   *
+   * Morphing keeps matching nodes in place, so focus usually survives on its own - but the number
+   * of plan cards changes with the variant, and a shopper who was inside the control when the list
+   * shortened would otherwise be dropped onto `<body>` mid-task.
+   *
+   * @param {Element} current - The purchase options on screen.
+   * @param {Element} incoming - The purchase options just fetched.
+   */
+  #morphPreservingFocus(current, incoming) {
+    const active = document.activeElement;
+    const hadFocus = active instanceof HTMLElement && current.contains(active);
+    const focusSelector = hadFocus ? (active.matches('[data-plan-select]') ? '[data-plan-select]' : '.purchase-options__radio') : null;
+
+    morph(current, incoming);
+
+    if (!focusSelector) return;
+
+    if (document.activeElement !== document.body && current.contains(document.activeElement)) return;
+
+    const checked = current.querySelector('.purchase-options__radio:checked');
+    const fallback = checked?.closest('.purchase-options__card')?.querySelector(focusSelector) ?? current.querySelector(focusSelector);
+
+    if (fallback instanceof HTMLElement) fallback.focus();
   }
 
   /**

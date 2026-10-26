@@ -26,6 +26,7 @@
       "@theme/utilities": "{{ 'utilities.js' | asset_url }}",
       "@theme/variant-picker": "{{ 'variant-picker.js' | asset_url }}",
       "@theme/anchored-popover": "{{ 'anchored-popover.js' | asset_url }}",
+      "@theme/purchase-options": "{{ 'purchase-options.js' | asset_url }}",
       "@theme/variant-select": "{{ 'variant-select.js' | asset_url }}",
       "@theme/subscribe-popover": "{{ 'subscribe-popover.js' | asset_url }}",
       "@theme/header-megamenu": "{{ 'header-megamenu.js' | asset_url }}",
@@ -155,6 +156,11 @@
 ></script>
 <script
   src="{{ 'variant-picker.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+<script
+  src="{{ 'purchase-options.js' | asset_url }}"
   type="module"
   fetchpriority="low"
 ></script>

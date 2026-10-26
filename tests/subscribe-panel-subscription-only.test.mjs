@@ -11,6 +11,8 @@ const SNIPPET = 'snippets/purchase-options.liquid';
 const PAGE_BLOCK = 'blocks/purchase-options.liquid';
 const DROPDOWN = 'snippets/variant-select-dropdown.liquid';
 const SELECT_JS = 'assets/variant-select.js';
+const OPTIONS_JS = 'assets/purchase-options.js';
+const PANEL_SECTION = 'sections/section-rendering-subscribe-panel.liquid';
 
 /*
  * The one-time card is also a `name="selling_plan"` radio -- with an empty value, and earlier in
@@ -61,10 +63,13 @@ test('the product page keeps the one-time option, so the two callers stay differ
   const subscriptionOnly = callers.filter((p) =>
     /render 'purchase-options'[\s\S]{0,240}?subscription_only:\s*true/.test(read(p))
   );
+  // The section is the subscribe panel's own re-render: `variant-select.js` fetches it when the
+  // card's variant changes and morphs the result into that same panel, so it has to drop the
+  // one-time option for exactly the reason the block does. It is the panel, not another caller.
   assert.deepEqual(
-    subscriptionOnly,
-    [BLOCK],
-    'only the subscribe panel drops the one-time option; everywhere else leads with it'
+    [...subscriptionOnly].sort(),
+    [BLOCK, PANEL_SECTION].sort(),
+    'only the subscribe panel and its own re-render drop the one-time option; everywhere else leads with it'
   );
 });
 
@@ -254,8 +259,13 @@ test('the client gate reads the variant it was given and the plan that is checke
 
   assert.match(
     js,
-    /submit\.disabled = unavailable \|\| this\.#missingPlanFor\(input, form\)/,
-    'variant-select.js rewrites submit.disabled on every dropdown change; the gate has to be in it'
+    /submit\.disabled = unavailable \|\| this\.#plansPending\(\) \|\| this\.#missingPlanFor\(input, form\)/,
+    [
+      'variant-select.js rewrites submit.disabled on every dropdown change, so the gate has to be',
+      'in it -- and since #413 the panel can also be mid-refresh, which a keyboard user can reach',
+      'through a focused frequency select because `pointer-events: none` stops pointers only. All',
+      'three terms, or the button opens over plans that belong to the previous variant.',
+    ].join(' ')
   );
   assert.match(
     body,
@@ -403,11 +413,16 @@ const sliceBetween = (text, from, to) => {
   return text.slice(a, b < 0 ? undefined : b);
 };
 
+/*
+ * This behaviour used to live in an IIFE printed inside the snippet. It moved to a module when the
+ * card panel started replacing its purchase options with server-rendered markup: HTML inserted by
+ * a morph never runs its scripts, so a refreshed panel came back with every control dead. Same two
+ * assertions, followed to where the code now is.
+ */
 test('changing the frequency rewrites the posted plan and marks it chosen', () => {
-  const script = read(SNIPPET).slice(read(SNIPPET).indexOf('<script>'));
-  const handler = sliceBetween(script, 'selects.forEach(function (select) {', 'syncCardState();');
+  const handler = sliceBetween(read(OPTIONS_JS), 'target instanceof HTMLSelectElement', 'syncCardState(root);');
 
-  assert.match(handler, /radio\.value = select\.value;/, [
+  assert.match(handler, /radio\.value = target\.value;/, [
     'without this the radio keeps the default plan id: the shopper picks a cadence, is shown it',
     'as selected, and is subscribed to a different one.',
   ].join(' '));
