@@ -1,9 +1,27 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
+    "page_header": {
+      "type": "ona-page-title",
+      "settings": {
+        "background_color": "",
+        "title2": "",
+        "subtitle": ""
+      }
+    },
     "wholesale_partnership": {
       "type": "ona-wholesale-partnership",
       "settings": {
         "media_position": "right",
+        "background_color": "",
         "main_title": "Become a wholesale partner",
         "title": "JOIN OUR COMMUNITY",
         "subtitle2": "A wholesale partnership with us means elevating your café's specialty coffee experience.",
@@ -18,6 +36,7 @@
     "wholesale_sourcing_v2": {
       "type": "ona-wholesale-sourcing-v2",
       "settings": {
+        "media_position": "left",
         "background_color": "#ebe4d4",
         "id": "",
         "image": "shopify://shop_images/ONA_pewpewstudio_240625__245_LR.jpg",
@@ -30,9 +49,6 @@
     },
     "icon_and_content": {
       "type": "ona-icon-and-content",
-      "settings": {
-        "title": "You get more than just great coffee..."
-      },
       "blocks": {
         "a72fe227-f312-4bda-932b-baa94412a94d": {
           "type": "block",
@@ -81,21 +97,15 @@
         "c0b15f9e-d277-4bb0-a2c5-5a5a55675edc",
         "fe4d2944-ae21-49bb-9559-37eaa679ee5c",
         "aead289f-c5b3-477a-8b49-21d66e21cf40"
-      ]
+      ],
+      "settings": {
+        "background_color": "",
+        "title": "You get more than just great coffee...",
+        "title_gap": 36
+      }
     },
     "training": {
       "type": "ona-training",
-      "settings": {
-        "background_color": "#470a12",
-        "id": "complete-training",
-        "title": "Complete Training",
-        "content": "<p>ONA Coffee goes above and beyond as a coffee bean wholesale supplier. When you choose our wholesale coffee beans, you gain access to world-class training programs that empower your team and elevate your café's coffee experience. Discover more about <a href=\"https://www.youtube.com/watch?v=dktspYuqEIg\"><span style=\"text-decoration:underline\">our programs</span></a> — exclusive to our wholesale clients.</p>",
-        "media_type": "embed",
-        "image": "shopify://shop_images/hugh-k-2.png",
-        "video_url": "https://youtu.be/dktspYuqEIg",
-        "play_icon": "shopify://shop_images/play_button.svg",
-        "autoplay": true
-      },
       "blocks": {
         "8567fbfe-f6c8-48ca-abc9-931b07259ff2": {
           "type": "block",
@@ -123,11 +133,23 @@
         "8567fbfe-f6c8-48ca-abc9-931b07259ff2",
         "0aa8bb1c-edcf-4f19-a895-faf0284848c2",
         "2e827d35-3bcf-4dc8-8599-9f29284efa1d"
-      ]
+      ],
+      "settings": {
+        "background_color": "#470a12",
+        "id": "complete-training",
+        "title": "Complete Training",
+        "content": "<p>ONA Coffee goes above and beyond as a coffee bean wholesale supplier. When you choose our wholesale coffee beans, you gain access to world-class training programs that empower your team and elevate your café's coffee experience. Discover more about <a href=\"https://www.youtube.com/watch?v=dktspYuqEIg\"><span style=\"text-decoration:underline\">our programs</span></a> — exclusive to our wholesale clients.</p>",
+        "media_type": "embed",
+        "image": "shopify://shop_images/hugh-k-2.png",
+        "video_url": "https://youtu.be/dktspYuqEIg",
+        "play_icon": "shopify://shop_images/play_button.svg",
+        "autoplay": true
+      }
     },
     "wholesale_sourcing_v3": {
       "type": "ona-wholesale-sourcing-v3",
       "settings": {
+        "media_position": "left",
         "background_color": "#ebe4d4",
         "id": "",
         "image": "shopify://shop_images/HA-Ona-110.jpg",
@@ -140,12 +162,6 @@
     },
     "unique_coffees": {
       "type": "ona-unique-coffees",
-      "settings": {
-        "id": "unique-coffees",
-        "title": "Unique Coffees",
-        "subtitle": "We roast coffee that best suits the intended extraction method. Our wholesale coffees are defined by 3 roast profiles.",
-        "content": "Our coffees are defined by 3 roast profiles."
-      },
       "blocks": {
         "52069e9e-d9bc-47f1-8a05-204d5eb7b4dc": {
           "type": "block",
@@ -182,16 +198,17 @@
         "52069e9e-d9bc-47f1-8a05-204d5eb7b4dc",
         "5594624f-8df1-478d-9e6e-aa737bd4d81e",
         "b2cd906d-aae9-419e-9af1-9b4f8625b22f"
-      ]
+      ],
+      "settings": {
+        "background_color": "",
+        "id": "unique-coffees",
+        "title": "Unique Coffees",
+        "subtitle": "We roast coffee that best suits the intended extraction method. Our wholesale coffees are defined by 3 roast profiles.",
+        "content": "Our coffees are defined by 3 roast profiles."
+      }
     },
     "expressions": {
       "type": "ona-expressions",
-      "settings": {
-        "background_color": "#ebe4d4",
-        "id": "expersion-block-elements",
-        "title": "Our coffee offering is designed to preserve their unique expressions.",
-        "slider_autoplay": false
-      },
       "blocks": {
         "324ff6f7-dbb0-4757-a4fd-caf0921421da": {
           "type": "slider",
@@ -237,12 +254,20 @@
         "0f591c66-fd16-47e2-996f-027d67cbb309",
         "faq_NTkGhY",
         "faq_7VjfHd"
-      ]
+      ],
+      "settings": {
+        "media_position": "left",
+        "background_color": "#ebe4d4",
+        "id": "expersion-block-elements",
+        "title": "Our coffee offering is designed to preserve their unique expressions.",
+        "slider_autoplay": false
+      }
     },
     "wholesale_sourcing_v4": {
       "type": "ona-wholesale-sourcing-v4",
       "settings": {
         "media_position": "right",
+        "background_color": "",
         "id": "",
         "image": "shopify://shop_images/00205708-low.jpg",
         "title": "",
@@ -254,16 +279,6 @@
     },
     "sourcing": {
       "type": "ona-sourcing",
-      "settings": {
-        "background_color": "#ebe4d4",
-        "id": "sourcing-block-elements",
-        "image": "shopify://shop_images/cover-farmers_0e185c64-9e79-43f4-adb9-a944da98e26f.png",
-        "title": "SOURCING",
-        "subtitle": "Connecting with Origin",
-        "content": "<p>Sasa Sestic's well-known work at the farm level, amplified globally, has set deep roots at its origin, fostering connections that have given rise to some of the most innovative coffees in the world.</p><p>With the visionary leadership and expertise of Sasa Sestic and Sam Corra, we're committed to cultivating the highest quality coffees and partnerships. As leading wholesale coffee dealers, we seek out coffee producers who share a collective vision for shaping the future of specialty coffee.</p>",
-        "button_text": "",
-        "button_url": ""
-      },
       "blocks": {
         "88a78ac7-62e1-4735-81c5-ca1868a196fb": {
           "type": "block",
@@ -311,16 +326,21 @@
         "5579a3ae-3142-4752-827a-f9ffd7302494",
         "42de4cdf-763b-456d-80ab-1b378e1a9900",
         "a86ac57b-2d07-4709-ad5e-01198b53077b"
-      ]
+      ],
+      "settings": {
+        "media_position": "left",
+        "background_color": "#ebe4d4",
+        "id": "sourcing-block-elements",
+        "image": "shopify://shop_images/cover-farmers_0e185c64-9e79-43f4-adb9-a944da98e26f.png",
+        "title": "SOURCING",
+        "subtitle": "Connecting with Origin",
+        "content": "<p>Sasa Sestic's well-known work at the farm level, amplified globally, has set deep roots at its origin, fostering connections that have given rise to some of the most innovative coffees in the world.</p><p>With the visionary leadership and expertise of Sasa Sestic and Sam Corra, we're committed to cultivating the highest quality coffees and partnerships. As leading wholesale coffee dealers, we seek out coffee producers who share a collective vision for shaping the future of specialty coffee.</p>",
+        "button_text": "",
+        "button_url": ""
+      }
     },
     "supported": {
       "type": "ona-supported",
-      "settings": {
-        "id": "supported",
-        "title": "Always Supported",
-        "content": "When you join ONA Coffee, you enter a network of coffee professionals with years of experience as baristas, roasters, café owners and managers and competition coaches. As one of Australia’s most trusted wholesale coffee suppliers, we offer hands-on, personalised support that grows with your business.",
-        "slider_autoplay": true
-      },
       "blocks": {
         "26779b51-4f1b-4fc0-bec8-969d26bf13b7": {
           "type": "slider",
@@ -386,11 +406,19 @@
         "64816267-2edc-4f8b-924e-45a2a900f928",
         "2c6c9d38-8103-45b7-ba3e-9fa59ce23b36",
         "4931a9ca-dec4-46e5-9f5a-c1e0f3ac373b"
-      ]
+      ],
+      "settings": {
+        "background_color": "",
+        "id": "supported",
+        "title": "Always Supported",
+        "content": "When you join ONA Coffee, you enter a network of coffee professionals with years of experience as baristas, roasters, café owners and managers and competition coaches. As one of Australia’s most trusted wholesale coffee suppliers, we offer hands-on, personalised support that grows with your business.",
+        "slider_autoplay": true
+      }
     },
     "wholesale_sourcing_v5": {
       "type": "ona-wholesale-sourcing-v5",
       "settings": {
+        "media_position": "left",
         "background_color": "#ebe4d4",
         "id": "",
         "image": "shopify://shop_images/4_a01b08af-a94c-4a7d-98a0-456a0361728d.jpg",
@@ -403,14 +431,6 @@
     },
     "wholesale_testimonial": {
       "type": "ona-wholesale-testimonial",
-      "settings": {
-        "media_position": "right",
-        "id": "testimomnial-block",
-        "title": "Café Partners Testimonials",
-        "subtitle": "",
-        "content": "We value our café partnerships. Our upcoming video spills the beans on the incredible friendships we've brewed with some of our café partners. We're shining a light on those legendary teams that have been rocking our coffee scene for ages. It's not just about pouring the perfect cup – it's about the laughs, the conversations, and the caffeinated love we've shared along the way.",
-        "slider_autoplay": true
-      },
       "blocks": {
         "block_XLNrMd": {
           "type": "block",
@@ -462,15 +482,19 @@
         "block_eQPbmY",
         "block_AHwXJX",
         "block_hGFzTd"
-      ]
+      ],
+      "settings": {
+        "media_position": "right",
+        "background_color": "",
+        "id": "testimomnial-block",
+        "title": "Café Partners Testimonials",
+        "subtitle": "",
+        "content": "We value our café partnerships. Our upcoming video spills the beans on the incredible friendships we've brewed with some of our café partners. We're shining a light on those legendary teams that have been rocking our coffee scene for ages. It's not just about pouring the perfect cup – it's about the laughs, the conversations, and the caffeinated love we've shared along the way.",
+        "slider_autoplay": true
+      }
     },
     "cafe_testimonial": {
       "type": "ona-cafe-testimonial",
-      "settings": {
-        "background_color": "#ebe4d4",
-        "id": "cafe-testimonials",
-        "bottom_image": "shopify://shop_images/ONA_Bus.png"
-      },
       "blocks": {
         "block_DQmeeF": {
           "type": "block",
@@ -514,18 +538,15 @@
         "block_Mm8pzk",
         "block_7GKY9J",
         "block_4ynkHb"
-      ]
+      ],
+      "settings": {
+        "background_color": "#ebe4d4",
+        "id": "cafe-testimonials",
+        "bottom_image": "shopify://shop_images/ONA_Bus.png"
+      }
     },
     "exclusive_access": {
       "type": "ona-exclusive-access",
-      "settings": {
-        "background_color": "#470a12",
-        "id": "exclusive-access",
-        "title": "Exclusive Access",
-        "content": "<p>As a wholesale partner, you receive exclusive access to the latest coffee trends, news, findings, and educational content.</p><ul><li> 50+ café focused video content  </li><li> Research and development reports</li><li>Free passes for events and masterclasses</li><li>Special releases and merchandise</li></ul>",
-        "overlay": "",
-        "slider_autoplay": true
-      },
       "blocks": {
         "d4523970-1abb-4bba-becf-7e9e1903cda0": {
           "type": "slider",
@@ -552,11 +573,20 @@
       "block_order": [
         "d4523970-1abb-4bba-becf-7e9e1903cda0",
         "b64d1d98-84d3-4265-a7c0-01386acae25a"
-      ]
+      ],
+      "settings": {
+        "background_color": "#470a12",
+        "id": "exclusive-access",
+        "title": "Exclusive Access",
+        "content": "<p>As a wholesale partner, you receive exclusive access to the latest coffee trends, news, findings, and educational content.</p><ul><li> 50+ café focused video content  </li><li> Research and development reports</li><li>Free passes for events and masterclasses</li><li>Special releases and merchandise</li></ul>",
+        "slider_autoplay": true
+      }
     },
     "wholesale_sourcing_v6": {
       "type": "ona-wholesale-sourcing-v6",
+      "disabled": true,
       "settings": {
+        "media_position": "left",
         "background_color": "#ebe4d4",
         "id": "",
         "image": "shopify://shop_images/6_c1997037-286a-426f-bc96-0af899e9a4f0.jpg",
@@ -569,16 +599,12 @@
     },
     "gust_r": {
       "type": "ona-gust-r",
-      "settings": {}
+      "settings": {
+        "background_color": ""
+      }
     },
     "wholesale_brands": {
       "type": "ona-wholesale-brands",
-      "settings": {
-        "background_color": "#ebe4d4",
-        "id": "",
-        "title": "Brands we work with",
-        "content": ""
-      },
       "blocks": {
         "block_G4NHXD": {
           "type": "block",
@@ -627,15 +653,16 @@
         "block_Wihzr3",
         "block_3VYWUW",
         "block_xPgWG6"
-      ]
+      ],
+      "settings": {
+        "background_color": "#ebe4d4",
+        "id": "",
+        "title": "Brands we work with",
+        "content": ""
+      }
     },
     "faq_lists": {
       "type": "ona-faq-lists",
-      "settings": {
-        "id": "",
-        "title2": "Need help?",
-        "tips": "<p>Get in contact with admin at: <a href=\"mailto:admin@onacoffee.com.au\" title=\"mailto:admin@onacoffee.com.au\">admin@onacoffee.com.au</a>. </p>"
-      },
       "blocks": {
         "614a771f-8b8e-45c7-a4b4-0c1ea5f42c30": {
           "type": "block",
@@ -693,11 +720,13 @@
         "72dfa075-e1e4-465f-b08f-e664e306e28c",
         "08a3ca8a-21f1-4b29-83e9-b276ae55665a",
         "363d6f41-bd60-44d0-8135-a26cdf7b2130"
-      ]
-    },
-    "page_header": {
-      "type": "ona-page-title",
-      "settings": {}
+      ],
+      "settings": {
+        "background_color": "",
+        "id": "",
+        "title2": "Need help?",
+        "tips": "<p>Get in contact with admin at: <a href=\"mailto:admin@onacoffee.com.au\" title=\"mailto:admin@onacoffee.com.au\">admin@onacoffee.com.au</a>. </p>"
+      }
     }
   },
   "order": [

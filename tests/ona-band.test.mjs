@@ -142,13 +142,29 @@ test('every banded section has vertical padding to fill', () => {
  * avoid -- and it is invisible in a diff, because each section reads fine on its own.
  */
 test('no two neighbouring sections share a band colour', () => {
-  const sequence = template.order.map((key) => template.sections[key].settings?.background_color ?? 'page');
+  /*
+   * Two normalisations, both learned from the live file rather than guessed. The theme editor
+   * writes `"background_color": ""` for every section the merchant never painted, where the
+   * repository had simply omitted the key -- snippets/ona-band.liquid treats the two
+   * identically (it emits nothing for a blank), so the guard has to as well. Reading `?? 'page'`
+   * alone, an empty string slips past the sentinel and two unpainted neighbours read as a
+   * repeated band. And a disabled section paints nothing at all, so it cannot be part of the
+   * rhythm: skipping it is what makes its neighbours adjacent to each other, which is the
+   * comparison that actually matters.
+   */
+  const sequence = template.order
+    .filter((key) => !template.sections[key].disabled)
+    .map((key) => {
+      const declared = template.sections[key].settings?.background_color;
+      return declared ? declared : 'page';
+    });
+  const visible = template.order.filter((key) => !template.sections[key].disabled);
   for (let i = 1; i < sequence.length; i += 1) {
     if (sequence[i] === 'page') continue;
     assert.notEqual(
       sequence[i],
       sequence[i - 1],
-      `${template.order[i - 1]} and ${template.order[i]} are both ${sequence[i]}`
+      `${visible[i - 1]} and ${visible[i]} are both ${sequence[i]}`
     );
   }
 });
