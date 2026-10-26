@@ -59,13 +59,25 @@ account page is the one that does not match.**
 
 1. **Theme CSS** — reaches the portal only. Free, reviewable, ours. Used by
    `snippets/appstle-portal-styles.liquid`.
-2. **Appstle → Customer Portal → Custom CSS** — currently **empty**. Reaches Appstle's own
+2. **Appstle → Customer Portal → Custom CSS** — holds **one rule**: a font normalisation.
+   Reaches Appstle's own
    markup on the **portal only**. It does *not* reach the account-embedded Subscriptions page:
    checked on live 2026-10-26, that page carries zero `appstle`/`as-` classes, its markup is
    Shopify's own with hashed class names, and the page's only iframe is a 0x0 worker from
    `extensions.shopifycdn.com`. It is a customer-account UI extension — Appstle declares the UI
    and Shopify renders it. No merchant CSS can style it. Canonical copy of our portal CSS lives
    at `appstle-customer-portal.css` beside this file.
+
+   It is one rule because that is all the portal needs. Appstle samples the theme at runtime
+   and writes `--appstle-primary: #470a12`, `--appstle-on-primary: #f4f3e9` and
+   `--appstle-accent-on-surface: #470a12` onto `<html>`, so with the field still empty the
+   portal already measured on-brand and AA-clean end to end — including four probe buttons
+   carrying Appstle's real `.as-button--*` classes, all at 14.27:1 in ONA maroon. The only
+   measured divergence was typographic: Appstle's `customer-v3.css` sets `Inter var` on its
+   containers. The rule points those containers at `--font-body--family` instead. Verified on
+   live: the three `Inter var` elements became Karla, the two Silk Serif headings were
+   untouched, and nothing moved below AA. The file's header carries the full reasoning and the
+   one condition that would justify adding colour rules.
 3. **Checkout branding, profile `585302207`** — reaches the Shopify account shell: its fonts,
    background and brand colour. **This is the same configuration that styles checkout.**
    `CheckoutBrandingCustomizations` exposes no customer-account-only fields, and the Customize
