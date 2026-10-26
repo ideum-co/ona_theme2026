@@ -1,0 +1,138 @@
+/* ONA Coffee — Appstle customer portal
+ * =====================================
+ * Canonical copy. Paste into Appstle → Customer Portal → Custom CSS.
+ * See docs/subscription-account-surfaces.md for why this lives here and not in the theme.
+ *
+ * SCOPE — this reaches ONE of the two subscription surfaces, not both.
+ *
+ *   onacoffee.com.au/apps/subscriptions        -> yes. Appstle's own HTML, in our layout.
+ *   shopify.com/<id>/account -> Subscriptions  -> NO.
+ *
+ * Checked on live 2026-10-26: the account-embedded page contains zero elements carrying an
+ * `appstle` or `as-` class. Its markup is Shopify's own, with hashed class names (sdr03sc,
+ * _1fragem5u), and the only iframe on the page is a 0x0 worker from extensions.shopifycdn.com.
+ * That is a customer-account UI extension: Appstle declares the UI, Shopify renders it with
+ * Shopify components. Neither this file nor any merchant CSS can reach it. Its appearance comes
+ * from checkout branding on profile 585302207 -- which also styles checkout.
+ *
+ * Colours still resolve from a token with a literal fallback, so the portal tracks whatever
+ * scheme its page is in and falls back to the theme's own pair when no token is present.
+ *
+ * Carried forward from the previous theme (onacoffee_theme, assets/main.css ~L24920):
+ *   - match on [class*="appstle"] rather than a list. Appstle ships new class names on
+ *     update and an enumerated rule silently stops covering them.
+ *   - :not(svg):not(svg *) on every text rule. Without it the icons go flat.
+ *   - target the container AND its descendants; Appstle colours both.
+ *   - links, radios, select, option, the selected dot and svg each need their own property.
+ *     color does not reach accent-color, fill or a dot drawn with background.
+ *   - R23: a white reverse was invisible on the dark product-top. Do not assume reverse works
+ *     on an unknown ground — paint the ground you need first.
+ *   - 2026-04-30: a broad [class*="appstle_"] rule at (0,2,0) silently beat
+ *     .appstle_tooltip_content * at (0,1,0). Anything that must escape the blanket rule has to
+ *     out-specify it, not merely come later.
+ *
+ * !important throughout is deliberate and load-bearing: Appstle injects its own CSS at runtime
+ * from the app embed, so it lands after this and wins equal-specificity ties.
+ */
+
+/* ---- 1. The surface -------------------------------------------------------------------- */
+/* Paint our own ground rather than inheriting an unknown one. This is the whole reason the
+ * PDP widget fix worked: setting text colour alone changed nothing, because the text was
+ * already that colour — it was the unpainted background underneath that was wrong. */
+.appstle-customer-portal,
+.appstle-wrapper {
+  --ona-surface: var(--color-background, #f4f3e9);
+  --ona-ink: var(--color-foreground, #470a12);
+
+  background-color: var(--ona-surface) !important;
+  color: var(--ona-ink) !important;
+  font-family: Karla, ui-sans-serif, system-ui, sans-serif !important;
+}
+
+/* ---- 2. Text, by wildcard not by list -------------------------------------------------- */
+.appstle-customer-portal [class*="appstle"]:not(svg):not(svg *),
+.appstle-customer-portal [class*="appstle"] :not(svg):not(svg *),
+.appstle-wrapper [class*="appstle"]:not(svg):not(svg *),
+.appstle-wrapper [class*="appstle"] :not(svg):not(svg *) {
+  color: var(--ona-ink) !important;
+}
+
+/* Cards and the empty state carry no appstle- prefix, so they need naming. `card` is a bare
+ * class name Appstle shares with this theme — see snippets/appstle-portal-styles.liquid, which
+ * stops the theme's product-card geometry landing here. */
+.appstle-customer-portal .card,
+.appstle-customer-portal .card-body,
+.appstle-customer-portal .as-noSubscriptionMessageV2,
+.appstle-customer-portal .as-customer-info,
+.appstle-customer-portal .as-customer-info-name,
+.appstle-wrapper .card,
+.appstle-wrapper .card-body {
+  background-color: var(--ona-surface) !important;
+  color: var(--ona-ink) !important;
+}
+
+/* ---- 3. Controls ----------------------------------------------------------------------- */
+.appstle-customer-portal a,
+.appstle-wrapper a {
+  color: var(--ona-ink) !important;
+  text-decoration: underline;
+}
+
+.appstle-customer-portal input[type="radio"],
+.appstle-customer-portal input[type="checkbox"],
+.appstle-wrapper input[type="radio"],
+.appstle-wrapper input[type="checkbox"] {
+  accent-color: var(--ona-ink);
+}
+
+.appstle-customer-portal select,
+.appstle-customer-portal .appstle_dropdown,
+.appstle-wrapper select {
+  background-color: var(--ona-surface) !important;
+  color: var(--ona-ink) !important;
+  border: 1px solid var(--ona-ink);
+  border-radius: 0;
+  min-height: 33px;
+  padding: 5px 10px;
+}
+
+/* option renders with OS styling and does not inherit; it needs an opaque ground of its own
+ * or the list reads as blank on some platforms. */
+.appstle-customer-portal option,
+.appstle-wrapper option {
+  background-color: var(--ona-surface) !important;
+  color: var(--ona-ink) !important;
+}
+
+/* The selected-radio indicator is drawn with background, not colour. */
+.appstle-customer-portal [class*="appstle_dot"],
+.appstle-wrapper [class*="appstle_dot"] {
+  background: var(--ona-ink) !important;
+  border-color: var(--ona-ink) !important;
+}
+
+.appstle-customer-portal svg,
+.appstle-customer-portal svg *,
+.appstle-wrapper svg,
+.appstle-wrapper svg * {
+  fill: currentColor;
+  stroke: none;
+}
+
+/* ---- 4. Buttons: NOT WRITTEN, deliberately ---------------------------------------------
+ * There are no buttons to style on a portal with no subscriptions, and the two elements that
+ * LOOK like buttons by name are not buttons:
+ *
+ *   a.appstle_contract_see_more              -> the "< My Account" back link
+ *   button.appstle_order-detail_update-button -> the same back link, inline, padding 0
+ *
+ * A first draft gave both the inverted pill treatment used by .purchase-options__badge. Measured
+ * on live 2026-10-26 it took that link from 14.27 to 1.00, because §2's blanket rule computes to
+ * roughly (0,2,2) -- :not(svg) contributes its argument's specificity -- and beat the pill rule
+ * at (0,2,0), leaving maroon text on the maroon ground the pill had just painted. It would also
+ * have turned a plain back link into a pill, which is wrong regardless of contrast.
+ *
+ * Skip, Reschedule, Swap and Change frequency are the real buttons. None of them render until a
+ * subscription exists. Style them against a populated portal, measure before and after, and only
+ * then add them here -- out-specifying §2, not merely following it.
+ */

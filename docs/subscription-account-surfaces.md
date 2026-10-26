@@ -60,17 +60,26 @@ account page is the one that does not match.**
 1. **Theme CSS** — reaches the portal only. Free, reviewable, ours. Used by
    `snippets/appstle-portal-styles.liquid`.
 2. **Appstle → Customer Portal → Custom CSS** — currently **empty**. Reaches Appstle's own
-   markup. This is the only lever that can restyle the Appstle content on the Shopify-hosted
-   account page, because that page is a different origin and the theme cannot reach it.
+   markup on the **portal only**. It does *not* reach the account-embedded Subscriptions page:
+   checked on live 2026-10-26, that page carries zero `appstle`/`as-` classes, its markup is
+   Shopify's own with hashed class names, and the page's only iframe is a 0x0 worker from
+   `extensions.shopifycdn.com`. It is a customer-account UI extension — Appstle declares the UI
+   and Shopify renders it. No merchant CSS can style it. Canonical copy of our portal CSS lives
+   at `appstle-customer-portal.css` beside this file.
 3. **Checkout branding, profile `585302207`** — reaches the Shopify account shell: its fonts,
    background and brand colour. **This is the same configuration that styles checkout.**
    `CheckoutBrandingCustomizations` exposes no customer-account-only fields, and the Customize
    button on Settings → Customer accounts navigates to `settings/checkout#checkoutprofiles`.
    There is no way to restyle the account pages without also restyling checkout.
 
-That third point is the constraint that shapes everything: matching the account page to the
-theme means changing the look of checkout. That is a decision about the money path, not a
-styling tweak, and it is not made in this repo.
+Those two findings together are the constraint that shapes everything: the account-embedded
+Subscriptions page cannot be styled by us at all, and the only lever that changes it — checkout
+branding — changes checkout with it. There is no CSS route to making that page match the theme.
+That is a decision about the money path, not a styling tweak, and it is not made in this repo.
+
+So the realistic shape is: make the **portal** excellent, because it is both the door customers
+already use and the only one we can actually style, and accept that the account page looks like
+Shopify unless checkout is rebranded.
 
 ## Keeping it manageable
 
