@@ -25,11 +25,19 @@ test('the duplicate wholesale band is gone, file and reference both', () => {
     'sections/ona-gust-r.liquid is back; it was a duplicate of the partnership band'
   );
 
-  const templates = readdirSync(join(root, 'templates')).filter((name) => name.endsWith('.json'));
-  assert.ok(templates.length > 5, `only ${templates.length} templates found; the probe is broken`);
-  for (const name of templates) {
-    const raw = readFileSync(join(root, 'templates', name), 'utf8');
-    assert.ok(!raw.includes('ona-gust-r'), `templates/${name} still references ona-gust-r`);
+  /* Section groups run sections too, so a reference could come back in header-group.json or
+     footer-group.json without any template mentioning it. Scan both directories. */
+  const refFiles = [
+    ...readdirSync(join(root, 'templates')).filter((n) => n.endsWith('.json')).map((n) => `templates/${n}`),
+    ...readdirSync(join(root, 'sections')).filter((n) => n.endsWith('.json')).map((n) => `sections/${n}`),
+  ];
+  assert.ok(refFiles.length > 5, `only ${refFiles.length} reference files found; the probe is broken`);
+  assert.ok(
+    refFiles.some((n) => n.endsWith('-group.json')),
+    'no section group was scanned; the probe would miss a reference from header/footer'
+  );
+  for (const name of refFiles) {
+    assert.ok(!readFileSync(join(root, name), 'utf8').includes('ona-gust-r'), `${name} still references ona-gust-r`);
   }
 });
 
@@ -41,8 +49,14 @@ test('the wholesale page plays the partnership video exactly once', () => {
   const parsed = template();
   const live = Object.values(parsed.sections).filter((section) => !section.disabled);
 
+  /* Blocks carry settings too -- several wholesale sections have them -- so reading only the
+     section's own settings would miss a duplicate that came back as a block. */
+  const settingsOf = (node) => [
+    ...Object.values(node.settings ?? {}),
+    ...Object.values(node.blocks ?? {}).flatMap(settingsOf),
+  ];
   const urls = live
-    .flatMap((section) => Object.values(section.settings ?? {}))
+    .flatMap(settingsOf)
     .filter((value) => typeof value === 'string' && value.includes('youtu'));
   const partnership = urls.filter((url) => url.includes('42flR1Iwun4'));
   assert.equal(
@@ -53,10 +67,13 @@ test('the wholesale page plays the partnership video exactly once', () => {
 
   /* The settings above are the merchant's half. A section that hard-codes the id in markup
      would not show up there at all, which is exactly how the duplicate used to hide. */
-  const hardCoded = readdirSync(join(root, 'sections'))
-    .filter((name) => name.endsWith('.liquid'))
-    .filter((name) => readFileSync(join(root, 'sections', name), 'utf8').includes('42flR1Iwun4'));
-  assert.deepEqual(hardCoded, [], 'a section hard-codes the partnership video instead of taking it as a setting');
+  const hardCoded = ['sections', 'blocks', 'snippets'].flatMap((dir) =>
+    readdirSync(join(root, dir))
+      .filter((name) => name.endsWith('.liquid'))
+      .filter((name) => readFileSync(join(root, dir, name), 'utf8').includes('42flR1Iwun4'))
+      .map((name) => `${dir}/${name}`)
+  );
+  assert.deepEqual(hardCoded, [], 'a file hard-codes the partnership video instead of taking it as a setting');
 });
 
 /*
@@ -82,10 +99,13 @@ test('wholesale keeps a working enquiry route and no dead one', () => {
     'no section on Wholesale links to the enquiry form; removing the contact form left the page with no way to enquire'
   );
 
+  /* This used to require double quotes, href before class, and the more-btn class -- so the
+     deleted section's OTHER dead anchor (class="icon-close pop-up-form-close") would have
+     passed a test whose name promises no dead control at all. Scan for the scheme itself. */
   for (const [index, source] of sources.entries()) {
     assert.ok(
-      !/href="javascript:void\(0\);?"[^>]*\bclass="[^"]*more-btn/.test(source),
-      `${types[index]} carries a dead javascript: enquiry button`
+      !/javascript:\s*void\s*\(/i.test(source),
+      `${types[index]} carries a dead javascript:void() control on the wholesale page`
     );
   }
 });
