@@ -10,7 +10,9 @@
 
   @param {object} product - The product object.
   @param {string} form_id - Id of the form the `selling_plan` radios submit with.
-  @param {string} unique_id - Suffix that keeps the ids and the script scoped to this instance.
+  @param {string} unique_id - Suffix that keeps this instance's markers unique on the page. Behaviour
+    lives in `purchase-options.js`, which is delegated from the document, so morphed markup needs
+    no re-initialisation.
   @param {boolean} [subscription_only] - Omit the one-time option and preselect the first
     subscription, for a panel the shopper opened by pressing "Subscribe". Without it the list
     leads with the one-time option, which is what the product page wants.
@@ -198,54 +200,6 @@
   {%- endcomment -%}
   {%- render 'appstle-widget-styles' -%}
 
-  <script>
-    (function () {
-      var root = document.querySelector('.purchase-options[data-purchase-options-id="{{ unique_id }}"]');
-      if (!root) return;
-
-      var radios = root.querySelectorAll('.purchase-options__radio');
-      var selects = root.querySelectorAll('[data-plan-select]');
-
-      function syncCardState() {
-        radios.forEach(function (radio) {
-          radio.closest('.purchase-options__card').classList.toggle('is-selected', radio.checked);
-        });
-      }
-
-      radios.forEach(function (radio) {
-        radio.addEventListener('change', function () {
-          if (radio.checked) {
-            var select = radio.closest('.purchase-options__card').querySelector('[data-plan-select]');
-            if (select) radio.value = select.value;
-          }
-          syncCardState();
-        });
-      });
-
-      selects.forEach(function (select) {
-        select.addEventListener('change', function () {
-          var card = select.closest('.purchase-options__card');
-          var radio = card.querySelector('.purchase-options__radio');
-          radio.value = select.value;
-          radio.checked = true;
-
-          var option = select.options[select.selectedIndex];
-          var priceEl = card.querySelector('.purchase-options__price');
-          if (priceEl && option) {
-            var html = option.getAttribute('data-price');
-            var compareAt = option.getAttribute('data-compare-at');
-            if (compareAt && compareAt !== option.getAttribute('data-price')) {
-              html += ' <s class="purchase-options__compare-price">' + compareAt + '</s>';
-            }
-            priceEl.innerHTML = html;
-          }
-          syncCardState();
-        });
-      });
-
-      syncCardState();
-    })();
-  </script>
 {% endunless %}
 
 {% stylesheet %}
@@ -254,6 +208,20 @@
     flex-direction: column;
     gap: var(--gap-xs);
     width: 100%;
+  }
+
+  /* While the panel is fetching the picked variant's plans, everything on screen still describes
+     the previous one. Dimmed and made inert so it cannot be read as current or clicked through;
+     `variant-select.js` keeps the submit shut over the same window. */
+  [data-plans-pending] .purchase-options {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    [data-plans-pending] .purchase-options {
+      transition: opacity var(--animation-speed, 0.2s) var(--animation-easing, ease);
+    }
   }
 
   .purchase-options__label {
