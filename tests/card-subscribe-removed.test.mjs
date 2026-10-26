@@ -92,3 +92,17 @@ test('the product page keeps its own purchase options, which is where subscribin
     'the product templates must keep their purchase-options block'
   );
 });
+
+test('the card editor does not offer the Subscribe block while #411 is open', () => {
+  // Removing the instances (#409) stops it rendering, but the block stayed selectable in the
+  // theme editor, so it could be re-added by hand and the defect would return on live without
+  // a commit to review. blocks/subscribe-button.liquid is deliberately kept - this only takes
+  // it off the card's allowed list. Restore this entry as part of #411, once the card's variant
+  // change re-renders through section-rendering-product-card.
+  const schema = readFileSync('blocks/_product-card.liquid', 'utf8');
+  const json = JSON.parse(schema.match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/)[1]);
+  const types = (json.blocks ?? []).map((b) => b.type);
+
+  assert.ok(!types.includes('subscribe-button'), 'the card must not offer subscribe-button');
+  assert.ok(types.length > 10, 'sanity: the allowed-block list should still be populated');
+});
