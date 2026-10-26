@@ -4,10 +4,11 @@
 customer account area — including every Appstle control *in that area* — is
 configured in the Shopify admin, outside the theme. A merge to `main` cannot fix it.
 
-There is exactly one exception, and it is worth knowing because it bites in the same
-dimension this document is about. `sections/header-group.json` carries
-`"customer_account_menu": "customer-account-main-menu"`, which
-`snippets/header-actions.liquid` passes to `<shopify-account menu="…">`. Blank that
+There is exactly one exception that can silently break the subscriptions nav, and it
+bites in the same dimension this document is about. `sections/header-group.json` carries
+`"customer_account_menu": "customer-account-main-menu"`, which `sections/header.liquid`
+forwards to `snippets/header-actions.liquid`, which spends it on
+`<shopify-account menu="…">`. All three links have to hold. Blank that
 value or drop the key and the storefront header's account dropdown stops offering the
 Subscriptions item, while the admin still looks perfectly correct — and
 `sections/header-group.json` is a shop-owned, editor-writable file this repo has lost

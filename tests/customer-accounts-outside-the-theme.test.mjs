@@ -62,10 +62,19 @@ test('the header still points the account dropdown at the customer account menu'
       `Subscriptions item from the account dropdown -- see ${DOC}`
   );
 
+  // Three links, not two: the setting, the section that forwards it, and the snippet that spends
+  // it. Pinning the ends and leaving the middle alone would let the forward be dropped in
+  // `header.liquid` -- the snippet then renders `menu=""` with every other assertion still green.
+  assert.match(
+    readFileSync(join(root, 'sections', 'header.liquid'), 'utf8'),
+    /render 'header-actions'[^\n]*customer_account_menu:\s*section\.settings\.customer_account_menu/,
+    'the header section must forward the handle to header-actions'
+  );
+
   assert.match(
     readFileSync(join(root, 'snippets', 'header-actions.liquid'), 'utf8'),
     /<shopify-account[\s\S]{0,120}menu="\{\{ customer_account_menu \}\}"/,
-    'if the header stops passing the handle through, pinning the setting guards nothing'
+    'if the snippet stops spending the handle, pinning the setting guards nothing'
   );
 });
 
