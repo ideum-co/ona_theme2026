@@ -93,16 +93,47 @@ test('the product page keeps its own purchase options, which is where subscribin
   );
 });
 
-test('the card editor does not offer the Subscribe block while #411 is open', () => {
-  // Removing the instances (#409) stops it rendering, but the block stayed selectable in the
-  // theme editor, so it could be re-added by hand and the defect would return on live without
-  // a commit to review. blocks/subscribe-button.liquid is deliberately kept - this only takes
-  // it off the card's allowed list. Restore this entry as part of #411, once the card's variant
-  // change re-renders through section-rendering-product-card.
-  const schema = readFileSync('blocks/_product-card.liquid', 'utf8');
-  const json = JSON.parse(schema.match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/)[1]);
-  const types = (json.blocks ?? []).map((b) => b.type);
+test('no block or section schema offers the Subscribe block while #411 is open', () => {
+  // Scanned, never enumerated. The first version of this guard checked only
+  // blocks/_product-card.liquid and passed while blocks/_product-card-group.liquid still listed
+  // subscribe-button - and _product-card allows that group, the group allows itself, and live
+  // templates already contain one (buy_group in collection.json). So the editor path this was
+  // meant to close stayed open behind a green test. Walk every schema instead; a new container
+  // block is then covered the day it is added, without anyone remembering to update this list.
+  //
+  // blocks/subscribe-button.liquid itself is deliberately kept - this only removes it from the
+  // allowed-child lists. Restoring those entries is the last step of #411, once the card's
+  // variant change re-renders through section-rendering-product-card.
+  const files = [
+    ...readdirSync('blocks').map((f) => `blocks/${f}`),
+    ...readdirSync('sections').map((f) => `sections/${f}`),
+  ].filter((f) => f.endsWith('.liquid'));
 
-  assert.ok(!types.includes('subscribe-button'), 'the card must not offer subscribe-button');
-  assert.ok(types.length > 10, 'sanity: the allowed-block list should still be populated');
+  const offenders = [];
+  let scanned = 0;
+
+  for (const file of files) {
+    const match = readFileSync(file, 'utf8').match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/);
+    if (!match) continue;
+
+    let schema;
+    try {
+      schema = JSON.parse(match[1]);
+    } catch {
+      continue; // schemas carrying Liquid are not ours to parse here
+    }
+    scanned += 1;
+
+    for (const block of schema.blocks ?? []) {
+      if (block?.type === 'subscribe-button') offenders.push(file);
+    }
+  }
+
+  assert.ok(scanned > 20, `sanity: expected to parse many schemas, parsed ${scanned}`);
+  assert.deepEqual(
+    offenders,
+    [],
+    `These schemas still let the theme editor add a card Subscribe control, which cannot follow ` +
+      `the variant dropdown:\n  ${offenders.join('\n  ')}`
+  );
 });
