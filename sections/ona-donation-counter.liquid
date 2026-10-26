@@ -32,7 +32,21 @@
 
 <section
   class="donation-counter"
-  style="background-color: {{ section.settings.bg_color }}; --donation-button-background: {{ section.settings.button_bg_color }}; --donation-button-text: {{ section.settings.button_text_color }};"
+  style="
+    background-color: {{ section.settings.bg_color }};
+    {% render 'spacing-style', settings: section.settings %}
+    --donation-button-background: {{ section.settings.button_bg_color }};
+    --donation-button-text: {{ section.settings.button_text_color }};
+    --dc-card-gap: {{ section.settings.card_gap }}px;
+    --dc-digit-size: {{ section.settings.digit_size }}px;
+    --dc-heading-size: {{ section.settings.heading_size }}px;
+    --dc-subtitle-size: {{ section.settings.subtitle_size }}px;
+    --dc-heading-color: {{ section.settings.heading_color }};
+    --dc-subtitle-color: {{ section.settings.subtitle_color }};
+    --dc-card-bg: {{ section.settings.card_bg_color }};
+    --dc-card-ink: {{ section.settings.card_ink_color }};
+    --dc-frame-color: {{ section.settings.frame_color }};
+  "
   {{ section.shopify_attributes }}
 >
   <div class="donation-counter__inner">
@@ -83,7 +97,9 @@
 
 {% stylesheet %}
   .donation-counter {
-    padding: 43px 30px 52px;
+    /* Defaults match the live counter (43/30/52); spacing-style feeds the vars from the editor. */
+    padding-block: var(--padding-block-start, 43px) var(--padding-block-end, 52px);
+    padding-inline: var(--padding-inline-start, 30px) var(--padding-inline-end, 30px);
     text-align: center;
     color: #ffffff;
   }
@@ -95,12 +111,12 @@
 
   .donation-counter__heading {
     font-family: var(--font-brand-text, 'Karla', sans-serif);
-    font-size: 16px;
+    font-size: var(--dc-heading-size, 16px);
     font-weight: 400;
     letter-spacing: calc(0.09 / 16 * 1em);
     line-height: 1.2;
     margin: 0 0 20px;
-    color: #fbf8f3;
+    color: var(--dc-heading-color, #fbf8f3);
   }
 
   .donation-counter__display {
@@ -111,8 +127,8 @@
   .donation-counter__cards {
     display: inline-flex;
     align-items: center;
-    gap: 16px;
-    border: 2px solid #000;
+    gap: var(--dc-card-gap, 16px);
+    border: 2px solid var(--dc-frame-color, #000);
     border-radius: 12px;
     padding: 13px 14px;
   }
@@ -122,14 +138,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 71px;
-    height: 92px;
-    background: #f2f0eb;
+    /* Card keeps the live 71x92 @ 83px proportions; one size control scales all three. */
+    width: calc(var(--dc-digit-size, 83px) * 71 / 83);
+    height: calc(var(--dc-digit-size, 83px) * 92 / 83);
+    background: var(--dc-card-bg, #f2f0eb);
     font-family: var(--font-brand-text, 'Karla', sans-serif);
-    font-size: 83px;
+    font-size: var(--dc-digit-size, 83px);
     font-weight: 700;
     line-height: 1;
-    color: #441925;
+    color: var(--dc-card-ink, #441925);
   }
 
   /* The split across the middle of each card -- it reads as a flip-counter. */
@@ -141,20 +158,20 @@
     transform: translateY(-50%);
     width: 100%;
     height: 5px;
-    background-color: #441925;
+    background-color: var(--dc-card-ink, #441925);
     pointer-events: none;
     z-index: 1;
   }
 
   .donation-counter__card--symbol {
-    background: #f2f0eb;
+    background: var(--dc-card-bg, #f2f0eb);
   }
 
   .donation-counter__card--comma {
     width: 15px;
     background: transparent;
-    color: #f2f0eb;
-    font-size: 72px;
+    color: var(--dc-card-bg, #f2f0eb);
+    font-size: calc(var(--dc-digit-size, 83px) * 72 / 83);
     font-weight: 700;
   }
 
@@ -168,12 +185,12 @@
 
   .donation-counter__subtitle {
     font-family: var(--font-brand-text, 'Karla', sans-serif);
-    font-size: 16px;
+    font-size: var(--dc-subtitle-size, 16px);
     font-weight: 400;
     letter-spacing: calc(-0.09 / 16 * 1em);
     line-height: 1.2;
     margin: 0 0 7px;
-    color: #fbf8f3;
+    color: var(--dc-subtitle-color, #fbf8f3);
   }
 
   .donation-counter__actions {
@@ -287,6 +304,89 @@
     },
     {
       "type": "header",
+      "content": "Colours"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Title text",
+      "default": "#fbf8f3"
+    },
+    {
+      "type": "color",
+      "id": "subtitle_color",
+      "label": "Subtitle text",
+      "default": "#fbf8f3"
+    },
+    {
+      "type": "color",
+      "id": "card_bg_color",
+      "label": "Card background",
+      "default": "#f2f0eb"
+    },
+    {
+      "type": "color",
+      "id": "card_ink_color",
+      "label": "Card digits and split line",
+      "default": "#441925"
+    },
+    {
+      "type": "color",
+      "id": "frame_color",
+      "label": "Counter frame",
+      "default": "#000000"
+    },
+    {
+      "type": "header",
+      "content": "Counter size"
+    },
+    {
+      "type": "range",
+      "id": "digit_size",
+      "label": "Digit size",
+      "info": "Scales the number cards; the mobile sizes stay fixed so the counter keeps fitting narrow screens.",
+      "min": 24,
+      "max": 120,
+      "step": 1,
+      "unit": "px",
+      "default": 83
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "label": "Gap between cards",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Text sizes"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Title size",
+      "min": 10,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "subtitle_size",
+      "label": "Subtitle size",
+      "min": 10,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
       "content": "Button colors"
     },
     {
@@ -311,6 +411,50 @@
       "type": "url",
       "id": "learn_more_url",
       "label": "Link url"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 120,
+      "step": 1,
+      "unit": "px",
+      "default": 43
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 120,
+      "step": 1,
+      "unit": "px",
+      "default": 52
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 120,
+      "step": 1,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 120,
+      "step": 1,
+      "unit": "px",
+      "default": 30
     }
   ],
   "presets": [
