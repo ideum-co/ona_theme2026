@@ -11,6 +11,7 @@ const OPTIONS_JS = 'assets/purchase-options.js';
 const SNIPPET = 'snippets/purchase-options.liquid';
 const SECTION = 'sections/section-rendering-subscribe-panel.liquid';
 const SCRIPTS = 'snippets/scripts.liquid';
+const PRODUCT_FORM_JS = 'assets/product-form.js';
 
 /*
  * The card's Subscribe panel renders its plan radios in Liquid for one variant - whichever was
@@ -187,8 +188,12 @@ test('a superseded response cannot touch the panel', () => {
 });
 
 test('a failed render leaves the refusal in place', () => {
-  const js = read(SELECT_JS);
-  const failure = js.match(/\.catch\(\(error\) => \{[\s\S]*?\n      \}\)/);
+  // Scoped to the refresh: other handlers have their own catch blocks.
+  const refresh = read(SELECT_JS).match(/#refreshPlans\(input\)\s*\{[\s\S]*?\n  \}/);
+
+  assert.ok(refresh, `${SELECT_JS} should define the refresh`);
+
+  const failure = refresh[0].match(/\.catch\(\(error\) => \{[\s\S]*?\n      \}\)/);
 
   assert.ok(failure, `${SELECT_JS} should handle a failed render`);
   assert.match(failure[0], /this\.#pointFormAtVariant\(input\)/, 'the gate is re-run so the backstop decides');
@@ -286,4 +291,81 @@ test('the shopper is not dropped out of the control when the plan list changes l
   assert.ok(focus, `${SELECT_JS} should preserve focus across the morph`);
   assert.match(focus[0], /document\.activeElement/, 'it checks where focus was');
   assert.match(focus[0], /\.focus\(\)/, 'it puts focus back');
+});
+
+/*
+ * Found by Codex on #413, and a second door into the defect this PR exists to close.
+ *
+ * The card places its own `variant-picker` beside the subscribe block, both inside one
+ * `<product-card>` (see `buy_group` in templates/collection.json). `ProductFormComponent` binds to
+ * `this.closest('.shopify-section, dialog, product-card')`, so the panel's form received the card
+ * picker's `productSelect` too: `#onProductSelect` wrote the new variant id into it and called
+ * `enable()` on its button, while the panel's plan radios stayed on the old size. Opening
+ * Subscribe then posted the new variant with the previous one's plan - which, allocations being
+ * disjoint on every subscribable product here, is a pairing the cart will not take.
+ *
+ * Isolation alone would leave the panel stale against the card; synchronisation alone would race
+ * `#onProductSelect`'s own enable, since both hang off the same promise and listener order is not
+ * guaranteed. Both are needed.
+ */
+test('the card picker does not drive the subscribe form', () => {
+  const js = read(PRODUCT_FORM_JS);
+  const handler = js.match(/#onProductSelect = async \(event\) => \{[\s\S]*?\n  \};/);
+
+  assert.ok(handler, `${PRODUCT_FORM_JS} should handle product select`);
+
+  const guard = handler[0].indexOf("this.closest('subscribe-popover-component')");
+  const writesVariant = handler[0].indexOf('variantId.value =');
+
+  assert.ok(guard > 0, 'a subscribe panel form must be skipped');
+  assert.ok(
+    writesVariant > guard,
+    'and skipped before the variant id is written, or the panel is left pointing at a size whose plans it is not showing'
+  );
+});
+
+test('the subscribe panel follows the card picker instead', () => {
+  const js = read(SELECT_JS);
+
+  assert.match(
+    js,
+    /closest\('product-card'\)\?\.addEventListener\(StandardEvents\.productSelect/,
+    `${SELECT_JS} should follow the card's own picker`
+  );
+  assert.match(
+    js,
+    /closest\('product-card'\)\?\.removeEventListener\(StandardEvents\.productSelect/,
+    'and let go of it when the panel is removed'
+  );
+
+  const handler = js.match(/#handleCardSelect = \(event\) => \{[\s\S]*?\n  \};/);
+
+  assert.ok(handler, 'the card-select handler should exist');
+  assert.match(handler[0], /this\.#setPlansPending\(panel, true\)/, 'the panel is shut before the answer arrives');
+  assert.match(handler[0], /this\.#applySelection\(input\)/, 'a size picked on the card goes through the same path as one picked here');
+  assert.match(
+    handler[0],
+    /if \(!\(input instanceof HTMLInputElement\)\) return;/,
+    'a variant this dropdown does not list leaves the panel refusing rather than offering the old size'
+  );
+});
+
+/*
+ * The two entry points must not drift: a fix applied to one and not the other is how this defect
+ * keeps coming back. Both go through `#applySelection`, which is the only place that updates the
+ * label, points the form, runs the gate and refreshes the plans.
+ */
+test('both ways of picking a variant run the same work', () => {
+  const js = read(SELECT_JS);
+  const apply = js.match(/#applySelection\(input\)\s*\{[\s\S]*?\n  \}/);
+
+  assert.ok(apply, `${SELECT_JS} should share one selection path`);
+  assert.match(apply[0], /this\.#pointFormAtVariant\(input\)/, 'it points the form and runs the gate');
+  assert.match(apply[0], /this\.#refreshPlans\(input\)/, 'it refreshes the plans');
+
+  assert.equal(
+    (js.match(/this\.#applySelection\(input\)/g) ?? []).length,
+    2,
+    'exactly the dropdown and the card picker call it'
+  );
 });

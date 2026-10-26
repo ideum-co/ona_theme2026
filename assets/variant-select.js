@@ -1,5 +1,6 @@
 import { AnchoredPopoverComponent } from '@theme/anchored-popover';
 import { morph } from '@theme/morph';
+import { StandardEvents } from '@shopify/events';
 
 /**
  * A custom element that presents a product option as an anchored dropdown panel instead of a
@@ -30,6 +31,11 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
     // ownership, which is the only relationship that actually ties them to this dropdown.
     if (this.dataset.subscriptionOnly === 'true') {
       document.addEventListener('change', this.#handlePlanChange);
+
+      // The card carries its own variant picker beside this panel, and picking a size there is the
+      // same decision as picking one in here. Without this the panel would keep the previous
+      // size's plans while the rest of the card moved on.
+      this.closest('product-card')?.addEventListener(StandardEvents.productSelect, this.#handleCardSelect);
     }
   }
 
@@ -37,6 +43,7 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
     super.disconnectedCallback();
 
     document.removeEventListener('change', this.#handlePlanChange);
+    this.closest('product-card')?.removeEventListener(StandardEvents.productSelect, this.#handleCardSelect);
     this.removeEventListener('click', this.#handleOptionClick);
     this.removeEventListener('change', this.#showSelectedValue);
   }
@@ -61,6 +68,19 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
 
     if (!(input instanceof HTMLInputElement) || input.type !== 'radio') return;
 
+    this.#applySelection(input);
+  };
+
+  /**
+   * Everything a picked variant has to change, whoever picked it.
+   *
+   * Shared with the card's own variant picker, so a size chosen out there goes through the same
+   * label update, the same form pointer, the same allocation gate and the same plan refresh as one
+   * chosen in this dropdown.
+   *
+   * @param {HTMLInputElement} input - The selected variant radio.
+   */
+  #applySelection(input) {
     const target = this.querySelector('.variant-select__trigger-value');
 
     if (target) {
@@ -71,6 +91,45 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
     if (this.dataset.mode === 'cart') this.#pointFormAtVariant(input);
 
     this.#refreshPlans(input);
+  }
+
+  /**
+   * Follows the card's own variant picker.
+   *
+   * `product-form.js` deliberately leaves this panel's form alone - it would otherwise write the
+   * new variant id in and enable the button while the panel still showed the previous size's
+   * plans - so the panel is responsible for keeping up with the card itself.
+   *
+   * @param {import('@shopify/events').ProductSelectEvent} event
+   */
+  #handleCardSelect = (event) => {
+    const card = this.closest('product-card');
+
+    if (!card || !(event.target instanceof Element) || event.target.closest('product-card') !== card) return;
+
+    // Held shut from the moment the card's picker moves, not from when the answer arrives: the
+    // shopper can open Subscribe in between, and until then every plan on screen is the old size's.
+    const panel = this.closest('subscribe-popover-component');
+
+    if (panel) this.#setPlansPending(panel, true);
+
+    event.promise
+      .then(({ detail }) => {
+        const variantId = detail?.resource?.id;
+        const input = [...this.querySelectorAll('.variant-select__input')].find(
+          (candidate) => candidate instanceof HTMLInputElement && candidate.value === String(variantId ?? '')
+        );
+
+        // A variant this dropdown does not list is not one it can follow. The pending state stays,
+        // so the panel keeps refusing rather than offering the previous size's plans.
+        if (!(input instanceof HTMLInputElement)) return;
+
+        input.checked = true;
+        this.#applySelection(input);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   /**
