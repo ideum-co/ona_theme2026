@@ -32,8 +32,12 @@
      redefine --color-foreground and --color-background; these two keep the page's own values
      because a custom property resolves where it is declared, not where it is used. */
   :root {
-    --ona-panel-surface: var(--color-background);
-    --ona-panel-ink: var(--color-foreground);
+    /* Literal fallbacks are not decoration. If the theme ever moves these tokens off :root onto a
+       scheme class, var(--color-foreground) here becomes invalid at computed-value time, both
+       properties below resolve to unset, and the widget silently returns to cream on cream with
+       no error anywhere. The fallbacks are settings.color_palette's own values. */
+    --ona-panel-surface: var(--color-background, #f4f3e9);
+    --ona-panel-ink: var(--color-foreground, #470a12);
   }
 
   /* The widget and the reward table both paint their own ground, so neither depends on whatever

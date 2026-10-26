@@ -26,8 +26,8 @@ const planRadio = (snippet) =>
  * pressed Subscribe and then pressed the one button in the panel that appeared bought a one-time
  * item at full price and no subscription was created. Reproduced on the live site on 2026-10-26
  * from a Gateway card: radio 0 checked on open, panel's only button labelled "Add to cart",
- * resulting cart line carried no selling plan. Order #120030 is the same shape -- Aspen 200g at
- * $17.50, the exact one-time price, from a customer who meant to subscribe.
+ * resulting cart line carried no selling plan. A live order had already arrived in that shape: a
+ * blend at the one-time price with no plan on it.
  *
  * The product page is deliberately not covered by these tests: there the one-time option leads,
  * which is correct, and it was working. What is guarded here is that the two callers stay
@@ -347,5 +347,87 @@ test('the unavailable message is announceable and sits outside the empty radiogr
     snippet,
     /<p class="purchase-options__unavailable" role="status">/,
     'it replaces content that was there a moment ago, so it has to announce itself'
+  );
+});
+
+/*
+ * M-A through M-F: six more mutations that left the suite green after the round above. The worst,
+ * M-A, is a single word -- `assign preselect = true` becomes `false` -- and it restores the exact
+ * defect this whole change is named after: nothing checked, no one-time radio either because the
+ * panel is subscription-only, button still enabled, Subscribe posts no selling plan. The earlier
+ * guards asserted the `if` condition, the counter and the `{% if preselect %} checked` markup, all
+ * of which stay true while `preselect` is never once true. Assert the assignment.
+ */
+
+test('the preselect branch actually assigns true', () => {
+  const snippet = read(SNIPPET);
+  assert.match(
+    snippet,
+    /if subscription_only and rendered_count == 0\s+assign preselect = true/,
+    [
+      'the branch has to set preselect, not merely exist. Flipped to false, nothing is checked,',
+      'there is no one-time radio to fall back on, the button stays enabled, and Subscribe posts',
+      'no selling plan -- the defect this change exists to remove.',
+    ].join(' ')
+  );
+});
+
+test('preselect is reset on every iteration, so only one card can claim it', () => {
+  const snippet = read(SNIPPET);
+  const reset = snippet.indexOf('assign preselect = false');
+  const branch = snippet.indexOf('if subscription_only and rendered_count == 0');
+  assert.ok(reset > 0 && reset < branch, [
+    'Liquid variables persist across for iterations, so without the reset every card after the',
+    'first renders checked and is-selected: several read as chosen while the browser honours the',
+    'last one.',
+  ].join(' '));
+});
+
+test('the plan ids are separated, or the list is one unmatchable token', () => {
+  const dropdown = read(DROPDOWN);
+  assert.match(
+    dropdown,
+    /data-variant-plans="\{% for allocation in variant\.selling_plan_allocations %\}\{\{ allocation\.selling_plan\.id \}\}\{% unless forloop\.last %\},\{% endunless %\}\{% endfor %\}"/,
+    [
+      'without the separator the ids concatenate into a single token, includes() never matches,',
+      'and Subscribe is permanently disabled on every variant with two or more allocations.',
+      'The previous regex stopped before the separator, so dropping it changed nothing here.',
+    ].join(' ')
+  );
+});
+
+test('changing the frequency re-runs the gate and rewrites the posted plan', () => {
+  const snippet = read(SNIPPET);
+  const script = snippet.slice(snippet.indexOf('<script>'));
+  assert.match(
+    script,
+    /selects\.forEach\(function \(select\) \{[\s\S]*?radio\.value = select\.value;/,
+    [
+      'deleting this handler leaves the radio on the default plan id: the shopper picks a cadence,',
+      'is shown it as selected, and is subscribed to a different one. Nothing else in the suite',
+      'reads this script block.',
+    ].join(' ')
+  );
+
+  const js = read(SELECT_JS);
+  assert.match(
+    js,
+    /document\.addEventListener\('change', this\.#handlePlanChange\)/,
+    [
+      'the plan controls are siblings of the dropdown, not descendants, so their change events',
+      'never reach its own listener. Without this the gate is never re-evaluated when the plan',
+      'changes: a pairing allowed a moment ago can stop being allowed and the button stays open,',
+      'and a blocked one that becomes valid leaves a dead button with no way back.',
+    ].join(' ')
+  );
+  assert.match(
+    js,
+    /document\.removeEventListener\('change', this\.#handlePlanChange\)/,
+    'and it has to come off again, or every disconnected card keeps listening'
+  );
+  assert.match(
+    js,
+    /#ownsPlanControl\(target\)[\s\S]*?target\.form === formElement/,
+    'ownership must be decided by form association, not by position or class name'
   );
 });

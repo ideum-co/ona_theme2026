@@ -38,22 +38,58 @@ const MEASURED = [
   'appstle_subcription_link',
 ];
 
+const cssOf = (file) => {
+  const open = file.indexOf('{% stylesheet %}');
+  const close = file.indexOf('{% endstylesheet %}');
+  return open >= 0 && close > open ? file.slice(open + '{% stylesheet %}'.length, close) : null;
+};
+
+test('the CSS is inside a stylesheet tag, not emitted as text into the page', () => {
+  assert.ok(cssOf(read(SNIPPET)), `${SNIPPET} must wrap its rules in {% stylesheet %}`);
+});
+
 test('the pair is captured at :root, which is the whole reason this works anywhere', () => {
-  const css = read(SNIPPET);
+  const css = cssOf(read(SNIPPET));
+
+  // Declared anywhere below :root these resolve against whatever that section set, and inside
+  // product-information the tokens are inverted to a pair measuring 3.64. The capture is the fix.
   assert.match(
     css,
-    /:root\s*\{[^}]*--ona-panel-surface:\s*var\(--color-background\);[^}]*--ona-panel-ink:\s*var\(--color-foreground\);[^}]*\}/,
+    /:root\s*\{[\s\S]*?--ona-panel-surface:\s*var\(--color-background,\s*#[0-9a-fA-F]{3,8}\);/,
+    'the surface must be captured at :root, with a literal fallback'
+  );
+  assert.match(
+    css,
+    /:root\s*\{[\s\S]*?--ona-panel-ink:\s*var\(--color-foreground,\s*#[0-9a-fA-F]{3,8}\);/,
     [
-      'Declared anywhere below :root these resolve against whatever that section set, and inside',
-      'product-information those tokens are inverted to a cream-on-tan pair measuring 3.64. The',
-      'capture is what keeps the page pair, so it is the thing to guard.',
+      'the ink must be captured at :root, with a literal fallback. Without the fallback, moving',
+      'these tokens onto a scheme class makes the var() invalid at computed-value time: both',
+      'properties resolve to unset and the widget returns to cream on cream with no error.',
     ].join(' ')
   );
 
-  const rootBlock = css.slice(css.indexOf(':root'), css.indexOf('}', css.indexOf(':root')));
-  assert.ok(
-    !/\.appstle/.test(rootBlock),
-    'the capture must stay on :root itself, not be scoped to the widget'
+  // Declared twice, the second one re-resolves the pair wherever it sits -- inside the inverted
+  // section, that is the exact state this snippet exists to escape.
+  for (const prop of ['--ona-panel-surface', '--ona-panel-ink']) {
+    const declarations = css.match(new RegExp(`${prop}\\s*:`, 'g')) ?? [];
+    assert.equal(
+      declarations.length,
+      1,
+      `${prop} must be declared exactly once. A second declaration lower down re-resolves it\n` +
+        'against whatever scheme is in force there, which is what the capture is avoiding.'
+    );
+  }
+
+  // Wrapped in an at-rule the capture simply does not apply on screen. Comments are stripped
+  // first: the prose above the rule says ":root" too, and matching that instead put the whole
+  // check before any at-rule could appear, which is how @media print slipped past it.
+  const bare = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const beforeRoot = bare.slice(0, bare.indexOf(':root'));
+  assert.ok(bare.includes(':root'), 'the capture rule itself must survive comment stripping');
+  assert.equal(
+    (beforeRoot.match(/@[a-z-]+[^;{]*\{/g) ?? []).length,
+    (beforeRoot.match(/\}/g) ?? []).length,
+    'the :root capture must not sit inside an at-rule; wrapped in @media it never applies'
   );
 });
 
@@ -75,14 +111,26 @@ test('the widget paints its own surface, so no page ground can swallow it', () =
 });
 
 test('every class that was measured failing is addressed, and inside the widget', () => {
-  const css = read(SNIPPET);
+  const css = cssOf(read(SNIPPET));
   for (const cls of MEASURED) {
     assert.ok(css.includes(`.${cls}`), `${cls} measured below AA and needs a rule`);
   }
 
-  const selectors = [...css.matchAll(/^\s*(\.[a-zA-Z_][\w-]*(?:\s+\.[\w-]+)*),?$/gm)].map((m) => m[1].trim());
-  const escaped = selectors.filter((s) => s.startsWith('.') && !s.startsWith('.appstle_sub_widget'));
-  assert.deepEqual(escaped, [], 'every rule must stay scoped inside .appstle_sub_widget');
+  // Every selector, including the one that ends each list and therefore carries the brace. The
+  // previous version only matched selectors ending in a comma, so the last of each group could
+  // escape the widget scope unnoticed.
+  const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const selectors = withoutComments
+    .split('}')
+    .map((chunk) => chunk.slice(0, chunk.indexOf('{')))
+    .filter((head) => head.includes('.appstle'))
+    .flatMap((head) => head.split(','))
+    .map((sel) => sel.trim())
+    .filter(Boolean);
+
+  assert.ok(selectors.length >= 7, 'the scan should be finding the widget selectors');
+  const escaped = selectors.filter((sel) => !sel.startsWith('.appstle_sub_widget'));
+  assert.deepEqual(escaped, [], 'every rule touching Appstle must stay scoped inside .appstle_sub_widget');
 });
 
 test('the pills invert the pair rather than tinting one half of it', () => {
@@ -103,23 +151,32 @@ test('the pills invert the pair rather than tinting one half of it', () => {
 });
 
 test('!important is kept, because Appstle injects its CSS after the theme bundle', () => {
-  const css = read(SNIPPET);
-  const decls = [...css.matchAll(/^\s{4}(background-color|color):\s*var\(--ona-panel-[a-z]+\);?$/gm)];
-  assert.deepEqual(
-    decls.map((d) => d[0].trim()),
-    [],
-    [
-      'a colour declaration on the widget without !important loses: the app embed injects its',
-      'stylesheet at runtime, so it is later in document order and wins at equal specificity.',
-      'Verified live -- the first attempt lost even with !important absent and the same selectors.',
-    ].join(' ')
-  );
+  const css = cssOf(read(SNIPPET));
+
+  // Indentation-agnostic: every colour declaration spending one of the captured properties has
+  // to carry !important. Appstle's stylesheet is injected at runtime by the app embed, so it
+  // lands after the theme bundle and takes equal-specificity ties.
+  const spends = [...css.matchAll(/(background-color|color)\s*:\s*var\(--ona-panel-[a-z]+\)([^;]*);/g)];
+  assert.ok(spends.length >= 5, 'the snippet should still be spending the captured pair');
+
+  const weak = spends.filter((m) => !/!important/.test(m[2])).map((m) => m[0]);
+  assert.deepEqual(weak, [], 'these declarations would lose to Appstle at runtime');
 });
 
-test('the styles are actually rendered', () => {
-  assert.match(
-    read(CALLER),
-    /\{%-?\s*render 'appstle-widget-styles'\s*-?%\}/,
-    'a stylesheet nothing renders is a stylesheet that does nothing'
+test('the styles are actually rendered, and not behind a condition', () => {
+  const caller = read(CALLER);
+  const render = caller.search(/\{%-?\s*render 'appstle-widget-styles'\s*-?%\}/);
+  assert.ok(render > 0, 'a stylesheet nothing renders is a stylesheet that does nothing');
+
+  // Count the conditional tags still open where the render sits. The snippet body already runs
+  // inside one `unless`, so that is the baseline; anything more is a new gate on the fix.
+  const before = caller.slice(0, render);
+  const opened = (before.match(/\{%-?\s*(if|unless|case)\s/g) ?? []).length;
+  const closed = (before.match(/\{%-?\s*(endif|endunless|endcase)\s*-?%\}/g) ?? []).length;
+  assert.equal(
+    opened - closed,
+    1,
+    'the render should sit at the snippet body level; wrapping it in a condition silently\n' +
+      'disables the contrast fix while every other assertion here still passes'
   );
 });

@@ -22,11 +22,20 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
 
     this.addEventListener('click', this.#handleOptionClick);
     this.addEventListener('change', this.#showSelectedValue);
+
+    // The plan controls are siblings of this element, not descendants, so their change events
+    // never reach the listener above - and the gate below depends on which plan is checked as
+    // much as on which variant is picked. Delegated from the document and filtered by form
+    // ownership, which is the only relationship that actually ties them to this dropdown.
+    if (this.dataset.subscriptionOnly === 'true') {
+      document.addEventListener('change', this.#handlePlanChange);
+    }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
 
+    document.removeEventListener('change', this.#handlePlanChange);
     this.removeEventListener('click', this.#handleOptionClick);
     this.removeEventListener('change', this.#showSelectedValue);
   }
@@ -60,6 +69,54 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
 
     if (this.dataset.mode === 'cart') this.#pointFormAtVariant(input);
   };
+
+  /**
+   * Re-runs the gate when the shopper changes plan rather than variant.
+   *
+   * Picking a different delivery frequency rewrites the checked radio's value, so a pairing that
+   * was allowed a moment ago can stop being allowed - and one that was blocked can become valid,
+   * which would otherwise leave a dead button with no way back.
+   *
+   * @param {Event} event
+   */
+  #handlePlanChange = (event) => {
+    const target = event.target;
+
+    if (!this.#ownsPlanControl(target)) return;
+
+    const variant = this.querySelector('.variant-select__input:checked');
+
+    if (variant instanceof HTMLInputElement) this.#pointFormAtVariant(variant);
+  };
+
+  /**
+   * Whether a changed control is one of this dropdown's own plan controls.
+   *
+   * Asked by form ownership rather than by position or class name: the radios reach their form
+   * through a `form` attribute from outside it, and the frequency select is not form-associated
+   * at all, so it is placed by the radio it belongs to.
+   *
+   * @param {EventTarget | null} target
+   * @returns {boolean}
+   */
+  #ownsPlanControl(target) {
+    const container = document.getElementById(this.dataset.formId ?? '');
+    const formElement = container?.querySelector('form');
+
+    if (!(formElement instanceof HTMLFormElement)) return false;
+
+    if (target instanceof HTMLInputElement && target.name === 'selling_plan') {
+      return target.form === formElement;
+    }
+
+    if (target instanceof HTMLSelectElement) {
+      const radio = target.closest('label')?.querySelector('input[name="selling_plan"]');
+
+      return radio instanceof HTMLInputElement && radio.form === formElement;
+    }
+
+    return false;
+  }
 
   /**
    * Points a standalone add to cart form at the picked variant.
@@ -115,8 +172,8 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
    *     asking whether the variant subscribes at all.
    *
    * The first two put a full-price one-off in the cart under a button that says Subscribe, which
-   * is what order #120030 was. The third posts a pairing the cart will not take. So all three keep
-   * the button shut.
+   * is the shape a live order already arrived in. The third posts a pairing the cart will not
+   * take. So all three keep the button shut.
    *
    * Only subscription-only forms are gated. On the product page no plan checked is the one-time
    * purchase, which is a legitimate thing to buy.
