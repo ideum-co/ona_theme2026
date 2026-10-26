@@ -148,6 +148,10 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
       variantIdInput.disabled = unavailable;
     }
 
+    // Nothing in the theme carries this attribute today, so this is inert. Before wiring it onto
+    // the subscribe panel's price to fix the staleness there, note that `variantPrice` is the
+    // variant's ONE-TIME price: printed into a subscription-only panel it would show the wrong
+    // number beside a Subscribe button, which is the class of defect this panel was fixed for.
     const price = form.querySelector('[data-variant-select-price]');
 
     if (price && input.dataset.variantPrice) price.textContent = input.dataset.variantPrice;

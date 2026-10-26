@@ -33,9 +33,11 @@
      because a custom property resolves where it is declared, not where it is used. */
   :root {
     /* Literal fallbacks are not decoration. If the theme ever moves these tokens off :root onto a
-       scheme class, var(--color-foreground) here becomes invalid at computed-value time, both
-       properties below resolve to unset, and the widget silently returns to cream on cream with
-       no error anywhere. The fallbacks are settings.color_palette's own values. */
+       scheme class, each var() here becomes invalid at computed-value time and that property
+       resolves to unset on its own - the two are independent declarations, they just happen to
+       reference tokens that would move together. Either way the widget silently returns to cream
+       on cream with no error anywhere. The literals mirror settings.color_palette in
+       config/settings_data.json, and a test holds them to it. */
     --ona-panel-surface: var(--color-background, #f4f3e9);
     --ona-panel-ink: var(--color-foreground, #470a12);
   }
@@ -69,6 +71,8 @@
   .appstle_sub_widget .appstle_subcription_link {
     background-color: var(--ona-panel-ink) !important;
     color: var(--ona-panel-surface) !important;
-    border-radius: var(--style-border-radius-pills);
+    /* !important for the same reason as the colours above: the rule it is sharing wins ties
+       against Appstle's runtime stylesheet and the radius should not opt out of that. */
+    border-radius: var(--style-border-radius-pills) !important;
   }
 {% endstylesheet %}

@@ -180,3 +180,25 @@ test('the styles are actually rendered, and not behind a condition', () => {
       'disables the contrast fix while every other assertion here still passes'
   );
 });
+
+test('the fallback literals are the palette they claim to mirror', () => {
+  const css = cssOf(read(SNIPPET));
+  const raw = read('config/settings_data.json').replace(/^\s*\/\*[\s\S]*?\*\//, '');
+  const palette = JSON.parse(raw).current?.color_palette ?? {};
+
+  assert.ok(palette.foreground && palette.background, 'settings_data should still carry a palette');
+
+  // A fallback that is merely "some hex" is not a fallback, it is a second, silent source of
+  // truth. These only ever apply in the scenario they exist for, so a drifted value would never
+  // be seen until it mattered.
+  assert.match(
+    css,
+    new RegExp(`--ona-panel-ink:\\s*var\\(--color-foreground,\\s*${palette.foreground}\\)`, 'i'),
+    `the ink fallback must be the palette foreground (${palette.foreground})`
+  );
+  assert.match(
+    css,
+    new RegExp(`--ona-panel-surface:\\s*var\\(--color-background,\\s*${palette.background}\\)`, 'i'),
+    `the surface fallback must be the palette background (${palette.background})`
+  );
+});

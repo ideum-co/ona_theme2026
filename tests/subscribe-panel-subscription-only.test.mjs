@@ -396,38 +396,105 @@ test('the plan ids are separated, or the list is one unmatchable token', () => {
   );
 });
 
-test('changing the frequency re-runs the gate and rewrites the posted plan', () => {
-  const snippet = read(SNIPPET);
-  const script = snippet.slice(snippet.indexOf('<script>'));
+const sliceBetween = (text, from, to) => {
+  const a = text.indexOf(from);
+  if (a < 0) return '';
+  const b = to ? text.indexOf(to, a) : -1;
+  return text.slice(a, b < 0 ? undefined : b);
+};
+
+test('changing the frequency rewrites the posted plan and marks it chosen', () => {
+  const script = read(SNIPPET).slice(read(SNIPPET).indexOf('<script>'));
+  const handler = sliceBetween(script, 'selects.forEach(function (select) {', 'syncCardState();');
+
+  assert.match(handler, /radio\.value = select\.value;/, [
+    'without this the radio keeps the default plan id: the shopper picks a cadence, is shown it',
+    'as selected, and is subscribed to a different one.',
+  ].join(' '));
+
+  assert.match(handler, /radio\.checked = true;/, [
+    'and without THIS, on the product page the one-time radio stays the checked one while the',
+    'subscription card shows the chosen frequency and price. Add to cart then posts no selling',
+    'plan -- this PR\'s defect, re-created on the surface that was working.',
+  ].join(' '));
+});
+
+test('the plan-change listener is actually reachable and does the work', () => {
+  const js = read(SELECT_JS);
+
+  // The listener registration, and the condition it hangs off. Asserting the addEventListener
+  // line alone passed while the branch around it was changed to one that never matches.
+  const connect = sliceBetween(js, 'connectedCallback() {', 'disconnectedCallback()');
+  const condition = connect.indexOf("this.dataset.subscriptionOnly === 'true'");
+  const register = connect.indexOf("document.addEventListener('change', this.#handlePlanChange)");
+  assert.ok(condition > 0, 'the listener must hang off the subscription-only flag');
+  assert.ok(register > condition, 'and be registered inside that branch, in that order');
+
   assert.match(
-    script,
-    /selects\.forEach\(function \(select\) \{[\s\S]*?radio\.value = select\.value;/,
-    [
-      'deleting this handler leaves the radio on the default plan id: the shopper picks a cadence,',
-      'is shown it as selected, and is subscribed to a different one. Nothing else in the suite',
-      'reads this script block.',
-    ].join(' ')
+    sliceBetween(js, 'disconnectedCallback() {', '#showSelectedValue'),
+    /document\.removeEventListener\('change', this\.#handlePlanChange\)/,
+    'it has to come off again, or every disconnected card keeps listening'
   );
 
-  const js = read(SELECT_JS);
+  // The handler body: an early return for other panels' controls, then the actual re-run.
+  const handler = sliceBetween(js, '#handlePlanChange = (event) => {', '#ownsPlanControl(target) {');
   assert.match(
-    js,
-    /document\.addEventListener\('change', this\.#handlePlanChange\)/,
+    handler,
+    /if \(!this\.#ownsPlanControl\(target\)\) return;/,
+    'dropping the negation makes the gate re-run for every other panel and never for its own'
+  );
+  assert.match(
+    handler,
+    /this\.#pointFormAtVariant\(variant\)/,
+    'and without this call the handler is an ownership test that does nothing'
+  );
+});
+
+test('plan-control ownership is decided per instance, from this dropdown own form', () => {
+  const owns = sliceBetween(read(SELECT_JS), '#ownsPlanControl(target) {', '/**\n   * Points a standalone');
+
+  assert.match(
+    owns,
+    /document\.getElementById\(this\.dataset\.formId \?\? ''\)/,
     [
-      'the plan controls are siblings of the dropdown, not descendants, so their change events',
-      'never reach its own listener. Without this the gate is never re-evaluated when the plan',
-      'changes: a pairing allowed a moment ago can stop being allowed and the button stays open,',
-      'and a blocked one that becomes valid leaves a dead button with no way back.',
+      'the form has to be resolved from this instance own data-form-id. Resolved any other way --',
+      'document.querySelector(\'form\'), say -- every panel on a collection page shares one form',
+      'and the gate answers for the wrong card, while `target.form === formElement` still reads',
+      'correct in the source.',
     ].join(' ')
   );
+  assert.match(owns, /target\.form === formElement/, 'ownership by form association, not position');
   assert.match(
-    js,
-    /document\.removeEventListener\('change', this\.#handlePlanChange\)/,
-    'and it has to come off again, or every disconnected card keeps listening'
+    owns,
+    /target\.name === 'selling_plan'/,
+    [
+      'the radio branch keys off the control name. Broken, clicking a second subscription card',
+      'changes the posted plan without re-running the gate -- route 2 reopening through the radio',
+      'rather than the select.',
+    ].join(' ')
+  );
+});
+
+test('the gate still reads variant availability, from both sides', () => {
+  assert.match(
+    read(SELECT_JS),
+    /const unavailable = input\.dataset\.variantAvailable === 'false';/,
+    'hard-coded false leaves a sold-out variant with an enabled submit'
   );
   assert.match(
-    js,
-    /#ownsPlanControl\(target\)[\s\S]*?target\.form === formElement/,
-    'ownership must be decided by form association, not by position or class name'
+    read(DROPDOWN),
+    /data-variant-available="\{\{ variant\.available \}\}"/,
+    'and the Liquid has to report it honestly; a literal "true" has the same effect'
+  );
+});
+
+test('subscribable_count actually counts', () => {
+  assert.match(
+    read(SNIPPET),
+    /assign subscribable_count = subscribable_count \| plus: 1/,
+    [
+      'stuck at zero, every subscription-only panel renders "Not available as a subscription in',
+      'this size" under a working Subscribe button.',
+    ].join(' ')
   );
 });
