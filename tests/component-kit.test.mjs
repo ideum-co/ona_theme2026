@@ -718,7 +718,7 @@ test('the Learn tiles map to a block a merchant can actually add', () => {
  * blocker recorded only in the shared paragraph is a blocker that row does not have.
  */
 test('the contact-form gap rows record the validation mismatch', () => {
-  const legacy = ['ona-gust-r', 'ona-training-form', 'ona-expericences-content'];
+  const legacy = ['ona-training-form', 'ona-expericences-content'];
 
   for (const name of legacy) {
     const source = readFileSync(join(root, 'sections', `${name}.liquid`), 'utf8');
@@ -1650,47 +1650,6 @@ test('an order-of-work step names the blockers step 2 does not clear', () => {
     [],
     `these steps present step 2 as sufficient for a section that is blocked for a second, ` +
       `unrelated reason: ${missing.join('; ')}`
-  );
-});
-
-/*
- * The wholesale page plan reduced `ona-gust-r` to its missing form fields, while its gap row
- * says the fields are only the first of two problems -- the two-column YouTube promo beside the
- * form needs a container target as well (Codex, #247). An actionable row that drops half a gap
- * restarts the conversion too early, so the plan has to carry both halves.
- */
-test('the wholesale plan carries both halves of the ona-gust-r gap', () => {
-  const gapRow = doc.split('\n').find((line) => line.startsWith('| `ona-gust-r` |'));
-  assert.ok(gapRow, 'the ona-gust-r gap row is gone');
-  assert.match(gapRow, /not just a form/i, 'the gap row no longer records the second problem');
-
-  const planRow = doc.split('\n').find((line) => line.startsWith('| `/pages/wholesale` |'));
-  assert.ok(planRow, 'the wholesale page-plan row is gone');
-  /* indexOf, not lastIndexOf: taking from the *last* mention would shrink the clause to
-     nothing if a second mention were added later in the row, and the test would fail for the
-     wrong reason. Pin the count so a second mention is a deliberate change. */
-  const mentions = planRow.match(/`ona-gust-r`/g) ?? [];
-  assert.equal(mentions.length, 1, `the wholesale row mentions ona-gust-r ${mentions.length} times; this guard assumes one`);
-  const clause = planRow.slice(planRow.indexOf('`ona-gust-r`'));
-  /* This used to require the clause to call for a `two-column container`, which pinned a layout
-     the page does not have: the form wrapper closes at `sections/ona-gust-r.liquid:55` and the
-     promo is the sibling <section> at 57, stacked below it. Enforcing the old claim would have
-     made correcting the page fail the suite, so the guard now holds the two things that are
-     actually true -- the promo is separate, and what is left blocking is the form. */
-  assert.doesNotMatch(
-    clause,
-    /two-column container|beside the form/i,
-    'the wholesale plan still puts the promo beside the form; it is a sibling section stacked below it'
-  );
-  assert.match(
-    clause,
-    /subject and business fields/i,
-    'the wholesale plan no longer names the subject and business fields, which are what block this section'
-  );
-  assert.match(
-    clause,
-    /field set and validation/i,
-    'the wholesale plan no longer names the field set and validation gap'
   );
 });
 

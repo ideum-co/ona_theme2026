@@ -109,7 +109,7 @@ editor afterwards; a ported `ona-*` section usually fails that, a Horizon
 `section`/`group`/`text` tree passes.
 
 **Which components, and what each legacy section maps onto, is
-[component-kit.md](component-kit.md).** Short version: the theme ships 46
+[component-kit.md](component-kit.md).** Short version: the theme ships 45
 `ona-*` sections, every one of them is still referenced by a template, ten of
 them share one byte-for-byte identical schema, and the layout among them
 collapses to eight components — seven of which Horizon already ships. The

@@ -171,8 +171,9 @@ Only after Stage 1, and section by section:
    corrected after Codex, #203.)
 2. **Rebuild each section on the theme's tokens** — spacing, type, colour —
    rather than reproducing the legacy cascade, which this theme does not have.
-3. **Retire the dead markup.** `wowo` and `fadeInUp` are on 28 of these 30
-   sections (`ona-bread-crumbs` and `ona-gust-r` excepted) and the library
+3. **Retire the dead markup.** `wowo` and `fadeInUp` are on 28 of these 29
+   sections (`ona-bread-crumbs` excepted; `ona-gust-r` was the other exception
+   until it was removed as a duplicate) and the library
    behind them is not in the theme. They are inert attributes inflating the
    DOM. `animate__heartBeat` is a single occurrence on a *scoped* section
    (`sections/ona-icon-and-content.liquid:15`), not a sweep — see the
