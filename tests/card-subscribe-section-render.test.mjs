@@ -348,6 +348,20 @@ test('the subscribe panel follows the card picker instead', () => {
     /if \(!\(input instanceof HTMLInputElement\)\) return;/,
     'a variant this dropdown does not list leaves the panel refusing rather than offering the old size'
   );
+
+  /*
+   * Position is the whole point: an abort that waits for `event.promise` leaves the previous
+   * size's request free to land first, clear the pending state and point the form back at the
+   * variant the shopper just left. It has to be dropped as the selection starts.
+   */
+  const abortAt = handler[0].indexOf('this.#plansController?.abort()');
+  const promiseAt = handler[0].indexOf('event.promise');
+
+  assert.notEqual(abortAt, -1, 'the card picker drops any refresh already in flight');
+  assert.ok(
+    abortAt < promiseAt,
+    'the in-flight refresh is aborted when the selection starts, not once its answer arrives'
+  );
 });
 
 /*

@@ -113,6 +113,13 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
 
     if (panel) this.#setPlansPending(panel, true);
 
+    // A refresh already in flight describes the size the shopper has just moved off. Left running,
+    // it would land while this selection is still resolving, and its success path clears pending,
+    // morphs that size's plans back in and points the form at its variant - the panel offering one
+    // size with the card showing the other, and the button open over it. `#refreshPlans` aborts
+    // too, but not until the answer arrives, which is the whole length of the window.
+    this.#plansController?.abort();
+
     event.promise
       .then(({ detail }) => {
         const variantId = detail?.resource?.id;
