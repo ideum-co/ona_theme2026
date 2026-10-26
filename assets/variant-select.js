@@ -412,7 +412,12 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
 
     if (uniqueId != null) incoming.setAttribute('data-purchase-options-id', uniqueId);
 
-    const formId = document.getElementById(this.dataset.formId ?? '')?.querySelector('form')?.id;
+    // `getAttribute('id')`, never `.id`. Every Shopify product form carries an `<input name="id">`
+    // for the variant, and a form's named controls shadow its own properties - so `form.id` hands
+    // back that input element, not the string. Stringified into the `form` attribute it becomes
+    // "[object HTMLInputElement]", the radios belong to no form at all, nothing is posted, and the
+    // gate reads no checked plan and shuts the button for good. Measured on the preview theme.
+    const formId = document.getElementById(this.dataset.formId ?? '')?.querySelector('form')?.getAttribute('id');
 
     // Without it the radios would be owned by the placeholder. Better to keep the stale panel and
     // let the gate refuse than to show plans that cannot be submitted.
