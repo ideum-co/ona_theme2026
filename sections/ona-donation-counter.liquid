@@ -39,6 +39,9 @@
     --donation-button-text: {{ section.settings.button_text_color }};
     --dc-card-gap: {{ section.settings.card_gap }}px;
     --dc-digit-size: {{ section.settings.digit_size }}px;
+    --dc-gap-title: {{ section.settings.gap_title }}px;
+    --dc-gap-counter: {{ section.settings.gap_counter }}px;
+    --dc-gap-subtitle: {{ section.settings.gap_subtitle }}px;
     --dc-heading-size: {{ section.settings.heading_size }}px;
     --dc-subtitle-size: {{ section.settings.subtitle_size }}px;
     --dc-heading-color: {{ section.settings.heading_color }};
@@ -115,13 +118,13 @@
     font-weight: 400;
     letter-spacing: calc(0.09 / 16 * 1em);
     line-height: 1.2;
-    margin: 0 0 20px;
+    margin: 0 0 var(--dc-gap-title, 20px);
     color: var(--dc-heading-color, #fbf8f3);
   }
 
   .donation-counter__display {
     display: inline-block;
-    margin: 0 auto 39px;
+    margin: 0 auto var(--dc-gap-counter, 39px);
   }
 
   .donation-counter__cards {
@@ -189,7 +192,7 @@
     font-weight: 400;
     letter-spacing: calc(-0.09 / 16 * 1em);
     line-height: 1.2;
-    margin: 0 0 7px;
+    margin: 0 0 var(--dc-gap-subtitle, 7px);
     color: var(--dc-subtitle-color, #fbf8f3);
   }
 
@@ -384,6 +387,42 @@
       "step": 1,
       "unit": "px",
       "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Spacing between items"
+    },
+    {
+      "type": "range",
+      "id": "gap_title",
+      "label": "Gap below title",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "gap_counter",
+      "label": "Gap below counter",
+      "info": "Space between the number and the subtitle.",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 39
+    },
+    {
+      "type": "range",
+      "id": "gap_subtitle",
+      "label": "Gap below subtitle",
+      "info": "Space between the subtitle and the button.",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 7
     },
     {
       "type": "header",
