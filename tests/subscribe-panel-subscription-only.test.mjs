@@ -8,6 +8,17 @@ const read = (p) => readFileSync(join(root, p), 'utf8');
 
 const BLOCK = 'blocks/subscribe-button.liquid';
 const SNIPPET = 'snippets/purchase-options.liquid';
+const PAGE_BLOCK = 'blocks/purchase-options.liquid';
+const DROPDOWN = 'snippets/variant-select-dropdown.liquid';
+const SELECT_JS = 'assets/variant-select.js';
+
+/*
+ * The one-time card is also a `name="selling_plan"` radio -- with an empty value, and earlier in
+ * the file -- so matching on the name alone picks the wrong one. The subscription radio is the one
+ * that carries an allocation's plan id.
+ */
+const planRadio = (snippet) =>
+  snippet.match(/<input\s+type="radio"\s+name="selling_plan"\s+value="\{\{ allocation\.selling_plan\.id \}\}"[\s\S]*?>/);
 
 /*
  * The product card's Subscribe button opens a panel. That panel used to lead with "One time
@@ -41,6 +52,11 @@ test('the product page keeps the one-time option, so the two callers stay differ
     .filter((p) => read(p).includes("render 'purchase-options'"));
 
   assert.ok(callers.includes(BLOCK), 'the subscribe button should be one of the callers');
+  assert.ok(
+    callers.includes(PAGE_BLOCK),
+    `${PAGE_BLOCK} must still render the purchase options: asserting only that nobody else asks
+     for subscription_only stays true when the product page stops rendering them at all`
+  );
 
   const subscriptionOnly = callers.filter((p) =>
     /render 'purchase-options'[\s\S]{0,240}?subscription_only:\s*true/.test(read(p))
@@ -130,4 +146,90 @@ test('the unavailable string exists in the default locale', () => {
     'string',
     'a missing translation key renders as the key itself on the live page'
   );
+});
+
+/*
+ * The four tests below guard the rendered markup rather than the Liquid that computes it. Every
+ * assertion above this point reads a computation -- `assign preselect`, `if subscription_only` --
+ * and a computation can be perfectly correct while nothing is emitted from it. Deleting the
+ * `checked` attribute left all of them green: the card still carried `is-selected`, so the panel
+ * looked exactly right and posted no selling plan. That is the shipped defect, restored, wearing
+ * the same face. So: assert the output.
+ */
+
+test('the preselected card both checks its radio and shows as chosen', () => {
+  const snippet = read(SNIPPET);
+  const radio = planRadio(snippet);
+  assert.ok(radio, 'the subscription radio should still be there');
+  assert.match(
+    radio[0],
+    /\{%\s*if preselect\s*%\}\s*checked\s*\{%\s*endif\s*%\}/,
+    'without the checked attribute the panel looks selected and posts no plan -- the original bug'
+  );
+  assert.match(
+    snippet,
+    /class="purchase-options__card\{%\s*if preselect\s*%\} is-selected\{%\s*endif\s*%\}"/,
+    'the card the radio checks must be the card that reads as chosen'
+  );
+});
+
+test('the plan radios stay bound to the form they are posted with', () => {
+  const snippet = read(SNIPPET);
+  const radios = [...snippet.matchAll(/<input\s+type="radio"\s+name="selling_plan"[\s\S]*?>/g)].map((m) => m[0]);
+
+  // Both of them: the one-time radio and the subscription radio. Counting first, because an
+  // assertion that walks a list protects only the entries the list happens to hold.
+  assert.equal(radios.length, 2, 'the snippet should still render a one-time radio and a plan radio');
+
+  for (const radio of radios) {
+    assert.match(
+      radio,
+      /form="\{\{ form_id \}\}"/,
+      [
+        'the radios sit outside the form and reach it only through this attribute.',
+        'Drop it from the plan radio and every subscription silently becomes a one-time purchase;',
+        'drop it from the one-time radio and the product page can no longer clear a chosen plan.',
+      ].join(' ')
+    );
+  }
+});
+
+test('a group with no allocation for this variant does not consume the preselect slot', () => {
+  const snippet = read(SNIPPET);
+  const guard = snippet.indexOf('{% unless allocation == blank %}');
+  const bump = snippet.indexOf('assign rendered_count = rendered_count | plus: 1');
+  assert.ok(guard > 0 && bump > guard, [
+    'the counter must advance inside the allocation guard, not before it.',
+    'Advanced outside, a product whose first group has no allocation for the current variant',
+    'burns the only preselect slot on a card that was never rendered, so nothing is checked',
+    'and Subscribe posts no plan.',
+  ].join(' '));
+});
+
+test('the panel keeps its submit shut when the picked variant carries no plan', () => {
+  const dropdown = read(DROPDOWN);
+  assert.match(
+    dropdown,
+    /data-variant-subscribable="\{%\s*if variant\.selling_plan_allocations\.size > 0\s*%\}true\{%\s*else\s*%\}false\{%\s*endif\s*%\}"/,
+    'each variant row has to say whether it can be subscribed to at all'
+  );
+  assert.match(dropdown, /data-subscription-only="true"/, 'and the dropdown has to know it is in a subscribe panel');
+
+  const block = read(BLOCK);
+  const call = block.match(/render 'variant-select-dropdown'[\s\S]{0,240}?-%\}/);
+  assert.ok(call, `${BLOCK} should render the variant dropdown`);
+  assert.match(call[0], /subscription_only:\s*true/, 'the subscribe panel must switch that gate on');
+
+  const js = read(SELECT_JS);
+  assert.match(
+    js,
+    /submit\.disabled = unavailable \|\| this\.#missingPlanFor\(input, form\)/,
+    [
+      'variant-select.js writes submit.disabled on every dropdown change from variant availability.',
+      'Without the plan gate it reopens the button on a variant with no allocation -- or with no',
+      'plan radios rendered at all -- and Subscribe sells a full-price one-off, which is the bug',
+      'this whole change exists to remove.',
+    ].join(' ')
+  );
+  assert.match(js, /if \(this\.dataset\.subscriptionOnly !== 'true'\) return false;/, 'the product page must stay ungated');
 });
