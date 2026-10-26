@@ -49,3 +49,35 @@ test('badges and links invert both colours together', () => {
   assert.match(inverted, /color:\s*var\(--ona-widget-surface\)\s*!important/);
   assert.match(css, /\.appstle_tooltip_appstle\s*\{[^}]*background-color:\s*transparent\s*!important/);
 });
+
+test('Appstle cannot override any colour drawn from the product pair', () => {
+  // Its stylesheet is injected after the theme bundle. A declaration without !important can
+  // look correct in source while losing to the runtime stylesheet on the storefront.
+  const declarations = [...css.matchAll(/(?:background-color|border-color|color)\s*:\s*var\(--ona-widget-(?:surface|ink)\)([^;]*);/g)];
+  assert.ok(declarations.length >= 10, 'the scan must cover the widget, controls and badge');
+  assert.deepEqual(
+    declarations.filter((match) => !/!important/.test(match[1])).map((match) => match[0]),
+    [],
+    'each widget colour must win over Appstle’s later CSS'
+  );
+});
+
+test('the stylesheet render stays at the purchase-options body level', () => {
+  const caller = read('snippets/purchase-options.liquid');
+  const renderTag = /\{%-?\s*render 'appstle-widget-styles'\s*-?%\}/g;
+  const matches = [...caller.matchAll(renderTag)];
+  assert.equal(matches.length, 1, 'render the widget stylesheet exactly once');
+
+  const before = caller.slice(0, matches[0].index);
+  const opened = (before.match(/\{%-?\s*(?:if|unless|case)\s/g) ?? []).length;
+  const closed = (before.match(/\{%-?\s*(?:endif|endunless|endcase)\s*-?%\}/g) ?? []).length;
+  assert.equal(opened - closed, 1, 'the product/plan guard is the only condition around the render');
+});
+
+test('fallback colours track the configured store palette', () => {
+  const settings = JSON.parse(read('config/settings_data.json').replace(/^\s*\/\*[\s\S]*?\*\//, ''));
+  const palette = settings.current.color_palette;
+  assert.ok(palette.background && palette.foreground);
+  assert.match(css, new RegExp(`--ona-widget-surface:\\s*var\\(--color-background,\\s*${palette.background}\\)`, 'i'));
+  assert.match(css, new RegExp(`--ona-widget-ink:\\s*var\\(--color-foreground,\\s*${palette.foreground}\\)`, 'i'));
+});
