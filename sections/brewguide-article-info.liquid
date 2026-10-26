@@ -177,7 +177,14 @@
     color: var(--palette-lightest);
     padding-block: var(--gap-3xl);
     padding-inline: var(--gap-lg);
-    margin-block: var(--gap-3xl);
+    /*
+     * Top margin only. A bottom margin sits OUTSIDE the full-bleed maroon panel, so it painted
+     * a cream strip between this band and the footer -- which is also maroon -- reading as an
+     * accidental sliver. The band already carries gap-3xl of (maroon) bottom padding to keep
+     * the content off its edge, so it meets whatever follows flush: seamless into the footer,
+     * and the cross-sell below restores its own gap-3xl top margin for the case it is present.
+     */
+    margin-block-start: var(--gap-3xl);
   }
 
   .brewguide-article-recipe {
@@ -296,6 +303,9 @@
     border-radius: var(--style-border-radius-popover);
     max-width: 46rem;
     margin-inline: auto;
+    /* The band above no longer carries a bottom margin, so the cross-sell owns the gap that
+       separates it from the band when a matching product is set. */
+    margin-block-start: var(--gap-3xl);
   }
 
   .brewguide-article-cross-sell__image {
