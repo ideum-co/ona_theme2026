@@ -74,9 +74,12 @@
 {% stylesheet %}
   .brewguide-article-info {
     margin: 0;
+    margin-inline: auto;
     display: grid;
     gap: var(--gap-sm);
-    width: 100%;
+    width: min(100%, var(--normal-content-width));
+    justify-items: center;
+    text-align: center;
   }
 
   .brewguide-article-info__row {
@@ -84,6 +87,7 @@
     flex-wrap: wrap;
     gap: var(--gap-sm);
     align-items: baseline;
+    justify-content: center;
   }
 
   .brewguide-article-info__label {
