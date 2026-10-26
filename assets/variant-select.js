@@ -101,18 +101,22 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
   }
 
   /**
-   * Whether a subscription-only form would post with no selling plan on it.
+   * Whether a subscription-only form would post something that is not a subscription.
    *
    * The subscribe panel renders its plan radios for one variant - whichever was current when the
    * section rendered - and, as the comment above says, nothing re-renders them when this dropdown
-   * moves. So the plan on offer can stop matching the variant being bought. Two states lead to the
-   * same place, an order with no subscription on it:
+   * moves. So the plan on offer can stop matching the variant being bought. Three states all end
+   * at an order with no subscription on it, or none that Shopify will accept:
    *
    *   - the rendered variant had no allocation, so there are no plan radios at all to check;
-   *   - the shopper moved to a variant that has no allocation, so the checked plan does not apply.
+   *   - nothing is checked, so no plan would be posted;
+   *   - a plan is checked, but the variant now picked has no allocation for that particular plan -
+   *     which is not the same as having no allocations, and is why this compares ids rather than
+   *     asking whether the variant subscribes at all.
    *
-   * Both put a full-price one-off in the cart under a button that says Subscribe, which is what
-   * order #120030 was. So both keep the button shut instead.
+   * The first two put a full-price one-off in the cart under a button that says Subscribe, which
+   * is what order #120030 was. The third posts a pairing the cart will not take. So all three keep
+   * the button shut.
    *
    * Only subscription-only forms are gated. On the product page no plan checked is the one-time
    * purchase, which is a legitimate thing to buy.
@@ -123,15 +127,25 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
    */
   #missingPlanFor(input, form) {
     if (this.dataset.subscriptionOnly !== 'true') return false;
-    if (input.dataset.variantSubscribable === 'false') return true;
 
-    // The plan radios sit outside the `<form>` and reach it through their `form` attribute, so
-    // they are absent from its subtree but present in `elements` - that collection is keyed on
-    // form association, not on DOM position. A `RadioNodeList` reports '' when none is checked.
     const formElement = form.querySelector('form');
-    const plan = formElement instanceof HTMLFormElement ? formElement.elements.namedItem('selling_plan') : null;
 
-    return !(plan && /** @type {any} */ (plan).value);
+    if (!(formElement instanceof HTMLFormElement)) return true;
+
+    // Walked rather than read through `elements.namedItem`, which hands back a `RadioNodeList`
+    // only when two or more controls share the name and the element itself when just one does -
+    // and a lone element reports its `value` whether or not it is checked. One selling plan group
+    // is the common shape here, so that is the case it would get wrong.
+    const checked = [...formElement.elements].find(
+      (element) =>
+        element instanceof HTMLInputElement && element.name === 'selling_plan' && element.checked && element.value
+    );
+
+    if (!checked) return true;
+
+    const allocated = (input.dataset.variantPlans ?? '').split(',').filter(Boolean);
+
+    return !allocated.includes(checked.value);
   }
 
   /**

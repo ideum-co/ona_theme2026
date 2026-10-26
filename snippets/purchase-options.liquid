@@ -143,16 +143,25 @@
                         endif
                       endfor
                     %}
-                    <option
-                      value="{{ plan.id }}"
-                      data-price="{{ plan_allocation.price | money }}"
-                      data-compare-at="{{ plan_allocation.compare_at_price | money }}"
-                      {% if plan.id == allocation.selling_plan.id %}
-                        selected
-                      {% endif %}
-                    >
-                      {{ plan.name }}
-                    </option>
+                    {% comment %}
+                      A group can hold a plan this variant was never allocated. Offered anyway, it
+                      renders with an empty price and, once picked, writes an unallocated plan id
+                      onto the radio - so the panel asks the cart for a pairing it will not take,
+                      with the price showing blank. The panel is subscription-only now, so this is
+                      the only path through it rather than one option beside a one-time purchase.
+                    {% endcomment %}
+                    {% unless plan_allocation == blank %}
+                      <option
+                        value="{{ plan.id }}"
+                        data-price="{{ plan_allocation.price | money }}"
+                        data-compare-at="{{ plan_allocation.compare_at_price | money }}"
+                        {% if plan.id == allocation.selling_plan.id %}
+                          selected
+                        {% endif %}
+                      >
+                        {{ plan.name }}
+                      </option>
+                    {% endunless %}
                   {% endfor %}
                 </select>
               {% endif %}
@@ -161,12 +170,18 @@
         {% endunless %}
       {% endfor %}
 
-      {% if subscription_only and subscribable_count == 0 %}
-        <p class="purchase-options__unavailable">
-          {{- 'products.product.subscription_unavailable_for_variant' | t -}}
-        </p>
-      {% endif %}
     </div>
+
+    {% comment %}
+      Outside the radiogroup on purpose: in the one state where this renders there are no radios in
+      it, and non-radio content inside `role="radiogroup"` is not reliably announced - so the
+      shopper facing a dead Subscribe button would be the one person not told why.
+    {% endcomment %}
+    {% if subscription_only and subscribable_count == 0 %}
+      <p class="purchase-options__unavailable" role="status">
+        {{- 'products.product.subscription_unavailable_for_variant' | t -}}
+      </p>
+    {% endif %}
 
     {% assign detail_plan = groups.first.selling_plans.first %}
     {% if detail_plan.description != blank %}
@@ -176,11 +191,6 @@
       </details>
     {% endif %}
   </div>
-
-  {%- comment -%}
-    Rendered from here because the widget only ever appears where purchase options do, and a
-    snippet's stylesheet is collected once however many times it is rendered.
-  {%- endcomment -%}
 
   <script>
     (function () {
@@ -338,8 +348,9 @@
     color: var(--color-foreground);
   }
 
-  /* Reads as information, not an error: the size simply has no plan attached. Uses the body
-     colour rather than the secondary one so it clears AA on the cream ground. */
+  /* Reads as information, not an error: the size simply has no plan attached. Takes the body
+     colour rather than the secondary one, so it is as legible as the text around it whatever
+     scheme the panel is rendered into. */
   .purchase-options__unavailable {
     margin: 0;
     font-size: var(--font-size--sm);

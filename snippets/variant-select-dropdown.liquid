@@ -108,7 +108,7 @@
             value="{{ variant.id }}"
             data-variant-id="{{ variant.id }}"
             data-variant-available="{{ variant.available }}"
-            data-variant-subscribable="{% if variant.selling_plan_allocations.size > 0 %}true{% else %}false{% endif %}"
+            data-variant-plans="{% for allocation in variant.selling_plan_allocations %}{{ allocation.selling_plan.id }}{% unless forloop.last %},{% endunless %}{% endfor %}"
             data-variant-price="{{ variant.price | money }}"
             {% unless variant.available %}
               disabled

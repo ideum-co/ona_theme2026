@@ -114,6 +114,18 @@ test('the panel cannot add a one-time item when the variant has no subscription'
     /subscription_unavailable_for_variant/,
     'and the shopper should be told why, not left with a dead button'
   );
+
+  // Reading the right variable is worth nothing if something reassigns it in between. Counted
+  // rather than pattern-matched: a third assignment anywhere, in any wording, is the mutation.
+  const canAddWrites = block.match(/assign subscribe_can_add/g) ?? [];
+  assert.equal(
+    canAddWrites.length,
+    2,
+    [
+      'subscribe_can_add should be written exactly twice -- false, then true inside the gate.',
+      'A third write after the gate silently re-opens the button on a variant with no plan.',
+    ].join(' ')
+  );
 });
 
 test('the panel button carries the verb the shopper pressed', () => {
@@ -206,30 +218,134 @@ test('a group with no allocation for this variant does not consume the preselect
   ].join(' '));
 });
 
-test('the panel keeps its submit shut when the picked variant carries no plan', () => {
+/*
+ * The guards below follow the value, not the vocabulary. The round before this one asserted that
+ * `variant_is_subscribable` existed and that one line of JS was present verbatim; both survived
+ * swapping the per-variant allocation test for a product-level one, and both survived deleting
+ * the branch that reads the attribute. Each of those restores a defect this change was written to
+ * remove. So each assertion here names the expression that has to be on the other side of the
+ * assignment.
+ */
+
+test('subscribability is asked of the variant, never of the product', () => {
+  const block = read(BLOCK);
+  assert.match(
+    block,
+    /assign variant_is_subscribable = false\s+if variant\.selling_plan_allocations\.size > 0/,
+    [
+      'product.selling_plan_groups answers a different question: a 200g-only plan leaves 1kg with',
+      'no allocation while the product still reports a group, so the gate opens on a variant that',
+      'cannot be subscribed to and Subscribe sells a full-price one-off.',
+    ].join(' ')
+  );
+
   const dropdown = read(DROPDOWN);
   assert.match(
     dropdown,
-    /data-variant-subscribable="\{%\s*if variant\.selling_plan_allocations\.size > 0\s*%\}true\{%\s*else\s*%\}false\{%\s*endif\s*%\}"/,
-    'each variant row has to say whether it can be subscribed to at all'
+    /data-variant-plans="\{% for allocation in variant\.selling_plan_allocations %\}\{\{ allocation\.selling_plan\.id \}\}/,
+    'each row must list the plan ids this variant is actually allocated, not a product-level boolean'
   );
-  assert.match(dropdown, /data-subscription-only="true"/, 'and the dropdown has to know it is in a subscribe panel');
+});
 
-  const block = read(BLOCK);
-  const call = block.match(/render 'variant-select-dropdown'[\s\S]{0,240}?-%\}/);
-  assert.ok(call, `${BLOCK} should render the variant dropdown`);
-  assert.match(call[0], /subscription_only:\s*true/, 'the subscribe panel must switch that gate on');
-
+test('the client gate reads the variant it was given and the plan that is checked', () => {
   const js = read(SELECT_JS);
+  const body = js.slice(js.indexOf('#missingPlanFor(input, form)'));
+  assert.ok(body, 'the gate should still exist');
+
   assert.match(
     js,
     /submit\.disabled = unavailable \|\| this\.#missingPlanFor\(input, form\)/,
+    'variant-select.js rewrites submit.disabled on every dropdown change; the gate has to be in it'
+  );
+  assert.match(
+    body,
+    /element\.name === 'selling_plan' && element\.checked && element\.value/,
     [
-      'variant-select.js writes submit.disabled on every dropdown change from variant availability.',
-      'Without the plan gate it reopens the button on a variant with no allocation -- or with no',
-      'plan radios rendered at all -- and Subscribe sells a full-price one-off, which is the bug',
-      'this whole change exists to remove.',
+      'the checked plan has to be found by its checked state. elements.namedItem returns the input',
+      'itself when only one control shares the name - the common one-group shape here - and a lone',
+      'input reports its value whether or not it is checked, so the gate would wave through a panel',
+      'with nothing selected.',
     ].join(' ')
   );
-  assert.match(js, /if \(this\.dataset\.subscriptionOnly !== 'true'\) return false;/, 'the product page must stay ungated');
+  assert.match(
+    body,
+    /input\.dataset\.variantPlans/,
+    'dropping the attribute read leaves the gate blind to which variant was picked'
+  );
+  assert.match(
+    body,
+    /return !allocated\.includes\(checked\.value\)/,
+    [
+      'a variant can have allocations and still not have one for the plan that is checked -',
+      'two groups split across two sizes. Asking only whether the variant subscribes at all posts',
+      'a pairing the cart will not take.',
+    ].join(' ')
+  );
+  assert.match(
+    body,
+    /if \(!checked\) return true;/,
+    'nothing checked must close the button, not open it'
+  );
+  assert.match(
+    js,
+    /if \(this\.dataset\.subscriptionOnly !== 'true'\) return false;/,
+    'the product page must stay ungated: there, no plan checked is the one-time purchase'
+  );
+});
+
+test('only the subscribe panel turns the client gate on', () => {
+  const dropdown = read(DROPDOWN);
+  assert.match(
+    dropdown,
+    /\{% if subscription_only %\}\s*data-subscription-only="true"\s*\{% endif %\}/,
+    [
+      'unconditional, the gate reaches every caller of this dropdown. product-highlight renders no',
+      'selling_plan input at all, so nothing is ever checked and its add to cart button would be',
+      'permanently disabled.',
+    ].join(' ')
+  );
+
+  const callers = [...readdirSync(join(root, 'blocks')), ...readdirSync(join(root, 'sections'))]
+    .filter((n) => n.endsWith('.liquid'))
+    .map((n) => (readdirSync(join(root, 'blocks')).includes(n) ? `blocks/${n}` : `sections/${n}`))
+    .filter((p) => read(p).includes("render 'variant-select-dropdown'"));
+
+  assert.ok(callers.length > 1, 'this dropdown should still have more than one caller to protect');
+
+  const gated = callers.filter((p) =>
+    /render 'variant-select-dropdown'[\s\S]{0,240}?subscription_only:\s*true/.test(read(p))
+  );
+  assert.deepEqual(gated, [BLOCK], 'only the subscribe panel may switch the gate on');
+});
+
+test('the frequency list offers only plans this variant is allocated', () => {
+  const snippet = read(SNIPPET);
+  const option = snippet.indexOf('<option');
+  const guard = snippet.lastIndexOf('{% unless plan_allocation == blank %}', option);
+  assert.ok(
+    guard > 0 && guard < option,
+    [
+      'a group can hold a plan this variant was never allocated. Offered, it renders a blank price',
+      'and writes an unallocated plan id onto the radio when picked - reachable on a single-variant',
+      'product with no dropdown involved, and the panel is subscription-only now, so it is the only',
+      'path through it.',
+    ].join(' ')
+  );
+});
+
+test('the unavailable message is announceable and sits outside the empty radiogroup', () => {
+  const snippet = read(SNIPPET);
+  const listClose = snippet.indexOf('</div>', snippet.indexOf('role="radiogroup"'));
+  const message = snippet.indexOf('purchase-options__unavailable');
+  assert.ok(
+    message > listClose,
+    'in the one state where it renders the radiogroup holds no radios, and non-radio content inside\n' +
+      'role="radiogroup" is not reliably announced -- the one shopper facing a dead button would be\n' +
+      'the one not told why'
+  );
+  assert.match(
+    snippet,
+    /<p class="purchase-options__unavailable" role="status">/,
+    'it replaces content that was there a moment ago, so it has to announce itself'
+  );
 });

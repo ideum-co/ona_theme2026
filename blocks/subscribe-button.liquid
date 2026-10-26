@@ -29,7 +29,9 @@
   # Product-level selling plan groups are not the same question as "can this variant be
   # subscribed to": a 200g-only plan leaves the 1kg variant with no allocation. Submitting then
   # would add a one-time item, which is the bug this panel exists to close, so the button is
-  # held closed and `purchase-options` explains why.
+  # held closed. On this first render `purchase-options` also says why; once the dropdown has
+  # moved, `variant-select.js` can only close the button, so the two do not always agree and the
+  # message is not a promise the shopper always gets one.
   assign variant_is_subscribable = false
   if variant.selling_plan_allocations.size > 0
     assign variant_is_subscribable = true
