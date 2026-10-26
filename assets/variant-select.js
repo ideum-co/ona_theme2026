@@ -22,11 +22,20 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
 
     this.addEventListener('click', this.#handleOptionClick);
     this.addEventListener('change', this.#showSelectedValue);
+
+    // The plan controls are siblings of this element, not descendants, so their change events
+    // never reach the listener above - and the gate below depends on which plan is checked as
+    // much as on which variant is picked. Delegated from the document and filtered by form
+    // ownership, which is the only relationship that actually ties them to this dropdown.
+    if (this.dataset.subscriptionOnly === 'true') {
+      document.addEventListener('change', this.#handlePlanChange);
+    }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
 
+    document.removeEventListener('change', this.#handlePlanChange);
     this.removeEventListener('click', this.#handleOptionClick);
     this.removeEventListener('change', this.#showSelectedValue);
   }
@@ -62,6 +71,54 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
   };
 
   /**
+   * Re-runs the gate when the shopper changes plan rather than variant.
+   *
+   * Picking a different delivery frequency rewrites the checked radio's value, so a pairing that
+   * was allowed a moment ago can stop being allowed - and one that was blocked can become valid,
+   * which would otherwise leave a dead button with no way back.
+   *
+   * @param {Event} event
+   */
+  #handlePlanChange = (event) => {
+    const target = event.target;
+
+    if (!this.#ownsPlanControl(target)) return;
+
+    const variant = this.querySelector('.variant-select__input:checked');
+
+    if (variant instanceof HTMLInputElement) this.#pointFormAtVariant(variant);
+  };
+
+  /**
+   * Whether a changed control is one of this dropdown's own plan controls.
+   *
+   * Asked by form ownership rather than by position or class name: the radios reach their form
+   * through a `form` attribute from outside it, and the frequency select is not form-associated
+   * at all, so it is placed by the radio it belongs to.
+   *
+   * @param {EventTarget | null} target
+   * @returns {boolean}
+   */
+  #ownsPlanControl(target) {
+    const container = document.getElementById(this.dataset.formId ?? '');
+    const formElement = container?.querySelector('form');
+
+    if (!(formElement instanceof HTMLFormElement)) return false;
+
+    if (target instanceof HTMLInputElement && target.name === 'selling_plan') {
+      return target.form === formElement;
+    }
+
+    if (target instanceof HTMLSelectElement) {
+      const radio = target.closest('label')?.querySelector('input[name="selling_plan"]');
+
+      return radio instanceof HTMLInputElement && radio.form === formElement;
+    }
+
+    return false;
+  }
+
+  /**
    * Points a standalone add to cart form at the picked variant.
    *
    * Only used by `variant-select-dropdown`, where the dropdown is not inside a `<variant-picker>`
@@ -91,13 +148,65 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
       variantIdInput.disabled = unavailable;
     }
 
+    // Nothing in the theme carries this attribute today, so this is inert. Before wiring it onto
+    // the subscribe panel's price to fix the staleness there, note that `variantPrice` is the
+    // variant's ONE-TIME price: printed into a subscription-only panel it would show the wrong
+    // number beside a Subscribe button, which is the class of defect this panel was fixed for.
     const price = form.querySelector('[data-variant-select-price]');
 
     if (price && input.dataset.variantPrice) price.textContent = input.dataset.variantPrice;
 
     const submit = form.querySelector('button[type="submit"]');
 
-    if (submit instanceof HTMLButtonElement) submit.disabled = unavailable;
+    if (submit instanceof HTMLButtonElement) submit.disabled = unavailable || this.#missingPlanFor(input, form);
+  }
+
+  /**
+   * Whether a subscription-only form would post something that is not a subscription.
+   *
+   * The subscribe panel renders its plan radios for one variant - whichever was current when the
+   * section rendered - and, as the comment above says, nothing re-renders them when this dropdown
+   * moves. So the plan on offer can stop matching the variant being bought. Three states all end
+   * at an order with no subscription on it, or none that Shopify will accept:
+   *
+   *   - the rendered variant had no allocation, so there are no plan radios at all to check;
+   *   - nothing is checked, so no plan would be posted;
+   *   - a plan is checked, but the variant now picked has no allocation for that particular plan -
+   *     which is not the same as having no allocations, and is why this compares ids rather than
+   *     asking whether the variant subscribes at all.
+   *
+   * The first two put a full-price one-off in the cart under a button that says Subscribe, which
+   * is the shape a live order already arrived in. The third posts a pairing the cart will not
+   * take. So all three keep the button shut.
+   *
+   * Only subscription-only forms are gated. On the product page no plan checked is the one-time
+   * purchase, which is a legitimate thing to buy.
+   *
+   * @param {HTMLInputElement} input - The selected variant radio.
+   * @param {Element} form - The `product-form-component` this dropdown points at.
+   * @returns {boolean}
+   */
+  #missingPlanFor(input, form) {
+    if (this.dataset.subscriptionOnly !== 'true') return false;
+
+    const formElement = form.querySelector('form');
+
+    if (!(formElement instanceof HTMLFormElement)) return true;
+
+    // Walked rather than read through `elements.namedItem`, which hands back a `RadioNodeList`
+    // only when two or more controls share the name and the element itself when just one does -
+    // and a lone element reports its `value` whether or not it is checked. One selling plan group
+    // is the common shape here, so that is the case it would get wrong.
+    const checked = [...formElement.elements].find(
+      (element) =>
+        element instanceof HTMLInputElement && element.name === 'selling_plan' && element.checked && element.value
+    );
+
+    if (!checked) return true;
+
+    const allocated = (input.dataset.variantPlans ?? '').split(',').filter(Boolean);
+
+    return !allocated.includes(checked.value);
   }
 
   /**

@@ -47,7 +47,6 @@ test('each restored legacy enquiry form posts to Shopify contact', () => {
   for (const path of [
     'sections/ona-training-form.liquid',
     'sections/ona-expericences-content.liquid',
-    'sections/ona-gust-r.liquid',
   ]) {
     const source = read(path);
     assert.match(source, /\{% form 'contact', id: form_id, class: 'ona-legacy-contact-form' %\}/, path);
@@ -62,15 +61,15 @@ test('each restored form only shows feedback for its own submission', () => {
   // Shopify hands the result of a contact submission to EVERY contact form
   // rendered on that page, so `form.posted_successfully?` alone puts "Thank you"
   // under forms the customer never touched -- and `form.errors` puts a validation
-  // error under them too. The Wholesale page is the live case: ona-gust-r's popup
-  // form and the page's own enquiry form can both be on screen. Horizon's own
+  // error under them too. Wholesale was the live case until ona-gust-r was
+  // removed; the guard stays because any template may render two of these at
+  // once, and the discriminator is what makes that safe. Horizon's own
   // blocks/contact-form.liquid solves this by posting a hidden contact[id] and
   // comparing it with form.id; mirror that rather than trusting the HTML id.
   // Codex, PR #178.
   for (const path of [
     'sections/ona-training-form.liquid',
     'sections/ona-expericences-content.liquid',
-    'sections/ona-gust-r.liquid',
   ]) {
     const source = read(path);
 
