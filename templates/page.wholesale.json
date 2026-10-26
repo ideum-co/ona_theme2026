@@ -597,12 +597,6 @@
         "button_url": ""
       }
     },
-    "gust_r": {
-      "type": "ona-gust-r",
-      "settings": {
-        "background_color": ""
-      }
-    },
     "wholesale_brands": {
       "type": "ona-wholesale-brands",
       "blocks": {
@@ -746,7 +740,6 @@
     "cafe_testimonial",
     "exclusive_access",
     "wholesale_sourcing_v6",
-    "gust_r",
     "wholesale_brands",
     "faq_lists"
   ]

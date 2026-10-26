@@ -122,7 +122,7 @@ test('the selector inventory counts are what the sections hold', () => {
     ['section-full-large', 17],
     ['match-height', 12],
     ['equal-height', 11],
-    ['more-btn', 14],
+    ['more-btn', 13],
     ['fadeInUp', 64],
     ['fadeIn', 21],
     ['fadeInup', 16],
