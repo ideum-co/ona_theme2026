@@ -435,3 +435,31 @@ test('a panel that failed to load stays pending rather than trusting the stale p
     'and clears it before re-running the gate, or the gate would shut the button on fresh plans'
   );
 });
+
+/*
+ * Found on the preview theme, after three rounds of review had passed over it.
+ *
+ * Every Shopify product form carries an `<input name="id">` for the variant, and a form's named
+ * controls shadow its own properties - so `form.id` returns that input element, not the form's id
+ * string. Written into the `form` attribute it stringified to "[object HTMLInputElement]": the
+ * morphed radios belonged to no form at all, `radio.form` was null, nothing would have been
+ * posted, and the gate found no checked plan and shut the button permanently. Measured in the
+ * browser - the submit went from enabled to disabled-for-good after the first variant change.
+ *
+ * The same shadowing is recorded against the original diagnosis of this bug. Reading cannot catch
+ * it, because `form.id` is correct-looking JavaScript; only running the page shows it.
+ */
+test('the form id is read as an attribute, never off the shadowed property', () => {
+  const js = read(SELECT_JS);
+
+  assert.doesNotMatch(
+    js,
+    /querySelector\('form'\)\?\.id\b/,
+    "`form.id` is the <input name=\"id\"> control, not the id string - use getAttribute('id')"
+  );
+  assert.match(
+    js,
+    /querySelector\('form'\)\?\.getAttribute\('id'\)/,
+    'the form id should be read as an attribute'
+  );
+});
