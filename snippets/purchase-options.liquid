@@ -192,6 +192,12 @@
     {% endif %}
   </div>
 
+  {%- comment -%}
+    Rendered from here because the Appstle widget only ever appears where purchase options do, and
+    a snippet's stylesheet is collected once however many times it is rendered.
+  {%- endcomment -%}
+  {%- render 'appstle-widget-styles' -%}
+
   <script>
     (function () {
       var root = document.querySelector('.purchase-options[data-purchase-options-id="{{ unique_id }}"]');

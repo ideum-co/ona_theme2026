@@ -1,0 +1,70 @@
+{%- doc -%}
+  Gives the Appstle subscription widget the surface it never paints for itself.
+
+  Appstle is not colouring its text wrongly: it honours `--color-foreground`. The trouble is where
+  it is rendered. `div.product-information.section` carries a colour scheme that resolves
+  `--color-foreground` to the cream `#f4f3e9` against a `--color-background` of tan, inverted from
+  the `#470a12` the page resolves, and nothing in that subtree ever paints the tan. So the widget's
+  text arrives cream and lands on the page's own cream, at a measured contrast of 1.00. Its two
+  inner surfaces make it worse: `appstle_loyalty_text` paints itself white, and the link strip
+  paints Appstle's brand blue under white text, at 2.63.
+
+  Rather than reach into that scheme - which would change the whole product page - the widget is
+  given a surface of its own, so it is legible on any ground it is dropped onto. The pair comes
+  from `:root`, captured into properties no section overrides: a custom property declared on
+  `:root` computes there and inherits its computed value, so these hold the page's `#470a12` on
+  `#f4f3e9` even inside a section that has inverted the tokens they were read from. That is the
+  pairing the add to cart button and the prices already use, and it measures 14.27.
+
+  The pills invert the same pair, which is the theme's own treatment for
+  `.purchase-options__badge` - ink ground, paper text.
+
+  `!important` is deliberate and load-bearing: Appstle injects its CSS at runtime from its app
+  embed, so it lands after the theme bundle and wins at equal specificity. Measured on the live
+  product page - every class below moves from 1.00/1.11/2.63 to 14.27.
+
+  @example
+  {% render 'appstle-widget-styles' %}
+{%- enddoc -%}
+
+{% stylesheet %}
+  /* Captured at :root, where the brand pair is still the brand pair. Sections further down
+     redefine --color-foreground and --color-background; these two keep the page's own values
+     because a custom property resolves where it is declared, not where it is used. */
+  :root {
+    --ona-panel-surface: var(--color-background);
+    --ona-panel-ink: var(--color-foreground);
+  }
+
+  /* The widget and the reward table both paint their own ground, so neither depends on whatever
+     is behind them. appstle_loyalty_text ships painted white, which is why it is named here. */
+  .appstle_sub_widget,
+  .appstle_sub_widget .appstle_loyalty_text {
+    background-color: var(--ona-panel-surface) !important;
+    color: var(--ona-panel-ink) !important;
+  }
+
+  /* Appstle sets these individually, so inheriting the widget's colour is not enough. */
+  .appstle_sub_widget .appstle_loyalty_title,
+  .appstle_sub_widget .appstle_tooltip_title,
+  .appstle_sub_widget .appstle-loyalty-table-data,
+  .appstle_sub_widget .appstle-loyalty-billing-cycle,
+  .appstle_sub_widget .appstle-precentage-loyalty {
+    color: var(--ona-panel-ink) !important;
+  }
+
+  /* The strip behind the two links ships in Appstle's brand blue, which belongs to no scheme on
+     this site. Dropped, so the pills below read against the widget's own surface. */
+  .appstle_sub_widget .appstle_tooltip_appstle {
+    background-color: transparent !important;
+  }
+
+  /* Inverted, the same way .purchase-options__badge is: the button takes the ink as its ground
+     and the surface as its text. */
+  .appstle_sub_widget .appstle_link,
+  .appstle_sub_widget .appstle_subcription_link {
+    background-color: var(--ona-panel-ink) !important;
+    color: var(--ona-panel-surface) !important;
+    border-radius: var(--style-border-radius-pills);
+  }
+{% endstylesheet %}
