@@ -11,6 +11,9 @@
   @param {object} product - The product object.
   @param {string} form_id - Id of the form the `selling_plan` radios submit with.
   @param {string} unique_id - Suffix that keeps the ids and the script scoped to this instance.
+  @param {boolean} [subscription_only] - Omit the one-time option and preselect the first
+    subscription, for a panel the shopper opened by pressing "Subscribe". Without it the list
+    leads with the one-time option, which is what the product page wants.
   @param {string} [label] - Optional label above the list.
   @param {string} [shopify_attributes] - Theme editor attributes, when rendered from a block.
 
@@ -21,6 +24,19 @@
 {% liquid
   assign variant = product.selected_or_first_available_variant
   assign groups = product.selling_plan_groups
+
+  # A group can exist on the product and still have no allocation for the variant in hand - a
+  # 200g-only plan while the shopper is looking at 1kg. In subscription-only mode that would
+  # leave a panel with nothing to choose and a submit that silently adds a one-time item, which
+  # is the whole failure this mode exists to prevent. Count first, so the caller can disable the
+  # button and the shopper gets told instead.
+  assign subscribable_count = 0
+  for group in groups
+    assign group_allocation = variant.selling_plan_allocations | where: 'selling_plan_group_id', group.id | first
+    unless group_allocation == blank
+      assign subscribable_count = subscribable_count | plus: 1
+    endunless
+  endfor
 %}
 
 {% unless product == blank or groups.size == 0 %}
@@ -36,23 +52,30 @@
     <div
       class="purchase-options__list"
       role="radiogroup"
-      aria-label="{{ label | default: 'Purchase options' }}"
+      {% if subscription_only %}
+        aria-label="{{ label | default: 'Subscription options' }}"
+      {% else %}
+        aria-label="{{ label | default: 'Purchase options' }}"
+      {% endif %}
     >
-      <label class="purchase-options__card is-selected">
-        <input
-          type="radio"
-          name="selling_plan"
-          value=""
-          form="{{ form_id }}"
-          class="purchase-options__radio"
-          checked
-        >
-        <span class="purchase-options__row">
-          <span class="purchase-options__title">{{ 'products.product.one_time_purchase' | t }}</span>
-          <span class="purchase-options__price">{{ variant.price | money }}</span>
-        </span>
-      </label>
+      {% unless subscription_only %}
+        <label class="purchase-options__card is-selected">
+          <input
+            type="radio"
+            name="selling_plan"
+            value=""
+            form="{{ form_id }}"
+            class="purchase-options__radio"
+            checked
+          >
+          <span class="purchase-options__row">
+            <span class="purchase-options__title">{{ 'products.product.one_time_purchase' | t }}</span>
+            <span class="purchase-options__price">{{ variant.price | money }}</span>
+          </span>
+        </label>
+      {% endunless %}
 
+      {% assign rendered_count = 0 %}
       {% for group in groups %}
         {% liquid
           assign has_multi_plan = false
@@ -68,14 +91,26 @@
               assign save_pct = allocation.compare_at_price | minus: allocation.price | times: 100.0 | divided_by: allocation.compare_at_price | round
             endif
             assign card_title = 'products.product.subscribe_and_save' | t
+
+          # Only the first one: a product may carry a plan per size, and checking every radio in
+          # the group would leave the browser honouring the last one rather than the one shown
+          # as chosen.
+          assign preselect = false
+          if subscription_only and rendered_count == 0
+            assign preselect = true
+          endif
+          assign rendered_count = rendered_count | plus: 1
           %}
-          <label class="purchase-options__card">
+          <label class="purchase-options__card{% if preselect %} is-selected{% endif %}">
             <input
               type="radio"
               name="selling_plan"
               value="{{ allocation.selling_plan.id }}"
               form="{{ form_id }}"
               class="purchase-options__radio"
+              {% if preselect %}
+                checked
+              {% endif %}
             >
             <span class="purchase-options__body">
               <span class="purchase-options__row">
@@ -125,6 +160,12 @@
           </label>
         {% endunless %}
       {% endfor %}
+
+      {% if subscription_only and subscribable_count == 0 %}
+        <p class="purchase-options__unavailable">
+          {{- 'products.product.subscription_unavailable_for_variant' | t -}}
+        </p>
+      {% endif %}
     </div>
 
     {% assign detail_plan = groups.first.selling_plans.first %}
@@ -135,6 +176,12 @@
       </details>
     {% endif %}
   </div>
+
+  {%- comment -%}
+    Rendered from here because the widget only ever appears where purchase options do, and a
+    snippet's stylesheet is collected once however many times it is rendered.
+  {%- endcomment -%}
+  {%- render 'appstle-widget-styles' -%}
 
   <script>
     (function () {
@@ -289,6 +336,14 @@
     border-radius: var(--style-border-radius-inputs);
     padding: 4px 8px;
     background: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  /* Reads as information, not an error: the size simply has no plan attached. Uses the body
+     colour rather than the secondary one so it clears AA on the cream ground. */
+  .purchase-options__unavailable {
+    margin: 0;
+    font-size: var(--font-size--sm);
     color: var(--color-foreground);
   }
 

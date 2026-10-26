@@ -1534,7 +1534,6 @@
                   "name": "t:names.subscribe_button",
                   "settings": {
                     "label": "Subscribe",
-                    "submit_label": "Add to cart",
                     "style_class": "button"
                   },
                   "blocks": {}

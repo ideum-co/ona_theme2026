@@ -1,6 +1,11 @@
 {%- doc -%}
   A subscribe button for the product card that opens the product page's own purchase options in an
   anchored panel, so a shopper can start a subscription without leaving the grid.
+
+  The panel offers the subscription only. It used to lead with "One time purchase", preselected,
+  above a button reading "Add to cart" - so pressing Subscribe and then the one button in the
+  panel that appeared bought a one-time item at full price. Order #120030 was one of those. The
+  card already carries its own add to cart button beside this one for the one-time case.
 {%- enddoc -%}
 
 {%- liquid
@@ -19,6 +24,15 @@
   assign has_variants = false
   if product.has_only_default_variant == false and product.variants_count > 1
     assign has_variants = true
+  endif
+
+  # Product-level selling plan groups are not the same question as "can this variant be
+  # subscribed to": a 200g-only plan leaves the 1kg variant with no allocation. Submitting then
+  # would add a one-time item, which is the bug this panel exists to close, so the button is
+  # held closed and `purchase-options` explains why.
+  assign variant_is_subscribable = false
+  if variant.selling_plan_allocations.size > 0
+    assign variant_is_subscribable = true
   endif
 -%}
 
@@ -77,7 +91,12 @@
           -%}
         {%- endif -%}
 
-        {%- render 'purchase-options', product: product, form_id: form_id, unique_id: unique_id -%}
+        {%- render 'purchase-options',
+          product: product,
+          form_id: form_id,
+          unique_id: unique_id,
+          subscription_only: true
+        -%}
 
         <product-form-component
           id="{{ form_component_id }}"
@@ -108,16 +127,25 @@
               value="{% if variant.quantity_rule.min %}{{ variant.quantity_rule.min }}{% else %}1{% endif %}"
             >
             {%- comment -%}
-              Precompute the label: Liquid does not allow a filter (`| default:`) inside a
-              `render` tag argument -- doing so is a parse error ("Expected end_of_string but
-              found pipe"), which makes this block fail to compile and, in turn, makes every
-              template that uses the `subscribe` block invalid. Assign first, then pass it.
+              Carries the trigger's own label, so the button that completes the action says the
+              same word as the button that started it. The separate `submit_label` setting is
+              gone: every template stored the schema default "Add to cart" against it, which is
+              exactly the wording that made shoppers think they were buying once.
+
+              Precompute it: Liquid does not allow a filter (`| default:`) inside a `render` tag
+              argument -- doing so is a parse error ("Expected end_of_string but found pipe"),
+              which makes this block fail to compile and, in turn, makes every template that uses
+              the `subscribe` block invalid. Assign first, then pass it.
             {%- endcomment -%}
-            {%- assign subscribe_submit_label = block_settings.submit_label | default: 'Add to cart' -%}
+            {%- assign subscribe_submit_label = block_settings.label | default: 'Subscribe' -%}
+            {%- assign subscribe_can_add = false -%}
+            {%- if variant.available and variant_is_subscribable -%}
+              {%- assign subscribe_can_add = true -%}
+            {%- endif -%}
             {%- render 'add-to-cart-button',
               add_to_cart_text: subscribe_submit_label,
               class: 'subscribe-block__submit add-to-cart-button',
-              can_add_to_cart: variant.available,
+              can_add_to_cart: subscribe_can_add,
               show_icon: false,
               product: product
             -%}
@@ -219,12 +247,6 @@
       "id": "label",
       "label": "t:settings.label",
       "default": "Subscribe"
-    },
-    {
-      "type": "text",
-      "id": "submit_label",
-      "label": "t:names.add_to_cart",
-      "default": "Add to cart"
     },
     {
       "type": "select",
