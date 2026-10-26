@@ -362,6 +362,38 @@ test('the subscribe panel follows the card picker instead', () => {
     abortAt < promiseAt,
     'the in-flight refresh is aborted when the selection starts, not once its answer arrives'
   );
+
+  /*
+   * Aborting the fetch does not cancel this callback, so the card's answer has to be able to tell
+   * it has been superseded. The dropdown stays interactive while plans are pending - the pending
+   * style covers `.purchase-options`, not the picker - so a shopper can pick a size in it and have
+   * the older card answer overwrite that choice.
+   */
+  const captureAt = handler[0].indexOf('++this.#selectionGeneration');
+  const compareAt = handler[0].indexOf('generation !== this.#selectionGeneration');
+  const applyAt = handler[0].indexOf('this.#applySelection(input)');
+
+  assert.notEqual(captureAt, -1, 'the card handler records which selection it is answering');
+  assert.notEqual(compareAt, -1, 'a superseded card answer is dropped');
+  assert.ok(captureAt < promiseAt, 'the generation is taken before the answer is awaited');
+  assert.ok(compareAt < applyAt, 'the check runs before the stale size is applied');
+});
+
+/*
+ * The counter is only worth anything if a dropdown pick advances it. Were it advanced solely by
+ * the card handler, a size chosen in the dropdown mid-flight would still lose to the older card
+ * answer - which is the defect it exists to prevent.
+ */
+test('a selection applied here supersedes an answer still in flight', () => {
+  const js = read(SELECT_JS);
+  const apply = js.match(/#applySelection\(input\)\s*\{[\s\S]*?\n  \}/);
+
+  assert.ok(apply, `${SELECT_JS} should share one selection path`);
+  assert.match(
+    apply[0],
+    /this\.#selectionGeneration \+= 1/,
+    'every applied selection advances the generation, whichever picker it came from'
+  );
 });
 
 /*

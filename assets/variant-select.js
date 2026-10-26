@@ -81,6 +81,11 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
    * @param {HTMLInputElement} input - The selected variant radio.
    */
   #applySelection(input) {
+    // Supersedes anything still resolving. The card's answer arrives asynchronously, and the
+    // dropdown stays interactive while it does - the pending style covers `.purchase-options`, not
+    // this picker - so a size chosen here has to be able to outrank a card answer still in flight.
+    this.#selectionGeneration += 1;
+
     const target = this.querySelector('.variant-select__trigger-value');
 
     if (target) {
@@ -120,8 +125,16 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
     // too, but not until the answer arrives, which is the whole length of the window.
     this.#plansController?.abort();
 
+    const generation = ++this.#selectionGeneration;
+
     event.promise
       .then(({ detail }) => {
+        // Aborting the fetch does not cancel this callback. Without the check, an answer for the
+        // size the shopper asked for first would land after a later dropdown pick and overwrite
+        // it - applying the older size and aborting the newer one's refresh, so Subscribe ends up
+        // submitting a size the shopper has moved off.
+        if (generation !== this.#selectionGeneration) return;
+
         const variantId = detail?.resource?.id;
         const input = [...this.querySelectorAll('.variant-select__input')].find(
           (candidate) => candidate instanceof HTMLInputElement && candidate.value === String(variantId ?? '')
@@ -373,6 +386,16 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
         console.error(error);
       });
   }
+
+  /**
+   * Counts selections so an answer that arrives late can tell it has been superseded.
+   *
+   * Both entry points share it: every applied selection advances it, and the card handler keeps
+   * the value it started with to compare against when its answer comes back.
+   *
+   * @type {number}
+   */
+  #selectionGeneration = 0;
 
   /** @type {AbortController | undefined} */
   #plansController;
