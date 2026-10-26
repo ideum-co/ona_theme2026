@@ -86,6 +86,9 @@ test('exposes spacing, size and colour controls with the live values as defaults
     card_gap: 16,
     heading_size: 16,
     subtitle_size: 16,
+    gap_title: 20,
+    gap_counter: 39,
+    gap_subtitle: 7,
   };
   for (const [id, def] of Object.entries(numericDefaults)) {
     assert.ok(setting(id), `missing control ${id}`);
