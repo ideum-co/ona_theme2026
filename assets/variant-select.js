@@ -267,7 +267,10 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
 
         if (!incoming) throw new Error('Subscribe panel render carried no purchase options');
 
-        this.#adoptPanelIds(current, incoming);
+        if (!this.#adoptPanelIds(current, incoming)) {
+          throw new Error('Subscribe panel has no form to point the fetched plans at');
+        }
+
         this.#morphPreservingFocus(current, incoming);
         this.#setPlansPending(panel, false);
 
@@ -308,25 +311,38 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
    * Copies the live panel's own identifiers onto the fetched markup.
    *
    * The Section Rendering API cannot be told the calling block's id, so the section renders
-   * placeholders. Both identifiers are read off the element being replaced rather than rebuilt
-   * from the block's naming, which keeps this working if that naming ever changes: `form` is what
-   * reaches the add to cart form from outside it, and losing it would post a plan with no variant.
+   * placeholders. `form` is what reaches the add to cart form from outside it, and markup left
+   * carrying the placeholder would belong to no form at all: nothing would be posted, and the gate
+   * would read no checked plan and hold the button shut.
+   *
+   * The form is resolved through the `product-form-component` this dropdown already points at,
+   * never from the markup being replaced. A variant with no allocations renders no radios and so
+   * no `[form]` element anywhere in the panel, so reading it from there would come back empty the
+   * next time the shopper picked a size that does subscribe - and, the panel having no `[form]`
+   * left to read, would stay empty for every change after it. The button would be shut for good on
+   * a variant whose plans were on screen.
    *
    * Written before the morph, so the two trees agree and the panel is never briefly pointed at a
    * form that does not exist.
    *
    * @param {Element} current - The purchase options on screen.
    * @param {Element} incoming - The purchase options just fetched.
+   * @returns {boolean} Whether the fetched markup can be trusted to belong to this panel.
    */
   #adoptPanelIds(current, incoming) {
     const uniqueId = current.getAttribute('data-purchase-options-id');
-    const formId = current.querySelector('[form]')?.getAttribute('form');
 
     if (uniqueId != null) incoming.setAttribute('data-purchase-options-id', uniqueId);
 
-    if (formId != null) {
-      for (const element of incoming.querySelectorAll('[form]')) element.setAttribute('form', formId);
-    }
+    const formId = document.getElementById(this.dataset.formId ?? '')?.querySelector('form')?.id;
+
+    // Without it the radios would be owned by the placeholder. Better to keep the stale panel and
+    // let the gate refuse than to show plans that cannot be submitted.
+    if (!formId) return false;
+
+    for (const element of incoming.querySelectorAll('[form]')) element.setAttribute('form', formId);
+
+    return true;
   }
 
   /**

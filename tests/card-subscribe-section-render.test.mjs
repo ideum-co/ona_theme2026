@@ -238,15 +238,45 @@ test('the fetched markup takes on the live panel own identifiers before it is mo
   assert.ok(adopt, `${SELECT_JS} should re-point the fetched markup`);
   assert.match(adopt[0], /getAttribute\('data-purchase-options-id'\)/, 'the scope marker is carried over');
   assert.match(adopt[0], /setAttribute\('form', formId\)/, 'the form association is carried over');
+
+  const adoptIndex = js.indexOf('this.#adoptPanelIds(current, incoming)');
+  const morphIndex = js.indexOf('this.#morphPreservingFocus(current, incoming)');
+
+  assert.ok(adoptIndex > 0 && morphIndex > adoptIndex, 'the identifiers are adopted before the morph, not after it');
+
+  // Not rebuilt from the block's naming, so this keeps working if `SubscribeForm-` is renamed.
+  assert.doesNotMatch(adopt[0], /SubscribeForm/, 'the form id is resolved, not reconstructed');
+});
+
+/*
+ * Found by Codex on #413. A variant with no selling plan allocations renders no radios, and every
+ * `[form]` in the panel is on a radio or its frequency select - so that panel contains none at
+ * all. Reading the form id off the markup being replaced therefore came back empty the next time
+ * the shopper picked a size that does subscribe, leaving the new radios owned by the section's
+ * placeholder form; with no `[form]` left to read, every later change failed the same way. The
+ * panel would show valid plans above a button that could never open again.
+ */
+test('the form id survives a variant that has no plans at all', () => {
+  const js = read(SELECT_JS);
+  const adopt = js.match(/#adoptPanelIds\(current, incoming\)\s*\{[\s\S]*?\n  \}/);
+
+  assert.ok(adopt, `${SELECT_JS} should re-point the fetched markup`);
+  assert.match(
+    adopt[0],
+    /document\.getElementById\(this\.dataset\.formId \?\? ''\)/,
+    'the form is resolved through the form component, which is there whatever the variant renders'
+  );
+  assert.doesNotMatch(
+    adopt[0],
+    /current\.querySelector\('\[form\]'\)/,
+    'it must not be read off the markup being replaced, which a plan-less variant leaves without one'
+  );
+  assert.match(adopt[0], /if \(!formId\) return false;/, 'an unresolvable form refuses the morph');
   assert.match(
     js,
-    /this\.#adoptPanelIds\(current, incoming\);\s*\n\s*this\.#morphPreservingFocus\(current, incoming\);/,
-    'the identifiers are adopted before the morph, not after it'
+    /if \(!this\.#adoptPanelIds\(current, incoming\)\) \{/,
+    'and the caller acts on that refusal rather than morphing placeholder-owned radios in'
   );
-
-  // Read off the element being replaced rather than rebuilt from the block's naming, so this keeps
-  // working if `SubscribeForm-` is ever renamed.
-  assert.doesNotMatch(adopt[0], /SubscribeForm/, 'the identifiers are read from the panel, not reconstructed');
 });
 
 test('the shopper is not dropped out of the control when the plan list changes length', () => {
