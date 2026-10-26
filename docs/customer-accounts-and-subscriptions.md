@@ -1,9 +1,21 @@
 # Customer accounts and subscriptions are not in this theme
 
-**Nothing on this page can be changed by editing this repository.** The customer
-account area — including every Appstle subscription control — is configured in the
-Shopify admin, outside the theme. A merge to `main` therefore cannot break it, and
-cannot fix it either.
+**Almost nothing on this page can be changed by editing this repository.** The
+customer account area — including every Appstle control *in that area* — is
+configured in the Shopify admin, outside the theme. A merge to `main` cannot fix it.
+
+There is exactly one exception, and it is worth knowing because it bites in the same
+dimension this document is about. `sections/header-group.json` carries
+`"customer_account_menu": "customer-account-main-menu"`, which
+`snippets/header-actions.liquid` passes to `<shopify-account menu="…">`. Blank that
+value or drop the key and the storefront header's account dropdown stops offering the
+Subscriptions item, while the admin still looks perfectly correct — and
+`sections/header-group.json` is a shop-owned, editor-writable file this repo has lost
+keys from before. `tests/customer-accounts-outside-the-theme.test.mjs` pins it.
+
+(Separately, the Appstle *storefront* helper is an app embed in
+`config/settings_data.json`, not an account-area setting. That one is in the repo and
+can be switched off by a merge.)
 
 Written 2026-10-26, after the subscription controls became hard to reach for
 customers and the cause was mistakenly looked for in the theme.
@@ -14,11 +26,13 @@ The store runs **new customer accounts**: customers sign in at a `shopify.com`
 account URL, not at `onacoffee.com.au/account`. New customer accounts ignore the
 legacy `templates/customers/*` Liquid templates entirely.
 
-Checked and confirmed: neither the live theme nor the theme that preceded it
-(`ONA - LIVE 11/05/2026`) contains any `templates/customers/*` file. There is no
-theme code behind the account pages to regress, and
-`tests/customer-accounts-outside-the-theme.test.mjs` keeps it that way — adding
-such a template would look like a fix and do nothing at all.
+Checked and confirmed: neither the live theme nor `ONA - LIVE 11/05/2026`
+(`151303127231`), the theme it was checked against, contains any `templates/customers/*`
+file. No customer-account *template* exists to regress, and
+`tests/customer-accounts-outside-the-theme.test.mjs` keeps it that way — adding one
+would look like a fix and do nothing at all. The guard covers the template family and
+the legacy `layout/customers.liquid`; it does not and cannot prove the absence of every
+conceivable account-shaped file, only the ones a person reaching for this would add.
 
 ## Where it actually lives
 
