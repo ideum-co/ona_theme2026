@@ -388,10 +388,20 @@
                     }
                   },
                   "block_order": []
+                },
+                "subscribe": {
+                  "type": "subscribe-button",
+                  "name": "t:names.subscribe_button",
+                  "settings": {
+                    "label": "Subscribe",
+                    "style_class": "button"
+                  },
+                  "blocks": {}
                 }
               },
               "block_order": [
-                "buy_buttons"
+                "buy_buttons",
+                "subscribe"
               ]
             },
             "ona_promo_tags": {
