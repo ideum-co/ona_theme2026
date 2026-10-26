@@ -220,7 +220,24 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
 
     const submit = form.querySelector('button[type="submit"]');
 
-    if (submit instanceof HTMLButtonElement) submit.disabled = unavailable || this.#missingPlanFor(input, form);
+    // Pending is part of the gate, not a one-off write when the request starts. Every path that
+    // re-evaluates the button runs through here - including `#handlePlanChange`, which a keyboard
+    // user reaches while the panel is pending because `pointer-events: none` stops pointers and
+    // nothing else. Without this term, changing a focused frequency mid-flight re-enabled the
+    // button whenever the new variant happened to share the checked plan id, and the previous
+    // size's price and frequency could be submitted.
+    if (submit instanceof HTMLButtonElement) {
+      submit.disabled = unavailable || this.#plansPending() || this.#missingPlanFor(input, form);
+    }
+  }
+
+  /**
+   * Whether this panel is still waiting to be told what the picked variant can be bought on.
+   *
+   * @returns {boolean}
+   */
+  #plansPending() {
+    return this.closest('subscribe-popover-component')?.hasAttribute('data-plans-pending') ?? false;
   }
 
   /**
@@ -340,9 +357,11 @@ export class VariantSelectComponent extends AnchoredPopoverComponent {
       .catch((error) => {
         if (signal.aborted) return;
 
-        // The stale panel stays on screen, so the button stays shut: `#missingPlanFor` is the
-        // backstop, and it refuses a plan the picked variant has no allocation for.
-        this.#setPlansPending(panel, false);
+        // Pending is deliberately left set. The panel on screen does not describe the picked
+        // variant, so there is nothing here it is safe to buy - and clearing it would fall back on
+        // `#missingPlanFor` alone, which lets a plan the two sizes happen to share through beside
+        // the wrong price. The next variant change retries. Re-run the gate so the button is shut
+        // now rather than at the next event.
         this.#pointFormAtVariant(input);
         console.error(error);
       });

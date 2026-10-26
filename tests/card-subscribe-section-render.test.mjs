@@ -369,3 +369,69 @@ test('both ways of picking a variant run the same work', () => {
     'exactly the dropdown and the card picker call it'
   );
 });
+
+/*
+ * Found by Codex on #413. The pending state was a one-time write when the request went out, and
+ * `[data-plans-pending] .purchase-options { pointer-events: none }` stops pointers and nothing
+ * else - so a keyboard user whose focus was already in a frequency select could change it
+ * mid-flight. That fires `change`, which reaches `#handlePlanChange` and so `#pointFormAtVariant`,
+ * which rewrote `submit.disabled` from availability and allocation alone. Where the new variant
+ * happened to share the checked plan id the button came back enabled while the panel still showed
+ * the previous size's price and frequency - the one case the pending state existed to cover.
+ *
+ * So pending belongs in the gate, where every path that re-evaluates the button has to pass it.
+ */
+test('the pending state is part of the gate, not a one-time write', () => {
+  const js = read(SELECT_JS);
+  const gate = js.match(/#pointFormAtVariant\(input\)\s*\{[\s\S]*?\n  \}/);
+
+  assert.ok(gate, `${SELECT_JS} should write the submit state in one place`);
+  // Other writers are allowed only in the shutting direction. `#setPlansPending` needs one,
+  // because the gate runs before pending is set and would otherwise leave the button open over
+  // the stale plans for that moment. Anything that can *open* it must go through the gate.
+  const writes = [...js.matchAll(/submit\.disabled = ([^;]+);/g)].map((m) => m[1].trim());
+
+  assert.ok(writes.length > 0, 'the submit state should be written somewhere');
+
+  const opening = writes.filter((expression) => expression !== 'true');
+
+  assert.deepEqual(
+    opening,
+    ['unavailable || this.#plansPending() || this.#missingPlanFor(input, form)'],
+    'only the gate may enable the button; every other write may only shut it'
+  );
+  assert.match(
+    gate[0],
+    /submit\.disabled =[\s\S]{0,120}?this\.#plansPending\(\)/,
+    'every re-evaluation of the button must respect a panel that is still loading'
+  );
+  assert.match(
+    js,
+    /#plansPending\(\)\s*\{[\s\S]*?hasAttribute\('data-plans-pending'\)/,
+    'and it should read the state the panel actually carries'
+  );
+});
+
+test('a panel that failed to load stays pending rather than trusting the stale plans', () => {
+  const refresh = read(SELECT_JS).match(/#refreshPlans\(input\)\s*\{[\s\S]*?\n  \}/);
+
+  assert.ok(refresh, `${SELECT_JS} should define the refresh`);
+
+  const failure = refresh[0].match(/\.catch\(\(error\) => \{[\s\S]*?\n      \}\)/);
+
+  assert.ok(failure, 'the refresh should handle failure');
+  assert.doesNotMatch(
+    failure[0],
+    /#setPlansPending\(panel, false\)/,
+    'clearing it would fall back on the allocation check alone, which passes a plan the two sizes share'
+  );
+
+  // The success path must still clear it, or the button could never open again.
+  const success = refresh[0].slice(0, refresh[0].indexOf('.catch('));
+
+  assert.match(success, /this\.#setPlansPending\(panel, false\)/, 'a successful render clears it');
+  assert.ok(
+    success.indexOf('#setPlansPending(panel, false)') < success.lastIndexOf('#pointFormAtVariant(input)'),
+    'and clears it before re-running the gate, or the gate would shut the button on fresh plans'
+  );
+});

@@ -259,8 +259,13 @@ test('the client gate reads the variant it was given and the plan that is checke
 
   assert.match(
     js,
-    /submit\.disabled = unavailable \|\| this\.#missingPlanFor\(input, form\)/,
-    'variant-select.js rewrites submit.disabled on every dropdown change; the gate has to be in it'
+    /submit\.disabled = unavailable \|\| this\.#plansPending\(\) \|\| this\.#missingPlanFor\(input, form\)/,
+    [
+      'variant-select.js rewrites submit.disabled on every dropdown change, so the gate has to be',
+      'in it -- and since #413 the panel can also be mid-refresh, which a keyboard user can reach',
+      'through a focused frequency select because `pointer-events: none` stops pointers only. All',
+      'three terms, or the button opens over plans that belong to the previous variant.',
+    ].join(' ')
   );
   assert.match(
     body,
