@@ -1810,11 +1810,15 @@ const palette = (() => {
  * `color_brightness` over every colour in the palette, so they are resolved the same way here
  * rather than guessed. Shopify's filter is the perceived-brightness weighting.
  */
+/* Shopify's `color_brightness`: the perceived-brightness weighting, which both
+   `color-palette.liquid` and `ona-band.liquid` branch on. */
+const colourBrightness = (hex) => {
+  const [r, g, b] = rgb(hex);
+  return (r * 299 + g * 587 + b * 114) / 1000;
+};
+
 const paletteExtreme = (which) => {
-  const brightness = (hex) => {
-    const [r, g, b] = rgb(hex);
-    return (r * 299 + g * 587 + b * 114) / 1000;
-  };
+  const brightness = colourBrightness;
   const swatches = Object.values(palette.all).filter(
     (value) => typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value),
   );
@@ -2217,17 +2221,28 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
 
       for (const { name: ground_name, colour: ground, section: banded } of under) {
         const ink = rgb(ground);
-        /* On a band the eyebrow takes the section's foreground, and the band snippet has
-           already chosen the palette extreme that contrasts best with the band. The page
-           ground is not a band: there the label inherits `--color-foreground`, which is
-           `page_text_color`, and choosing the better-contrasting extreme instead meant the
-           test picked a colour the page never paints (Codex, #427). */
-        const inherited =
-          banded === null
-            ? rgb(palette.page.foreground)
-            : [palette.foreground, palette.background]
-                .map(rgb)
-                .sort((a, b) => contrast(b, ink) - contrast(a, ink))[0];
+        /*
+         * What the eyebrow is actually painted in, off a band and on one.
+         *
+         * The page ground is not a band: there the label inherits `--color-foreground`,
+         * which `color-palette.liquid` emits from `page_text_color`.
+         *
+         * On a band, `snippets/ona-band.liquid:29-45` keeps `page_text_color` when it
+         * clears 4.5:1 against the band, and otherwise takes the palette extreme chosen by
+         * the band's BRIGHTNESS -- darkest over a light band, lightest over a dark one.
+         * That is not the extreme that contrasts best, and the two disagree: over
+         * `#00a000` with a grey page text the snippet paints cream at 3.13:1 while picking
+         * by contrast gave maroon at 4.57:1, so the test passed on a colour the browser
+         * never uses (Codex, #427). An earlier round of this same test asserted in a
+         * comment that the snippet chose by contrast; it does not, and the snippet is the
+         * authority. Mirrored here rather than approximated.
+         */
+        const inherited = (() => {
+          if (banded === null) return rgb(palette.page.foreground);
+          const text = rgb(palette.page.foreground);
+          if (contrast(text, ink) >= 4.5) return text;
+          return rgb(paletteExtreme(colourBrightness(ground) > 128 ? 'darkest' : 'lightest'));
+        })();
         const ratio = contrast(over(literal ?? inherited, ink, effective), ink);
         assert.ok(
           ratio >= 4.5,
