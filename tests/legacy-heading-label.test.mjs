@@ -1058,10 +1058,25 @@ const LAYOUT_ELEMENTS = (() => {
     const named = attributeValue(attributes, 'id');
     /* An id written with Liquid in it is not a token a selector here can name. */
     const identifier = named !== null && !named.includes('{') ? named : undefined;
+    /* And its attributes, the way the section scan records them. Without these the layout's
+       elements were the only links in the chain with no attributes at all, so
+       `main[role="main"]` could not be answered from `<main role="main">` three lines of
+       Liquid away (Codex, #427). A value carrying an interpolation is left off, which
+       `attrMatch` reads as undecidable rather than as a different value. */
+    const attrs = [
+      ...attributes
+        .replace(/\{\{[\s\S]*?\}\}|\{%-?[\s\S]*?-?%\}/g, '{')
+        .matchAll(/([\w-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g),
+    ].flatMap(([, key, double, single, raw]) => {
+      const value = double ?? single ?? raw;
+      if (value === undefined) return [`[${key}]`];
+      return value.includes('{') ? [`[${key}]`] : [`[${key}]`, `[${key}="${value}"]`];
+    });
     return {
       tag,
       tokens: new Set([
         tag,
+        ...attrs,
         ...classes.map((value) => `.${value}`),
         ...(identifier ? [`#${identifier}`] : []),
       ]),
@@ -1105,7 +1120,21 @@ const LAYOUT_ELEMENTS = (() => {
   /* `<html>` keeps its tag alone: its only class sits inside `{% if request.design_mode %}`,
      so it is not a token a storefront selector can count on. */
   return [
-    { tag: 'html', tokens: new Set(['html']), inline: inlineStyle(opening('html')[1]) },
+    /* `<html>` was the one link in this chain built by hand, so it had no attributes at all
+       and `html[lang]` answered false against a layout that renders `lang` on it. It goes
+       through `element()` now like the rest -- minus anything about its class, because the
+       only class `<html>` carries sits behind `{% if request.design_mode %}` and never
+       reaches a storefront visitor, which is the same reason the snippet scan excludes
+       editor-only CSS. */
+    (() => {
+      const built = element('html', opening('html')[1]);
+      return {
+        ...built,
+        tokens: new Set(
+          [...built.tokens].filter((token) => !token.startsWith('.') && !token.startsWith('[class')),
+        ),
+      };
+    })(),
     element('body', body[1]),
     ...open,
     head,
@@ -1484,16 +1513,40 @@ const attrMatch = (token, element) => {
      `html[scroll-lock]` and eight more), nearly all bare attribute selectors whose other
      parts constrain nothing at all. Carrying attributes down the chain is what it would take
      to answer them, and that is a larger change than this one. */
-  if (!TRACKED_ATTRIBUTES.has(key)) return false;
-
   /* Every element whose classes or id this model records has one. */
-  if (!operator) {
-    const mark = key === 'class' ? '.' : '#';
-    return [...element].some((part) => part.startsWith(mark));
+  if (TRACKED_ATTRIBUTES.has(key)) {
+    if (!operator) {
+      const mark = key === 'class' ? '.' : '#';
+      return [...element].some((part) => part.startsWith(mark));
+    }
+    if (key === 'class' && operator === '~=') return element.has(`.${value}`);
+    if (key === 'id' && operator === '=') return element.has(`#${value}`);
+    return null;
   }
-  if (key === 'class' && operator === '~=') return element.has(`.${value}`);
-  if (key === 'id' && operator === '=') return element.has(`#${value}`);
-  return null;
+
+  /*
+   * Any other attribute, answered from the element's own tokens rather than refused on the
+   * spot. The markup scan already records `[key]` and `[key="value"]` for every attribute
+   * it reads, so the answer was sitting in the element set the whole time and this returned
+   * `false` without looking -- which reads as "the rule reaches nothing".
+   * `main[role="main"] .subtitle { opacity: .6 }` left all five tests green although
+   * `layout/theme.liquid` renders exactly that `role`, and so did
+   * `.add-image-and-text[data-wow-duration="1s"] .subtitle`, whose attribute this model had
+   * enumerated (Codex, #427).
+   *
+   * A value query the tokens cannot confirm is undecidable rather than false, because an
+   * attribute written with Liquid in it flattens before it is recorded: the element carries
+   * `[key]` and a value no selector would name. An attribute the element does not carry at
+   * all is a sound `false` -- which is where the twelve compounds the previous round
+   * documented land, `[data-add-form]`, `[product-grid-view='default']`, `html[scroll-lock]`
+   * and the rest, none of them on any chain element.
+   */
+  if (!operator) return element.has(`[${key}]`);
+  if (operator === '=') {
+    if (element.has(`[${key}="${value}"]`)) return true;
+    return element.has(`[${key}]`) ? null : false;
+  }
+  return element.has(`[${key}]`) ? null : false;
 };
 
 /*
