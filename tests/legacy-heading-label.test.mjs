@@ -486,8 +486,14 @@ const rulesFor = (name) => {
       /* Anything else on the label -- `:hover`, `:focus-visible`, `:first-child`, `::before`
          -- only holds in that state, and treating such a rule as always applying let
          `.subtitle:hover { display: block }` mask a default-state `display: inline`
-         (Codex, #300). A state is a qualifier like an at-rule, so it joins them. */
-      const states = statesOf(label);
+         (Codex, #300). A state is a qualifier like an at-rule, so it joins them.
+
+         Read from the whole branch, not the label compound: a state on an ancestor holds the
+         rule back just as one on the label does, and `structural()` strips it from the
+         matching path, so reading only the label left `.text:hover .subtitle { opacity: 1 }`
+         unconditional and the non-hovered cascade under it was never measured (Codex, #427).
+         everyRule() already reads the branch; this is the same rule in the named path. */
+      const states = statesOf(branch);
 
       found.push({
         selector: branch.trim().replace(/\s+/g, ' '),
@@ -1078,7 +1084,13 @@ const contextsFor = (name) => {
          took ona-sourcing to 56 qualifier sets and tripped the powerset cap -- the model
          refused rather than mis-measuring, which is right, but it also stopped covering the
          case. A rule that sets none of these cannot change any answer here. */
-      const MEASURED = /(?:^|;|\s)(?:display|color|opacity|margin|margin-bottom)\s*:/;
+      /* `--color-foreground*` for the same reason it is in AFFECTS_LABEL one block down: a
+         rule that selects the label without naming its class and sets only the token was
+         dropped here before `substituted` could see it, so `#MainContent span
+         { --color-foreground: #fdfbf5 }` left every span eyebrow light on cream with the
+         suite green (Codex, #427). */
+      const MEASURED =
+        /(?:^|;|\s)(?:display|color|opacity|margin|margin-bottom|--color-foreground[\w-]*)\s*:/;
       const unnamed = everyRule()
         .filter(
           (rule) =>
