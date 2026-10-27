@@ -506,6 +506,59 @@ const labels = (() => {
 const selects = (name, suffix = '') => declarationsFor(name, suffix) !== null;
 
 /*
+ * The spans of a compound's top-level bracketed attribute selectors, and the same text with
+ * those spans blanked out.
+ *
+ * `pathOf` already scans for brackets and quotes, because `~` is a sibling combinator
+ * outside them and part of the attribute operator inside. Every other reader of selector
+ * text was still working from `\[[^\]]*\]`, or from nothing at all, so a quoted value
+ * containing a character that means something in a selector was read as that thing:
+ *
+ *   - `partsOf` stripped nothing, so `[data-wow-duration="0.75s"]` required a class named
+ *     `.75s` that no element has, and `[data-probe="#x"]` required an id -- the compound
+ *     then never matched and the rule was dropped from the cascade without a word, which is
+ *     how `#shopify-section-ona-wholesale-partnership [data-wow-duration="0.75s"] .subtitle
+ *     { opacity: .6 }` faded the eyebrow with all five tests green (Codex, #427);
+ *   - `splitSelectors` tracked parentheses only, so `[data-probe="a,b"]` split one selector
+ *     into two half-selectors, neither of which matches anything;
+ *   - `[^\]]*` stops at the first `]`, which is legal inside a quoted value, so
+ *     `[data-probe="a]b"]` ended the attribute early and left `b"]` behind as a tag name.
+ *
+ * All three dropped the rule silently. One quote-aware scan now answers for all of them,
+ * rather than each reader carrying its own idea of where an attribute selector ends.
+ */
+const attributeSpans = (text) => {
+  const spans = [];
+  let open = -1;
+  let quote = null;
+  for (let at = 0; at < text.length; at += 1) {
+    const character = text[at];
+    if (quote !== null) {
+      if (character === quote) quote = null;
+      continue;
+    }
+    if (character === '"' || character === "'") {
+      quote = character;
+      continue;
+    }
+    if (character === '[' && open === -1) open = at;
+    else if (character === ']' && open !== -1) {
+      spans.push([open, at + 1]);
+      open = -1;
+    }
+  }
+  return spans;
+};
+
+const withoutAttributes = (text) => {
+  let out = text;
+  for (const [from, to] of attributeSpans(text)) {
+    out = out.slice(0, from) + ' '.repeat(to - from) + out.slice(to);
+  }
+  return out;
+};
+
+/*
  * Every rule in the stylesheet that targets this class, in cascade order.
  *
  * Three separate checks here each reached for the one rule they expected and measured that:
@@ -566,9 +619,11 @@ const specificity = (selector) => {
     at = close;
   }
 
-  ids += (rest.match(/#[\w-]+/g) ?? []).length;
-  classes += (rest.match(/\.[\w-]+|\[[^\]]*\]|:(?!:)[a-z-]+/gi) ?? []).length;
-  elements += (rest.replace(/[#.][\w-]+|\[[^\]]*\]|::?[a-z-]+/gi, ' ').match(/[a-z][\w-]*/gi) ?? []).length;
+  const plain = withoutAttributes(rest);
+  ids += (plain.match(/#[\w-]+/g) ?? []).length;
+  classes +=
+    attributeSpans(rest).length + (plain.match(/\.[\w-]+|:(?!:)[a-z-]+/gi) ?? []).length;
+  elements += (plain.replace(/[#.][\w-]+|::?[a-z-]+/gi, ' ').match(/[a-z][\w-]*/gi) ?? []).length;
   return ids * 10000 + classes * 100 + elements;
 };
 
@@ -967,11 +1022,21 @@ const PSEUDO_ELEMENT =
 const splitSelectors = (list) => {
   const out = [];
   let depth = 0;
+  let brackets = 0;
+  let quote = null;
   let current = '';
   for (const character of list) {
-    if (character === '(') depth += 1;
+    if (quote !== null) {
+      current += character;
+      if (character === quote) quote = null;
+      continue;
+    }
+    if (character === '"' || character === "'") quote = character;
+    else if (character === '(') depth += 1;
     else if (character === ')') depth -= 1;
-    if (character === ',' && depth === 0) {
+    else if (character === '[') brackets += 1;
+    else if (character === ']') brackets = Math.max(0, brackets - 1);
+    if (character === ',' && depth === 0 && brackets === 0) {
       out.push(current);
       current = '';
       continue;
@@ -1299,7 +1364,7 @@ const ancestriesFor = (name) => {
  * Treating `:is(.add-image-and-text, .not-rendered)` as a list of required classes would
  * have missed the branch that really matches.
  */
-const partsOf = (text) => text.match(/[#.][\w-]+/g) ?? [];
+const partsOf = (text) => withoutAttributes(text).match(/[#.][\w-]+/g) ?? [];
 
 /* The pseudo-classes that make a rule hold only sometimes. `:is`, `:where` and `:not` are
    structural -- matchesElement resolves those against the element -- and `:empty` is the
@@ -1495,11 +1560,13 @@ const structural = (compound) => {
    -- a selector with no class or id at all -- matched every ancestor, because a compound
    with no parts vacuously satisfied every one of them. */
 const tagsOf = (text) =>
-  (text.replace(/[#.][\w-]+|\[[^\]]*\]|::?[a-z-]+(?:\([^)]*\))?|&/gi, ' ').match(/[a-z][\w-]*/gi) ?? []).map(
+  (withoutAttributes(text)
+    .replace(/[#.][\w-]+|::?[a-z-]+(?:\([^)]*\))?|&/gi, ' ')
+    .match(/[a-z][\w-]*/gi) ?? []).map(
     (tag) => tag.toLowerCase(),
   );
 
-const bracketsOf = (text) => text.match(/\[[^\]]*\]/g) ?? [];
+const bracketsOf = (text) => attributeSpans(text).map(([from, to]) => text.slice(from, to));
 
 /*
  * One bracketed attribute selector against one element: true, false, or null for undecidable.
