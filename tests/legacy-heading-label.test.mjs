@@ -1831,6 +1831,23 @@ const contextsFor = (name) => {
             FROM_A_SETTING.test(found[2].trim()) ||
             Number(found[2].trim()) === opacityToken(found[1].toLowerCase()),
         },
+        /* `contrast-override.liquid:61` paints real theme text with `var(--palette-darkest)`,
+           so `colourValue` resolves these two through `paletteExtreme()` -- which reads the
+           configured palette and not the cascade. Redefining one on the label or an ancestor
+           therefore changed what the browser paints and nothing this measured:
+           `.subtitle { --palette-darkest: #f4f3e9; color: var(--palette-darkest) }` passed
+           all five tests with the eyebrow set to its own page background, while the identical
+           literal failed (Codex, #427). The third token to land in this table for the same
+           reason, after the ground in round twenty-seven and the alphas in round thirty. */
+        {
+          defines: /(?:^|;|\s)--palette-(?:darkest|lightest)\s*:/,
+          reads: /(?:^|;)\s*--palette-(darkest|lightest)\s*:\s*([^;]+)/gi,
+          names: 'a --palette-* extreme',
+          means: 'the extreme this model reads from the configured palette is no longer the one that applies',
+          agrees: (found) =>
+            FROM_A_SETTING.test(found[2].trim()) ||
+            sameHex(found[2], paletteExtreme(found[1].toLowerCase())),
+        },
       ];
       const whereInChain = (at) =>
         at === entry.chain.length - 1 ? `.${name}` : `an ancestor of .${name}`;
