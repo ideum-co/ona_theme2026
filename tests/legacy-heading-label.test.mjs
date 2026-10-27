@@ -1454,6 +1454,26 @@ const regionOf = (conditions) => {
         else high = Math.min(high, pixels);
         continue;
       }
+      /*
+       * A bound on anything but width is refused, not filed as a value. Falling through to
+       * the categorical store below read `(min-height: 400px)` and `(min-height: 600px)` as
+       * one feature demanding two different values, so the two were called mutually
+       * exclusive and the context where both hold -- every viewport 600px tall and over --
+       * was never built. Two rules that compound there to an effective opacity of 0.5625
+       * passed all five tests at a rendered 3.94:1, while the same pair written on `width`
+       * failed (Codex, #427).
+       *
+       * Width is the one feature this model tracks as an interval, and the theme writes no
+       * other bounded feature at all -- 190 `min-width` and 148 `max-width`, nothing else.
+       * So refusing says what is true, where filing a bound as a category quietly inverts
+       * the overlap.
+       */
+      assert.ok(
+        !bound,
+        `"${group}" bounds ${name}, which this resolver only tracks for width -- teach it ` +
+          'that bound rather than reading two overlapping queries as mutually exclusive',
+      );
+
       /* One feature cannot hold two values at once. This is how portrait and landscape are
          kept apart without naming either: `satisfiable` only understood widths, so two
          orientation rules were multiplied into a viewport that cannot exist (Codex, #300). */
