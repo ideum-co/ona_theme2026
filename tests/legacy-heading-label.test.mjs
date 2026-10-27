@@ -1206,10 +1206,25 @@ const regionOf = (conditions) => {
         continue;
       }
 
-      /* A boolean feature test -- `(prefers-reduced-motion)` -- constrains nothing this
-         model tracks, and the theme has one. Recognised here so the refusal below can be
-         strict about everything it has not been taught. */
-      if (/^\(\s*[a-z-]+\s*\)$/i.test(group)) continue;
+      /*
+       * A boolean feature test -- `(hover)`, `(prefers-reduced-motion)`, of which the theme
+       * has one. It pins no width, but it is still a thing that can be off, and recording
+       * nothing left `regionOf` returning a region with an empty `fixed`: `falsifiable`
+       * then found no feature to switch the query off by, read it as holding at every
+       * viewport, and threw away the context where it does not hold. So
+       * `@media (hover) { .subtitle { opacity: 1 } }` over a plain `opacity: .6` passed all
+       * five tests, while a device that cannot hover keeps the faded label (Codex, #427).
+       *
+       * Keyed apart from the colon form so `(hover)` and `(hover: hover)` are not read as
+       * demanding different values of one feature and the pair called impossible. They do
+       * mean the same thing, so a query naming both spellings is counted as two independent
+       * conditions here -- one context too many rather than one too few.
+       */
+      const boolean = group.match(/^\(\s*([a-z-]+)\s*\)$/i);
+      if (boolean) {
+        fixed.set(`${boolean[1].toLowerCase()} (boolean)`, 'true');
+        continue;
+      }
 
       const parsed = group.match(/^\(\s*(?:(min|max)-)?([a-z-]+)\s*:\s*([^)]+)\)$/i);
       assert.ok(
