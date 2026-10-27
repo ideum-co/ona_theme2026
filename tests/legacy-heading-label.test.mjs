@@ -13,7 +13,7 @@ const decomment = (text) => text.replace(/\/\*[\s\S]*?\*\//g, ' ');
    check here reads. Defined once, because the sheet collection below, the ordering guard
    and the unnamed-rule path in `contextsFor` all need it and copies would drift. */
 const MEASURED =
-  /(?:^|;|\s)(?:all|display|color|opacity|margin|margin-bottom|--color-foreground[\w-]*)\s*:/;
+  /(?:^|;|\s)(?:all|display|color|opacity|margin|margin-bottom|margin-block-end|margin-block|writing-mode|--color-foreground[\w-]*)\s*:/;
 
 /*
  * `all` sets every property at once, so a property-specific lookup cannot see it.
@@ -31,6 +31,18 @@ const MEASURED =
  * declaration anywhere today, so this guards one added later.
  */
 const RESETS_EVERYTHING = /(?:^|;)\s*all\s*:/i;
+
+/*
+ * `margin-block-end` is the bottom edge only while the block axis runs top to bottom. A
+ * `writing-mode` other than `horizontal-tb` turns the block axis sideways, and every reading
+ * of a logical margin above it would name the wrong edge.
+ *
+ * The theme writes one `writing-mode` declaration, `vertical-lr` on a comparison slider's
+ * handle, which is not an ancestor of any label -- so rather than record that fact and leave
+ * it to rot, the assumption is required where it is used. Refused in the same four places
+ * `all` is.
+ */
+const TURNS_THE_BLOCK_AXIS = /(?:^|;)\s*writing-mode\s*:\s*(?!horizontal-tb\b)/i;
 
 
 /*
@@ -996,6 +1008,12 @@ const ancestorEffects = (chain, conditions, live, inlines = []) => {
           'every property at once -- resolve that rather than reading the properties this ' +
           'file names and missing it',
       );
+      assert.ok(
+        !TURNS_THE_BLOCK_AXIS.test(rule.declarations),
+        `an ancestor of the label sets a writing-mode ("${rule.selector}"), so the block ` +
+          'axis this file reads logical margins against may not run top to bottom -- ' +
+          'resolve that rather than reading margin-block-end as the bottom edge',
+      );
     }
     /* The same refusal for the ancestor's own `style=""`. The guard above read stylesheet
        rules only, so `style="opacity:.6 !important;opacity:1"` on the partnership wrapper
@@ -1012,6 +1030,12 @@ const ancestorEffects = (chain, conditions, live, inlines = []) => {
       `an ancestor of the label carries "all" in its style="" ("${inline.trim()}"), which ` +
         'resets every property at once -- resolve that rather than reading the properties ' +
         'this file names and missing it',
+    );
+    assert.ok(
+      !TURNS_THE_BLOCK_AXIS.test(inline),
+      `an ancestor of the label sets a writing-mode in its style="" ("${inline.trim()}"), ` +
+        'so the block axis this file reads logical margins against may not run top to ' +
+        'bottom -- resolve that rather than reading margin-block-end as the bottom edge',
     );
 
     const body = merge(applicable, inline);
@@ -1058,6 +1082,12 @@ const rulesFor = (name) => {
         `.${name} is styled with "all" ("${branch.trim()}"), which resets every property at ` +
           'once -- resolve that rather than reading the properties this file names and ' +
           'missing it',
+      );
+      assert.ok(
+        !TURNS_THE_BLOCK_AXIS.test(declarations),
+        `.${name} is given a writing-mode ("${branch.trim()}"), so the block axis this file ` +
+          'reads logical margins against may not run top to bottom -- resolve that rather ' +
+          'than reading margin-block-end as the bottom edge',
       );
       assert.ok(
         !/!important/.test(declarations),
@@ -2763,6 +2793,13 @@ const contextsFor = (name) => {
           'this file names and missing it',
       );
       assert.ok(
+        !TURNS_THE_BLOCK_AXIS.test(entry.inline),
+        `the label itself carries a writing-mode in its style="" ` +
+          `("${entry.inline.trim()}"), so the block axis this file reads logical margins ` +
+          'against may not run top to bottom -- resolve that rather than reading ' +
+          'margin-block-end as the bottom edge',
+      );
+      assert.ok(
         !/!important/.test(entry.inline),
         `.${name} in ${entry.section} carries !important in its style="" ` +
           `("${entry.inline.trim()}"), which this cascade model does not resolve -- extend ` +
@@ -3073,17 +3110,35 @@ const lastValue = (declarations, property) => {
  */
 const bottomMargin = (declarations) => {
   let value = null;
+  /*
+   * The logical spellings set the same edge. `margin-block-end` is the bottom in a
+   * horizontal writing mode, and `margin-block` is its shorthand with block-start first;
+   * reading for the physical names alone left the earlier `margin-bottom` standing, so
+   * `margin-block-end: 0` on the label kept the gap check green while the identical
+   * `margin-bottom: 0` fails it (Codex, #427). The theme writes 76 `margin-block-end`, 86
+   * `margin-block-start` and 40 `margin-block` declarations, so this is the spelling it
+   * mostly uses -- refusing them, the way `all` is refused, was never an option.
+   *
+   * `margin-block-start` and the `margin-inline` family are deliberately absent: they set
+   * edges nothing here measures. The mapping from block to vertical holds only in a
+   * horizontal writing mode, which `TURNS_THE_BLOCK_AXIS` requires rather than assumes.
+   */
   for (const [, property, raw] of declarations.matchAll(
-    /(?:^|;)\s*(margin|margin-bottom)\s*:\s*([^;]+)/g,
+    /(?:^|;)\s*(margin-block-end|margin-block|margin-bottom|margin)\s*:\s*([^;]+)/g,
   )) {
     const text = raw.trim();
-    if (property === 'margin-bottom') {
+    if (property === 'margin-bottom' || property === 'margin-block-end') {
       value = text;
       continue;
     }
-    /* In the shorthand the bottom is the third value, or the first when fewer are given.
-       Two values are block/inline, so the block one is the bottom as well as the top. */
     const parts = text.split(/\s+/);
+    if (property === 'margin-block') {
+      /* block-start then block-end; one value sets both. */
+      value = parts.length >= 2 ? parts[1] : parts[0];
+      continue;
+    }
+    /* In the physical shorthand the bottom is the third value, or the first when fewer are
+       given. Two values are block/inline, so the block one is the bottom as well as the top. */
     value = parts.length >= 3 ? parts[2] : parts[0];
   }
   return value;
