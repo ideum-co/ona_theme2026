@@ -550,6 +550,7 @@ const rulesFor = (name) => {
         label: structural(label),
         path: parts.map((part) => ({
           ...part,
+          raw: part.compound,
           compound: structural(part.compound),
         })),
         conditions: [...conditions, ...states],
@@ -1029,11 +1030,38 @@ const pathOf = (branch) => {
   return parts;
 };
 
+/*
+ * `:empty` on a compound, read through the functions that can hold it. A `:not()` is left
+ * alone: `:not(:empty)` says the element HAS content, which every ancestor of the label
+ * does.
+ */
+const holdsEmpty = (compound) => {
+  const { parts, bare } = functionalsOf(compound);
+  return (
+    /:empty\b/i.test(bare) ||
+    parts.some((part) => part.name !== 'not' && /:empty\b/i.test(part.inner))
+  );
+};
+
 const matchesPath = (parts, chain, endIndex) => {
   if (parts.length === 0) return false;
   const walk = (at, index) => {
     if (index < 0) return false;
     if (!matchesElement(parts[at].compound, chain[index], chain, index)) return false;
+    /*
+     * An ancestor of the label contains the label, so it is never `:empty` -- and
+     * `structural()` has already stripped the qualifier off the compound being matched, so
+     * without this the rule applies as though it were unqualified. `.text { opacity: .6 }`
+     * under `.text:empty { opacity: 1 }` passed all five tests while the browser, seeing a
+     * wrapper that holds the eyebrow and a heading, never restores the opacity (Codex,
+     * #427).
+     *
+     * The label itself is exempt: it can be empty, and its fill state is already carried as
+     * `needsEmpty`/`needsFilled` per context. Checked here rather than at each call site so
+     * a new one cannot miss it -- the last two rounds were both a guard that covered only
+     * the places its author remembered.
+     */
+    if (index !== chain.length - 1 && holdsEmpty(parts[at].raw ?? parts[at].compound)) return false;
     if (at === 0) return true;
     const { combinator } = parts[at];
     if (combinator === '>') return walk(at - 1, index - 1);
