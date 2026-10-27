@@ -1,4 +1,10 @@
-<div class="bfcm-landing" {{ section.shopify_attributes }}>
+{% assign bfcm_fallback_hero_url = 'Espresso_web.png' | file_url %}
+
+<div
+  class="bfcm-landing"
+  style="--bfcm-wine: {{ settings.color_palette.color1 | default: '#751132' }}; --bfcm-rose: {{ settings.color_palette.color2 | default: '#d67ba6' }};"
+  {{ section.shopify_attributes }}
+>
   <section class="bfcm-landing__hero" aria-labelledby="bfcm-landing-title-{{ section.id }}">
     <div class="bfcm-landing__hero-copy">
       <div class="bfcm-landing__hero-content">
@@ -29,7 +35,9 @@
       {%- else -%}
         <img
           class="bfcm-landing__hero-image"
-          src="https://cdn.shopify.com/s/files/1/0464/4824/6934/files/Espresso_web.png?width=1800"
+          src="{{ bfcm_fallback_hero_url }}&width=1800"
+          srcset="{{ bfcm_fallback_hero_url }}&width=600 600w, {{ bfcm_fallback_hero_url }}&width=900 900w, {{ bfcm_fallback_hero_url }}&width=1200 1200w, {{ bfcm_fallback_hero_url }}&width=1800 1800w"
+          sizes="(min-width: 990px) 50vw, 100vw"
           alt="ONA espresso coffee"
           width="1800"
           height="1200"
@@ -106,20 +114,18 @@
 
 {% stylesheet %}
   .bfcm-landing {
-    --bfcm-cream: #f4f3e9;
-    --bfcm-ink: #470a12;
-    --bfcm-wine: #751132;
-    --bfcm-rose: #d67ba6;
+    --bfcm-cream: var(--color-background, #f4f3e9);
+    --bfcm-ink: var(--color-foreground, #470a12);
     color: var(--bfcm-ink);
     background: var(--bfcm-cream);
     font-family: var(--font-brand-text, 'Karla', sans-serif);
   }
   .bfcm-landing * { box-sizing: border-box; }
   .bfcm-landing__hero { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); min-height: min(46vw, 860px); }
-  .bfcm-landing__hero-copy { position: relative; display: flex; align-items: center; overflow: hidden; padding: clamp(48px, 5.2vw, 100px) clamp(20px, 4.6vw, 88px); }
+  .bfcm-landing__hero-copy { position: relative; display: flex; align-items: center; overflow: hidden; padding: clamp(48px, 5.2vw, 100px) max(var(--page-margin, 16px), min(4.6vw, 88px)); }
   .bfcm-landing__hero-copy::before, .bfcm-landing__hero-copy::after { content: ''; position: absolute; border-radius: 50%; pointer-events: none; }
-  .bfcm-landing__hero-copy::before { width: min(42vw, 520px); aspect-ratio: 1; background: var(--bfcm-wine); left: -18%; bottom: -50%; }
-  .bfcm-landing__hero-copy::after { width: min(34vw, 420px); aspect-ratio: 1; background: var(--bfcm-rose); left: 28%; bottom: -54%; opacity: .9; }
+  .bfcm-landing__hero-copy::before { width: min(42vw, 520px); aspect-ratio: 1; background: var(--bfcm-wine); left: -5%; bottom: -30%; }
+  .bfcm-landing__hero-copy::after { width: min(34vw, 420px); aspect-ratio: 1; background: var(--bfcm-rose); left: 21%; bottom: -20%; opacity: .9; }
   .bfcm-landing__hero-content { position: relative; z-index: 1; padding-bottom: clamp(90px, 10vw, 190px); }
   .bfcm-landing__mark { display: block; width: 64px; height: auto; margin-bottom: 26px; }
   .bfcm-landing__eyebrow, .bfcm-landing__date { font-size: clamp(12px, .95vw, 17px); letter-spacing: .08em; text-transform: uppercase; }
@@ -128,7 +134,7 @@
   .bfcm-landing__date { margin: 0; }
   .bfcm-landing__hero-media { position: relative; min-height: 420px; }
   .bfcm-landing__hero-image { display: block; width: 100%; height: 100%; position: absolute; inset: 0; object-fit: cover; }
-  .bfcm-landing__intro { background: var(--bfcm-ink); color: var(--bfcm-cream); display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: clamp(36px, 3.3vw, 60px) clamp(20px, 4.6vw, 88px); }
+  .bfcm-landing__intro { background: var(--bfcm-ink); color: var(--bfcm-cream); display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: clamp(36px, 3.3vw, 60px) max(var(--page-margin, 16px), min(4.6vw, 88px)); }
   .bfcm-landing__intro p { margin: 10px 0 0; font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif); font-size: clamp(24px, 2vw, 38px); line-height: 1.1; }
   .bfcm-landing__actions { display: flex; flex-wrap: wrap; gap: 10px; flex-shrink: 0; }
   .bfcm-landing__button { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 24px; text-decoration: none; font-size: 16px; line-height: 1.2; text-align: center; }
@@ -137,29 +143,31 @@
   .bfcm-landing__button--wine { background: var(--bfcm-wine); color: var(--bfcm-cream); }
   .bfcm-landing__button:hover { opacity: .85; }
   .bfcm-landing__button:focus-visible, .bfcm-landing a:focus-visible, .bfcm-landing button:focus-visible, .bfcm-landing input:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
-  .bfcm-landing__signup { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: 30px 70px; padding: clamp(48px, 4.2vw, 80px) clamp(20px, 4.6vw, 88px); background: var(--bfcm-wine); color: var(--bfcm-cream); }
+  .bfcm-landing__signup { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: 30px 70px; padding: clamp(48px, 4.2vw, 80px) max(var(--page-margin, 16px), min(4.6vw, 88px)); background: var(--bfcm-wine); color: var(--bfcm-cream); }
   .bfcm-landing__signup h2, .bfcm-landing__schedule h2 { margin: 12px 0 0; font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif); font-size: clamp(30px, 2.2vw, 42px); font-weight: 400; line-height: 1.1; }
   .bfcm-landing__form { display: grid; gap: 9px; }
   .bfcm-landing__form label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
   .bfcm-landing__form-row { display: flex; gap: 10px; }
   .bfcm-landing__form input { min-width: 0; flex: 1; min-height: 50px; border: 0; border-radius: 0; padding: 10px 14px; background: var(--bfcm-cream); color: var(--bfcm-ink); font: inherit; }
   .bfcm-landing__form button { min-height: 50px; border: 0; border-radius: 0; padding: 10px 22px; background: var(--bfcm-cream); color: var(--bfcm-wine); font: inherit; cursor: pointer; }
-  .bfcm-landing__collections { display: flex; flex-wrap: wrap; gap: 8px; padding: clamp(40px, 3.6vw, 64px) clamp(20px, 4.6vw, 88px); border-bottom: 1px solid var(--bfcm-ink); }
+  .bfcm-landing__collections { display: flex; flex-wrap: wrap; gap: 8px; padding: clamp(40px, 3.6vw, 64px) max(var(--page-margin, 16px), min(4.6vw, 88px)); border-bottom: 1px solid var(--bfcm-ink); }
   .bfcm-landing__collections a { display: inline-flex; align-items: center; min-height: 38px; padding: 8px 16px; box-shadow: inset 0 0 0 1px var(--bfcm-ink); color: var(--bfcm-ink); font-size: 14px; text-decoration: none; }
   .bfcm-landing__collections a:hover { background: var(--bfcm-wine); color: var(--bfcm-cream); box-shadow: none; }
-  .bfcm-landing__schedule { padding: clamp(50px, 5vw, 90px) clamp(20px, 4.6vw, 88px); }
+  .bfcm-landing__schedule { padding: clamp(50px, 5vw, 90px) max(var(--page-margin, 16px), min(4.6vw, 88px)); }
   .bfcm-landing__schedule ol { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; margin: 38px 0; padding: 0; border-top: 1px solid var(--bfcm-ink); border-bottom: 1px solid var(--bfcm-ink); }
   .bfcm-landing__schedule li { display: grid; gap: 10px; padding: 25px 16px 30px; }
   .bfcm-landing__schedule li + li { border-left: 1px solid var(--bfcm-ink); }
   .bfcm-landing__schedule time { font-size: 13px; letter-spacing: .07em; text-transform: uppercase; }
   .bfcm-landing__schedule li span { font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif); font-size: clamp(23px, 2vw, 36px); }
-  @media (max-width: 749px) {
+  @media (max-width: 989px) {
     .bfcm-landing__hero, .bfcm-landing__signup { grid-template-columns: 1fr; }
-    .bfcm-landing__hero-copy { min-height: 440px; }
-    .bfcm-landing__hero-copy::before { width: 360px; bottom: -260px; }
-    .bfcm-landing__hero-copy::after { width: 280px; bottom: -190px; }
-    .bfcm-landing__hero-media { min-height: 340px; }
+    .bfcm-landing__hero-copy { min-height: 520px; }
+    .bfcm-landing__hero-copy::before { width: 360px; bottom: -190px; }
+    .bfcm-landing__hero-copy::after { width: 280px; bottom: -160px; }
     .bfcm-landing__intro { align-items: flex-start; flex-direction: column; }
+  }
+  @media (max-width: 749px) {
+    .bfcm-landing__hero-media { min-height: 340px; }
     .bfcm-landing__schedule ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .bfcm-landing__schedule li:nth-child(3) { border-left: 0; border-top: 1px solid var(--bfcm-ink); }
     .bfcm-landing__schedule li:nth-child(4) { border-top: 1px solid var(--bfcm-ink); }
