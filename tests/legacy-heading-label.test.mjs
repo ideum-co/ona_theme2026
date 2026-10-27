@@ -295,7 +295,24 @@ const stylesheetLink = (attributes) => {
   const named = /^\s*\{\{-?\s*['"]([\w.-]+\.css)['"]\s*\|\s*asset_url\s*-?\}\}\s*$/.exec(href);
   const media = attributeValue(attributes, 'media');
   const always = media === null || /^(?:all|screen)$/i.test(media.trim());
-  if (named === null || !always) return { href, media };
+  /* Unlike `<style disabled>`, which round 65 leaves applying because `disabled` is an IDL
+     property there and not a content attribute, `disabled` IS a boolean content attribute on
+     a link and is "used with the stylesheet link type": removing it is what fetches and
+     applies the sheet. So the sheet is not in the cascade at load -- and removing it later is
+     a line of script away, which no static read can see. Refused rather than skipped, for the
+     same reason as the media swap below it. */
+  const names = [
+    ...attributes.matchAll(/([\w-]+)(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'>]+))?/g),
+  ].map(([, name]) => name.replace(/[A-Z]/g, (letter) => letter.toLowerCase()));
+  if (names.includes('disabled')) {
+    return { reason: 'is disabled, so the browser applies none of it until script enables it', href, media };
+  }
+  if (!always) {
+    return { reason: `carries media ${JSON.stringify(media)}, which this cannot reduce to "always"`, href, media };
+  }
+  if (named === null) {
+    return { reason: 'has an href this cannot resolve to a sheet in this repo', href, media };
+  }
   return { asset: named[1] };
 };
 
@@ -386,10 +403,10 @@ const sheets = (() => {
         if (insideInert(inert, found.index)) continue;
         assert.ok(
           link.asset !== undefined,
-          `${file} loads a stylesheet this scan cannot resolve to a sheet in this repo ` +
-            `(href ${JSON.stringify(link.href)}${link.media === null ? '' : `, media ${JSON.stringify(link.media)}`}) ` +
-            '-- read it rather than leaving its declarations out of the cascade, because a ' +
-            'sheet left out is a restore this file cannot see',
+          `${file} has a stylesheet link that ${link.reason} (href ` +
+            `${JSON.stringify(link.href)}) -- settle what it contributes rather than leaving ` +
+            'its declarations out of the cascade, because a sheet left out is a restore this ' +
+            'file cannot see',
         );
         asset = link.asset;
       }
@@ -438,13 +455,29 @@ const sheets = (() => {
             'it that condition rather than treating the sheet as loaded on every page',
         );
         const scope = open.filter((condition) => condition !== null);
-        const key = JSON.stringify(scope);
-        if (!loaded.includes(asset)) {
-          loaded.push(asset);
-          scopeOf.set(asset, scope);
-        } else if (JSON.stringify(scopeOf.get(asset)) !== key) {
-          scopeOf.set(asset, []);
-        }
+        /*
+         * `loaded` is an order, one entry per sheet, so a sheet loaded twice has only its
+         * first position. In the browser the later load participates again where it sits and
+         * wins over anything between: re-loading base.css at the end of the layout let its
+         * `opacity: .6` beat an equal-specificity `opacity: 1` in legacy-page-layout.css,
+         * and all five tests passed on the restore that no longer applied (Codex, #427).
+         *
+         * Widening the scope of a second load, which is what stood here, answered a
+         * different question -- which pages a sheet reaches, not where it sits among the
+         * others -- and order is the part that was wrong. Refused rather than taught,
+         * because carrying one sheet at two positions is a change to every cascade this
+         * file builds and no theme file does it: the two pipeline files load five distinct
+         * sheets between them and repeat none.
+         */
+        assert.ok(
+          !loaded.includes(asset),
+          `"${asset}" is loaded more than once across ${SHEET_PIPELINE.join(' and ')}, and ` +
+            'this scan keeps one position per sheet, so the later load would be measured ' +
+            'where the earlier one sits -- load it once, or teach the cascade to carry a ' +
+            'sheet at more than one position',
+        );
+        loaded.push(asset);
+        scopeOf.set(asset, scope);
         continue;
       }
 
