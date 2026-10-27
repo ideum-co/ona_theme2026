@@ -292,12 +292,34 @@ const templates = (() => {
  * this file takes on `!important` and sibling combinators -- rather than quietly resolving
  * them the wrong way round.
  */
+/* The properties this file measures: a rule setting none of them cannot change what any
+   check here reads. Defined once, because the ordering guard below and the unnamed-rule
+   path in `contextsFor` both need it and two copies would drift. */
+const MEASURED =
+  /(?:^|;|\s)(?:display|color|opacity|margin|margin-bottom|--color-foreground[\w-]*)\s*:/;
+
 const assertInlineOrderUnambiguous = (name) => {
-  const target = new RegExp(`\\.${name.replace(/-/g, '\\-')}(?![\\w-])`);
+  /*
+   * Membership used to be "this sheet's text mentions `.name`", which misses a section
+   * whose `{% style %}` reaches the eyebrow by tag or through an ancestor:
+   * `#shopify-section-... span { opacity: 1 }` in one section against `opacity: .6` in
+   * another left the ordering unguarded with all five tests green, while
+   * `templates/page.wholesale.json` renders them the other way round and the browser keeps
+   * the fade (Codex, #427). The same rule written with the class in it was already caught,
+   * which is the asymmetry that gives it away.
+   *
+   * Membership is decided by the rules that actually reach a label or one of its ancestors
+   * now -- the same question `contextsFor` asks -- rather than by a name appearing in the
+   * text.
+   */
+  const chains = ancestriesFor(name).map((entry) => entry.chain);
   const styling = new Set(
-    sheets
-      .filter((sheet) => sheet.origin && target.test(sheet.text))
-      .map((sheet) => sheet.origin),
+    everyRule()
+      .filter((rule) => rule.origin !== null && MEASURED.test(rule.declarations))
+      .filter((rule) =>
+        chains.some((chain) => chain.some((_, index) => matchesPath(rule.path, chain, index))),
+      )
+      .map((rule) => rule.origin),
   );
   if (styling.size < 2) return;
   for (const { file, order } of templates) {
@@ -1920,8 +1942,6 @@ const contextsFor = (name) => {
          dropped here before `substituted` could see it, so `#MainContent span
          { --color-foreground: #fdfbf5 }` left every span eyebrow light on cream with the
          suite green (Codex, #427). */
-      const MEASURED =
-        /(?:^|;|\s)(?:display|color|opacity|margin|margin-bottom|--color-foreground[\w-]*)\s*:/;
       const unnamed = everyRule()
         .filter(
           (rule) =>
