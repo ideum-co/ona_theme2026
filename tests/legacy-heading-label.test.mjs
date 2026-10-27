@@ -68,10 +68,21 @@ const sheets = (() => {
          override a real regression (Codex, #300). A snippet can be rendered from anywhere,
          so those stay global. */
       for (const [, body] of source.matchAll(/\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}/g)) {
-        out.push({
-          origin: dir === 'sections' ? file.slice(0, -'.liquid'.length) : null,
-          text: liquid(body),
-        });
+        const origin = dir === 'sections' ? file.slice(0, -'.liquid'.length) : null;
+        /* `#shopify-section-{{ section.id }}` names this section's own wrapper. Letting
+           `liquid()` flatten the output to `x` left `#shopify-section-x`, which matches no
+           ancestor at all, so the standard way to scope a section's CSS was dropped without
+           a word. Resolved to the same stand-in the chain carries, before the flattening.
+
+           This is the only dynamic selector form resolved here, and deliberately so: the
+           theme has around fifty others -- `.color-custom-{{ ... }}`, `.media-fit-{{ ... }}`,
+           `[data-option-id="{{ ... }}"]` -- almost all of them Horizon's own, and failing on
+           every one would make this test unrunnable rather than more honest. They still
+           flatten and still match nothing; that is a known gap, not a resolved one. */
+        const scoped = origin
+          ? body.replace(/#shopify-section-\{\{-?\s*section\.id\s*-?\}\}/g, `#shopify-section-${origin}`)
+          : body;
+        out.push({ origin, text: liquid(scoped) });
       }
     }
   }
@@ -537,6 +548,35 @@ const VOID_TAGS = new Set([
  * on a state no page renders (Codex, #300). A union counts only where some section renders
  * it. Everything legacy renders inside #MainContent, which is why each chain starts there.
  */
+/*
+ * The links above every section: what `layout/theme.liquid` wraps the page in, read out of
+ * the file rather than assumed.
+ *
+ * Each chain used to start at a bare `#MainContent`, which discarded `html`, `body`, and even
+ * the main element's own tag and classes -- so `body .subtitle { opacity: .6 }`, which fades
+ * every eyebrow on the site, matched nothing and passed (Codex, #427). A class written with
+ * Liquid in it (`page-width-{{ ... }}`) is not a token any selector here can name, so only
+ * the static ones are recorded.
+ */
+const LAYOUT_CHAIN = (() => {
+  const source = readFileSync(join(root, 'layout', 'theme.liquid'), 'utf8');
+  const tokensOf = (tag) => {
+    const attributes = source.match(new RegExp(`<${tag}\\b([^>]*)>`))?.[1] ?? '';
+    const classes = (attributes.match(/class="([^"]*)"/)?.[1] ?? '')
+      .split(/\s+/)
+      .filter((value) => value && !value.includes('{'));
+    const identifier = attributes.match(/\bid="([^"{]*)"/)?.[1];
+    return new Set([tag, ...classes.map((value) => `.${value}`), ...(identifier ? [`#${identifier}`] : [])]);
+  };
+  const main = tokensOf('main');
+  assert.ok(
+    main.has('#MainContent') && main.has('.content-for-layout'),
+    'layout/theme.liquid no longer wraps the page in <main id="MainContent" class="content-for-layout">; ' +
+      'this chain head is stale and every selector qualified by it is being dropped',
+  );
+  return [new Set(['html']), tokensOf('body'), main];
+})();
+
 const ancestriesFor = (name) => {
   const found = [];
   for (const file of readdirSync(join(root, 'sections'))) {
@@ -583,7 +623,16 @@ const ancestriesFor = (name) => {
              against the real element, so a rule that selects nothing could be written to
              cancel a real regression (Codex, #300). */
           chain: [
-            new Set(['#MainContent']),
+            ...LAYOUT_CHAIN,
+            /* Shopify wraps each section's output in
+               `<div id="shopify-section-{id}" class="shopify-section">`, which is what
+               `#shopify-section-{{ section.id }}` in a section's own `{% style %}` block
+               selects. Without this link that selector -- the standard scoping pattern,
+               already used by `snippets/ona-band.liquid` -- matched nothing and was silently
+               dropped (Codex, #427). The id here stands in for the template key Shopify
+               generates; the rewrite in `sheets` uses the same stand-in, so a section's
+               scoped rule reaches its own eyebrows and no others. */
+            new Set(['div', '.shopify-section', `#shopify-section-${file.slice(0, -'.liquid'.length)}`]),
             ...open.map(
               (entry) => new Set([entry.element, ...entry.classes.map((c) => `.${c}`), ...entry.attrs])
             ),
@@ -595,6 +644,7 @@ const ancestriesFor = (name) => {
              faded its eyebrow below the bar with the suite green (Codex, #427). Parallel to
              `chain`, so index n is the inline style of chain[n]. */
           inlines: [
+            ...LAYOUT_CHAIN.map(() => ''),
             '',
             ...open.map((entry) => entry.inline),
             attributes.match(/style="([^"]*)"/)?.[1] ?? '',
