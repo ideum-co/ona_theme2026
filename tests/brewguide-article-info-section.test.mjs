@@ -241,7 +241,7 @@ test('every spacing and radius token used is one already proven to resolve elsew
   assert.doesNotMatch(code, /var\(--margin-3xl\)/, 'must not reference the undefined --margin-3xl token');
   assert.doesNotMatch(code, /var\(--style-border-radius-cards\)/, 'must not reference the undefined --style-border-radius-cards token');
   assert.doesNotMatch(code, /var\(--style-border-radius-images\)/, 'must not reference the undefined --style-border-radius-images token');
-  assert.match(code, /margin-block:\s*var\(--gap-3xl\)/, 'the recipe block spacing must use the proven --gap-3xl token instead');
+  assert.match(code, /margin-block-start:\s*var\(--gap-3xl\)/, 'the recipe block spacing must use the proven --gap-3xl token instead');
   const radiusUses = code.match(/border-radius:\s*var\(--style-border-radius-popover\)/g) || [];
   assert.equal(radiusUses.length, 2, 'both the cross-sell card and its image must use the proven --style-border-radius-popover token');
 });
