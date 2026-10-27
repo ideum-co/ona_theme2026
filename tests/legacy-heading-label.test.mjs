@@ -2051,6 +2051,25 @@ const alternativesOf = (condition) => {
    `@media (min-width: 40rem) { .subtitle { opacity: .6 } }` had every context holding it
    discarded and the suite stayed green while the label sat under the bar at matching
    viewports (Codex, #427). */
+/* `rem` and `em` in a media query both resolve against the browser's root font size; a page
+   `font-size` cannot change it there. */
+const ROOT_FONT_SIZE = 16;
+const AS_LENGTH = /^(-?[\d.]+)(px|rem|em)$/i;
+
+/*
+ * A viewport width is a measurement, not a spelling.
+ *
+ * Strict bounds used to move a whole pixel -- `width > 750px` became 751 -- on the stated
+ * assumption that viewports come in whole pixels. They do not: `@media (749px < width <
+ * 750px)` computed an empty interval and every rule inside it was discarded, so a
+ * `.subtitle { opacity: .6 }` there passed all five tests while a 749.5px viewport renders
+ * it at 4.42:1 (Codex, #427). A strict bound now moves by a sub-pixel step instead, which
+ * keeps `width > 750` and `width <= 750` properly exclusive while leaving room between two
+ * bounds a pixel apart. The granularity is the limit: two bounds closer together than this
+ * step are read as one.
+ */
+const SUBPIXEL = 1 / 64;
+
 const widthIn = (value, where) => {
   const measure = String(value).trim().match(/^(-?[\d.]+)(px|rem|em)?$/i);
   assert.ok(
@@ -2058,7 +2077,6 @@ const widthIn = (value, where) => {
     `cannot read the viewport width "${String(value).trim()}" in "${where}" -- ` +
       'extend this resolver rather than dropping every rule inside that query',
   );
-  const ROOT_FONT_SIZE = 16;
   const unit = (measure[2] ?? 'px').toLowerCase();
   return Number(measure[1]) * (unit === 'px' ? 1 : ROOT_FONT_SIZE);
 };
@@ -2148,13 +2166,11 @@ const regionOf = (conditions) => {
             : [[FLIP[before[2]], before[1]]];
 
         for (const [operator, value] of bounds) {
-          /* `width > 750px` is 751 and up at whole-pixel viewports, the granularity
-             everything else here works in. */
           const pixels = widthIn(value, group);
           if (operator === '>=') low = Math.max(low, pixels);
-          else if (operator === '>') low = Math.max(low, pixels + 1);
+          else if (operator === '>') low = Math.max(low, pixels + SUBPIXEL);
           else if (operator === '<=') high = Math.min(high, pixels);
-          else if (operator === '<') high = Math.min(high, pixels - 1);
+          else if (operator === '<') high = Math.min(high, pixels - SUBPIXEL);
           else {
             low = Math.max(low, pixels);
             high = Math.min(high, pixels);
@@ -2191,17 +2207,23 @@ const regionOf = (conditions) => {
       );
       const [, bound, feature, value] = parsed;
       const name = feature.toLowerCase();
-      if (name === 'width' && bound) {
-        /* `rem` and `em` both resolve against the root font size in a media query, which is
-           the browser default -- a page `font-size` cannot change it there. Units beyond
-           these are refused outright: returning false used to mean "cannot happen", so
-           `@media (min-width: 40rem) { .subtitle { opacity: .6 } }` had every context
-           holding it discarded and the suite stayed green while the label sat under the bar
-           at matching viewports (Codex, #427). */
+      if (name === 'width') {
+        /* Units beyond `px`, `rem` and `em` are refused outright: returning false used to
+           mean "cannot happen", so `@media (min-width: 40rem) { .subtitle { opacity: .6 } }`
+           had every context holding it discarded and the suite stayed green while the label
+           sat under the bar at matching viewports (Codex, #427).
+
+           Without a bound this is an exact width, and it pins the interval from both sides
+           -- the same thing `(width = 800px)` does in the range syntax above. Filed as a
+           category instead, `(width: 50em)` and `(width: 800px)` were read as one feature
+           demanding two different values and called mutually exclusive, though both hold at
+           800px: two rules compounding there to 3.94:1 passed all five tests (Codex, #427).
+           The range syntax had this right and the colon syntax did not. */
         const pixels = widthIn(value, condition);
         if (Number.isNaN(pixels)) return null;
-        if (bound.toLowerCase() === 'min') low = Math.max(low, pixels);
-        else high = Math.min(high, pixels);
+        const edge = bound?.toLowerCase();
+        if (edge !== 'max') low = Math.max(low, pixels);
+        if (edge !== 'min') high = Math.min(high, pixels);
         continue;
       }
       /*
@@ -2227,7 +2249,17 @@ const regionOf = (conditions) => {
       /* One feature cannot hold two values at once. This is how portrait and landscape are
          kept apart without naming either: `satisfiable` only understood widths, so two
          orientation rules were multiplied into a viewport that cannot exist (Codex, #300). */
-      const normalised = String(value).trim().toLowerCase();
+      /*
+       * A length is compared as a measurement here too, for the same reason width is:
+       * `(height: 25em)` and `(height: 400px)` are the same viewport, and comparing the
+       * spellings would call them mutually exclusive. Width is the only feature this model
+       * tracks as an interval, but it is not the only one written in units.
+       */
+      const text = String(value).trim().toLowerCase();
+      const length = text.match(AS_LENGTH);
+      const normalised = length
+        ? `${Number(length[1]) * (length[2].toLowerCase() === 'px' ? 1 : ROOT_FONT_SIZE)}px`
+        : text;
       const seen = fixed.get(name);
       if (seen !== undefined && seen !== normalised) return null;
       fixed.set(name, normalised);
@@ -2272,7 +2304,20 @@ const falsifiable = (region, omitted) => {
 
   const widths = new Set([region.low, region.high]);
   for (const [low, high] of covered) {
-    for (const edge of [low - 1, low, low + 1, high - 1, high, high + 1]) {
+    /* The sub-pixel steps matter as much as the whole-pixel ones: a gap an exclusive bound
+       leaves behind is one step wide, and probing only whole pixels steps straight over it. */
+    for (const edge of [
+      low - 1,
+      low - SUBPIXEL,
+      low,
+      low + SUBPIXEL,
+      low + 1,
+      high - 1,
+      high - SUBPIXEL,
+      high,
+      high + SUBPIXEL,
+      high + 1,
+    ]) {
       if (edge >= region.low && edge <= region.high) widths.add(edge);
     }
   }
