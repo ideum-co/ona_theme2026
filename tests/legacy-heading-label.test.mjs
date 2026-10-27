@@ -1011,6 +1011,18 @@ const regionOf = (conditions) => {
         'inversion rather than reading the features inside as if they stood alone',
     );
 
+    /* The media type lives outside the parentheses, so a query that is nothing but a type
+       left the loop below with no constraint at all: `@media print` read as holding at every
+       viewport, and every context where it is off -- which is all of them, on screen -- was
+       discarded (Codex, #427). This harness measures the screen rendering, so a query for
+       any other medium simply cannot hold, which excludes its rules from the contexts and
+       lets a context that omits it stand. The theme names `screen` 318 times and no other
+       type. */
+    const types = (condition.replace(/^@media\s*/i, '').replace(/\([^()]*\)/g, ' ').match(/[a-z-]+/gi) ?? [])
+      .map((word) => word.toLowerCase())
+      .filter((word) => word !== 'and' && word !== 'or');
+    if (types.some((type) => type !== 'screen' && type !== 'all')) return null;
+
     for (const group of condition.match(/\([^()]*\)/g) ?? []) {
       /* Range syntax: `(width >= 750px)`, `(750px <= width)`, `(400px < width <= 700px)`.
          The colon form below cannot see it, so `regionOf` read the query as constraining
