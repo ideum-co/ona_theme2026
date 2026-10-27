@@ -1313,6 +1313,36 @@ const PSEUDO_IN_ARGUMENT = /:(?!is\(|where\(|not\()[a-z-]+(?:\([^)]*\))?/i;
  * today and will say so the moment one does.
  */
 const NEGATED_PSEUDO = /:not\(([^()]*(?:\([^()]*\)[^()]*)*)\)/gi;
+/*
+ * A selector's path with its sibling steps relaxed into descendant steps.
+ *
+ * `matchesPath` has no chain for a sibling relationship, so it reads `+` and `~` as a
+ * descendant step and gets the answer wrong in both directions. It placed `main + .text` on
+ * `.text`, which the browser matches nowhere; and it could not see
+ * `#shopify-section-ona-wholesale-partnership .img + div > span { opacity: .6 }` at all,
+ * although that selects the real partnership eyebrow -- `.text` does immediately follow
+ * `.img` and holds the label -- so all five tests stayed green on it (Codex, #427). The
+ * `!rule.siblings` filter that looked like the cause was redundant: the rule never reached
+ * it, because `.img` is not an ancestor and the strict match had already failed.
+ *
+ * The compound before a sibling combinator names a sibling, not an ancestor, so dropping it
+ * leaves the part of the selector an ancestor chain can speak to. Matching that is a
+ * widening: it answers "could this rule reach the label", not "does it", which is the
+ * question a refusal needs to ask.
+ */
+const withoutSiblings = (path) => {
+  const out = [];
+  for (const part of path) {
+    if (part.combinator === '+' || part.combinator === '~') {
+      out.pop();
+      out.push({ ...part, combinator: ' ' });
+    } else {
+      out.push(part);
+    }
+  }
+  return out;
+};
+
 const negatesAState = (selector) =>
   [...selector.matchAll(NEGATED_PSEUDO)].some((match) => /:[a-z-]+/i.test(match[1]));
 
@@ -2038,9 +2068,10 @@ const contextsFor = (name) => {
           (rule) =>
             live(rule) &&
             !seenSelectors.has(`${rule.at}:${rule.selector}`) &&
-            !rule.siblings &&
             MEASURED.test(rule.declarations) &&
-            matchesPath(rule.path, entry.chain, entry.chain.length - 1),
+            (matchesPath(rule.path, entry.chain, entry.chain.length - 1) ||
+              (rule.siblings &&
+                matchesPath(withoutSiblings(rule.path), entry.chain, entry.chain.length - 1))),
         )
         .map((rule) => {
           const label = rule.path[rule.path.length - 1].raw;
@@ -2054,6 +2085,18 @@ const contextsFor = (name) => {
              -- was left out, so `span:not(:hover) { opacity: 1 }` still restored the label in
              the state the browser excludes (Codex, #427). Three paths reach a label and the
              guard has to sit on all three. */
+          /* `rulesFor` refuses a sibling combinator on a label selector. This path dropped
+             the rule instead -- and worse, dropped it for the wrong reason, since the
+             strict match had already failed -- so a selector the model cannot place was
+             reported as one that changes nothing. Fourth site for a guard this file has
+             now had to add three times: three paths reach a label, and a filter that
+             enumerates protects only the ones you remembered. */
+          assert.ok(
+            !rule.siblings,
+            `.${name} is painted through "${rule.selector}", which uses a sibling ` +
+              'combinator this model has no chain for -- extend it rather than reading the ' +
+              'rule as reaching nothing',
+          );
           assert.ok(
             !negatesAState(rule.selector),
             `.${name} is painted through "${rule.selector}", which negates a pseudo-class ` +
@@ -2142,6 +2185,21 @@ const contextsFor = (name) => {
             .slice(0, -1)
             .map((_, index) => index)
             .filter((index) => matchesPath(rule.path, entry.chain, index));
+          /* Both directions of the sibling problem land here. `matchesPath` placed
+             `main + .text` on `.text`, so a rule the browser applies nowhere could restore
+             a colour over a real regression; and a rule that does reach an ancestor through
+             a sibling was invisible. The relaxed path answers "could it", which is what a
+             refusal needs. */
+          assert.ok(
+            !rule.siblings ||
+              (matches.length === 0 &&
+                !entry.chain
+                  .slice(0, -1)
+                  .some((_, index) => matchesPath(withoutSiblings(rule.path), entry.chain, index))),
+            `an ancestor of the label is styled through "${rule.selector}", which uses a ` +
+              'sibling combinator this model reads as a descendant step -- extend it rather ' +
+              'than resolving the relationship the wrong way round',
+          );
           assert.ok(
             matches.length === 0 || !negatesAState(rule.selector),
             `an ancestor of the label is styled through "${rule.selector}", which negates a ` +
