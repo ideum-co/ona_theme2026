@@ -420,7 +420,7 @@ const everyRule = () => {
           compound: structural(part.compound),
         })),
         siblings: parts.some((part) => part.combinator === '+' || part.combinator === '~'),
-        conditions: [...conditions, ...statesOf(branch)],
+        conditions: [...conditions, ...statesIn(parts)],
         weight: specificity(branch),
         at,
         origin,
@@ -542,7 +542,7 @@ const rulesFor = (name) => {
          matching path, so reading only the label left `.text:hover .subtitle { opacity: 1 }`
          unconditional and the non-hovered cascade under it was never measured (Codex, #427).
          everyRule() already reads the branch; this is the same rule in the named path. */
-      const states = statesOf(branch);
+      const states = statesIn(parts);
 
       found.push({
         selector: branch.trim().replace(/\s+/g, ' '),
@@ -830,6 +830,30 @@ const statesOf = (compound) => {
     .map((part) => `:${part.name}(${part.inner})`);
   const direct = bare.replace(/:empty\b/gi, '').match(/::?[a-z-]+(?:\([^)]*\))?/gi) ?? [];
   return [...nested, ...direct].map((state) => state.toLowerCase().replace(/\s+/g, ''));
+};
+
+/*
+ * The same states, each tagged with the element it sits on.
+ *
+ * Reduced to the bare string, an ancestor's `:hover` and the label's `:hover` are one
+ * condition, so the powerset can only turn them on together and the state that matters --
+ * wrapper hovered, eyebrow not -- is never built. `.text:hover .subtitle { opacity: .6 }`
+ * under `.text .subtitle:hover { opacity: 1 }` passed all five tests while the browser
+ * fades the label whenever the pointer is in the wrapper but off the text (Codex, #427).
+ *
+ * Depth from the end of the branch is the identity, which is the same footing `matchesPath`
+ * walks the chain on: the label is 0, its parent 1. Two different ancestors at the same
+ * depth still share a condition, so this separates the states the model can tell apart
+ * rather than claiming to tell all of them apart.
+ */
+const statesIn = (parts) => {
+  const out = [];
+  parts.forEach((part, index) => {
+    const depth = parts.length - 1 - index;
+    const whose = depth === 0 ? 'the label' : `ancestor ${depth}`;
+    for (const state of statesOf(part.compound)) out.push(`${state} on ${whose}`);
+  });
+  return out;
 };
 
 /* A compound with its state pseudos removed, leaving what identifies the element. A function
@@ -1391,6 +1415,29 @@ const contextsFor = (name) => {
       const PAINTS = /(?:^|;|\s)background(?:-color|-image)?\s*:/;
       const RESTATES_THE_GROUND =
         /^\s*background(?:-color)?\s*:\s*var\(\s*--color-background\s*\)\s*$/;
+      /*
+       * `style=""` too, not only the stylesheets. The refusal above visited `everyRule()`
+       * and nothing else, so the identical obscuring done inline sailed through it:
+       * `style="background-color:#470a12"` on the partnership wrapper with
+       * `style="color:#470a12"` on its eyebrow left all five tests green at a rendered 1:1
+       * (Codex, #427). `inlines` is parallel to `chain` and its last entry is the label's
+       * own, so this covers the label and every ancestor in one pass.
+       */
+      entry.inlines.forEach((style, at) => {
+        const paints = style
+          .split(';')
+          .filter((one) => PAINTS.test(`;${one}`) && !RESTATES_THE_GROUND.test(one));
+        assert.equal(
+          paints.length,
+          0,
+          `style="" on ${at === entry.chain.length - 1 ? `.${name}` : `an ancestor of .${name}`} ` +
+            `paints a background (${paints.map((one) => one.trim()).join('; ')}), and this ` +
+            'model measures the label against the palette and the template bands only -- ' +
+            'resolve the painted ground through the ancestry rather than trust a ratio ' +
+            'taken against a background it covers',
+        );
+      });
+
       for (const rule of everyRule()) {
         if (!live(rule) || !PAINTS.test(rule.declarations)) continue;
         if (!entry.chain.some((_, at) => matchesPath(rule.path, entry.chain, at))) continue;
