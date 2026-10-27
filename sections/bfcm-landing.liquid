@@ -53,6 +53,7 @@
       <h2 id="bfcm-landing-signup-title-{{ section.id }}">{{ section.settings.signup_heading | escape }}</h2>
     </div>
     {%- form 'customer', class: 'bfcm-landing__form' -%}
+      <input type="hidden" name="contact[tags]" value="BFCM 2026">
       <label for="bfcm-landing-email-{{ section.id }}">{{ 'blocks.email_signup.label' | t }}</label>
       <div class="bfcm-landing__form-row">
         <input
