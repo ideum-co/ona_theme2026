@@ -1031,16 +1031,27 @@ const pathOf = (branch) => {
 };
 
 /*
- * `:empty` on a compound, read through the functions that can hold it. A `:not()` is left
- * alone: `:not(:empty)` says the element HAS content, which every ancestor of the label
- * does.
+ * Whether a compound can only match an empty element.
+ *
+ * `:empty` written on the compound itself requires it. Inside `:is()` or `:where()` it does
+ * not, because those are alternations: `:is(.text, :empty)` matches a `.text` that is full
+ * of content. Asking whether the function merely contains `:empty` rejected that selector
+ * outright, so a real `:is(.text, :empty) .subtitle { opacity: .6 }` was dropped and passed
+ * all five tests while the plain `.text` spelling of the same rule failed at 4.42:1
+ * (Codex, #427) -- the over-rejecting half of the same guard.
+ *
+ * So a function requires emptiness only when every one of its alternatives does, which
+ * recurses, and `:not()` is left alone: `:not(:empty)` asserts content, which every
+ * ancestor of the label has.
  */
 const holdsEmpty = (compound) => {
   const { parts, bare } = functionalsOf(compound);
-  return (
-    /:empty\b/i.test(bare) ||
-    parts.some((part) => part.name !== 'not' && /:empty\b/i.test(part.inner))
-  );
+  if (/:empty\b/i.test(bare)) return true;
+  return parts.some((part) => {
+    if (part.name === 'not') return false;
+    const branches = splitSelectors(part.inner);
+    return branches.length > 0 && branches.every((branch) => holdsEmpty(branch));
+  });
 };
 
 const matchesPath = (parts, chain, endIndex) => {
