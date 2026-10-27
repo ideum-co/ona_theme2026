@@ -1336,6 +1336,63 @@ const contextsFor = (name) => {
           entry.chain.slice(0, -1).some((_, at) => matchesPath(rule.path, entry.chain, at)),
       );
 
+      /*
+       * Cascade layers decide precedence, they do not qualify a rule. An unlayered normal
+       * declaration beats a layered one whatever either selector's specificity, so sorting
+       * a layered declaration in by weight and source order -- which is all this model does
+       * with a condition -- produces a cascade the browser never has. Injecting
+       * `#MainContent .subtitle { opacity: 1 }` beside `@layer probe { #MainContent
+       * .subtitle { opacity: .6 } }` failed the contrast test at 4.42:1 on labels the
+       * browser keeps fully opaque (Codex, #427).
+       *
+       * `walk` still descends into the block, so a layered rule is never simply unseen;
+       * it is seen and refused.
+       */
+      for (const rule of [...reaches, ...touching]) {
+        const layered = rule.conditions.filter((condition) => /^@layer\b/i.test(condition));
+        assert.equal(
+          layered.length,
+          0,
+          `"${rule.selector}" reaches .${name} from inside ${layered.join(' inside ')}, and ` +
+            'this model orders declarations by specificity and source order only -- layer ' +
+            'precedence would have to be carried separately before a ratio taken across ' +
+            'one means anything',
+        );
+      }
+
+      /*
+       * The grounds come from the palette and the band colours the templates configure --
+       * settings, not CSS. A rule that paints a background on the label or on any ancestor
+       * replaces the ground underneath it and nothing here notices: painting `.text` and
+       * `.subtitle` the same `#470a12` leaves the eyebrow invisible at 1:1 with all five
+       * tests green (Codex, #427).
+       *
+       * Resolving a painted ground means carrying backgrounds down the ancestry with their
+       * own conditions and inline styles -- a second cascade beside this one. Until that
+       * exists the model refuses rather than measure against a background something covers.
+       * The one declaration it accepts is the page ground restated: `body { background:
+       * var(--color-background) }` is the premise, not an exception to it.
+       */
+      const PAINTS = /(?:^|;|\s)background(?:-color|-image)?\s*:/;
+      const RESTATES_THE_GROUND =
+        /^\s*background(?:-color)?\s*:\s*var\(\s*--color-background\s*\)\s*$/;
+      for (const rule of everyRule()) {
+        if (!live(rule) || !PAINTS.test(rule.declarations)) continue;
+        if (!entry.chain.some((_, at) => matchesPath(rule.path, entry.chain, at))) continue;
+        const paints = rule.declarations
+          .split(';')
+          .filter((one) => PAINTS.test(`;${one}`) && !RESTATES_THE_GROUND.test(one));
+        assert.equal(
+          paints.length,
+          0,
+          `"${rule.selector}" paints a background on .${name} or an ancestor of it ` +
+            `(${paints.map((one) => one.trim()).join('; ')}), and this model measures the ` +
+            'label against the palette and the template bands only -- resolve the painted ' +
+            'ground through the ancestry rather than trust a ratio taken against a ' +
+            'background it covers',
+        );
+      }
+
       const sets = [];
       const seen = new Set();
       for (const rule of [...reaches, ...touching]) {
