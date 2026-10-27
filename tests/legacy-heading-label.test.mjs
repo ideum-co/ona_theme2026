@@ -435,6 +435,7 @@ const sheets = (() => {
           continue;
         }
         headInline.push({
+          from: file,
           origin: null,
           scope: open.filter((condition) => condition !== null),
           text: underMedia(liquid(css), nativeAttributes),
@@ -587,8 +588,9 @@ const sheets = (() => {
   }
 
   const out = [
-    ...headInline.map(({ origin, scope, text }) => ({ origin, scope, text })),
+    ...headInline.map(({ from, origin, scope, text }) => ({ from, origin, scope, text })),
     ...loaded.map((asset) => ({
+      from: `assets/${asset}`,
       origin: null,
       scope: scopeOf.get(asset) ?? [],
       text: decomment(readFileSync(join(root, 'assets', asset), 'utf8')),
@@ -711,7 +713,7 @@ const sheets = (() => {
       for (const [, body] of source.matchAll(
         /\{%-?\s*stylesheet[^%]*-?%\}([\s\S]*?)\{%-?\s*endstylesheet\s*-?%\}/g,
       )) {
-        bundled.push({ origin: null, text: liquid(body) });
+        bundled.push({ from: `${dir}/${file}`, origin: null, text: liquid(body) });
       }
 
       /* `{% style %}` renders inline where the section does, so it only reaches a page that
@@ -805,7 +807,12 @@ const sheets = (() => {
         const scoped = origin
           ? body.replace(/#shopify-section-\{\{-?\s*section\.id\s*-?\}\}/g, `#shopify-section-${origin}`)
           : body;
-        inline.push({ origin, conditional, text: underMedia(liquid(scoped), match[2]) });
+        inline.push({
+          from: `${dir}/${file}`,
+          origin,
+          conditional,
+          text: underMedia(liquid(scoped), match[2]),
+        });
       }
     }
   }
@@ -1246,14 +1253,44 @@ const flatten = (text) => {
    combined rules by that per-sheet number put a section's `{% style %}` before the asset it
    actually loads after, so a later rule resolved as the earlier one (Codex, #300). */
 const flat = sheets
-  .flatMap((sheet) =>
-    flatten(sheet.text).map((rule) => ({
+  .flatMap((sheet) => {
+    /*
+     * `@import` loads another sheet at the importing rule's position, and its declarations
+     * cascade from there. `walk` drops it: an import sits at the top level, where there is no
+     * enclosing rule, so `flush` discards it as loose text. Prepending
+     * `@import url("overflow-list.css");` to base.css and putting the fade in that sheet left
+     * all five tests passing while the browser applied it (Codex, #427).
+     *
+     * Refused rather than resolved. An import carries its own order, and optionally a media
+     * query, a `supports()` condition and a cascade layer, so following one means teaching
+     * this that a sheet can pull in another mid-list -- and no sheet in the theme does it.
+     *
+     * Two things narrow it to real imports, both because the loose version fired on CSS
+     * that imports nothing. Strings are blanked first (keeping their length, so the quoted
+     * text below still comes from the untouched sheet), because `content: "@import url(y)"`
+     * is an ordinary value and refused. And an at-rule only counts at the start of a
+     * statement, so the keyword must follow `{`, `}`, `;` or the start of the sheet.
+     * Comments need no handling: every sheet here is read through `decomment`.
+     */
+    const quoteless = sheet.text.replace(
+      /"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'/g,
+      (quoted) => `"${' '.repeat(quoted.length - 2)}"`,
+    );
+    const imported = /(?:^|[{};])\s*(@import\b[^;{]*)/di.exec(quoteless);
+    const text = imported === null ? '' : sheet.text.slice(...imported.indices[1]).trim();
+    assert.ok(
+      imported === null,
+      `${sheet.from} has "${text}", and this scan does not follow an import, so the ` +
+        'imported declarations would be measured as absent -- inline the sheet or load it ' +
+        'alongside the others rather than through it',
+    );
+    return flatten(sheet.text).map((rule) => ({
       ...rule,
       origin: sheet.origin,
       scope: sheet.scope ?? [],
       conditional: sheet.conditional ?? null,
-    })),
-  )
+    }));
+  })
   .map((rule, index) => ({ ...rule, at: index + 1 }));
 
 /*
