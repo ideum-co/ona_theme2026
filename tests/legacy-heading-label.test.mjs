@@ -1524,40 +1524,58 @@ const contextsFor = (name) => {
        * var(--color-background) }` is the premise, not an exception to it.
        */
       /*
-       * `background: var(--color-background)` is only the page ground restated while
-       * `--color-background` still holds the value the settings gave it. Redefine the token
-       * anywhere below the root and the same declaration paints something else entirely,
-       * which is how the exception below was walked straight through:
-       * `.text { --color-background: #470a12; background: var(--color-background) }` with
-       * `.subtitle { color: #470a12 }` left the eyebrow at 1:1 with all five tests green
-       * (Codex, #427) -- the third way into this guard, after the literal background and
-       * the inline one.
+       * Tokens this model reads once, globally, which the cascade can redefine anywhere.
        *
-       * The root's own definition is the premise and is left alone; it is the only one in
-       * the theme today, measured through the harness. Anything below it is refused rather
-       * than resolved, because resolving it means carrying a second cascade for the ground.
+       * `--color-background` is the page ground, read from the settings;
+       * `--opacity-muted-text` and `--opacity-subdued-text` are read from
+       * `theme-styles-variables.liquid`. Redefine any of them below the root and the same
+       * declaration means something else:
+       * `.text { --color-background: #470a12; background: var(--color-background) }` left
+       * the eyebrow at 1:1, and `.subtitle { --opacity-subdued-text: .1; color: rgb(var(
+       * --color-foreground-rgb) / var(--opacity-subdued-text)) }` passed while the literal
+       * `.1` spelling of the same alpha fails at 1.22:1 -- both with all five tests green
+       * (Codex, #427, two rounds apart).
+       *
+       * Kept as one table rather than a check per token, because the first of these was
+       * written on its own and the second arrived as the same bug with a different name.
+       * The root's definition of each is the premise and is left alone; it is the only one
+       * of each in the theme today, measured through the harness rather than grepped.
+       * Anything below the root is refused, since resolving it means carrying a second
+       * cascade for a value this model takes as fixed.
        */
-      const DEFINES_GROUND = /(?:^|;|\s)--color-background\s*:/;
-      for (const rule of everyRule()) {
-        if (!live(rule) || !DEFINES_GROUND.test(rule.declarations)) continue;
-        const at = entry.chain.findIndex((_, index) => matchesPath(rule.path, entry.chain, index));
-        assert.ok(
-          at <= 0,
-          `"${rule.selector}" redefines --color-background on an ancestor of .${name}, so ` +
-            'what `background: var(--color-background)` paints there is no longer the ' +
-            'configured page ground -- resolve the token through the ancestry rather than ' +
-            'trust a ratio taken against the settings value',
-        );
+      const GLOBAL_TOKENS = [
+        {
+          defines: /(?:^|;|\s)--color-background\s*:/,
+          names: '--color-background',
+          means: 'what `background: var(--color-background)` paints there is no longer the configured page ground',
+        },
+        {
+          defines: /(?:^|;|\s)--opacity-(?:muted|subdued)-text\s*:/,
+          names: 'an --opacity-*-text token',
+          means: 'the alpha this model reads from theme-styles-variables.liquid is no longer the one that applies',
+        },
+      ];
+      const whereInChain = (at) =>
+        at === entry.chain.length - 1 ? `.${name}` : `an ancestor of .${name}`;
+      for (const token of GLOBAL_TOKENS) {
+        for (const rule of everyRule()) {
+          if (!live(rule) || !token.defines.test(rule.declarations)) continue;
+          const at = entry.chain.findIndex((_, index) => matchesPath(rule.path, entry.chain, index));
+          assert.ok(
+            at <= 0,
+            `"${rule.selector}" redefines ${token.names} on ${whereInChain(at)}, so ` +
+              `${token.means} -- resolve the token through the ancestry rather than trust a ` +
+              'measurement taken against the global value',
+          );
+        }
+        entry.inlines.forEach((style, at) => {
+          assert.ok(
+            !token.defines.test(style) || at === 0,
+            `style="" on ${whereInChain(at)} redefines ${token.names}, so ${token.means} -- ` +
+              'resolve the token rather than trust a measurement taken against the global value',
+          );
+        });
       }
-      entry.inlines.forEach((style, at) => {
-        assert.ok(
-          !DEFINES_GROUND.test(style) || at === 0,
-          `style="" on ${at === entry.chain.length - 1 ? `.${name}` : `an ancestor of .${name}`} ` +
-            'redefines --color-background, so what `background: var(--color-background)` ' +
-            'paints there is no longer the configured page ground -- resolve the token ' +
-            'rather than trust a ratio taken against the settings value',
-        );
-      });
 
       const PAINTS = /(?:^|;|\s)background(?:-color|-image)?\s*:/;
       const RESTATES_THE_GROUND =
