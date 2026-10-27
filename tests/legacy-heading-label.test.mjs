@@ -394,6 +394,20 @@ const caseFold = (text) =>
     .replace(/!\s*important/gi, '!important');
 
 /*
+ * The browser clamps an opacity or an alpha to [0, 1]: `opacity: 2` renders exactly like
+ * `opacity: 1`. Every reader here multiplied the unbounded value, so a figure above 1 could
+ * cancel a real regression below it -- `.text { opacity: 2 }` above `.subtitle
+ * { opacity: .6 }` composited to 1.2 and passed all five tests, while the identical
+ * rendering written as `opacity: 1` fails at 4.42:1 (Codex, #427). Clamping at each reader
+ * covers the products too, since a product of factors at or below 1 is at or below 1.
+ *
+ * Only the upper bound. A negative value matches none of the patterns that feed this and
+ * stays a refusal: clamping it to 0 would turn a label the browser renders invisible into a
+ * contrast measurement rather than a question.
+ */
+const clampAlpha = (value) => Math.min(1, value);
+
+/*
  * The stylesheet flattened into rules, carrying whatever at-rules each one sits inside.
  *
  * A flat `selector { ... }` regex cannot see into a nested block: it matched `@media(...)`
@@ -607,7 +621,7 @@ const ancestorEffects = (chain, conditions, live, inlines = []) => {
         `cannot read an ancestor's opacity from "${faded}" -- extend this resolver rather ` +
           'than treating the label as fully opaque',
       );
-      alpha *= faded.includes('%') ? Number(literal[1]) / 100 : Number(literal[1]);
+      alpha *= clampAlpha(faded.includes('%') ? Number(literal[1]) / 100 : Number(literal[1]));
     }
     /* The same rule as on the label, one level up and once per ancestor: `inherit` and
        `currentColor` take what this ancestor's own parent computed, and they override
@@ -2375,6 +2389,9 @@ const opacityToken = (name) => {
   const tokens = readFileSync(join(root, 'snippets/theme-styles-variables.liquid'), 'utf8');
   const found = tokens.match(new RegExp(`--opacity-${name}-text:\\s*([0-9.]+)`));
   assert.ok(found, `cannot read --opacity-${name}-text`);
+  /* The value the theme declares, unclamped: the root-token guard compares this against
+     the file, and clamping here would make the model disagree with what it reads. The
+     clamp belongs where the value is composited, below. */
   return Number(found[1]);
 };
 
@@ -2500,9 +2517,9 @@ const colourValue = (value) => {
   ];
   const alphaFrom = (part, how) => {
     const literal = part.match(/^([0-9.]+)(%?)$/);
-    if (literal) return literal[2] ? Number(literal[1]) / 100 : Number(literal[1]);
+    if (literal) return clampAlpha(literal[2] ? Number(literal[1]) / 100 : Number(literal[1]));
     const named = TOKEN_ALPHA.find((entry) => entry.is.test(withoutFallbacks(part)));
-    if (named) return opacityToken(named.token);
+    if (named) return clampAlpha(opacityToken(named.token));
     return assert.fail(
       `cannot read the eyebrow's alpha from "${part}" (${how}) -- extend this resolver ` +
         'rather than treating the label as fully opaque',
@@ -2556,11 +2573,11 @@ const colourValue = (value) => {
     /* Only when no alpha has been read already: `rgba(0, 0, 0, var(--opacity-subdued-text))`
        names the token in its fourth argument, and counting it here as well would square it
        into 0.64. */
-    if (/--opacity-muted-text/.test(value)) alpha *= opacityToken('muted');
-    if (/--opacity-subdued-text/.test(value)) alpha *= opacityToken('subdued');
+    if (/--opacity-muted-text/.test(value)) alpha *= clampAlpha(opacityToken('muted'));
+    if (/--opacity-subdued-text/.test(value)) alpha *= clampAlpha(opacityToken('subdued'));
   }
-  if (/--color-foreground-muted/.test(value)) alpha *= opacityToken('muted');
-  if (/--color-foreground-subdued/.test(value)) alpha *= opacityToken('subdued');
+  if (/--color-foreground-muted/.test(value)) alpha *= clampAlpha(opacityToken('muted'));
+  if (/--color-foreground-subdued/.test(value)) alpha *= clampAlpha(opacityToken('subdued'));
 
   /* `--palette-lightest` and `--palette-darkest` name one fixed colour each. Reading them as
      inherited let the contrast test pick whichever palette extreme suited each ground, so
@@ -2687,7 +2704,7 @@ const painted = (declarations, inheritedColour = null, inheritedTokens = new Map
       `cannot read the eyebrow's opacity from "${faded}" -- extend this resolver ` +
         'rather than treating the label as fully opaque',
     );
-    opacity = faded.includes('%') ? Number(literal[1]) / 100 : Number(literal[1]);
+    opacity = clampAlpha(faded.includes('%') ? Number(literal[1]) / 100 : Number(literal[1]));
   }
 
   /*
