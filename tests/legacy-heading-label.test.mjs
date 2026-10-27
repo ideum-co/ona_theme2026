@@ -50,6 +50,19 @@ const sheets = (() => {
       .replace(/\{%-?[\s\S]*?-?%\}/g, ' ')
       .replace(/\{\{[\s\S]*?\}\}/g, 'x');
 
+  /*
+   * Two buckets, not one. Shopify concatenates every `{% stylesheet %}` into one asset
+   * loaded in the head, while a `{% style %}` renders inline where its section does, in the
+   * body -- so every bundled declaration precedes every inline one no matter which file
+   * either came from. Pushing both into one list in `readdirSync` order gave a bundled
+   * block from a later-scanned file the later source order, which is the opposite of the
+   * browser's: a partnership `{% style %}` setting `opacity: .6` against a snippet
+   * `{% stylesheet %}` setting `opacity: 1` left all five tests green while the real page
+   * faded those labels (Codex, #427).
+   */
+  const bundled = [];
+  const inline = [];
+
   for (const dir of ['sections', 'snippets']) {
     for (const file of readdirSync(join(root, dir))) {
       if (!file.endsWith('.liquid')) continue;
@@ -60,7 +73,7 @@ const sheets = (() => {
       for (const [, body] of source.matchAll(
         /\{%-?\s*stylesheet[^%]*-?%\}([\s\S]*?)\{%-?\s*endstylesheet\s*-?%\}/g,
       )) {
-        out.push({ origin: null, text: liquid(body) });
+        bundled.push({ origin: null, text: liquid(body) });
       }
 
       /* `{% style %}` renders inline where the section does, so it only reaches a page that
@@ -82,10 +95,12 @@ const sheets = (() => {
         const scoped = origin
           ? body.replace(/#shopify-section-\{\{-?\s*section\.id\s*-?\}\}/g, `#shopify-section-${origin}`)
           : body;
-        out.push({ origin, text: liquid(scoped) });
+        inline.push({ origin, text: liquid(scoped) });
       }
     }
   }
+
+  out.push(...bundled, ...inline);
   return out;
 })();
 
