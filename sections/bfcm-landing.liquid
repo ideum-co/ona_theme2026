@@ -14,7 +14,7 @@
           <span class="bfcm-landing__eyebrow">{{ section.settings.eyebrow | escape }}</span>
         {%- endif -%}
         <h1 id="bfcm-landing-title-{{ section.id }}" class="bfcm-landing__title">
-          {{ section.settings.title | escape }}<br>
+          {{ section.settings.title | escape }}
           <em>{{ section.settings.title_emphasis | escape }}</em>
         </h1>
         <p class="bfcm-landing__date">{{ section.settings.date_line | escape }}</p>
@@ -130,7 +130,7 @@
   .bfcm-landing__mark { display: block; width: 64px; height: auto; margin-bottom: 26px; }
   .bfcm-landing__eyebrow, .bfcm-landing__date { font-size: clamp(12px, .95vw, 17px); letter-spacing: .08em; text-transform: uppercase; }
   .bfcm-landing__title { font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif); font-size: clamp(48px, 4.7vw, 90px); line-height: .98; font-weight: 400; letter-spacing: 0; margin: 18px 0 22px; }
-  .bfcm-landing__title em { font-weight: 400; }
+  .bfcm-landing__title em { display: block; max-inline-size: 8ch; font-weight: 400; }
   .bfcm-landing__date { margin: 0; }
   .bfcm-landing__hero-media { position: relative; min-height: 420px; }
   .bfcm-landing__hero-image { display: block; width: 100%; height: 100%; position: absolute; inset: 0; object-fit: cover; }
@@ -161,6 +161,7 @@
   .bfcm-landing__schedule li span { font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif); font-size: clamp(23px, 2vw, 36px); }
   @media (max-width: 989px) {
     .bfcm-landing__hero, .bfcm-landing__signup { grid-template-columns: 1fr; }
+    .bfcm-landing__title em { max-inline-size: none; }
     .bfcm-landing__hero-copy { min-height: 520px; }
     .bfcm-landing__hero-copy::before { width: 360px; bottom: -190px; }
     .bfcm-landing__hero-copy::after { width: 280px; bottom: -160px; }
