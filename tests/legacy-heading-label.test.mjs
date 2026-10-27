@@ -248,49 +248,81 @@ const flatten = (text) => {
   const out = [];
   let order = 0;
 
-  const walk = (body, conditions) => {
+  /* Top-level commas only; a comma inside parentheses belongs to whatever it is nested in.
+     `splitSelectors` does this too but is defined further down, and `flat` runs at import. */
+  const branchesOf = (selectorList) => {
+    const parts = [];
+    let depth = 0;
+    let start = 0;
+    for (let at = 0; at < selectorList.length; at += 1) {
+      const character = selectorList[at];
+      if (character === '(') depth += 1;
+      else if (character === ')') depth = Math.max(0, depth - 1);
+      else if (character === ',' && depth === 0) {
+        parts.push(selectorList.slice(start, at));
+        start = at + 1;
+      }
+    }
+    parts.push(selectorList.slice(start));
+    return parts.map((part) => part.trim()).filter((part) => part !== '');
+  };
+
+  /* A nested selector resolved against the rule it sits in: `&` is the parent, and without
+     one the nesting means a descendant. Emitting the nested selector as written made it
+     stand for every element on the page rather than the ones inside the parent. */
+  const absolute = (selectorList, parent) =>
+    parent === ''
+      ? selectorList
+      : branchesOf(selectorList)
+          .map((branch) => (branch.includes('&') ? branch.replace(/&/g, parent) : `${parent} ${branch}`))
+          .join(', ');
+
+  const walk = (body, conditions, parent = '') => {
+    /* Declarations sitting directly in this body belong to the rule that encloses it. At the
+       top level there is no such rule and loose text is not CSS, so it is dropped. */
+    const flush = (text) => {
+      if (parent === '' || !/[^\s;]/.test(text)) return;
+      order += 1;
+      out.push({ conditions, selectorList: parent, declarations: text, at: order });
+    };
+
     let at = 0;
     while (at < body.length) {
       const open = body.indexOf('{', at);
-      if (open === -1) break;
+      if (open === -1) {
+        flush(body.slice(at));
+        break;
+      }
       let depth = 1;
       let close = open + 1;
       for (; close < body.length && depth > 0; close += 1) {
         if (body[close] === '{') depth += 1;
         else if (body[close] === '}') depth -= 1;
       }
-      const prelude = body.slice(at, open).trim();
+      /* Everything before this block splits at the last `;`: declarations belonging to the
+         enclosing rule, then the prelude of the block itself. */
+      const head = body.slice(at, open);
+      const broke = head.lastIndexOf(';');
+      const loose = broke === -1 ? '' : head.slice(0, broke + 1);
+      const prelude = head.slice(broke + 1).trim();
       const inner = body.slice(open + 1, close - 1);
+      flush(loose);
 
       if (prelude.startsWith('@')) {
         /* Conditional groups hold rules; @font-face and @keyframes hold declarations, and
            nothing in them can target a label. */
         if (/^@(media|supports|layer|container|scope)\b/i.test(prelude)) {
-          walk(inner, [...conditions, prelude.replace(/\s+/g, ' ')]);
+          /* `parent` travels in. A conditional group nested inside a style rule holds that
+             rule's declarations under an extra condition, and dropping the selector here
+             left `#MainContent .subtitle { @media (min-width: 750px) { opacity: .6 } }`
+             emitting nothing at all (Codex, #427). */
+          walk(inner, [...conditions, prelude.replace(/\s+/g, ' ')], parent);
         }
       } else if (prelude) {
         /* Nested CSS: `a { color: red; &[x] { color: blue } }`. Treating the whole body as
-           the parent's declarations would attribute the nested rule's colour to the parent. */
-        const nested = inner.indexOf('{');
-        if (nested === -1) {
-          order += 1;
-          out.push({
-            conditions,
-            selectorList: prelude,
-            declarations: inner,
-            at: order,
-          });
-        } else {
-          const own = inner.slice(0, inner.lastIndexOf(';', nested) + 1);
-          order += 1;
-          out.push({
-            conditions,
-            selectorList: prelude,
-            declarations: own,
-            at: order,
-          });
-          walk(inner.slice(own.length).replace(/&/g, prelude.trim()), conditions);
-        }
+           the parent's declarations would attribute the nested rule's colour to the parent,
+           so the nested rule is walked as its own, under its own absolute selector. */
+        walk(inner, conditions, absolute(prelude, parent));
       }
       at = close;
     }
@@ -398,7 +430,7 @@ const ancestorEffects = (chain, conditions, live, inlines = []) => {
     const above = colour;
     for (const [, value] of body.matchAll(/(?:^|;)\s*color\s*:\s*([^;]+)/g)) {
       const text = value.trim();
-      colour = RESTATES_INHERITANCE.test(text) ? above : text;
+      colour = RESTATES_INHERITANCE.test(text) ? above : substituted(body, text);
     }
   }
   return { alpha, colour };
@@ -1311,6 +1343,42 @@ const colourValue = (value) => {
 /* A value that is nothing but `inherit` or `currentColor` -- `color: currentColor` computes to
    the inherited colour, same as `color: inherit`. Either way the element takes what the
    cascade above already worked out, down to its alpha; it is not a colour of its own. */
+const FOREGROUND_TOKEN = /--color-foreground(?:-rgb|-muted|-subdued)?(?![\w-])/g;
+
+/*
+ * A colour value with the foreground tokens it references resolved against definitions on the
+ * same element.
+ *
+ * `colourValue` reads `var(--color-foreground)` as "whatever the cascade above painted", and
+ * that reading only holds while nothing nearer redefines the token. A rule that sets
+ * `--color-foreground` on the element itself wins over every definition further up, so the
+ * element is painted in that value and not in the inherited one -- and the contrast test was
+ * measuring a colour nothing on the page is painted in (Codex, #427). The theme does redefine
+ * these tokens, in header.liquid, ona-band.liquid, color-palette.liquid and four more, so a
+ * blanket rejection is not an option; a literal is substituted and anything else fails loudly.
+ */
+const substituted = (declarations, text) => {
+  let out = text;
+  for (const token of new Set(text.match(FOREGROUND_TOKEN) ?? [])) {
+    const override = lastValue(declarations, token);
+    if (override === null) continue;
+    assert.ok(
+      token === '--color-foreground' && /^#[0-9a-f]{6}$/i.test(override),
+      `"${text}" is read as the colour inherited from above, but the same element sets ` +
+        `${token}: ${override}, which wins over every definition further up -- resolve that ` +
+        'override here rather than measuring a colour nothing is painted in',
+    );
+    out = out.replace(new RegExp(`var\\(\\s*${token}\\s*\\)`, 'g'), override);
+    assert.ok(
+      !new RegExp(`${token}(?![\\w-])`).test(out),
+      `${token} is overridden to ${override} on the same element, but "${text}" does not ` +
+        'reference it in a form this can substitute -- extend the substitution rather than ' +
+        'falling back on the inherited reading',
+    );
+  }
+  return out;
+};
+
 const RESTATES_INHERITANCE = /^(?:inherit|currentcolor)$/i;
 
 const painted = (declarations, inheritedColour = null) => {
@@ -1348,7 +1416,7 @@ const painted = (declarations, inheritedColour = null) => {
   let resolved = inherited;
   for (const [, value] of declarations.matchAll(/(?:^|;)\s*color\s*:\s*([^;]+)/g)) {
     const text = value.trim();
-    resolved = RESTATES_INHERITANCE.test(text) ? inherited : colourValue(text);
+    resolved = RESTATES_INHERITANCE.test(text) ? inherited : colourValue(substituted(declarations, text));
   }
 
   return { alpha: opacity * resolved.alpha, literal: resolved.literal, how: resolved.how };
