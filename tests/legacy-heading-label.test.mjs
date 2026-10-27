@@ -315,8 +315,15 @@ const everyRule = () => {
       found.push({
         selector: branch.trim().replace(/\s+/g, ' '),
         declarations,
+        /* `raw` is the compound before `structural()` strips the state pseudos off it.
+           `matchesPath` wants the structural form; the fill-state checks want `:empty`,
+           and reading them off the stripped one classified an empty-only rule as applying
+           to a label with text -- `#MainContent span:empty { display: none }` failed the
+           layout test on an eyebrow it cannot touch (Codex, #427). `rulesFor` keeps the
+           raw label for exactly this reason; the unnamed path now can too. */
         path: parts.map((part) => ({
           ...part,
+          raw: part.compound,
           compound: structural(part.compound),
         })),
         siblings: parts.some((part) => part.combinator === '+' || part.combinator === '~'),
@@ -791,7 +798,7 @@ const contextsFor = (name) => {
             matchesPath(rule.path, entry.chain, entry.chain.length - 1),
         )
         .map((rule) => {
-          const label = rule.path[rule.path.length - 1].compound;
+          const label = rule.path[rule.path.length - 1].raw;
           assert.ok(
             !/!important/.test(rule.declarations),
             `.${name} is painted with !important through "${rule.selector}", which this ` +
@@ -1169,7 +1176,7 @@ const colourValue = (value) => {
    cascade above already worked out, down to its alpha; it is not a colour of its own. */
 const RESTATES_INHERITANCE = /^(?:inherit|currentcolor)$/i;
 
-const painted = (declarations) => {
+const painted = (declarations, inheritedColour = null) => {
   /* An element's own opacity multiplies whatever colour it ends up with. A value this cannot
      read -- `opacity: var(--opacity-muted-text)` -- used to fall through to alpha 1 and report
      the label as fully opaque, so an opacity present and unresolved now fails (Codex, #300). */
@@ -1186,18 +1193,25 @@ const painted = (declarations) => {
   }
 
   /*
-   * The ancestor's colour arrives first in this string and the label's own declarations after
-   * it, so the colours are walked in order and the last one that says something wins. Taking
-   * the last value outright read a label that merely restates its inheritance -- `color:
-   * inherit` over a wrapper painted `#fdfbf5` -- as having no colour at all, and an eyebrow
-   * with no colour is measured against whichever palette extreme suits each ground best. A
-   * white-on-cream label at 1.08:1 passed on exactly that (Codex, #427).
+   * The inherited colour is kept apart from the label's own declarations, which are then
+   * walked in order with the last one winning.
+   *
+   * `inherit` and `currentColor` are not a colour of their own and not a no-op either: they
+   * are the element taking what the cascade above computed, and they override anything the
+   * label said earlier. Concatenating the ancestor's colour in front and taking the last
+   * value read `color: inherit` as no colour at all -- so a white-on-cream eyebrow at 1.08:1
+   * was measured against whichever palette extreme suited each ground. Skipping it instead
+   * kept a local `color` the `inherit` had already overridden, which is the same mistake
+   * with a different wrong answer (Codex, #427, twice).
    */
-  let resolved = { alpha: 1, literal: null, how: 'inherited' };
+  const inherited = inheritedColour === null
+    ? { alpha: 1, literal: null, how: 'inherited' }
+    : colourValue(inheritedColour);
+
+  let resolved = inherited;
   for (const [, value] of declarations.matchAll(/(?:^|;)\s*color\s*:\s*([^;]+)/g)) {
     const text = value.trim();
-    if (RESTATES_INHERITANCE.test(text)) continue;
-    resolved = colourValue(text);
+    resolved = RESTATES_INHERITANCE.test(text) ? inherited : colourValue(text);
   }
 
   return { alpha: opacity * resolved.alpha, literal: resolved.literal, how: resolved.how };
@@ -1228,8 +1242,8 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
          opacity multiplies rather than merging -- `opacity` composites, it does not
          inherit. */
       const { alpha, literal, how } = painted(
-        `${context.ancestorColour ? `color:${context.ancestorColour};` : ''}` +
-          merge(context.filled, context.inline),
+        merge(context.filled, context.inline),
+        context.ancestorColour || null,
       );
       const effective = alpha * context.ancestorAlpha;
 
