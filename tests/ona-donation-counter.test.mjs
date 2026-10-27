@@ -52,18 +52,64 @@ test('carries its own styles, because this theme has no legacy main.css', () => 
   }
 });
 
-test('keeps the approved measurements the live counter uses', () => {
-  // Pixel parity with the live theme: card 71x92 at 83px, 16px gaps, 2px
-  // frame, 5px split line, and the two step-downs at 749px and 480px.
-  assert.match(source, /width: 71px;\s*\n\s*height: 92px;/);
-  assert.match(source, /font-size: 83px;/);
-  assert.match(source, /gap: 16px;/);
-  assert.match(source, /border: 2px solid #000;/);
+test('keeps the approved measurements as the customizable defaults', () => {
+  // The live measurements (card 71x92 at 83px, 16px gaps, 2px frame, 5px split)
+  // are now editable, so they live as the fallbacks of the matching custom
+  // properties -- identical pixels when the merchant changes nothing. The
+  // desktop card scales from one digit-size control; the two mobile step-downs
+  // at 749px and 480px stay fixed literals so the approved narrow-screen fitting
+  // is untouched.
+  assert.match(source, /width: calc\(var\(--dc-digit-size, 83px\) \* 71 \/ 83\);\s*\n\s*height: calc\(var\(--dc-digit-size, 83px\) \* 92 \/ 83\);/);
+  assert.match(source, /font-size: var\(--dc-digit-size, 83px\);/);
+  assert.match(source, /gap: var\(--dc-card-gap, 16px\);/);
+  assert.match(source, /border: 2px solid var\(--dc-frame-color, #000\);/);
   assert.match(source, /height: 5px;/);
   assert.match(source, /@media screen and \(max-width: 749px\)/);
   assert.match(source, /@media screen and \(max-width: 480px\)/);
   assert.match(source, /width: 48px;\s*\n\s*height: 68px;/);
   assert.match(source, /width: 36px;\s*\n\s*height: 52px;/);
+});
+
+test('exposes spacing, size and colour controls with the live values as defaults', () => {
+  // The whole point of this section being editable is that nothing moves until a
+  // merchant moves it: every new control defaults to the measurement the live
+  // counter already uses, so adding the controls is a no-op on render.
+  const schema = JSON.parse(schemaMatch[1]);
+  const setting = (id) => schema.settings.find((item) => item.id === id);
+
+  const numericDefaults = {
+    'padding-block-start': 43,
+    'padding-block-end': 52,
+    'padding-inline-start': 30,
+    'padding-inline-end': 30,
+    digit_size: 83,
+    card_gap: 16,
+    heading_size: 16,
+    subtitle_size: 16,
+    gap_title: 20,
+    gap_counter: 39,
+    gap_subtitle: 7,
+  };
+  for (const [id, def] of Object.entries(numericDefaults)) {
+    assert.ok(setting(id), `missing control ${id}`);
+    assert.equal(setting(id).default, def, `${id} default drifted from the live value`);
+  }
+
+  // spacing-style reads exactly these four ids, so the padding controls only
+  // work if they are named for the properties they feed.
+  assert.match(source, /{% render 'spacing-style', settings: section\.settings %}/);
+
+  const colourDefaults = {
+    heading_color: '#fbf8f3',
+    subtitle_color: '#fbf8f3',
+    card_bg_color: '#f2f0eb',
+    card_ink_color: '#441925',
+    frame_color: '#000000',
+  };
+  for (const [id, def] of Object.entries(colourDefaults)) {
+    assert.ok(setting(id), `missing colour ${id}`);
+    assert.equal(setting(id).default.toLowerCase(), def, `${id} default drifted from the live value`);
+  }
 });
 
 test('uses the theme brand font tokens rather than hard-coded families', () => {
