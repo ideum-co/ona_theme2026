@@ -911,6 +911,11 @@ const statesIn = (parts) => {
  * Exact for the matched compound. A descendant combinator above it can match further up
  * than `endIndex - depth`, so those names remain the approximation the previous round
  * already documented -- two ancestors the model cannot tell apart still share a condition.
+ *
+ * This costs enumeration, and it is meant to: contexts go from 88 to 176 and the widest
+ * qualifier set from 2 to 3, against a cap of 12. The extra contexts are exactly the
+ * combinations that used to collapse -- an ancestor's state on while the label's is off --
+ * so the growth is the coverage this fix exists to add, not overhead.
  */
 const conditionsAt = (rule, chainLength, endIndex) => [
   ...rule.conditions,
