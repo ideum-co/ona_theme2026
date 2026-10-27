@@ -265,6 +265,40 @@ const withoutRawText = (text, where) => {
 
 const insideInert = (ranges, at) => ranges.some(([from, to]) => at >= from && at < to);
 
+/*
+ * A native `<link>` read as a stylesheet, or `null` if it is not one.
+ *
+ * The collector recognised `'x.css' | asset_url | stylesheet_tag` and nothing else, so
+ * writing the same load as `<link rel="stylesheet" href="{{ 'base.css' | asset_url }}">`
+ * dropped base.css out of the cascade entirely and a real `opacity: .6` inside it went
+ * unseen, with all five tests passing (Codex, #427). One spelling recognised and the rest
+ * ignored is the shape of round 59's quoting and round 63's comment readers both.
+ *
+ * `rel` is a space-separated token list matched ASCII case-insensitively, so `rel="preload
+ * stylesheet"` counts and `rel="modulepreload"` does not. Returning `{ asset }` means the
+ * href resolves to a sheet in this repo and the caller can treat it exactly like a
+ * `stylesheet_tag`. Anything else comes back without `asset` for the caller to refuse:
+ * `file_url`, a bare path, an interpolated name, or a `media` this cannot reduce to "always"
+ * -- including `media="print" onload="this.media='all'"`, the async-CSS trick, whose sheet
+ * does end up applying and whose swap no static read can model.
+ */
+/* The two files whose stylesheet loads the collector below reads and orders. Named once so
+   the section scan can tell "this sheet has nowhere to go" from "this is where sheets go". */
+const SHEET_PIPELINE = ['snippets/stylesheets.liquid', 'layout/theme.liquid'];
+
+const stylesheetLink = (attributes) => {
+  const rel = attributeValue(attributes, 'rel');
+  if (rel === null) return null;
+  const tokens = rel.split(/\s+/).map((token) => token.replace(/[A-Z]/g, (c) => c.toLowerCase()));
+  if (!tokens.includes('stylesheet')) return null;
+  const href = attributeValue(attributes, 'href') ?? '';
+  const named = /^\s*\{\{-?\s*['"]([\w.-]+\.css)['"]\s*\|\s*asset_url\s*-?\}\}\s*$/.exec(href);
+  const media = attributeValue(attributes, 'media');
+  const always = media === null || /^(?:all|screen)$/i.test(media.trim());
+  if (named === null || !always) return { href, media };
+  return { asset: named[1] };
+};
+
 /* A native `<style>` carries its own media restriction in an attribute, and a `{% style %}`
    cannot. Dropping it applied print-only or narrow-viewport declarations to every rendering:
    a restoring `opacity: 1` inside `<style media="print">` cancelled a real `opacity: .6` in
@@ -326,7 +360,7 @@ const sheets = (() => {
       /['"][\w.-]+\.css['"]\s*\|\s*asset_url\s*\|\s*stylesheet_tag|render\s+['"]stylesheets['"]/,
     )
       ?.index ?? Infinity;
-  for (const file of ['snippets/stylesheets.liquid', 'layout/theme.liquid']) {
+  for (const file of SHEET_PIPELINE) {
     let source;
     try {
       /* Prose, not markup -- the same cut the section scan makes, and for the same reason:
@@ -339,10 +373,26 @@ const sheets = (() => {
     const lists = new Map();
     let recognised = 0;
     const TAG =
-      /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b([^>]*)>([\s\S]*?)<\/style>|\{%-?\s*(if|elsif|else|endif|unless|endunless|assign)\b([^%]*?)-?%\}|['"]([\w.-]+\.css)['"]\s*\|\s*asset_url\s*\|\s*stylesheet_tag/g;
+      /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b([^>]*)>([\s\S]*?)<\/style>|\{%-?\s*(if|elsif|else|endif|unless|endunless|assign)\b([^%]*?)-?%\}|['"]([\w.-]+\.css)['"]\s*\|\s*asset_url\s*\|\s*stylesheet_tag|<link\b([^>]*)>/g;
     const inert = inertRanges(source);
     for (const found of source.matchAll(TAG)) {
-      const [, styled, nativeAttributes, native, keyword, rest, asset] = found;
+      const [, styled, nativeAttributes, native, keyword, rest, tagged, linked] = found;
+      let asset = tagged;
+
+      if (linked !== undefined) {
+        const link = stylesheetLink(linked);
+        /* Not a stylesheet at all -- an icon, a canonical, a modulepreload. */
+        if (link === null) continue;
+        if (insideInert(inert, found.index)) continue;
+        assert.ok(
+          link.asset !== undefined,
+          `${file} loads a stylesheet this scan cannot resolve to a sheet in this repo ` +
+            `(href ${JSON.stringify(link.href)}${link.media === null ? '' : `, media ${JSON.stringify(link.media)}`}) ` +
+            '-- read it rather than leaving its declarations out of the cascade, because a ' +
+            'sheet left out is a restore this file cannot see',
+        );
+        asset = link.asset;
+      }
 
       const css = styled ?? native;
       if (css !== undefined) {
@@ -442,12 +492,22 @@ const sheets = (() => {
      * (Codex, #427). Liquid treats the two quote forms identically; so does this scan now,
      * here and in the three other places it reads a Liquid string.
      *
-     * Rather than enumerate once more and hope, the count is checked: every
-     * `stylesheet_tag` in these two files must be one this scan read. A sheet loaded
-     * through a variable, a filter chain or a spelling nobody has thought of yet now fails
-     * loudly instead of going missing. The two files use four between them today.
+     * Rather than enumerate once more and hope, the count is checked: every stylesheet
+     * load written in these two files must be one this scan read. A sheet loaded through a
+     * variable, a filter chain or a spelling nobody has thought of yet now fails loudly
+     * instead of going missing.
+     *
+     * Both spellings count, because teaching the scan native links without teaching this
+     * count about them would have every link report a mismatch -- loud, but about the wrong
+     * thing. A link inside a template or raw text counts as neither written nor recognised,
+     * which agrees with the browser loading nothing from it. The two files use four
+     * `stylesheet_tag` loads and no links today.
      */
-    const written = (source.match(/stylesheet_tag/g) ?? []).length;
+    const written =
+      (source.match(/stylesheet_tag/g) ?? []).length +
+      [...source.matchAll(/<link\b([^>]*)>/g)].filter(
+        (found) => stylesheetLink(found[1]) !== null && !insideInert(inert, found.index),
+      ).length;
     assert.ok(
       recognised === written,
       `${file} loads a stylesheet ${written} times and this scan recognised ${recognised} ` +
@@ -585,6 +645,33 @@ const sheets = (() => {
          documents in its own doc block, which is a paragraph of English. */
       const source = withoutComments(readFileSync(join(root, dir, file), 'utf8'));
       const inert = inertRanges(source);
+
+      /*
+       * This scan collects blocks, not sheets: it has no place to put an asset or an order
+       * to put it in. So a section that pulls a sheet out of this repo with a native link is
+       * refused rather than ignored, which is the same answer the layout collector gives to
+       * a link it cannot resolve.
+       *
+       * An external sheet is a different thing and is left alone, because nothing here can
+       * read it: the one in the theme today is Shopify's own `model-viewer-ui.css` on their
+       * CDN, behind `{% if first_3d_model %}` in `snippets/product-media-gallery-content
+       * .liquid`. That is a real gap and not a closed one -- an off-repo stylesheet could
+       * restore any value this file measures and no static read would know.
+       */
+      for (const found of source.matchAll(/<link\b([^>]*)>/g)) {
+        const link = stylesheetLink(found[1]);
+        if (link === null || insideInert(inert, found.index)) continue;
+        /* `snippets/stylesheets.liquid` is where sheets are loaded from, and the collector
+           above reads and orders its links already. Refusing here too reported the wrong
+           thing about a load that was handled correctly. */
+        if (SHEET_PIPELINE.includes(`${dir}/${file}`)) continue;
+        assert.ok(
+          link.asset === undefined,
+          `${dir}/${file} loads "${link.asset}" with a native stylesheet link. This scan ` +
+            'reads inline blocks and cannot order a sheet against the others, so load it ' +
+            'from the layout rather than leaving its declarations unplaced',
+        );
+      }
 
       /* Shopify concatenates every `{% stylesheet %}` into one asset served on every page,
          so these are global whether or not the section renders. */
