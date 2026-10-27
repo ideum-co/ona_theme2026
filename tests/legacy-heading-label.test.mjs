@@ -23,7 +23,19 @@ const sheets = (() => {
      new global sheet is covered the day it is added. base.css was missing, and because the
      eyebrow rule does not reset `opacity`, a `.subtitle { opacity: .6 }` there rendered
      every label under the bar with all four tests green (Codex, #300). */
+  /*
+   * With the page condition the layout loads it under, because an asset inside
+   * `{% if request.page_type == 'index' %}` is not on any other page. Read as
+   * unconditional, `home-mobile-overflow.css` restored an `opacity: 1` over a faded
+   * `base.css` rule on every page -- all five tests green while `/pages/wholesale`, which
+   * never loads that sheet, kept the faded eyebrow at 4.42:1 (Codex, #427).
+   *
+   * Only `request.page_type` equality is read. Any other condition around a stylesheet tag
+   * is refused below rather than flattened away, because flattening is the failure this is
+   * fixing.
+   */
   const loaded = [];
+  const scopeOf = new Map();
   for (const file of ['snippets/stylesheets.liquid', 'layout/theme.liquid']) {
     let source;
     try {
@@ -31,17 +43,69 @@ const sheets = (() => {
     } catch {
       continue;
     }
-    for (const [, asset] of source.matchAll(/'([\w.-]+\.css)'\s*\|\s*asset_url\s*\|\s*stylesheet_tag/g)) {
-      if (!loaded.includes(asset)) loaded.push(asset);
+    const open = [];
+    const lists = new Map();
+    const TAG =
+      /\{%-?\s*(if|elsif|else|endif|unless|endunless|assign)\b([^%]*?)-?%\}|'([\w.-]+\.css)'\s*\|\s*asset_url\s*\|\s*stylesheet_tag/g;
+    for (const found of source.matchAll(TAG)) {
+      const [, keyword, rest, asset] = found;
+
+      if (asset !== undefined) {
+        /* An asset under no condition is global; one under conditions this can read keeps
+           them. Loaded twice under different conditions, or conditionally beside a global
+           load, it is global -- the wider reading, which is the safe direction for a sheet
+           that restores a value. */
+        assert.ok(
+          !open.includes(false),
+          `"${asset}" is loaded in ${file} under a condition this scan cannot read -- teach ` +
+            'it that condition rather than treating the sheet as loaded on every page',
+        );
+        const scope = open.filter((condition) => condition !== null);
+        const key = JSON.stringify(scope);
+        if (!loaded.includes(asset)) {
+          loaded.push(asset);
+          scopeOf.set(asset, scope);
+        } else if (JSON.stringify(scopeOf.get(asset)) !== key) {
+          scopeOf.set(asset, []);
+        }
+        continue;
+      }
+
+      const word = keyword.toLowerCase();
+      if (word === 'assign') {
+        /* `{% assign legacy_page_suffixes = 'about,wholesale' | split: ',' %}` -- the only
+           shape the suffix test below reads. */
+        const split = /^\s*([\w-]+)\s*=\s*'([^']*)'\s*\|\s*split:\s*'([^']*)'\s*$/.exec(rest ?? '');
+        if (split) lists.set(split[1], split[2].split(split[3]).map((item) => item.trim()));
+        continue;
+      }
+      if (word === 'endif' || word === 'endunless') {
+        open.pop();
+        continue;
+      }
+
+      /*
+       * The two shapes this layout actually uses. `request.page_type` and `template.name`
+       * are the same thing for the templates here -- `page.wholesale.json` is a `page` --
+       * and `<list> contains template.suffix` is how the legacy sheet is held to the
+       * templates that were migrated.
+       */
+      const body = rest ?? '';
+      const named = /^\s*(?:request\.page_type|template\.name)\s*==\s*'([\w-]+)'\s*$/.exec(body);
+      const suffixed = /^\s*([\w-]+)\s+contains\s+template\.suffix\s*$/.exec(body);
+      let condition = false;
+      if (word === 'if' && named !== null) condition = { name: named[1] };
+      else if (word === 'if' && suffixed !== null && lists.has(suffixed[1])) {
+        condition = { suffix: lists.get(suffixed[1]) };
+      }
+      if (word === 'if' || word === 'unless') open.push(word === 'if' ? condition : false);
+      else if (open.length > 0) open[open.length - 1] = false;
     }
   }
-  assert.ok(
-    loaded.includes('legacy-page-layout.css'),
-    'the layout no longer loads legacy-page-layout.css the way this scan reads it',
-  );
 
   const out = loaded.map((asset) => ({
     origin: null,
+    scope: scopeOf.get(asset) ?? [],
     text: decomment(readFileSync(join(root, 'assets', asset), 'utf8')),
   }));
 
@@ -385,7 +449,13 @@ const flatten = (text) => {
    combined rules by that per-sheet number put a section's `{% style %}` before the asset it
    actually loads after, so a later rule resolved as the earlier one (Codex, #300). */
 const flat = sheets
-  .flatMap((sheet) => flatten(sheet.text).map((rule) => ({ ...rule, origin: sheet.origin })))
+  .flatMap((sheet) =>
+    flatten(sheet.text).map((rule) => ({
+      ...rule,
+      origin: sheet.origin,
+      scope: sheet.scope ?? [],
+    })),
+  )
   .map((rule, index) => ({ ...rule, at: index + 1 }));
 
 /*
@@ -400,7 +470,7 @@ let everyRuleCache = null;
 const everyRule = () => {
   if (everyRuleCache) return everyRuleCache;
   const found = [];
-  for (const { conditions, selectorList, declarations, at, origin } of flat) {
+  for (const { conditions, selectorList, declarations, at, origin, scope } of flat) {
     for (const branch of splitSelectors(selectorList)) {
       if (PSEUDO_ELEMENT.test(branch)) continue;
       const parts = pathOf(branch);
@@ -425,6 +495,7 @@ const everyRule = () => {
         weight: specificity(branch),
         at,
         origin,
+        scope,
       });
     }
   }
@@ -463,6 +534,16 @@ const ancestorEffects = (chain, conditions, live, inlines = []) => {
           'cascade model does not resolve -- extend it rather than trusting the result'
       );
     }
+    /* The same refusal for the ancestor's own `style=""`. The guard above read stylesheet
+       rules only, so `style="opacity:.6 !important;opacity:1"` on the partnership wrapper
+       passed all five tests while the browser keeps 0.6 and the eyebrow falls to 4.42:1;
+       `lastValue` takes the last declaration and importance is what decides it (Codex,
+       #427). The plain `style="opacity:.6"` control failed, which is the asymmetry. */
+    assert.ok(
+      !/!important/.test(inline),
+      `an ancestor of the label carries !important in its style="" ("${inline.trim()}"), ` +
+        'which this cascade model does not resolve -- extend it rather than trusting the result',
+    );
 
     const body = merge(applicable, inline);
     const faded = lastValue(body, 'opacity');
@@ -498,7 +579,7 @@ const rulesFor = (name) => {
   const escaped = name.replace(/-/g, '\\-');
   const target = new RegExp(`\\.${escaped}(?![\\w-])`);
   const found = [];
-  for (const { conditions, selectorList, declarations, at, origin } of flat) {
+  for (const { conditions, selectorList, declarations, at, origin, scope } of flat) {
     for (const branch of splitSelectors(selectorList)) {
       if (!target.test(branch) || PSEUDO_ELEMENT.test(branch)) continue;
       /* `!important` reorders the cascade in a way none of this models, so it fails rather
@@ -567,6 +648,7 @@ const rulesFor = (name) => {
         weight: specificity(branch),
         at,
         origin,
+        scope,
       });
     }
   }
@@ -1482,7 +1564,17 @@ const contextsFor = (name) => {
       pages.length > 0 ? pages : [{ file: `${entry.section} alone`, types: new Set([entry.section]) }];
 
     for (const page of where) {
-      const live = (rule) => rule.origin === null || page.types.has(rule.origin);
+      /* `page.file` is the template: `index.json` is the `index` page type with no suffix,
+         `page.wholesale.json` is a `page` with the suffix `wholesale`. */
+      const segments = page.file.replace(/\.json$/, '').split('.');
+      const inScope = (rule) =>
+        (rule.scope ?? []).every((condition) =>
+          condition.name !== undefined
+            ? condition.name === segments[0]
+            : condition.suffix.includes(segments.slice(1).join('.')),
+        );
+      const live = (rule) =>
+        (rule.origin === null || page.types.has(rule.origin)) && inScope(rule);
 
       const named = all.filter(
         (rule) => live(rule) && matchesPath(rule.path, entry.chain, entry.chain.length - 1),
@@ -1754,6 +1846,18 @@ const contextsFor = (name) => {
         seen.add(key);
         sets.push(rule.anchored);
       }
+      /* And the label's own `style=""`, for the reason the ancestors' is refused in
+         `ancestorEffects`: importance decides between two declarations of one property and
+         nothing here resolves it. Codex reported the ancestor case; the label's own inline
+         style is the same hole one element down, and enumerating only the half that was
+         reported is how the token guard had to be fixed twice. */
+      assert.ok(
+        !/!important/.test(entry.inline),
+        `.${name} in ${entry.section} carries !important in its style="" ` +
+          `("${entry.inline.trim()}"), which this cascade model does not resolve -- extend ` +
+          'it rather than trusting the result',
+      );
+
       /* The powerset is exponential, so an unexpectedly branchy stylesheet stops the test
        rather than quietly measuring a subset of the combinations. */
       assert.ok(
