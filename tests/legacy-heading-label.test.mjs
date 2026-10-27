@@ -355,6 +355,27 @@ const specificity = (selector) => {
 };
 
 /*
+ * Standard property names are case-insensitive and so is the `!important` flag, while a
+ * custom property's name is case-sensitive: `OPACITY: .3` paints exactly like
+ * `opacity: .3`, but `--Color-Foreground` and `--color-foreground` are two different
+ * properties. Every reader below matches a property name literally, so an uppercase
+ * declaration was invisible to all of them at once -- `OPACITY: .2` on the label muted it
+ * and the suite stayed green (Codex, #427). Folding the standard names and the flag once,
+ * where declaration text is captured, teaches every reader at the same time; a name
+ * starting with `-` is left alone, which is exactly the set of custom properties (and
+ * vendor prefixes, which nothing here reads). Values are never touched, so a token's
+ * spelling inside `var()` survives. A refusal that quotes the declarations therefore
+ * quotes the folded text, not the author's capitals.
+ */
+const caseFold = (text) =>
+  text
+    .replace(
+      /(^|;)(\s*)(-(?!-)[\w-]*|[a-zA-Z][\w-]*)(\s*:)/g,
+      (whole, before, gap, name, colon) => `${before}${gap}${name.toLowerCase()}${colon}`,
+    )
+    .replace(/!\s*important/gi, '!important');
+
+/*
  * The stylesheet flattened into rules, carrying whatever at-rules each one sits inside.
  *
  * A flat `selector { ... }` regex cannot see into a nested block: it matched `@media(...)`
@@ -410,7 +431,7 @@ const flatten = (text) => {
     const flush = (text) => {
       if (parent === '' || !/[^\s;]/.test(text)) return;
       order += 1;
-      out.push({ conditions, selectorList: parent, declarations: text, at: order });
+      out.push({ conditions, selectorList: parent, declarations: caseFold(text), at: order });
     };
 
     let at = 0;
@@ -768,10 +789,12 @@ const VOID_TAGS = new Set([
  * mistaken for it.
  */
 const inlineStyle = (attributes) =>
-  attributes.match(/(?:^|\s)style\s*=\s*"([^"]*)"/i)?.[1] ??
-  attributes.match(/(?:^|\s)style\s*=\s*'([^']*)'/i)?.[1] ??
-  attributes.match(/(?:^|\s)style\s*=\s*([^\s"'>]+)/i)?.[1] ??
-  '';
+  caseFold(
+    attributes.match(/(?:^|\s)style\s*=\s*"([^"]*)"/i)?.[1] ??
+      attributes.match(/(?:^|\s)style\s*=\s*'([^']*)'/i)?.[1] ??
+      attributes.match(/(?:^|\s)style\s*=\s*([^\s"'>]+)/i)?.[1] ??
+      '',
+  );
 
 const LAYOUT_CHAIN = (() => {
   const source = readFileSync(join(root, 'layout', 'theme.liquid'), 'utf8');
