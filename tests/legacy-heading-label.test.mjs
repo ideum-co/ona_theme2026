@@ -310,6 +310,7 @@ const everyRule = () => {
   const found = [];
   for (const { conditions, selectorList, declarations, at, origin } of flat) {
     for (const branch of splitSelectors(selectorList)) {
+      if (PSEUDO_ELEMENT.test(branch)) continue;
       const parts = pathOf(branch);
       if (parts.length === 0) continue;
       found.push({
@@ -378,8 +379,16 @@ const ancestorEffects = (chain, conditions, live, inlines = []) => {
       );
       alpha *= faded.includes('%') ? Number(literal[1]) / 100 : Number(literal[1]);
     }
-    const declared = lastValue(body, 'color');
-    if (declared !== null) colour = declared;
+    /* The same rule as on the label, one level up and once per ancestor: `inherit` and
+       `currentColor` take what this ancestor's own parent computed, and they override
+       anything this ancestor said before them. Assigning the keyword through replaced a
+       concrete colour from above with an unresolved word, which the contrast check then
+       reads as whichever palette extreme suits each ground (Codex, #427). */
+    const above = colour;
+    for (const [, value] of body.matchAll(/(?:^|;)\s*color\s*:\s*([^;]+)/g)) {
+      const text = value.trim();
+      colour = RESTATES_INHERITANCE.test(text) ? above : text;
+    }
   }
   return { alpha, colour };
 };
@@ -390,7 +399,7 @@ const rulesFor = (name) => {
   const found = [];
   for (const { conditions, selectorList, declarations, at, origin } of flat) {
     for (const branch of splitSelectors(selectorList)) {
-      if (!target.test(branch)) continue;
+      if (!target.test(branch) || PSEUDO_ELEMENT.test(branch)) continue;
       /* `!important` reorders the cascade in a way none of this models, so it fails rather
          than being silently mis-resolved. Nothing in the stylesheet uses it today. */
       assert.ok(
@@ -472,6 +481,18 @@ const rulesFor = (name) => {
  * branch that matches nothing, so an override written that way muted the partnership
  * eyebrow with all four tests green (Codex, #300). This stylesheet already uses `:is()`.
  */
+/*
+ * A pseudo-element is a separate box, not a state of the element that originates it.
+ * Collected as a state and then stripped for structural matching, `::before`'s declarations
+ * were resolved onto the eyebrow itself -- `.subtitle::before { content: ""; display: inline }`
+ * failed both layout tests on a label whose own `display` never changes (Codex, #427).
+ * Modelling those boxes is a different job; until someone does it, a rule that targets one is
+ * not part of this element's cascade. Single-colon `:before` and friends are the legacy
+ * spelling of the same thing.
+ */
+const PSEUDO_ELEMENT =
+  /::[a-z-]|:(?:before|after|first-line|first-letter|selection|marker|placeholder|backdrop)\b/i;
+
 const splitSelectors = (list) => {
   const out = [];
   let depth = 0;
@@ -540,6 +561,12 @@ const ancestriesFor = (name) => {
       const attrs = [...attributes.matchAll(/([\w-]+)(?:="([^"]*)")?/g)].flatMap(([, key, value]) =>
         value === undefined ? [`[${key}]`] : [`[${key}]`, `[${key}="${value}"]`]
       );
+      /* An id reaches an element two ways -- `#name` in a selector, `[id="name"]` in the
+         attribute form -- and only the second was recorded, so `#MainContent #probe-label`
+         could never match the element it names (Codex, #427). Both forms now, on ancestors
+         and on the label, since `attrs` feeds each link of the chain. */
+      const identifier = attributes.match(/\bid="([^"]*)"/)?.[1];
+      if (identifier) attrs.push(`#${identifier}`);
       if (classes.includes(name)) {
         /* An inline `style` outranks every rule in the stylesheet, and reading only the
            classes off this element meant `style="display:inline;opacity:.6"` on the
