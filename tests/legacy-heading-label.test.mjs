@@ -1090,13 +1090,30 @@ const bottomMargin = (declarations) => {
 const colourValue = (value) => {
   let alpha = 1;
 
-  const hex = value.match(/#([0-9a-f]{6})\b/i);
-  if (hex)
+  /* The shortcut is for a value that *is* a colour, not one that contains one. Unanchored, the
+     hex inside `color-mix(in srgb, #470a12 60%, transparent)` came back as an opaque colour
+     and the 60% went missing entirely (Codex, #427). `#fff` is in the theme, so the short
+     form resolves too; anything longer or stranger falls through to the resolvers below and
+     to the explicit failure at the end if none of them knows it. */
+  const hex = value.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (hex) {
+    const digits = hex[1].length === 3 ? [...hex[1]].map((digit) => digit + digit).join('') : hex[1];
     return {
       alpha,
-      literal: [1, 3, 5].map((at) => parseInt(`#${hex[1]}`.slice(at, at + 2), 16)),
+      literal: [0, 2, 4].map((at) => parseInt(digits.slice(at, at + 2), 16)),
       how: value,
     };
+  }
+
+  /* `color-mix()` blends two colours and can thin either of them with a percentage. Reading
+     one argument out of it and calling that the answer is exactly how the hex shortcut went
+     wrong, and `color-mix(in srgb, currentColor 60%, transparent)` would reach the inherited
+     branch below by the same trick. Refuse it by name until there is a resolver for it. */
+  assert.ok(
+    !/\bcolor-mix\s*\(/i.test(value),
+    `cannot read the eyebrow's colour from "${value}" -- color-mix() needs a resolver of its ` +
+      'own, not one of its arguments read in isolation',
+  );
 
   /* Alpha after a slash inside a colour function. The first version matched only bare digits
      followed by `)`, so the perfectly valid `rgb(var(--color-foreground-rgb) / 60%)` fell
