@@ -915,7 +915,7 @@ const alternativesOf = (condition) => {
   return parts.map((part) => part.trim()).filter((part) => part !== '');
 };
 
-const feasible = (conditions) => {
+const regionOf = (conditions) => {
   let low = 0;
   let high = Infinity;
   const fixed = new Map();
@@ -941,7 +941,7 @@ const feasible = (conditions) => {
         const ROOT_FONT_SIZE = 16;
         const unit = (measure[2] ?? 'px').toLowerCase();
         const pixels = Number(measure[1]) * (unit === 'px' ? 1 : ROOT_FONT_SIZE);
-        if (Number.isNaN(pixels)) return false;
+        if (Number.isNaN(pixels)) return null;
         if (bound.toLowerCase() === 'min') low = Math.max(low, pixels);
         else high = Math.min(high, pixels);
         continue;
@@ -951,11 +951,54 @@ const feasible = (conditions) => {
          orientation rules were multiplied into a viewport that cannot exist (Codex, #300). */
       const normalised = String(value).trim().toLowerCase();
       const seen = fixed.get(name);
-      if (seen !== undefined && seen !== normalised) return false;
+      if (seen !== undefined && seen !== normalised) return null;
       fixed.set(name, normalised);
     }
   }
-  return low <= high;
+  return low <= high ? { low, high, fixed } : null;
+};
+
+/*
+ * Whether every condition left out of a context can be off at once inside the region the
+ * selected ones describe.
+ *
+ * The powerset builds a context per subset and nothing checked that the omitted subsets could
+ * actually be off there, so `@media (min-width: 0px)` -- which holds at every viewport there
+ * is -- still produced a context without it, and the test failed CSS the browser never
+ * applies (Codex, #427). Width is computed exactly. An omitted alternative that pins a
+ * feature the selected conditions leave open is taken to be falsifiable by choosing another
+ * value for that feature, which holds for one such condition at a time and is where this
+ * model stops: two omitted conditions demanding opposite values of the same unpinned feature
+ * would both be counted falsifiable when one of them must hold.
+ */
+const falsifiable = (region, omitted) => {
+  const covered = [];
+  for (const condition of omitted) {
+    /* Only a media query is pinned down by the viewport. A pseudo-class state (`:root` and
+       `:hover` both arrive here as conditions) and an `@supports` test are taken to be off
+       whenever the context leaves them out, which is what every context did before this
+       function existed. Reading them as width-less regions covering every viewport would
+       have discarded every context that omits one. */
+    if (!/^@media\b/i.test(condition)) continue;
+    for (const alternative of alternativesOf(condition)) {
+      const where = regionOf([alternative]);
+      /* Already impossible on its own, so nothing to switch off. */
+      if (where === null) continue;
+      /* Off here either way: a feature pinned to something else by the selected conditions,
+         or one they leave open and this can choose against. */
+      const byFeature = [...where.fixed].some(([name, value]) => region.fixed.get(name) !== value);
+      if (byFeature) continue;
+      covered.push([Math.max(where.low, region.low), Math.min(where.high, region.high)]);
+    }
+  }
+
+  const widths = new Set([region.low, region.high]);
+  for (const [low, high] of covered) {
+    for (const edge of [low - 1, low, low + 1, high - 1, high, high + 1]) {
+      if (edge >= region.low && edge <= region.high) widths.add(edge);
+    }
+  }
+  return [...widths].some((width) => covered.every(([low, high]) => width < low || width > high));
 };
 
 /*
@@ -965,7 +1008,7 @@ const feasible = (conditions) => {
  * and the muting went unmeasured (Codex, #427). Each condition contributes one alternative
  * at a time, and the combination holds if any choice across all of them does.
  */
-const satisfiable = (conditions) => {
+const satisfiable = (conditions, omitted = []) => {
   const choices = conditions.map(alternativesOf);
   const COMBINATIONS = 4096;
   const total = choices.reduce((count, options) => count * Math.max(1, options.length), 1);
@@ -976,7 +1019,10 @@ const satisfiable = (conditions) => {
   );
 
   const walk = (at, picked) => {
-    if (at === choices.length) return feasible(picked);
+    if (at === choices.length) {
+      const region = regionOf(picked);
+      return region !== null && falsifiable(region, omitted);
+    }
     const options = choices[at].length === 0 ? [''] : choices[at];
     return options.some((option) => walk(at + 1, [...picked, option]));
   };
@@ -1060,10 +1106,15 @@ const contextsFor = (name) => {
       const reaches = [...named, ...unnamed].sort((a, b) => a.weight - b.weight || a.at - b.at);
       if (reaches.length === 0) continue;
 
-      /* Only the two ancestor declarations that can reach the label need their own contexts --
+      /* Only the ancestor declarations that can reach the label need their own contexts --
        everything else an ancestor sets stays on the ancestor. Without that filter the
-       powerset ran to 48 qualifier sets and tripped the cap. */
-      const AFFECTS_LABEL = /(?:^|;|\s)(?:opacity|color)\s*:/;
+       powerset ran to 48 qualifier sets and tripped the cap.
+
+       `opacity` and `color` composite and inherit; a foreground custom property inherits
+       too, and leaving it out meant an ancestor that changed only the token inside a media
+       query never had that query enumerated, so `ancestorEffects` was never called under it
+       and the override went unapplied (Codex, #427). */
+      const AFFECTS_LABEL = /(?:^|;|\s)(?:opacity|color|--color-foreground[\w-]*)\s*:/;
       const touching = everyRule().filter(
         (rule) =>
           live(rule) &&
@@ -1091,7 +1142,10 @@ const contextsFor = (name) => {
       const built = new Set();
       for (let mask = 0; mask < 1 << sets.length; mask += 1) {
         const conditions = [...new Set(sets.filter((_, at) => mask & (1 << at)).flat())];
-        if (!satisfiable(conditions)) continue;
+        /* The conditions this context leaves out have to be able to be off here, or the
+           context is one the browser never reaches. */
+        const omitted = [...new Set(sets.flat())].filter((condition) => !conditions.includes(condition));
+        if (!satisfiable(conditions, omitted)) continue;
 
         const key = JSON.stringify([...conditions].sort());
         if (built.has(key)) continue;
@@ -1460,6 +1514,15 @@ const substituted = (declarations, text, inherited = new Map()) => {
        eyebrow rendered cream on cream (Codex, #427). */
     const override = lastValue(declarations, token) ?? inherited.get(token) ?? null;
     if (override === null) continue;
+
+    /* `x` is what a `{{ ... }}` interpolation flattens to, so a value carrying one is the
+       theme computing the colour rather than a literal override: `ona-band.liquid` writes
+       `--color-foreground: {{ band_text }}` and `color-palette.liquid` writes
+       `{{ settings.page_text_color }}`, 132 of them reaching a label between them. Those are
+       the band mechanism this test already models optimistically -- the snippet picks the
+       palette extreme that contrasts best with its band -- so the inherited reading stands
+       for them, and only a literal override has to be resolved or refused. */
+    if (/(?:^|[^\w-])x(?:[^\w-]|$)/.test(override)) continue;
     assert.ok(
       token === '--color-foreground' && /^#[0-9a-f]{6}$/i.test(override),
       `"${text}" is read as the colour inherited from above, but ${token} is set to ` +
