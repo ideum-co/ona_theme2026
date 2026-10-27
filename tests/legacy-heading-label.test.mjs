@@ -278,9 +278,10 @@ const insideInert = (ranges, at) => ranges.some(([from, to]) => at >= from && at
  * stylesheet"` counts and `rel="modulepreload"` does not. Returning `{ asset }` means the
  * href resolves to a sheet in this repo and the caller can treat it exactly like a
  * `stylesheet_tag`. Anything else comes back without `asset` for the caller to refuse:
- * `file_url`, a bare path, an interpolated name, or a `media` this cannot reduce to "always"
+ * `file_url`, a bare path, an interpolated name, a `media` this cannot reduce to "always"
  * -- including `media="print" onload="this.media='all'"`, the async-CSS trick, whose sheet
- * does end up applying and whose swap no static read can model.
+ * does end up applying and whose swap no static read can model -- a `disabled` link, or a
+ * titled one, which belongs to a style sheet set that may not be the active one.
  */
 /* The two files whose stylesheet loads the collector below reads and orders. Named once so
    the section scan can tell "this sheet has nowhere to go" from "this is where sheets go". */
@@ -306,6 +307,37 @@ const stylesheetLink = (attributes) => {
   ].map(([, name]) => name.replace(/[A-Z]/g, (letter) => letter.toLowerCase()));
   if (names.includes('disabled')) {
     return { reason: 'is disabled, so the browser applies none of it until script enables it', href, media };
+  }
+  /*
+   * A title puts a sheet in a named style sheet set, and only one set applies at a time.
+   * The rule is CSSOM's, not HTML's: HTML only sets the sheet's alternate flag for
+   * `rel="alternate stylesheet"`, and CSSOM then decides what that flag costs. A sheet
+   * whose title is the empty string -- absent counts as empty -- is persistent and always
+   * applies, so `rel="alternate stylesheet"` with no title is an ordinary load. A sheet
+   * with a non-empty title applies only while its set is the preferred one or the one the
+   * visitor picked: with the alternate flag set it never becomes preferred, and without it
+   * the first such title wins the preferred slot and a second, different title loses it.
+   *
+   * So the condition is the title, not the keyword. A titled alternate link to
+   * `overflow-list.css` carrying an `opacity: 1` restoration masked a real fade in
+   * base.css with all five tests passing (Codex, #427).
+   *
+   * Both shapes are refused rather than skipped, as `disabled` above is: which set is
+   * active is a visitor- and script-level choice, and the preferred slot depends on load
+   * order across the whole pipeline, so "applies" is not a property of the tag alone. The
+   * title is compared raw -- CSSOM does not trim it, so a title of one space is a set name.
+   */
+  const title = attributeValue(attributes, 'title');
+  if (title !== null && title !== '') {
+    return {
+      reason: tokens.includes('alternate')
+        ? `is an alternate style sheet titled ${JSON.stringify(title)}, which a browser leaves ` +
+          'unselected, so it applies nothing until a visitor picks that set'
+        : `carries the title ${JSON.stringify(title)}, so it applies only while that style sheet ` +
+          'set is the preferred or selected one, which this cannot decide from the tag',
+      href,
+      media,
+    };
   }
   if (!always) {
     return { reason: `carries media ${JSON.stringify(media)}, which this cannot reduce to "always"`, href, media };
