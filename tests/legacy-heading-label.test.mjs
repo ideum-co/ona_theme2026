@@ -770,16 +770,6 @@ const VOID_TAGS = new Set([
  * it. Everything legacy renders inside #MainContent, which is why each chain starts there.
  */
 /*
- * The links above every section: what `layout/theme.liquid` wraps the page in, read out of
- * the file rather than assumed.
- *
- * Each chain used to start at a bare `#MainContent`, which discarded `html`, `body`, and even
- * the main element's own tag and classes -- so `body .subtitle { opacity: .6 }`, which fades
- * every eyebrow on the site, matched nothing and passed (Codex, #427). A class written with
- * Liquid in it (`page-width-{{ ... }}`) is not a token any selector here can name, so only
- * the static ones are recorded.
- */
-/*
  * The `style` attribute, however it is quoted. Only the double-quoted form was read, so
  * `style='opacity:.6'` on the partnership wrapper recorded no declarations at all and
  * slipped past both the cascade and the background guard with all five tests green, while
@@ -796,39 +786,114 @@ const inlineStyle = (attributes) =>
       '',
   );
 
-const LAYOUT_CHAIN = (() => {
+/*
+ * The links above every section: what `layout/theme.liquid` wraps the page in, read out of
+ * the file rather than assumed, each with the `style=""` it carries.
+ *
+ * Each chain used to start at a bare `#MainContent`, which discarded `html`, `body`, and even
+ * the main element's own tag and classes -- so `body .subtitle { opacity: .6 }`, which fades
+ * every eyebrow on the site, matched nothing and passed (Codex, #427). A class written with
+ * Liquid in it (`page-width-{{ ... }}`) is not a token any selector here can name, so only
+ * the static ones are recorded.
+ *
+ * Then `html`, `body` and `main` were listed as if they were the whole ancestry, which
+ * skipped the `<div class="page-wrapper">` the layout puts between body and main:
+ * `.page-wrapper { opacity: .6 }` faded every eyebrow on the site with all five tests green,
+ * while the same rule written on `main` failed contrast -- the asymmetry that gives it away
+ * (Codex, #427). The wrappers are walked out of the file now rather than remembered, so one
+ * added later is carried on its own.
+ *
+ * The walk refuses Liquid control flow between <body> and <main>: a wrapper inside an
+ * `{% if %}` is not always above the eyebrow, and crediting it anyway would let a rule
+ * written on it cancel a real regression. `<script>` is cut first -- `maxTouchPoints > 0`
+ * in the header-measuring block would otherwise read as the end of a tag.
+ */
+const LAYOUT_ELEMENTS = (() => {
   const source = readFileSync(join(root, 'layout', 'theme.liquid'), 'utf8');
-  const tokensOf = (tag) => {
-    const attributes = source.match(new RegExp(`<${tag}\\b([^>]*)>`))?.[1] ?? '';
+
+  const opening = (tag) => {
+    const found = source.match(new RegExp(`<${tag}\\b([^>]*)>`));
+    assert.ok(found, `layout/theme.liquid no longer opens a <${tag}>, so this chain is stale`);
+    return found;
+  };
+
+  const element = (tag, attributes) => {
     const classes = (attributes.match(/class="([^"]*)"/)?.[1] ?? '')
+      /* An interpolation contains spaces, so splitting first tore
+         `class="page-width-{{ settings.page_width }} card-hover-effect-{{ ... }}"` into six
+         pieces and kept `settings.page_width` and `}}` as if they were classes on <body>:
+         tokens no element carries, which a selector could have been written against to
+         cancel a real regression. Each interpolation collapses to one marker first, and a
+         class carrying a marker is then dropped whole. */
+      .replace(/\{\{[\s\S]*?\}\}|\{%-?[\s\S]*?-?%\}/g, '{')
       .split(/\s+/)
       .filter((value) => value && !value.includes('{'));
     const identifier = attributes.match(/\bid="([^"{]*)"/)?.[1];
-    return new Set([tag, ...classes.map((value) => `.${value}`), ...(identifier ? [`#${identifier}`] : [])]);
+    return {
+      tag,
+      tokens: new Set([
+        tag,
+        ...classes.map((value) => `.${value}`),
+        ...(identifier ? [`#${identifier}`] : []),
+      ]),
+      inline: inlineStyle(attributes),
+    };
   };
-  const main = tokensOf('main');
+
+  const body = opening('body');
+  const main = opening('main');
+  const between = source
+    .slice(source.indexOf(body[0]) + body[0].length, source.indexOf(main[0]))
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<script\b[\s\S]*?<\/script>/gi, '')
+    .replace(/<style\b[\s\S]*?<\/style>/gi, '');
+
   assert.ok(
-    main.has('#MainContent') && main.has('.content-for-layout'),
+    !/\{%-?\s*(?:if|unless|for|case|else|elsif|when|end\w+)\b/.test(between),
+    'layout/theme.liquid now puts Liquid control flow between <body> and <main>, so this ' +
+      'scan cannot say which wrappers are always above the eyebrow -- read the condition ' +
+      'rather than crediting a wrapper that may not be there',
+  );
+
+  const open = [];
+  for (const [, closing, tag, attributes] of between.matchAll(/<(\/?)([a-zA-Z][\w-]*)\b([^>]*)>/g)) {
+    const name = tag.toLowerCase();
+    if (closing) {
+      const at = open.map((entry) => entry.tag).lastIndexOf(name);
+      if (at !== -1) open.length = at;
+    } else if (!VOID_TAGS.has(name) && !/\/\s*$/.test(attributes)) {
+      open.push(element(name, attributes));
+    }
+  }
+
+  const head = element('main', main[1]);
+  assert.ok(
+    head.tokens.has('#MainContent') && head.tokens.has('.content-for-layout'),
     'layout/theme.liquid no longer wraps the page in <main id="MainContent" class="content-for-layout">; ' +
       'this chain head is stale and every selector qualified by it is being dropped',
   );
-  return [new Set(['html']), tokensOf('body'), main];
+
+  /* `<html>` keeps its tag alone: its only class sits inside `{% if request.design_mode %}`,
+     so it is not a token a storefront selector can count on. */
+  return [
+    { tag: 'html', tokens: new Set(['html']), inline: inlineStyle(opening('html')[1]) },
+    element('body', body[1]),
+    ...open,
+    head,
+  ];
 })();
 
+const LAYOUT_CHAIN = LAYOUT_ELEMENTS.map((entry) => entry.tokens);
+
 /*
- * What `html`, `body` and `main` carry in their own `style` attributes, parallel to
- * LAYOUT_CHAIN. These three were filled in as empty strings, so an inline style on the
- * layout was invisible to both the ancestor cascade and the background guard:
- * `style="opacity:.6"` on the existing `<main>` left all five tests green while every
- * unbanded eyebrow fell under the bar (Codex, #427). The section ancestors got their
- * inline styles in an earlier round; these are the three above them.
+ * What each layout element carries in its own `style` attribute, parallel to LAYOUT_CHAIN.
+ * These were filled in as empty strings, so an inline style on the layout was invisible to
+ * both the ancestor cascade and the background guard: `style="opacity:.6"` on the existing
+ * `<main>` left all five tests green while every unbanded eyebrow fell under the bar
+ * (Codex, #427). Derived from the same walk as the chain, so index n is the inline style of
+ * chain[n] by construction rather than by two lists being kept in step by hand.
  */
-const LAYOUT_INLINES = (() => {
-  const source = readFileSync(join(root, 'layout', 'theme.liquid'), 'utf8');
-  return ['html', 'body', 'main'].map((tag) =>
-    inlineStyle(source.match(new RegExp(`<${tag}\\b([^>]*)>`))?.[1] ?? ''),
-  );
-})();
+const LAYOUT_INLINES = LAYOUT_ELEMENTS.map((entry) => entry.inline);
 
 const ancestriesFor = (name) => {
   const found = [];
@@ -2471,7 +2536,22 @@ const colourValue = (value) => {
      `color: var(--palette-lightest)` passed against the cream page it is invisible on
      (Codex, #427). `contrast-override.liquid:61` emits `var(--palette-darkest)` in real theme
      code, so these have to resolve, not be rejected. */
-  const extreme = value.match(/--palette-(darkest|lightest)(?![\w-])/);
+  /* A palette extreme sitting in a `var()` fallback is subject to the same rule as a
+     foreground token there: it paints only when the variable before it is undefined. This
+     branch read the whole string, so `color: var(--probe, var(--palette-darkest))` with
+     `--probe` set to the cream ground resolved to the dark extreme and passed all five
+     tests, while the identical painted literal fails contrast (Codex, #427). Resolving the
+     primary would mean tracking arbitrary custom properties, which this model does not do,
+     so it refuses -- the same answer the foreground guard below gives. */
+  const PALETTE_IN = /--palette-(?:darkest|lightest)(?![\w-])/;
+  assert.ok(
+    !PALETTE_IN.test(value) || PALETTE_IN.test(withoutFallbacks(value)),
+    `the eyebrow's colour in "${value}" names a palette extreme only inside a var() ` +
+      'fallback, which applies only when the variable before it is undefined -- resolve ' +
+      'that variable rather than measuring a fallback the browser may never reach',
+  );
+
+  const extreme = withoutFallbacks(value).match(/--palette-(darkest|lightest)(?![\w-])/);
   if (extreme) {
     return { alpha, literal: rgb(paletteExtreme(extreme[1])), how: value };
   }
