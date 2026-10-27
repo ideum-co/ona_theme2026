@@ -129,6 +129,38 @@ const attributeValue = (attributes, name) =>
   attributes.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*([^\\s"'>]+)`, 'i'))?.[1] ??
   null;
 
+/*
+ * Whether a native `<style>` is CSS at all.
+ *
+ * A style element is parsed as a stylesheet only when its `type` is absent, empty, or an
+ * ASCII case-insensitive match for `text/css`; with anything else the browser treats the
+ * contents as data and applies nothing. This file read the body regardless, so an
+ * `opacity: 1` inside `<style type="text/plain">` cancelled a real `opacity: .6` in
+ * base.css and all five tests passed, while every visitor kept the faded eyebrow at 4.42:1
+ * (Codex, #427).
+ *
+ * One predicate for the three readers that see a `<style>` element -- the two that collect
+ * declarations and the one that refuses them in an alternate layout -- because a fourth
+ * would otherwise drift, which is the lesson round 61 applied to `assertResolvable` and
+ * round 63 to `withoutComments`. A `{% style %}` tag carries no attributes and Shopify
+ * renders it without a type, so it is CSS by construction.
+ *
+ * `disabled` is deliberately not read: it is an IDL property on a style element, not a
+ * content attribute, so `<style disabled>` in markup still applies.
+ *
+ * The value is compared raw. Step 4 of "update a style block" matches the attribute as it
+ * stands, so ` text/css ` and `text/css; charset=utf-8` both return early and style
+ * nothing -- trimming here, or accepting a parameter, would have this file trust a restore
+ * no visitor ever gets, which is the direction that masks a regression rather than the one
+ * that refuses a real rule. The fold is ASCII-only for the same reason: `toLowerCase`
+ * folds beyond ASCII, and the match does not.
+ */
+const appliesAsCss = (attributes) => {
+  const type = attributes === undefined ? null : attributeValue(attributes, 'type');
+  if (type === null) return true;
+  return type === '' || type.replace(/[A-Z]/g, (letter) => letter.toLowerCase()) === 'text/css';
+};
+
 /* A native `<style>` carries its own media restriction in an attribute, and a `{% style %}`
    cannot. Dropping it applied print-only or narrow-viewport declarations to every rendering:
    a restoring `opacity: 1` inside `<style media="print">` cancelled a real `opacity: .6` in
@@ -209,6 +241,8 @@ const sheets = (() => {
 
       const css = styled ?? native;
       if (css !== undefined) {
+        /* Not a stylesheet, so nothing in it reaches any rendering. */
+        if (!appliesAsCss(nativeAttributes)) continue;
         /* Only the layout's own. `snippets/stylesheets.liquid` is read again by the section
            scan below, which is where its blocks are collected; taking them here too would
            apply every declaration twice. */
@@ -338,6 +372,9 @@ const sheets = (() => {
     for (const match of source.matchAll(
       /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b([^>]*)>([\s\S]*?)<\/style>/g,
     )) {
+      /* A block the browser never parses as CSS cannot leak onto any page, so refusing it
+         would be a refusal about nothing. */
+      if (!appliesAsCss(match[2])) continue;
       assert.ok(
         !MEASURED.test(decomment(match[1] ?? match[3])),
         `layout/${file} sets a property this file measures in a style block. It is not the ` +
@@ -518,6 +555,7 @@ const sheets = (() => {
           continue;
         }
         const body = match[1] ?? match[3];
+        if (!appliesAsCss(match[2])) continue;
         if (dir === 'snippets' && editorOnly.has(file.slice(0, -'.liquid'.length))) continue;
         if (open.includes(EDITOR)) continue;
         const unresolved = open.filter((condition) => condition !== STOREFRONT);
