@@ -387,6 +387,9 @@ const everyRule = () => {
 const ancestorEffects = (chain, conditions, live, inlines = []) => {
   let alpha = 1;
   let colour = null;
+  /* Custom properties set anywhere above the label inherit down to it, so they are carried
+     along the chain with the nearest definition winning. */
+  const tokens = new Map();
 
   for (let index = 0; index < chain.length - 1; index += 1) {
     const applicable = everyRule().filter(
@@ -427,13 +430,18 @@ const ancestorEffects = (chain, conditions, live, inlines = []) => {
        anything this ancestor said before them. Assigning the keyword through replaced a
        concrete colour from above with an unresolved word, which the contrast check then
        reads as whichever palette extreme suits each ground (Codex, #427). */
+    /* This ancestor's own definitions apply to its own declarations, so they land first. */
+    for (const [, name, value] of body.matchAll(/(?:^|;)\s*(--color-foreground[\w-]*)\s*:\s*([^;]+)/g)) {
+      tokens.set(name, value.trim());
+    }
+
     const above = colour;
     for (const [, value] of body.matchAll(/(?:^|;)\s*color\s*:\s*([^;]+)/g)) {
       const text = value.trim();
-      colour = RESTATES_INHERITANCE.test(text) ? above : substituted(body, text);
+      colour = RESTATES_INHERITANCE.test(text) ? above : substituted(body, text, tokens);
     }
   }
-  return { alpha, colour };
+  return { alpha, colour, tokens };
 };
 
 const rulesFor = (name) => {
@@ -728,13 +736,45 @@ const tagsOf = (text) =>
     (tag) => tag.toLowerCase(),
   );
 
-const attrsOf = (text) =>
-  (text.match(/\[[^\]]*\]/g) ?? []).map((token) =>
-    token.replace(
-      /\[\s*([\w-]+)\s*(?:([~^|$*]?=)\s*["']?([^\]"']*)["']?\s*)?\]/,
-      (whole, key, operator, value) => (operator === '=' ? `[${key}="${value}"]` : operator ? whole : `[${key}]`)
-    )
-  );
+const bracketsOf = (text) => text.match(/\[[^\]]*\]/g) ?? [];
+
+/*
+ * One bracketed attribute selector against one element: true, false, or null for undecidable.
+ *
+ * `[class~="subtitle"]` selects exactly what `.subtitle` selects, so it is answered as a
+ * class. The substring operators cannot be answered from the tokens this model records, and
+ * the normalisation this replaced turned every one of them into a string no element set ever
+ * holds -- which reads as "no match" and drops the rule without saying so. That is how
+ * `#MainContent [class~="subtitle"] { opacity: .6 }` faded every eyebrow with all five tests
+ * green (Codex, #427). Undecidable now means undecidable, and matchesElement fails on it
+ * rather than guessing.
+ */
+const TRACKED_ATTRIBUTES = new Set(['class', 'id']);
+
+const attrMatch = (token, element) => {
+  const parsed = token.match(/^\[\s*([\w-]+)\s*(?:([~^|$*]?=)\s*["']?([^\]"']*)["']?\s*)?\]$/);
+  if (parsed === null) return null;
+  const [, key, operator, value] = parsed;
+
+  /* The element sets hold tags, classes and ids and nothing else, so a selector narrowing on
+     any other attribute names elements this model cannot identify, and is read as reaching
+     none of them -- the same answer as before this change, now a stated limit rather than a
+     silent one. Twelve compounds in the theme land here with everything else about them
+     matching (`[data-add-form]`, `[data-slider-track]`, `[product-grid-view='default']`,
+     `html[scroll-lock]` and eight more), nearly all bare attribute selectors whose other
+     parts constrain nothing at all. Carrying attributes down the chain is what it would take
+     to answer them, and that is a larger change than this one. */
+  if (!TRACKED_ATTRIBUTES.has(key)) return false;
+
+  /* Every element whose classes or id this model records has one. */
+  if (!operator) {
+    const mark = key === 'class' ? '.' : '#';
+    return [...element].some((part) => part.startsWith(mark));
+  }
+  if (key === 'class' && operator === '~=') return element.has(`.${value}`);
+  if (key === 'id' && operator === '=') return element.has(`#${value}`);
+  return null;
+};
 
 /*
  * Whether one compound selects one element.
@@ -752,8 +792,10 @@ const matchesElement = (compound, element) => {
   const noneOf = [...compound.matchAll(/:not\(([^)]*)\)/gi)];
   const bare = compound.replace(/:(?:is|where|not)\([^)]*\)/gi, '');
 
-  return (
-    attrsOf(bare).every((token) => element.has(token)) &&
+  const attributes = bracketsOf(bare).map((token) => attrMatch(token, element));
+  if (attributes.includes(false)) return false;
+
+  const rest =
     partsOf(bare).every((part) => element.has(part)) &&
     tagsOf(bare).every((tag) => element.has(tag)) &&
     anyOf.every((match) =>
@@ -761,8 +803,18 @@ const matchesElement = (compound, element) => {
     ) &&
     noneOf.every((match) =>
       splitSelectors(match[1]).every((branch) => !matchesElement(branch, element)),
-    )
+    );
+  if (!rest) return false;
+
+  /* Everything this can read says the compound selects the element, so an attribute it
+     cannot read is the only thing standing between the rule and the label. Dropping it here
+     is the silent failure; saying so is not. */
+  assert.ok(
+    !attributes.includes(null),
+    `cannot tell whether "${bare.trim()}" selects the label -- teach attrMatch this ` +
+      'attribute selector rather than dropping the rule that carries it',
   );
+  return true;
 };
 
 /*
@@ -774,7 +826,47 @@ const matchesElement = (compound, element) => {
  * has no chain for, so they fail rather than being guessed at; nothing uses them today.
  */
 const pathOf = (branch) => {
-  const tokens = branch.trim().match(/[>+~]|(?:[^\s>+~(]+(?:\([^)]*\))?)+/g) ?? [];
+  /* Scanned rather than matched, because `~` is a sibling combinator outside brackets and
+     part of the attribute operator inside them. The regex this replaced split
+     `[class~="subtitle"]` into `[class`, `~` and `="subtitle"]`, and the sibling filter then
+     dropped the rule -- so `#MainContent [class~="subtitle"] { opacity: .6 }` faded every
+     eyebrow with all five tests green (Codex, #427). */
+  const tokens = [];
+  let current = '';
+  let parens = 0;
+  let brackets = 0;
+  let quote = null;
+  for (const character of branch.trim()) {
+    if (quote !== null) {
+      current += character;
+      if (character === quote) quote = null;
+      continue;
+    }
+    if (character === '"' || character === "'") {
+      quote = character;
+      current += character;
+      continue;
+    }
+    if (character === '(') parens += 1;
+    else if (character === ')') parens = Math.max(0, parens - 1);
+    else if (character === '[') brackets += 1;
+    else if (character === ']') brackets = Math.max(0, brackets - 1);
+    const outside = parens === 0 && brackets === 0;
+    if (outside && /\s/.test(character)) {
+      if (current !== '') tokens.push(current);
+      current = '';
+      continue;
+    }
+    if (outside && /[>+~]/.test(character)) {
+      if (current !== '') tokens.push(current);
+      current = '';
+      tokens.push(character);
+      continue;
+    }
+    current += character;
+  }
+  if (current !== '') tokens.push(current);
+
   const parts = [];
   let combinator = ' ';
   for (const token of tokens) {
@@ -1019,6 +1111,7 @@ const contextsFor = (name) => {
           inline: entry.inline,
           ancestorAlpha: fromAbove.alpha,
           ancestorColour: fromAbove.colour,
+          ancestorTokens: fromAbove.tokens,
           filled: applicable.filter((rule) => !rule.needsEmpty),
           empty: applicable.filter((rule) => !rule.needsFilled),
         });
@@ -1357,16 +1450,21 @@ const FOREGROUND_TOKEN = /--color-foreground(?:-rgb|-muted|-subdued)?(?![\w-])/g
  * these tokens, in header.liquid, ona-band.liquid, color-palette.liquid and four more, so a
  * blanket rejection is not an option; a literal is substituted and anything else fails loudly.
  */
-const substituted = (declarations, text) => {
+const substituted = (declarations, text, inherited = new Map()) => {
   let out = text;
   for (const token of new Set(text.match(FOREGROUND_TOKEN) ?? [])) {
-    const override = lastValue(declarations, token);
+    /* Nearest definition wins: the element's own, then the closest ancestor that set it.
+       Custom properties inherit, so a definition on an ancestor reaches the label whether or
+       not that ancestor paints itself with it -- looking only at the element's own
+       declarations left `#MainContent { --color-foreground: #fdfbf5 }` passing while every
+       eyebrow rendered cream on cream (Codex, #427). */
+    const override = lastValue(declarations, token) ?? inherited.get(token) ?? null;
     if (override === null) continue;
     assert.ok(
       token === '--color-foreground' && /^#[0-9a-f]{6}$/i.test(override),
-      `"${text}" is read as the colour inherited from above, but the same element sets ` +
-        `${token}: ${override}, which wins over every definition further up -- resolve that ` +
-        'override here rather than measuring a colour nothing is painted in',
+      `"${text}" is read as the colour inherited from above, but ${token} is set to ` +
+        `${override} on the label or an ancestor, which wins over every definition further ` +
+        'up -- resolve that override here rather than measuring a colour nothing is painted in',
     );
     out = out.replace(new RegExp(`var\\(\\s*${token}\\s*\\)`, 'g'), override);
     assert.ok(
@@ -1381,7 +1479,7 @@ const substituted = (declarations, text) => {
 
 const RESTATES_INHERITANCE = /^(?:inherit|currentcolor)$/i;
 
-const painted = (declarations, inheritedColour = null) => {
+const painted = (declarations, inheritedColour = null, inheritedTokens = new Map()) => {
   /* An element's own opacity multiplies whatever colour it ends up with. A value this cannot
      read -- `opacity: var(--opacity-muted-text)` -- used to fall through to alpha 1 and report
      the label as fully opaque, so an opacity present and unresolved now fails (Codex, #300). */
@@ -1416,7 +1514,7 @@ const painted = (declarations, inheritedColour = null) => {
   let resolved = inherited;
   for (const [, value] of declarations.matchAll(/(?:^|;)\s*color\s*:\s*([^;]+)/g)) {
     const text = value.trim();
-    resolved = RESTATES_INHERITANCE.test(text) ? inherited : colourValue(substituted(declarations, text));
+    resolved = RESTATES_INHERITANCE.test(text) ? inherited : colourValue(substituted(declarations, text, inheritedTokens));
   }
 
   return { alpha: opacity * resolved.alpha, literal: resolved.literal, how: resolved.how };
@@ -1456,6 +1554,7 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
       const { alpha, literal, how } = painted(
         merge(context.filled, context.inline),
         context.ancestorColour || null,
+        context.ancestorTokens,
       );
       const effective = alpha * context.ancestorAlpha;
 
