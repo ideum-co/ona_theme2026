@@ -13,7 +13,24 @@ const decomment = (text) => text.replace(/\/\*[\s\S]*?\*\//g, ' ');
    check here reads. Defined once, because the sheet collection below, the ordering guard
    and the unnamed-rule path in `contextsFor` all need it and copies would drift. */
 const MEASURED =
-  /(?:^|;|\s)(?:display|color|opacity|margin|margin-bottom|--color-foreground[\w-]*)\s*:/;
+  /(?:^|;|\s)(?:all|display|color|opacity|margin|margin-bottom|--color-foreground[\w-]*)\s*:/;
+
+/*
+ * `all` sets every property at once, so a property-specific lookup cannot see it.
+ *
+ * `all: unset` makes the span `display: inline`, drops its margin and takes the inherited
+ * colour, but the readers here ask for `display` and `margin-bottom` by name and found the
+ * earlier declarations still standing: `#MainContent #shopify-section-... .subtitle
+ * { all: unset }` passed all five tests, while `display: inline; margin: 0` -- the same
+ * thing written out -- fails both layout checks (Codex, #427). It also cancels the
+ * empty-state `display: none`.
+ *
+ * Refused rather than resolved, in the four places `!important` is refused and for the same
+ * reason: resolving it means every property's initial value and which of them inherit, and a
+ * half-resolver is a new place for two readers to disagree. The theme writes no `all`
+ * declaration anywhere today, so this guards one added later.
+ */
+const RESETS_EVERYTHING = /(?:^|;)\s*all\s*:/i;
 
 
 /*
@@ -91,7 +108,9 @@ const sheets = (() => {
   /* Where a file first pulls in a stylesheet, counting the `{% render 'stylesheets' %}`
      that loads the rest of them, so a head block can be placed against the links. */
   const firstSheetIn = (text) =>
-    text.match(/'[\w.-]+\.css'\s*\|\s*asset_url\s*\|\s*stylesheet_tag|render\s+'stylesheets'/)
+    text.match(
+      /['"][\w.-]+\.css['"]\s*\|\s*asset_url\s*\|\s*stylesheet_tag|render\s+['"]stylesheets['"]/,
+    )
       ?.index ?? Infinity;
   for (const file of ['snippets/stylesheets.liquid', 'layout/theme.liquid']) {
     let source;
@@ -106,8 +125,9 @@ const sheets = (() => {
     }
     const open = [];
     const lists = new Map();
+    let recognised = 0;
     const TAG =
-      /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b([^>]*)>([\s\S]*?)<\/style>|\{%-?\s*(if|elsif|else|endif|unless|endunless|assign)\b([^%]*?)-?%\}|'([\w.-]+\.css)'\s*\|\s*asset_url\s*\|\s*stylesheet_tag/g;
+      /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b([^>]*)>([\s\S]*?)<\/style>|\{%-?\s*(if|elsif|else|endif|unless|endunless|assign)\b([^%]*?)-?%\}|['"]([\w.-]+\.css)['"]\s*\|\s*asset_url\s*\|\s*stylesheet_tag/g;
     for (const found of source.matchAll(TAG)) {
       const [, styled, nativeAttributes, native, keyword, rest, asset] = found;
 
@@ -140,6 +160,7 @@ const sheets = (() => {
       }
 
       if (asset !== undefined) {
+        recognised += 1;
         /* An asset under no condition is global; one under conditions this can read keeps
            them. Loaded twice under different conditions, or conditionally beside a global
            load, it is global -- the wider reading, which is the safe direction for a sheet
@@ -164,7 +185,9 @@ const sheets = (() => {
       if (word === 'assign') {
         /* `{% assign legacy_page_suffixes = 'about,wholesale' | split: ',' %}` -- the only
            shape the suffix test below reads. */
-        const split = /^\s*([\w-]+)\s*=\s*'([^']*)'\s*\|\s*split:\s*'([^']*)'\s*$/.exec(rest ?? '');
+        const split = /^\s*([\w-]+)\s*=\s*['"]([^'"]*)['"]\s*\|\s*split:\s*['"]([^'"]*)['"]\s*$/.exec(
+          rest ?? '',
+        );
         if (split) lists.set(split[1], split[2].split(split[3]).map((item) => item.trim()));
         continue;
       }
@@ -180,7 +203,7 @@ const sheets = (() => {
        * templates that were migrated.
        */
       const body = rest ?? '';
-      const named = /^\s*(?:request\.page_type|template\.name)\s*==\s*'([\w-]+)'\s*$/.exec(body);
+      const named = /^\s*(?:request\.page_type|template\.name)\s*==\s*['"]([\w-]+)['"]\s*$/.exec(body);
       const suffixed = /^\s*([\w-]+)\s+contains\s+template\.suffix\s*$/.exec(body);
       let condition = false;
       if (word === 'if' && named !== null) condition = { name: named[1] };
@@ -190,6 +213,30 @@ const sheets = (() => {
       if (word === 'if' || word === 'unless') open.push(word === 'if' ? condition : false);
       else if (open.length > 0) open[open.length - 1] = false;
     }
+
+    /*
+     * A `stylesheet_tag` this scan did not recognise is a sheet missing from the measured
+     * cascade, and missing without a word.
+     *
+     * The spelling was enumerated -- a single-quoted literal piped through `asset_url` --
+     * so the identical `{{ "base.css" | asset_url | stylesheet_tag }}` dropped `base.css`
+     * from the cascade entirely, and a `.subtitle { opacity: .6 }` appended to it passed
+     * all five tests while the same rule under the single-quoted spelling fails at 4.42:1
+     * (Codex, #427). Liquid treats the two quote forms identically; so does this scan now,
+     * here and in the three other places it reads a Liquid string.
+     *
+     * Rather than enumerate once more and hope, the count is checked: every
+     * `stylesheet_tag` in these two files must be one this scan read. A sheet loaded
+     * through a variable, a filter chain or a spelling nobody has thought of yet now fails
+     * loudly instead of going missing. The two files use four between them today.
+     */
+    const written = (source.match(/stylesheet_tag/g) ?? []).length;
+    assert.ok(
+      recognised === written,
+      `${file} loads a stylesheet ${written} times and this scan recognised ${recognised} ` +
+        'of those -- read the spelling it missed rather than measuring a cascade with a ' +
+        'sheet left out of it',
+    );
   }
 
   /* Every head block this layout carries today sits above the first stylesheet it loads,
@@ -943,6 +990,12 @@ const ancestorEffects = (chain, conditions, live, inlines = []) => {
         `an ancestor of the label is styled with !important ("${rule.selector}"), which this ` +
           'cascade model does not resolve -- extend it rather than trusting the result'
       );
+      assert.ok(
+        !RESETS_EVERYTHING.test(rule.declarations),
+        `an ancestor of the label is styled with "all" ("${rule.selector}"), which resets ` +
+          'every property at once -- resolve that rather than reading the properties this ' +
+          'file names and missing it',
+      );
     }
     /* The same refusal for the ancestor's own `style=""`. The guard above read stylesheet
        rules only, so `style="opacity:.6 !important;opacity:1"` on the partnership wrapper
@@ -953,6 +1006,12 @@ const ancestorEffects = (chain, conditions, live, inlines = []) => {
       !/!important/.test(inline),
       `an ancestor of the label carries !important in its style="" ("${inline.trim()}"), ` +
         'which this cascade model does not resolve -- extend it rather than trusting the result',
+    );
+    assert.ok(
+      !RESETS_EVERYTHING.test(inline),
+      `an ancestor of the label carries "all" in its style="" ("${inline.trim()}"), which ` +
+        'resets every property at once -- resolve that rather than reading the properties ' +
+        'this file names and missing it',
     );
 
     const body = merge(applicable, inline);
@@ -994,6 +1053,12 @@ const rulesFor = (name) => {
       if (!target.test(branch) || PSEUDO_ELEMENT.test(branch)) continue;
       /* `!important` reorders the cascade in a way none of this models, so it fails rather
          than being silently mis-resolved. Nothing in the stylesheet uses it today. */
+      assert.ok(
+        !RESETS_EVERYTHING.test(declarations),
+        `.${name} is styled with "all" ("${branch.trim()}"), which resets every property at ` +
+          'once -- resolve that rather than reading the properties this file names and ' +
+          'missing it',
+      );
       assert.ok(
         !/!important/.test(declarations),
         `.${name} is styled with !important ("${branch.trim()}"), which this cascade model ` +
@@ -2691,6 +2756,12 @@ const contextsFor = (name) => {
          nothing here resolves it. Codex reported the ancestor case; the label's own inline
          style is the same hole one element down, and enumerating only the half that was
          reported is how the token guard had to be fixed twice. */
+      assert.ok(
+        !RESETS_EVERYTHING.test(entry.inline),
+        `the label itself carries "all" in its style="" ("${entry.inline.trim()}"), which ` +
+          'resets every property at once -- resolve that rather than reading the properties ' +
+          'this file names and missing it',
+      );
       assert.ok(
         !/!important/.test(entry.inline),
         `.${name} in ${entry.section} carries !important in its style="" ` +
