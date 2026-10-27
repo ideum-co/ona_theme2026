@@ -2930,6 +2930,33 @@ const colourValue = (value) => {
       'own, not one of its arguments read in isolation',
   );
 
+  /*
+   * Relative colour syntax takes a colour apart and builds a different one: `rgb(from
+   * <origin> 244 243 233)` keeps nothing of the origin but its place in the grammar. The
+   * origin is an argument, exactly like a `color-mix()` argument above, so reading it as
+   * the answer fails in exactly the same way -- `color: rgb(from var(--color-foreground)
+   * 244 243 233)` reached the inherited branch below and passed all five tests, while the
+   * cream it actually paints fails at 1:1 (Codex, #427). `light-dark()` picks one of two
+   * colours and has the same shape: a token in one slot says nothing about the other.
+   *
+   * Refused by name, like `color-mix()`, rather than resolved: the channel expressions are
+   * arithmetic in colour spaces this file does no maths in. The cost is that `rgb(from
+   * var(--color-foreground) r g b)` is genuinely the inherited colour and is refused with
+   * the rest -- refusing the family rather than enumerating which of its members happen to
+   * be transparent, because the enumeration is what went wrong here in the first place.
+   *
+   * Measured: the theme's six relative-colour values are five `@supports` feature probes
+   * and one drawer button's own `--contrast-color`, none of them an eyebrow, and it writes
+   * no `light-dark()` at all.
+   */
+  assert.ok(
+    !/(?<![\w-])(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\s*\(\s*from(?![\w-])/i.test(value) &&
+      !/(?<![\w-])light-dark\s*\(/i.test(value),
+    `cannot read the eyebrow's colour from "${value}" -- a relative colour function or ` +
+      'light-dark() builds a new colour out of its arguments, so a token inside one is not ' +
+      'the colour the eyebrow is painted in',
+  );
+
   /* Alpha after a slash inside a colour function. The first version matched only bare digits
      followed by `)`, so the perfectly valid `rgb(var(--color-foreground-rgb) / 60%)` fell
      through to the `inherits` check below, which accepted the foreground variable and left
