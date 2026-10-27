@@ -1011,12 +1011,46 @@ const LAYOUT_CHAIN = LAYOUT_ELEMENTS.map((entry) => entry.tokens);
  */
 const LAYOUT_INLINES = LAYOUT_ELEMENTS.map((entry) => entry.inline);
 
+/*
+ * The classes a section emits only inside a Liquid conditional.
+ *
+ * `ancestriesFor` strips every Liquid tag before reading the markup, which turns
+ * `class="add-image-and-text-slider{% if ... == 'right' %} invert-columns{% endif %}"` into
+ * an element that always carries `invert-columns`. `templates/page.wholesale.json`
+ * configures that section as `left`, so the class is never on the page -- and a
+ * `.invert-columns .subtitle { opacity: 1 }` written against it restored the label with all
+ * five tests green (Codex, #427).
+ *
+ * Dropping the class instead would be wrong in the mirror direction: a rule that *fades*
+ * through it would stop being seen. Both readings are unsafe, so the class stays in the
+ * ancestry -- which keeps every fade this file already catches -- and a rule that reaches a
+ * label through one of these names is refused instead. Resolving the condition against the
+ * section settings in each template is the honest fix and a larger one; this says so rather
+ * than guessing.
+ */
+const conditionalClassesIn = (source) => {
+  const names = new Set();
+  const CLASS = /class\s*=\s*"([^"]*)"|class\s*=\s*'([^']*)'/g;
+  const BRANCH = /\{%-?\s*(?:if|unless|case)\b[\s\S]*?\{%-?\s*end(?:if|unless|case)\s*-?%\}/g;
+  for (const match of source.matchAll(CLASS)) {
+    const value = (match[1] ?? match[2]).replace(/\{\{[\s\S]*?\}\}/g, 'x');
+    if (!value.includes('{%')) continue;
+    for (const branch of value.matchAll(BRANCH)) {
+      for (const word of branch[0].replace(/\{%-?[\s\S]*?-?%\}/g, ' ').split(/\s+/)) {
+        if (word !== '' && !word.includes('{')) names.add(word);
+      }
+    }
+  }
+  return names;
+};
+
 const ancestriesFor = (name) => {
   const found = [];
   for (const file of readdirSync(join(root, 'sections'))) {
     if (!file.startsWith('ona-') || !file.endsWith('.liquid')) continue;
-    const markup = readFileSync(join(root, 'sections', file), 'utf8')
-      .split(/\{%-?\s*schema\s*-?%\}/)[0]
+    const source = readFileSync(join(root, 'sections', file), 'utf8').split(/\{%-?\s*schema\s*-?%\}/)[0];
+    const conditional = conditionalClassesIn(source);
+    const markup = source
       .replace(/\{%-?[\s\S]*?-?%\}/g, ' ')
       .replace(/\{\{[\s\S]*?\}\}/g, 'x');
 
@@ -1087,6 +1121,7 @@ const ancestriesFor = (name) => {
             inlineStyle(attributes),
           ],
           inline: inlineStyle(attributes),
+          conditional,
           section: file.slice(0, -'.liquid'.length),
         });
       }
@@ -1903,6 +1938,17 @@ const contextsFor = (name) => {
             `.${name} is painted with !important through "${rule.selector}", which this ` +
               'cascade model does not resolve -- extend it rather than trusting the result',
           );
+          /* `rulesFor` refuses a negated pseudo-class and the ancestor walk refuses one too,
+             but this path -- a rule that reaches the label by tag rather than by its class
+             -- was left out, so `span:not(:hover) { opacity: 1 }` still restored the label in
+             the state the browser excludes (Codex, #427). Three paths reach a label and the
+             guard has to sit on all three. */
+          assert.ok(
+            !negatesAState(rule.selector),
+            `.${name} is painted through "${rule.selector}", which negates a pseudo-class ` +
+              'this cascade model reads as always true -- teach it the negation rather than ' +
+              'letting the rule apply in the state it excludes',
+          );
           return {
             ...rule,
             label,
@@ -1911,6 +1957,13 @@ const contextsFor = (name) => {
           };
         });
 
+      /* A class the section emits only inside a Liquid conditional is in the ancestry as if
+         it were always there, so a rule qualified by one is refused rather than applied. */
+      const namesConditional = (selector) =>
+        [...entry.conditional].some((klass) =>
+          new RegExp(`\\.${klass.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`).test(selector),
+        );
+
       /* Anchored at the label, which is where every rule in `reaches` matched. */
       const reaches = [...named, ...unnamed]
         .sort((a, b) => a.weight - b.weight || a.at - b.at)
@@ -1918,6 +1971,15 @@ const contextsFor = (name) => {
           ...rule,
           anchored: conditionsAt(rule, entry.chain.length, entry.chain.length - 1),
         }));
+      for (const rule of reaches) {
+        assert.ok(
+          !namesConditional(rule.selector),
+          `.${name} is painted through "${rule.selector}", which names a class ` +
+            `${entry.section} emits only inside a Liquid conditional -- resolve that ` +
+            'condition against the template settings rather than treating the class as ' +
+            'always present',
+        );
+      }
       if (reaches.length === 0) continue;
 
       /* Only the ancestor declarations that can reach the label need their own contexts --
@@ -1974,6 +2036,13 @@ const contextsFor = (name) => {
             `an ancestor of the label is styled through "${rule.selector}", which negates a ` +
               'pseudo-class this cascade model reads as always true -- teach it the negation ' +
               'rather than letting the rule apply in the state it excludes',
+          );
+          assert.ok(
+            matches.length === 0 || !namesConditional(rule.selector),
+            `an ancestor of the label is styled through "${rule.selector}", which names a ` +
+              `class ${entry.section} emits only inside a Liquid conditional -- resolve that ` +
+              'condition against the template settings rather than treating the class as ' +
+              'always present',
           );
           const varies = rule.states.some(({ state }) => !/^:root$/i.test(state));
           const seen = new Set();
