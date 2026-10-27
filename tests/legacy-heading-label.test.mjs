@@ -2920,6 +2920,21 @@ const colourValue = (value) => {
     }
   }
 
+  /* An opacity token in a `var()` fallback paints only when the variable before it is
+     undefined, the same rule the palette and foreground guards below apply. The multipliers
+     underneath read the whole string, so they could not be switched to the painted value
+     alone without this: a fallback-only token whose primary IS undefined does reach the
+     page, and reading past it would under-apply the alpha and measure the contrast higher
+     than it renders. Resolving the primary means tracking arbitrary custom properties, so
+     this refuses, as the other two do. */
+  const OPACITY_IN = /--opacity-(?:muted|subdued)-text(?![\w-])/;
+  assert.ok(
+    !OPACITY_IN.test(value) || OPACITY_IN.test(withoutFallbacks(value)),
+    `the eyebrow's colour in "${value}" names an opacity token only inside a var() ` +
+      'fallback, which applies only when the variable before it is undefined -- resolve ' +
+      'that variable rather than measuring a fallback the browser may never reach',
+  );
+
   const slashed = value.match(/\/\s*([^)]+?)\s*\)/);
   if (slashed) {
     alpha *= alphaFrom(slashed[1].trim(), value);
@@ -2927,11 +2942,23 @@ const colourValue = (value) => {
     /* Only when no alpha has been read already: `rgba(0, 0, 0, var(--opacity-subdued-text))`
        names the token in its fourth argument, and counting it here as well would square it
        into 0.64. */
-    if (/--opacity-muted-text(?![\w-])/.test(value)) alpha *= clampAlpha(opacityToken('muted'));
-    if (/--opacity-subdued-text(?![\w-])/.test(value)) alpha *= clampAlpha(opacityToken('subdued'));
+    if (/--opacity-muted-text(?![\w-])/.test(withoutFallbacks(value))) {
+      alpha *= clampAlpha(opacityToken('muted'));
+    }
+    if (/--opacity-subdued-text(?![\w-])/.test(withoutFallbacks(value))) {
+      alpha *= clampAlpha(opacityToken('subdued'));
+    }
   }
-  if (/--color-foreground-muted(?![\w-])/.test(value)) alpha *= clampAlpha(opacityToken('muted'));
-  if (/--color-foreground-subdued(?![\w-])/.test(value)) alpha *= clampAlpha(opacityToken('subdued'));
+  /* And the painted value here too: `var(--color-foreground, var(--color-foreground-muted))`
+     applied the muted alpha and failed at 4.42:1, although the primary is defined and the
+     browser paints it at full opacity -- a false failure from the same blindness that let
+     the keyword fallback through (Codex, #427). */
+  if (/--color-foreground-muted(?![\w-])/.test(withoutFallbacks(value))) {
+    alpha *= clampAlpha(opacityToken('muted'));
+  }
+  if (/--color-foreground-subdued(?![\w-])/.test(withoutFallbacks(value))) {
+    alpha *= clampAlpha(opacityToken('subdued'));
+  }
 
   /* `--palette-lightest` and `--palette-darkest` name one fixed colour each. Reading them as
      inherited let the contrast test pick whichever palette extreme suited each ground, so
@@ -2991,7 +3018,28 @@ const colourValue = (value) => {
    * `var(--brand-inherit)` is not the keyword. A value this cannot place now reaches the
    * refusal below, which is where an unrecognised variable belongs.
    */
-  const inherits = /(?<![\w-])(?:currentColor|inherit)(?![\w-])/i.test(value) || FOREGROUND_IN.test(value);
+  /*
+   * The keyword alternative bypassed both fallback guards. `--probe: #f4f3e9;
+   * color: var(--probe, currentColor)` was read as "inherited" and passed all five tests,
+   * while the same colour as a literal fails at 1:1 -- the browser paints cream on cream,
+   * because the primary is defined and the fallback never applies (Codex, #427). The round
+   * that bounded these keywords touched this very line and did not notice that the two
+   * guards directly above it ask a question it was not asking.
+   *
+   * A keyword outside a fallback still means inherited; one only inside it is refused,
+   * unless a foreground token outside the fallback already settles the matter -- in
+   * `var(--color-foreground, currentColor)` both readings agree and refusing would be noise.
+   */
+  const KEYWORD_IN = /(?<![\w-])(?:currentColor|inherit)(?![\w-])/i;
+  const painted = withoutFallbacks(value);
+  assert.ok(
+    !KEYWORD_IN.test(value) || KEYWORD_IN.test(painted) || FOREGROUND_IN.test(painted),
+    `the eyebrow's colour in "${value}" names an inheritance keyword only inside a var() ` +
+      'fallback, which applies only when the variable before it is undefined -- resolve ' +
+      'that variable rather than measuring a fallback the browser may never reach',
+  );
+
+  const inherits = KEYWORD_IN.test(painted) || FOREGROUND_IN.test(painted);
   assert.ok(
     inherits,
     `cannot work out what colour the eyebrow is painted in from "${value}" -- extend this ` +
@@ -3019,7 +3067,12 @@ const FOREGROUND_TOKEN = /--color-foreground(?:-rgb|-muted|-subdued)?(?![\w-])/g
  */
 const substituted = (declarations, text, inherited = new Map()) => {
   let out = text;
-  for (const token of new Set(text.match(FOREGROUND_TOKEN) ?? [])) {
+  /* Only the tokens that paint. Enumerating them off the whole string asked about one in a
+     `var()` fallback as well, so `var(--color-foreground, var(--color-foreground-muted))`
+     refused over the muted token's upstream definition although the primary is defined and
+     the browser never reaches the fallback -- the seventh place this file read past a
+     fallback, and a false refusal rather than a false pass (Codex, #427). */
+  for (const token of new Set(withoutFallbacks(text).match(FOREGROUND_TOKEN) ?? [])) {
     /* Nearest definition wins: the element's own, then the closest ancestor that set it.
        Custom properties inherit, so a definition on an ancestor reaches the label whether or
        not that ancestor paints itself with it -- looking only at the element's own
