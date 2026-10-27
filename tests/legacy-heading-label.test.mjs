@@ -87,9 +87,14 @@ const templates = (() => {
       const parsed = JSON.parse(
         readFileSync(join(root, 'templates', file), 'utf8').replace(/^\s*\/\*[\s\S]*?\*\//, ''),
       );
+      const sections = parsed.sections ?? {};
       found.push({
         file,
-        types: new Set(Object.values(parsed.sections ?? {}).map((section) => section.type)),
+        types: new Set(Object.values(sections).map((section) => section.type)),
+        /* The order the browser sees, for the ordering guard below. */
+        order: (parsed.order ?? Object.keys(sections))
+          .map((key) => sections[key]?.type)
+          .filter(Boolean),
       });
     } catch {
       continue;
@@ -97,6 +102,38 @@ const templates = (() => {
   }
   return found;
 })();
+
+/*
+ * A section's `{% style %}` enters the cascade where the section renders, so between two of
+ * them on one page the template's order decides, not the order `readdirSync` happened to
+ * return. `flat` numbers them globally, which can resolve two such rules backwards
+ * (Codex, #427).
+ *
+ * Rather than model per-template source order, this refuses the case: today no section's
+ * `{% style %}` touches an eyebrow at all, and only two sections carry such a block, so the
+ * ordering never arises. It fails loudly the day a second one does, which is the same stance
+ * this file takes on `!important` and sibling combinators -- rather than quietly resolving
+ * them the wrong way round.
+ */
+const assertInlineOrderUnambiguous = (name) => {
+  const target = new RegExp(`\\.${name.replace(/-/g, '\\-')}(?![\\w-])`);
+  const styling = new Set(
+    sheets
+      .filter((sheet) => sheet.origin && target.test(sheet.text))
+      .map((sheet) => sheet.origin),
+  );
+  if (styling.size < 2) return;
+  for (const { file, order } of templates) {
+    const onPage = order.filter((type) => styling.has(type));
+    assert.ok(
+      new Set(onPage).size < 2,
+      `${file} renders ${[...new Set(onPage)].join(' and ')}, and each styles .${name} from ` +
+        'its own {% style %} block. Their source order follows this template, which this ' +
+        'cascade model does not track -- give it per-template ordering rather than trusting ' +
+        'the result',
+    );
+  }
+};
 
 /* Kept for the prose checks that only ask whether a name is mentioned at all. */
 const css = sheets.map((sheet) => sheet.text).join('\n');
@@ -797,6 +834,7 @@ test('an eyebrow with nothing in it takes up no room', () => {
 
 test('the eyebrow sits on its own line above the heading', () => {
   for (const [name] of labels) {
+    assertInlineOrderUnambiguous(name);
     for (const context of contextsFor(name)) {
       if (context.filled.length === 0) continue;
       /* `.some()` passed while a later `display: inline` won in the browser (Codex, #300). */
@@ -808,6 +846,27 @@ test('the eyebrow sits on its own line above the heading', () => {
           `${context.where}, across ` +
           `${JSON.stringify(context.filled.map((rule) => rule.selector))}, it resolves to ` +
           `${winner ?? '<unset>'}, and the eyebrow runs into the heading on the same line`,
+      );
+
+      /* display:block alone only stops the label sharing a line; it still butts against the
+         heading with no gap. The guard this replaced asserted a positive bottom margin and
+         this one did not, so `margin: 0 0 14px` -> `margin: 0` passed (Codex, #427).
+         Shorthand or longhand, the bottom of the box is what separates the two: in
+         `margin: 0 0 14px` that is the third value, in `margin: 0` the only one. */
+      const declared = merge(context.filled, context.inline);
+      const shorthand = lastValue(declared, 'margin');
+      const longhand = lastValue(declared, 'margin-bottom');
+      const parts = shorthand ? shorthand.trim().split(/\s+/) : null;
+      const gap = longhand ?? (parts ? (parts[2] ?? parts[0]) : null);
+      assert.ok(
+        gap,
+        `.${name} in ${context.where} declares no bottom margin, so the label butts against ` +
+          'the heading',
+      );
+      assert.ok(
+        parseFloat(gap) > 0,
+        `.${name} in ${context.where} leaves a bottom margin of "${gap}", so the label butts ` +
+          'against the heading',
       );
     }
   }
@@ -829,8 +888,33 @@ const palette = (() => {
     readFileSync(join(root, 'config/settings_data.json'), 'utf8').replace(/^\s*\/\*[\s\S]*?\*\//, ''),
   ).current;
   const colors = settings.color_palette?.[0]?.settings ?? settings.color_palette ?? {};
-  return { background: colors.background, foreground: colors.foreground };
+  return { background: colors.background, foreground: colors.foreground, all: colors };
 })();
+
+/*
+ * `snippets/color-palette.liquid` picks --palette-lightest and --palette-darkest by running
+ * `color_brightness` over every colour in the palette, so they are resolved the same way here
+ * rather than guessed. Shopify's filter is the perceived-brightness weighting.
+ */
+const paletteExtreme = (which) => {
+  const brightness = (hex) => {
+    const [r, g, b] = rgb(hex);
+    return (r * 299 + g * 587 + b * 114) / 1000;
+  };
+  const swatches = Object.values(palette.all).filter(
+    (value) => typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value),
+  );
+  assert.ok(swatches.length > 0, 'the palette has no colours this can read');
+  return swatches.reduce((best, value) =>
+    which === 'lightest'
+      ? brightness(value) > brightness(best)
+        ? value
+        : best
+      : brightness(value) < brightness(best)
+        ? value
+        : best,
+  );
+};
 
 /* The section types that render one of the derived eyebrows. */
 const eyebrowed = new Set([...labels.values()].flatMap((sections) => [...sections]));
@@ -951,8 +1035,18 @@ const painted = (declarations) => {
   if (/--color-foreground-muted/.test(value)) alpha *= opacityToken('muted');
   if (/--color-foreground-subdued/.test(value)) alpha *= opacityToken('subdued');
 
+  /* `--palette-lightest` and `--palette-darkest` name one fixed colour each. Reading them as
+     inherited let the contrast test pick whichever palette extreme suited each ground, so
+     `color: var(--palette-lightest)` passed against the cream page it is invisible on
+     (Codex, #427). `contrast-override.liquid:61` emits `var(--palette-darkest)` in real theme
+     code, so these have to resolve, not be rejected. */
+  const extreme = value.match(/--palette-(darkest|lightest)(?![\w-])/);
+  if (extreme) {
+    return { alpha, literal: rgb(paletteExtreme(extreme[1])), how: value };
+  }
+
   const inherits =
-    /currentColor|inherit|--color-foreground(?![\w-])|--color-foreground-rgb|--color-foreground-muted|--color-foreground-subdued|--palette-(darkest|lightest)/.test(
+    /currentColor|inherit|--color-foreground(?![\w-])|--color-foreground-rgb|--color-foreground-muted|--color-foreground-subdued/.test(
       value,
     );
   assert.ok(
@@ -974,6 +1068,7 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
   );
 
   for (const [name] of labels) {
+    assertInlineOrderUnambiguous(name);
     const contexts = contextsFor(name);
     assert.ok(contexts.length > 0, `no rule paints .${name}`);
 
