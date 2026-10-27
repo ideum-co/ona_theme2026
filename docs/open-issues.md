@@ -320,9 +320,11 @@ Exactly one form in the store uses it: form `62822` on `/pages/contact`, which
 posts to `form.globo.io`. It is placed in the page's body HTML, not in the
 theme. Nothing else in the store references Globo.
 
-The wholesale page already proves the alternative: its "Get in touch" form is a
-native Shopify `/contact` form with eight fields, rendered by the theme's own
-`ona-gust-r` section, with no app involved.
+The theme already proves the alternative: `ona-training-form` and
+`ona-expericences-content` are native Shopify `/contact` forms rendered by the
+theme itself, with no app involved. Wholesale used to be the third example,
+until `ona-gust-r` was removed — ONA takes wholesale enquiries through a Monday
+form, so the section was a duplicate band carrying a form nobody worked from.
 
 So the fix is not to disable the embed — that breaks the contact form. It is to
 rebuild form 62822 the way wholesale already does it, then uninstall the app.

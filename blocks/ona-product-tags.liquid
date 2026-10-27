@@ -25,7 +25,7 @@
   already supplies its own gap, so the class margin would double the spacing.
   Inline beats the class regardless of stylesheet order.
 {%- endcomment -%}
-{%- capture ona_tags_vars -%}--ona-tags-justify: {{ ona_tags_justify }}; --ona-tags-font-size: {{ ona_tags_font_size }}px;{%- endcapture -%}
+{%- capture ona_tags_vars -%}--ona-tags-justify: {{ ona_tags_justify }}; --ona-tags-text-align: {{ block.settings.tag_alignment | default: 'left' }}; --ona-tags-font-size: {{ ona_tags_font_size }}px;{%- endcapture -%}
 {%- capture ona_tags_style -%}margin-top: 0; {{ ona_tags_vars }}{% render 'spacing-style', settings: block.settings %}{%- endcapture -%}
 {%- capture ona_tags_markup -%}
   {%- render 'ona-product-tags-pdp',
@@ -78,7 +78,16 @@
   .ona-pdp-tags .custom_product_tags h5 {
     margin: 0;
     font-size: var(--ona-tags-font-size, 14px);
+    text-align: var(--ona-tags-text-align, left);
     text-transform: uppercase;
+  }
+
+  .product-card .ona-pdp-tags .custom_product_tags {
+    justify-content: center;
+  }
+
+  .product-card .ona-pdp-tags .custom_product_tags h5 {
+    text-align: center;
   }
 
   .product-card .ona-pdp-tags--empty { visibility: hidden; min-block-size: 1lh; pointer-events: none; }

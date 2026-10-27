@@ -98,8 +98,9 @@
                 "namespace": "accentuate",
                 "description_key": "tastes_like",
                 "badge_size": 18,
-                "title_size": 64,
-                "title_size_mobile": 48,
+                "fluid_title": true,
+                "title_size": 50,
+                "title_size_mobile": 36,
                 "description_size": 22,
                 "price_size": 32,
                 "rating_size": 20,
@@ -209,32 +210,6 @@
                 }
               },
               "block_order": []
-            },
-            "text_aEtTtq": {
-              "type": "text",
-              "name": "t:names.product_description",
-              "settings": {
-                "text": "{{ closest.product.description }}",
-                "width": "100%",
-                "max_width": "normal",
-                "alignment": "left",
-                "type_preset": "rte",
-                "font": "var(--font-body--family)",
-                "font_size": "",
-                "line_height": "normal",
-                "letter_spacing": "normal",
-                "case": "none",
-                "wrap": "pretty",
-                "text_color": "",
-                "background": false,
-                "background_color": "#00000026",
-                "corner_radius": 0,
-                "padding-block-start": 0,
-                "padding-block-end": 0,
-                "padding-inline-start": 0,
-                "padding-inline-end": 0
-              },
-              "blocks": {}
             },
             "properties_table": {
               "type": "custom-liquid",
@@ -411,7 +386,6 @@
             "variant_picker_R3rGDr",
             "purchase_options_SbK4qN",
             "buy_buttons_eYQEYi",
-            "text_aEtTtq",
             "properties_table",
             "group_icgrde",
             "divider_VJhene",
@@ -510,146 +484,40 @@
       "blocks": {
         "product_tab_ePcCkQ": {
           "type": "product-tab",
-          "disabled": true,
           "settings": {
             "label": "Profile"
           },
           "blocks": {
-            "media_with_text_NwxVtm": {
-              "type": "media-with-text",
-              "name": "Media with text",
+            "text_C78MjG": {
+              "type": "text",
+              "name": "t:names.text",
               "settings": {
-                "media_position": "right",
-                "media_width_ratio": 0,
-                "media_height": "60svh",
-                "gap": 32,
-                "content_distribution": "together",
-                "limit_content_width": true,
-                "max_width": 1360,
-                "content_padding_custom": false,
-                "content_padding_inline": 0,
-                "content_padding_block_start": 0,
-                "content_padding_block_end": 0,
-                "mobile_content_first": false,
-                "mobile_text_center": false,
-                "mobile_padding_inline": 0
+                "text": "",
+                "fallback_to_product_description": true,
+                "width": "100%",
+                "max_width": "normal",
+                "alignment": "left",
+                "type_preset": "custom",
+                "font": "var(--font-body--family)",
+                "font_size": "1.25rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
               },
-              "blocks": {
-                "media": {
-                  "type": "_media-without-appearance",
-                  "static": true,
-                  "settings": {
-                    "media_type": "image",
-                    "image": "shopify://shop_images/maple.webp",
-                    "link": "",
-                    "video_loop": true,
-                    "video_autoplay": false,
-                    "image_position": "cover",
-                    "image_position_mobile": "cover",
-                    "video_position": "cover"
-                  },
-                  "blocks": {}
-                },
-                "content": {
-                  "type": "_content-without-appearance",
-                  "static": true,
-                  "settings": {
-                    "horizontal_alignment_flex_direction_column": "flex-start",
-                    "vertical_alignment_flex_direction_column": "center",
-                    "gap": 24
-                  },
-                  "blocks": {
-                    "text_ytRgY6": {
-                      "type": "text",
-                      "name": "t:names.heading",
-                      "settings": {
-                        "text": "<p>TASTES LIKE</p>",
-                        "width": "fit-content",
-                        "max_width": "normal",
-                        "alignment": "left",
-                        "type_preset": "paragraph",
-                        "font": "var(--font-body--family)",
-                        "font_size": "1rem",
-                        "line_height": "normal",
-                        "letter_spacing": "normal",
-                        "case": "none",
-                        "wrap": "pretty",
-                        "text_color": "{{ settings.color_palette.background }}",
-                        "background": false,
-                        "background_color": "#00000026",
-                        "corner_radius": 0,
-                        "padding-block-start": 0,
-                        "padding-block-end": 0,
-                        "padding-inline-start": 0,
-                        "padding-inline-end": 0
-                      },
-                      "blocks": {}
-                    },
-                    "text_dMNeWR": {
-                      "type": "text",
-                      "name": "t:names.heading",
-                      "settings": {
-                        "text": "<p>Caramel, biscuts, nuts and spices</p>",
-                        "width": "fit-content",
-                        "max_width": "normal",
-                        "alignment": "left",
-                        "type_preset": "custom",
-                        "font": "var(--font-body--family)",
-                        "font_size": "2rem",
-                        "line_height": "normal",
-                        "letter_spacing": "normal",
-                        "case": "none",
-                        "wrap": "pretty",
-                        "text_color": "{{ settings.color_palette.background }}",
-                        "background": false,
-                        "background_color": "#00000026",
-                        "corner_radius": 0,
-                        "padding-block-start": 0,
-                        "padding-block-end": 0,
-                        "padding-inline-start": 0,
-                        "padding-inline-end": 0
-                      },
-                      "blocks": {}
-                    },
-                    "text_C78MjG": {
-                      "type": "text",
-                      "name": "t:names.text",
-                      "settings": {
-                        "text": "<p>The maple tree's enduring strength speaks to our commitment to nature and sustainability.<br/><br/>Maple was created to be a traditional style milk coffee, perfect for everyday drinking. It is a bold, full-bodied coffee with flavours of caramel, mal, nut and spices.</p>",
-                        "width": "fit-content",
-                        "max_width": "normal",
-                        "alignment": "left",
-                        "type_preset": "custom",
-                        "font": "var(--font-body--family)",
-                        "font_size": "1.25rem",
-                        "line_height": "normal",
-                        "letter_spacing": "normal",
-                        "case": "none",
-                        "wrap": "pretty",
-                        "text_color": "{{ settings.color_palette.background }}",
-                        "background": false,
-                        "background_color": "#00000026",
-                        "corner_radius": 0,
-                        "padding-block-start": 0,
-                        "padding-block-end": 0,
-                        "padding-inline-start": 0,
-                        "padding-inline-end": 0
-                      },
-                      "blocks": {}
-                    }
-                  },
-                  "block_order": [
-                    "text_ytRgY6",
-                    "text_dMNeWR",
-                    "text_C78MjG"
-                  ]
-                }
-              },
-              "block_order": []
+              "blocks": {}
             }
           },
           "block_order": [
-            "media_with_text_NwxVtm"
+            "text_C78MjG"
           ]
         },
         "product_tab_4tzPxX": {
@@ -659,26 +527,6 @@
             "label": "Brew Guide"
           },
           "blocks": {}
-        },
-        "product_tab_dFwTTp": {
-          "type": "product-tab",
-          "settings": {
-            "label": "Reviews"
-          },
-          "blocks": {
-            "judge_me_reviews_review_widget_LLV6L8": {
-              "type": "shopify://apps/judge-me-reviews/blocks/review_widget/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
-              "settings": {
-                "review_data": "sample_data",
-                "max_width": 1200,
-                "show_shop_reviews": false,
-                "empty_state": "empty_widget"
-              }
-            }
-          },
-          "block_order": [
-            "judge_me_reviews_review_widget_LLV6L8"
-          ]
         },
         "product_tab_faqs_Jv4Wmd": {
           "type": "product-tab",
@@ -701,8 +549,7 @@
       "block_order": [
         "product_tab_ePcCkQ",
         "product_tab_4tzPxX",
-        "product_tab_faqs_Jv4Wmd",
-        "product_tab_dFwTTp"
+        "product_tab_faqs_Jv4Wmd"
       ],
       "name": "Product tabs",
       "settings": {
@@ -1574,7 +1421,6 @@
                   "name": "t:names.subscribe_button",
                   "settings": {
                     "label": "Subscribe",
-                    "submit_label": "Add to cart",
                     "style_class": "button"
                   },
                   "blocks": {}
@@ -1659,6 +1505,60 @@
         "padding_inline_mobile": 20
       },
       "disabled": true
+    },
+    "product_reviews_bottom": {
+      "type": "section",
+      "name": "Reviews",
+      "blocks": {
+        "judge_me_reviews_review_widget_LLV6L8": {
+          "type": "shopify://apps/judge-me-reviews/blocks/review_widget/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
+          "settings": {
+            "review_data": "sample_data",
+            "max_width": 1200,
+            "show_shop_reviews": false,
+            "empty_state": "empty_widget"
+          }
+        }
+      },
+      "block_order": [
+        "judge_me_reviews_review_widget_LLV6L8"
+      ],
+      "settings": {
+        "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "flex-start",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 32,
+        "section_width": "page-width",
+        "limit_content_width": true,
+        "max_width": 1360,
+        "section_height": "",
+        "section_height_custom": 50,
+        "mobile_min_height": 600,
+        "mobile_content_top": 0,
+        "mobile_text_scrim": false,
+        "mobile_scrim_color": "#470a12",
+        "background_media": "none",
+        "background_color": "#470a12",
+        "mobile_video_position": "contain",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
+        "padding-block-start": 40,
+        "padding-block-end": 40,
+        "anchor": "reviews"
+      }
     }
   },
   "order": [
@@ -1672,6 +1572,7 @@
     "brew_guide",
     "faqs",
     "product_recommendations_qggXJq",
+    "product_reviews_bottom",
     "inline_cta_8ann9f"
   ]
 }

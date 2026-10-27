@@ -10,7 +10,12 @@
 
   @param {object} product - The product object.
   @param {string} form_id - Id of the form the `selling_plan` radios submit with.
-  @param {string} unique_id - Suffix that keeps the ids and the script scoped to this instance.
+  @param {string} unique_id - Suffix that keeps this instance's markers unique on the page. Behaviour
+    lives in `purchase-options.js`, which is delegated from the document, so morphed markup needs
+    no re-initialisation.
+  @param {boolean} [subscription_only] - Omit the one-time option and preselect the first
+    subscription, for a panel the shopper opened by pressing "Subscribe". Without it the list
+    leads with the one-time option, which is what the product page wants.
   @param {string} [label] - Optional label above the list.
   @param {string} [shopify_attributes] - Theme editor attributes, when rendered from a block.
 
@@ -21,6 +26,19 @@
 {% liquid
   assign variant = product.selected_or_first_available_variant
   assign groups = product.selling_plan_groups
+
+  # A group can exist on the product and still have no allocation for the variant in hand - a
+  # 200g-only plan while the shopper is looking at 1kg. In subscription-only mode that would
+  # leave a panel with nothing to choose and a submit that silently adds a one-time item, which
+  # is the whole failure this mode exists to prevent. Count first, so the caller can disable the
+  # button and the shopper gets told instead.
+  assign subscribable_count = 0
+  for group in groups
+    assign group_allocation = variant.selling_plan_allocations | where: 'selling_plan_group_id', group.id | first
+    unless group_allocation == blank
+      assign subscribable_count = subscribable_count | plus: 1
+    endunless
+  endfor
 %}
 
 {% unless product == blank or groups.size == 0 %}
@@ -36,23 +54,30 @@
     <div
       class="purchase-options__list"
       role="radiogroup"
-      aria-label="{{ label | default: 'Purchase options' }}"
+      {% if subscription_only %}
+        aria-label="{{ label | default: 'Subscription options' }}"
+      {% else %}
+        aria-label="{{ label | default: 'Purchase options' }}"
+      {% endif %}
     >
-      <label class="purchase-options__card is-selected">
-        <input
-          type="radio"
-          name="selling_plan"
-          value=""
-          form="{{ form_id }}"
-          class="purchase-options__radio"
-          checked
-        >
-        <span class="purchase-options__row">
-          <span class="purchase-options__title">{{ 'products.product.one_time_purchase' | t }}</span>
-          <span class="purchase-options__price">{{ variant.price | money }}</span>
-        </span>
-      </label>
+      {% unless subscription_only %}
+        <label class="purchase-options__card is-selected">
+          <input
+            type="radio"
+            name="selling_plan"
+            value=""
+            form="{{ form_id }}"
+            class="purchase-options__radio"
+            checked
+          >
+          <span class="purchase-options__row">
+            <span class="purchase-options__title">{{ 'products.product.one_time_purchase' | t }}</span>
+            <span class="purchase-options__price">{{ variant.price | money }}</span>
+          </span>
+        </label>
+      {% endunless %}
 
+      {% assign rendered_count = 0 %}
       {% for group in groups %}
         {% liquid
           assign has_multi_plan = false
@@ -68,14 +93,26 @@
               assign save_pct = allocation.compare_at_price | minus: allocation.price | times: 100.0 | divided_by: allocation.compare_at_price | round
             endif
             assign card_title = 'products.product.subscribe_and_save' | t
+
+          # Only the first one: a product may carry a plan per size, and checking every radio in
+          # the group would leave the browser honouring the last one rather than the one shown
+          # as chosen.
+          assign preselect = false
+          if subscription_only and rendered_count == 0
+            assign preselect = true
+          endif
+          assign rendered_count = rendered_count | plus: 1
           %}
-          <label class="purchase-options__card">
+          <label class="purchase-options__card{% if preselect %} is-selected{% endif %}">
             <input
               type="radio"
               name="selling_plan"
               value="{{ allocation.selling_plan.id }}"
               form="{{ form_id }}"
               class="purchase-options__radio"
+              {% if preselect %}
+                checked
+              {% endif %}
             >
             <span class="purchase-options__body">
               <span class="purchase-options__row">
@@ -108,16 +145,25 @@
                         endif
                       endfor
                     %}
-                    <option
-                      value="{{ plan.id }}"
-                      data-price="{{ plan_allocation.price | money }}"
-                      data-compare-at="{{ plan_allocation.compare_at_price | money }}"
-                      {% if plan.id == allocation.selling_plan.id %}
-                        selected
-                      {% endif %}
-                    >
-                      {{ plan.name }}
-                    </option>
+                    {% comment %}
+                      A group can hold a plan this variant was never allocated. Offered anyway, it
+                      renders with an empty price and, once picked, writes an unallocated plan id
+                      onto the radio - so the panel asks the cart for a pairing it will not take,
+                      with the price showing blank. The panel is subscription-only now, so this is
+                      the only path through it rather than one option beside a one-time purchase.
+                    {% endcomment %}
+                    {% unless plan_allocation == blank %}
+                      <option
+                        value="{{ plan.id }}"
+                        data-price="{{ plan_allocation.price | money }}"
+                        data-compare-at="{{ plan_allocation.compare_at_price | money }}"
+                        {% if plan.id == allocation.selling_plan.id %}
+                          selected
+                        {% endif %}
+                      >
+                        {{ plan.name }}
+                      </option>
+                    {% endunless %}
                   {% endfor %}
                 </select>
               {% endif %}
@@ -125,7 +171,19 @@
           </label>
         {% endunless %}
       {% endfor %}
+
     </div>
+
+    {% comment %}
+      Outside the radiogroup on purpose: in the one state where this renders there are no radios in
+      it, and non-radio content inside `role="radiogroup"` is not reliably announced - so the
+      shopper facing a dead Subscribe button would be the one person not told why.
+    {% endcomment %}
+    {% if subscription_only and subscribable_count == 0 %}
+      <p class="purchase-options__unavailable" role="status">
+        {{- 'products.product.subscription_unavailable_for_variant' | t -}}
+      </p>
+    {% endif %}
 
     {% assign detail_plan = groups.first.selling_plans.first %}
     {% if detail_plan.description != blank %}
@@ -136,54 +194,12 @@
     {% endif %}
   </div>
 
-  <script>
-    (function () {
-      var root = document.querySelector('.purchase-options[data-purchase-options-id="{{ unique_id }}"]');
-      if (!root) return;
+  {%- comment -%}
+    Rendered from here because the Appstle widget only ever appears where purchase options do, and
+    a snippet's stylesheet is collected once however many times it is rendered.
+  {%- endcomment -%}
+  {%- render 'appstle-widget-styles' -%}
 
-      var radios = root.querySelectorAll('.purchase-options__radio');
-      var selects = root.querySelectorAll('[data-plan-select]');
-
-      function syncCardState() {
-        radios.forEach(function (radio) {
-          radio.closest('.purchase-options__card').classList.toggle('is-selected', radio.checked);
-        });
-      }
-
-      radios.forEach(function (radio) {
-        radio.addEventListener('change', function () {
-          if (radio.checked) {
-            var select = radio.closest('.purchase-options__card').querySelector('[data-plan-select]');
-            if (select) radio.value = select.value;
-          }
-          syncCardState();
-        });
-      });
-
-      selects.forEach(function (select) {
-        select.addEventListener('change', function () {
-          var card = select.closest('.purchase-options__card');
-          var radio = card.querySelector('.purchase-options__radio');
-          radio.value = select.value;
-          radio.checked = true;
-
-          var option = select.options[select.selectedIndex];
-          var priceEl = card.querySelector('.purchase-options__price');
-          if (priceEl && option) {
-            var html = option.getAttribute('data-price');
-            var compareAt = option.getAttribute('data-compare-at');
-            if (compareAt && compareAt !== option.getAttribute('data-price')) {
-              html += ' <s class="purchase-options__compare-price">' + compareAt + '</s>';
-            }
-            priceEl.innerHTML = html;
-          }
-          syncCardState();
-        });
-      });
-
-      syncCardState();
-    })();
-  </script>
 {% endunless %}
 
 {% stylesheet %}
@@ -192,6 +208,20 @@
     flex-direction: column;
     gap: var(--gap-xs);
     width: 100%;
+  }
+
+  /* While the panel is fetching the picked variant's plans, everything on screen still describes
+     the previous one. Dimmed and made inert so it cannot be read as current or clicked through;
+     `variant-select.js` keeps the submit shut over the same window. */
+  [data-plans-pending] .purchase-options {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    [data-plans-pending] .purchase-options {
+      transition: opacity var(--animation-speed, 0.2s) var(--animation-easing, ease);
+    }
   }
 
   .purchase-options__label {
@@ -289,6 +319,15 @@
     border-radius: var(--style-border-radius-inputs);
     padding: 4px 8px;
     background: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  /* Reads as information, not an error: the size simply has no plan attached. Takes the body
+     colour rather than the secondary one, so it is as legible as the text around it whatever
+     scheme the panel is rendered into. */
+  .purchase-options__unavailable {
+    margin: 0;
+    font-size: var(--font-size--sm);
     color: var(--color-foreground);
   }
 

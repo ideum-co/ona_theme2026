@@ -1,0 +1,52 @@
+{% comment %}
+  This section is only to be called by the Section Rendering API.
+
+  `section-rendering-product-card` cannot serve this: it renders a stripped card - variant JSON,
+  swatches, price, sku - and no blocks at all, so the subscribe panel is never in its output.
+  Rendering the whole product page instead would ship the entire template to update one control.
+
+  The point of fetching rather than computing is that the selling plans a variant actually carries
+  are a Liquid question. `variant.selling_plan_allocations` is per variant: a product can hold a
+  plan for 200g that 1kg was never allocated, so a panel rendered for one size and left in place
+  offers plans the other size cannot be bought on. Requesting this section with `?variant=` makes
+  the server answer that question for the size in hand, which is the same answer the product page
+  would give.
+
+  Deliberately only `purchase-options`. The variant dropdown beside it lists every variant and does
+  not change with the selection, so morphing it would throw away the shopper's open panel and focus
+  for no new information.
+
+  The ids are placeholders. A section rendered through this API cannot be told the calling block's
+  id, and `purchase-options` uses one to scope `data-purchase-options-id` and the `form` attribute
+  that reaches the add to cart form. `variant-select.js` rewrites both onto the fetched markup
+  before it morphs, so the panel keeps pointing at its own form.
+{% endcomment %}
+
+{% liquid
+  if product == blank
+    assign product = closest.product
+  endif
+%}
+
+{% render 'purchase-options',
+  product: product,
+  form_id: 'card-subscribe-form-placeholder',
+  unique_id: 'card-subscribe-panel-placeholder',
+  subscription_only: true
+%}
+
+{% schema %}
+{
+  "name": "t:names.subscribe_panel_rendering",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "t:settings.product"
+    }
+  ]
+}
+{% endschema %}

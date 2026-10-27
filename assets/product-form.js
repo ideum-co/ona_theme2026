@@ -776,6 +776,14 @@ class ProductFormComponent extends Component {
     const sourceCard = /** @type {Element | null} */ (event.target)?.closest('product-card');
     if (sourceCard && !sourceCard.contains(this)) return;
 
+    // A subscribe panel's form is not driven from here. Its plan radios belong to one variant, and
+    // which plans a variant can be bought on differs per variant - on this store, every
+    // subscribable product allocates a disjoint set per size. Writing a new variant id into this
+    // form and enabling its button, while the panel still shows the previous size's plans, posts a
+    // pairing the panel never offered. `variant-select.js` follows the card's selection for this
+    // form instead, refreshing the plans first so the two always describe the same size.
+    if (this.closest('subscribe-popover-component')) return;
+
     // Track generation to prevent a stale (aborted) call from clearing the flag
     // while a newer variant selection is still pending.
     const generation = ++this.#variantChangeGeneration;

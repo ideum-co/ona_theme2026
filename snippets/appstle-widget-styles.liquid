@@ -1,0 +1,61 @@
+{%- doc -%}
+  Styles the Appstle purchase widget with the product section's own background and foreground.
+  The product section resolves its colour pair for each product with contrast-override.
+
+  @example
+  {% render 'appstle-widget-styles' %}
+{%- enddoc -%}
+
+{% stylesheet %}
+  .product-information .appstle_sub_widget {
+    --ona-widget-surface: var(--color-background, #f4f3e9);
+    --ona-widget-ink: var(--color-foreground, #470a12);
+    background-color: var(--ona-widget-surface) !important;
+    color: var(--ona-widget-ink) !important;
+  }
+
+  .product-information .appstle_sub_widget .appstle_loyalty_text {
+    background-color: var(--ona-widget-surface) !important;
+    color: var(--ona-widget-ink) !important;
+  }
+
+  .product-information .appstle_sub_widget .appstle_loyalty_title,
+  .product-information .appstle_sub_widget .appstle_tooltip_title,
+  .product-information .appstle_sub_widget .appstle-loyalty-table-data,
+  .product-information .appstle_sub_widget .appstle-loyalty-billing-cycle,
+  .product-information .appstle_sub_widget .appstle-precentage-loyalty,
+  .product-information .appstle_sub_widget .appstle_one_time_text,
+  .product-information .appstle_sub_widget .appstle_subscribe_save_text,
+  .product-information .appstle_sub_widget .appstle_subscription_amount,
+  .product-information .appstle_sub_widget .appstle_subscription_compare_amount,
+  .product-information .appstle_sub_widget .appstle_select_label {
+    color: var(--ona-widget-ink) !important;
+  }
+
+  .product-information .appstle_sub_widget .appstle_subscription_wrapper_option,
+  .product-information .appstle_sub_widget .appstle_circle {
+    border-color: var(--ona-widget-ink) !important;
+  }
+
+  .product-information .appstle_sub_widget .appstle_dot {
+    background-color: var(--ona-widget-ink) !important;
+  }
+
+  .product-information .appstle_sub_widget select,
+  .product-information .appstle_sub_widget option {
+    background-color: var(--ona-widget-surface) !important;
+    color: var(--ona-widget-ink) !important;
+  }
+
+  .product-information .appstle_sub_widget .appstle_tooltip_appstle {
+    background-color: transparent !important;
+  }
+
+  .product-information .appstle_sub_widget .appstle-save-badge,
+  .product-information .appstle_sub_widget .appstle_link,
+  .product-information .appstle_sub_widget .appstle_subcription_link {
+    background-color: var(--ona-widget-ink) !important;
+    color: var(--ona-widget-surface) !important;
+    border-radius: var(--style-border-radius-pills) !important;
+  }
+{% endstylesheet %}

@@ -210,7 +210,7 @@ merge away from overwriting a merchant's decision:
 - every `sections/*-group.json`
 - `config/settings_data.json`
 
-That is 34 files today. Do not read the named files below as the set — they are
+That is 35 files today. Do not read the named files below as the set — they are
 the ones whose history is worth knowing, nothing more.
 `tests/shop-owned-templates.test.mjs` derives the real set from disk, so a
 template added tomorrow is covered the day it lands without anyone remembering
@@ -382,6 +382,60 @@ Before any release PR that touches a `templates/*.json` or
 
 `tests/shop-owned-templates.test.mjs` enforces the two platform limits on the
 repo side and carries this procedure in its header.
+
+---
+
+## 5a. Keep the repo level with the theme, so the gate in §5 is free
+
+§5 has been in this file since 2026-10-15. Eleven of the thirteen shop-owned
+repairs on `main` happened **after** it. So the problem is not that the rule is
+unwritten or unclear — it is that §5 is expensive precisely when it is needed,
+and the cost is paid by whoever is in a hurry.
+
+The cost is not the rule. It is the **staleness**. Every hour the repo lags the
+theme, §5 step 2 lands on *unequal* and sends you down the parsed-JSON
+reconciliation path. Do that often enough under deadline and the check becomes
+the thing you skip.
+
+**So the way to go faster is to keep the two sides level, not to check less.**
+When live and the repo are already identical, §5 step 2 returns *equal* and the
+whole gate is a single query. That is the fast path, and it is available far
+more often than it is used:
+
+> On 2026-10-25, changing one word of live homepage copy (#376) cost **one
+> checksum query**, because live `templates/index.json` and `origin/main` were
+> byte-identical — md5 `3c422b36…`, 186361 bytes, both sides. No reconciliation,
+> no body fetch, no leaf diff. That is what §5 feels like when the repo is level.
+
+### The rule
+
+1. **Sync live → repo on a schedule, not on demand.** Pull the 34 shop-owned
+   files from the live theme regularly and commit any drift as its own
+   reconciliation commit, before anyone needs to ship through them. A drift
+   commit landing on a quiet Tuesday is routine; the same drift discovered
+   inside a release is the thing that produces `restore the shop-owned sections
+   the #149 merge overwrote`.
+2. **A shop-owned change goes to the theme editor by default.** Git is for
+   shop-owned files only when §5 step 2 already says *equal*. If it says
+   unequal, fix it in the editor and let the next sync carry it back. Do not
+   reconcile a 186 KB template in order to change a sentence.
+3. **The post-merge read-back stays manual and mandatory until something else
+   actually does it.** §5 step 3 and `docs/deploy-verification.md` §0 both
+   require it; it has been skipped often enough to produce
+   `resend …, dropped by the sync on #NNN` five times. It *should* move into the
+   scheduled digest, where it costs nobody anything — but **no such digest or
+   verification workflow exists in this repository today**
+   (`.github/workflows/tests.yml` is the only workflow). Until a scheduled
+   verifier is running and has been seen to catch a real drop, do the read-back
+   by hand after every merge that touches a served file. Do not treat this
+   bullet as permission to stop.
+
+### What this does not fix
+
+Nothing here prevents the editor and a merge from racing inside the same hour.
+It shortens the window; it does not close it. Closing it needs either a lock on
+shop-owned edits during a release, or the admin freeze lifted so reconciliation
+can be done in the editor instead of in git — neither is decided.
 
 ---
 

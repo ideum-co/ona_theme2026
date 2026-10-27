@@ -73,7 +73,7 @@ Two things compound:
 
 ## 3. It is not one section
 
-**Thirty of the theme's 46 legacy `ona-*` sections carry no scoped CSS of
+**Twenty-nine of the theme's 45 legacy `ona-*` sections carry no scoped CSS of
 their own** — no `{% stylesheet %}` and no `{% style %}`. It was forty when
 this was written on 2026-10-20; ten have been scoped since, among them
 `ona-awards`, `ona-cafe-testimonial`, `ona-faq-lists`, `ona-icon-and-content`,
@@ -106,18 +106,18 @@ measure.
 
 Of the 81, the ones that still cost layout are `.section-full-large`
 (17 uses), `.match-height` / `.equal-height` (12 / 11) and the `.start` /
-`.medium` / `.end` trio (14 each). `.more-btn` (14) was on this list and is
+`.medium` / `.end` trio (14 each). `.more-btn` (13) was on this list and is
 now covered by `assets/legacy-page-layout.css` (Codex, #203) — another reason
 to rerun the count rather than work from it. The largest by raw count are
 animation hooks — `.fadeInUp` at 64, `.fadeIn` at 21, `.fadeInup` at 16 — and
 those are inert in this theme, so they need deleting rather than styling. So
-the work is to finish the shared sheet selector by selector, not to write thirty
+the work is to finish the shared sheet selector by selector, not to write twenty-nine
 new ones:
 
 ```
 ona-bookings-top                ona-bread-crumbs                ona-brewguides-and-training
 ona-careers                     ona-content                     ona-exclusive-access
-ona-expericences-content        ona-gust-r                      ona-inner-banner
+ona-expericences-content        ona-inner-banner
 ona-our-philosophy              ona-sourcing                    ona-sustainability-list
 ona-sustatnability              ona-training-banner             ona-training-form
 ona-training-iframe             ona-training-image-text         ona-training-text-image-bg
@@ -184,8 +184,8 @@ Two things fall out:
    a property of those templates, not of the theme: `sections/hero.liquid`,
    `locations-flagships.liquid`, `product-dna.liquid` and the shared image
    snippets already go through `image_tag`. (Scope corrected after Codex, #203.)
-4. Retire `wowo` / `fadeInUp`. They are on **28 of these 30** sections —
-   `ona-bread-crumbs` and `ona-gust-r` are the exceptions — and the library
+4. Retire `wowo` / `fadeInUp`. They are on **28 of these 29** sections —
+   `ona-bread-crumbs` is the exception — and the library
    behind them is not in this theme, so they are inert markup.
    `animate__heartBeat` is **not** part of this sweep: it occurs exactly once
    theme-wide, on `sections/ona-icon-and-content.liquid:15`, which is one of

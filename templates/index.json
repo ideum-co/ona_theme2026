@@ -837,7 +837,6 @@
                   "name": "t:names.subscribe_button",
                   "settings": {
                     "label": "Subscribe",
-                    "submit_label": "Add to cart",
                     "style_class": "button"
                   },
                   "blocks": {}
@@ -1725,7 +1724,7 @@
             "text_BN78NP": {
               "type": "text",
               "settings": {
-                "text": "<p>Sweet berries, creamy white chocolate and a sliky finish have made Raspberry Candy one of ONA's most iconic coffees.</p>",
+                "text": "<p>Sweet berries, creamy white chocolate and a silky finish have made Raspberry Candy one of ONA's most iconic coffees.</p>",
                 "width": "fit-content",
                 "max_width": "narrow",
                 "alignment": "left",
