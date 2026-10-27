@@ -1425,12 +1425,22 @@ const conditionsAt = (rule, chainLength, endIndex) => [
 
 /* A compound with its state pseudos removed, leaving what identifies the element. A function
    emptied by that -- `:is(:hover)` becoming `:is()` -- goes too, since an empty argument list
-   matches nothing and would drop the rule the states above have just qualified. */
+   matches nothing and would drop the rule the states above have just qualified.
+   
+   One emptied argument is enough to drop the whole function, and dropping it is the correct
+   reading rather than a widening: an alternation holds when ANY argument does, so a branch
+   that is nothing but a state can satisfy it on its own and no argument's structure is
+   required. Keeping the survivors made `.subtitle:is(:hover, .not-rendered)` into
+   `.subtitle:is(.not-rendered)`, which matches no eyebrow, so a rule the browser applies on
+   hover was dropped with all five tests green -- while `.subtitle:hover`, the same rule in
+   the state that matters, fails at 4.42:1 (Codex, #427). `statesOf` already keeps the whole
+   function as one condition for exactly this reason, so the gate survives; it was only the
+   structural half that narrowed. */
 const structural = (compound) => {
   const { parts, bare } = functionalsOf(compound);
   const kept = parts
-    .map((part) => ({ name: part.name, inner: splitSelectors(part.inner).map(structural).filter((b) => b.trim() !== '') }))
-    .filter((part) => part.inner.length > 0)
+    .map((part) => ({ name: part.name, inner: splitSelectors(part.inner).map(structural) }))
+    .filter((part) => part.inner.length > 0 && part.inner.every((branch) => branch.trim() !== ''))
     .map((part) => `:${part.name}(${part.inner.join(', ')})`)
     .join('');
   return (
