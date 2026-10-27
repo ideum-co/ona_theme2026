@@ -252,10 +252,12 @@ templates:
   blocks misses those seven, which is also why the first count of this figure
   read 84: section and block settings both carry `type_preset`, and counting
   one population twice is as easy as counting the other not at all.
-- **15 distinct padding values** between sections: 0, 8, 20, 24, 32, 40, 48,
-  60, 64, 72, 80, 96, 100, 120, 152. On the homepage every inter-section gap is
-  0 and all rhythm is internal padding, so these 15 values *are* the vertical
-  rhythm. An earlier count said 19 by sweeping every setting whose name
+- **17 distinct padding values** between sections: 0, 8, 20, 24, 32, 40, 43,
+  48, 52, 60, 64, 72, 80, 96, 100, 120, 152. On the homepage every inter-section
+  gap is 0 and all rhythm is internal padding, so these 17 values *are* the
+  vertical rhythm. 43 and 52 arrived with the donation counter when the live
+  homepage template was reconciled into git; they are the editor's own tuning
+  and the clearest example of why the ladder below is worth having. An earlier count said 19 by sweeping every setting whose name
   contains "padding"; that admitted button, badge and inline padding — 4, 10,
   12 and 16 — which are component-internal and not inter-section rhythm at all
   (Codex, #247). This counts `padding-block-start` and `padding-block-end` on
@@ -500,7 +502,7 @@ component still diverge if each restates its own sizes.
    covers 76 settings — 69 on blocks and 7 on sections, so a cleanup that walks
    only blocks stops seven short. That number should fall, not grow. No
    `font_size` in a template.
-2. **Spacing comes from a short scale.** Pick one from the 15 values in use —
+2. **Spacing comes from a short scale.** Pick one from the 17 values in use —
    the obvious ladder is **0 / 24 / 48 / 72 / 96 / 120** — and move every
    section's `padding-block-*` onto it. With no gaps between sections, this
    scale *is* the page rhythm.
