@@ -184,20 +184,42 @@ const appliesAsCss = (attributes) => {
  * The one place this is wider than the parser is an SVG `<title>`: in foreign content that
  * tag is not raw text. Every live `<title>` closes on its own line, so the span stays small,
  * but an unclosed one would reach further than a browser would.
+ *
+ * Markup readers want the same spans for the opposite reason. A `</div>` written inside a
+ * script string is characters, not an end tag, but the ancestry scan popped a real ancestor
+ * on it, so fading `.text` on the partnership section stopped reaching the eyebrow and all
+ * five tests passed while the browser kept both the ancestor and the fade (Codex, #427).
+ * They take `style` as well, since a stylesheet's text is not markup either, and they leave
+ * `template` alone: its contents ARE parsed markup, and something cloning it in is the one
+ * way an element inside it reaches a page, so hiding it would stop this file measuring an
+ * eyebrow that can really render.
  */
-const INERT_RAW_TEXT = 'script|textarea|title|xmp|noembed|noframes|plaintext|noscript';
+const RAW_TEXT = 'script|textarea|title|xmp|noembed|noframes|plaintext|noscript';
+
+const rawTextRanges = (text, names) => {
+  const ranges = [];
+  const tag = new RegExp(`<(${names})\\b[^>]*>`, 'gi');
+  for (let found = tag.exec(text); found !== null; found = tag.exec(text)) {
+    const closed = new RegExp(`</${found[1]}\\s*>`, 'i').exec(text.slice(found.index));
+    /* Raw text runs to its first end tag, nested tags included, and an element left open at
+       end of file is closed there -- both of which is what the parser does. */
+    const stop = closed === null ? text.length : found.index + closed.index + closed[0].length;
+    ranges.push({ from: found.index, to: stop, element: found[1].toLowerCase(), closed: closed !== null });
+    tag.lastIndex = stop;
+  }
+  return ranges;
+};
 
 const inertRanges = (text) => {
-  const ranges = [];
-  const tag = new RegExp(`<(${INERT_RAW_TEXT})\\b[^>]*>|<(template)\\b[^>]*>|<\\/template\\s*>`, 'gi');
+  const ranges = rawTextRanges(text, RAW_TEXT).map(({ from, to }) => [from, to]);
+  const tag = new RegExp(`<(${RAW_TEXT})\\b[^>]*>|<(template)\\b[^>]*>|<\\/template\\s*>`, 'gi');
   let depth = 0;
   let opened = 0;
   for (let found = tag.exec(text); found !== null; found = tag.exec(text)) {
     if (found[1] !== undefined) {
+      /* Already a range, and a `<template>` inside it is text rather than an element. */
       const closed = new RegExp(`</${found[1]}\\s*>`, 'i').exec(text.slice(found.index));
-      const stop = closed === null ? text.length : found.index + closed.index + closed[0].length;
-      ranges.push([found.index, stop]);
-      tag.lastIndex = stop;
+      tag.lastIndex = closed === null ? text.length : found.index + closed.index + closed[0].length;
       continue;
     }
     if (found[2] !== undefined) {
@@ -211,6 +233,34 @@ const inertRanges = (text) => {
   }
   if (depth > 0) ranges.push([opened, text.length]);
   return ranges;
+};
+
+/*
+ * The same spans blanked out, for the readers that walk tags rather than collect CSS. Blanking
+ * rather than cutting keeps every other offset where it was, and newlines are kept so a line
+ * still means what it did.
+ *
+ * An unclosed one is refused here, where the CSS side quietly lets it run to end of file. The
+ * two are not inconsistent: for CSS, text after an unterminated `<script>` really does style
+ * nothing, so skipping it agrees with the browser. For markup it would blank the eyebrow
+ * itself, and a measured eyebrow that vanishes is not a pass -- injecting one dropped the
+ * contexts this file measures from 176 to 160 and still reported five green tests. Silence is
+ * the failure this whole file exists to prevent, so it says so instead.
+ */
+const withoutRawText = (text, where) => {
+  const ranges = rawTextRanges(text, `${RAW_TEXT}|style`);
+  const unclosed = ranges.find((range) => !range.closed);
+  assert.ok(
+    unclosed === undefined,
+    `${where} leaves a <${unclosed?.element}> unclosed, so everything after it is text rather ` +
+      'than markup and any eyebrow below it stops being measured at all -- close the element ' +
+      'rather than letting this file quietly measure nothing',
+  );
+  return ranges.reduce(
+    (blanked, { from, to }) =>
+      blanked.slice(0, from) + blanked.slice(from, to).replace(/[^\n]/g, ' ') + blanked.slice(to),
+    text,
+  );
 };
 
 const insideInert = (ranges, at) => ranges.some(([from, to]) => at >= from && at < to);
@@ -785,10 +835,13 @@ const labels = (() => {
        deliberately hidden since #249; stripping outputs too made it indistinguishable from
        `<span class="subtitle">{{ ... }}</span>` and put a permanently invisible element under
        the same typography and contrast bar as a label a shopper reads. */
-    const markup = withoutComments(readFileSync(join(root, 'sections', file), 'utf8'))
-      .split(/\{%-?\s*schema\s*-?%\}/)[0]
-      .replace(/\{%-?[\s\S]*?-?%\}/g, ' ')
-      .replace(/\{\{[\s\S]*?\}\}/g, 'x');
+    const markup = withoutRawText(
+      withoutComments(readFileSync(join(root, 'sections', file), 'utf8'))
+        .split(/\{%-?\s*schema\s*-?%\}/)[0]
+        .replace(/\{%-?[\s\S]*?-?%\}/g, ' ')
+        .replace(/\{\{[\s\S]*?\}\}/g, 'x'),
+      `sections/${file}`,
+    );
 
     /* A one-element run of text, then a heading: the shape of an eyebrow. */
     const pattern =
@@ -1457,10 +1510,10 @@ const LAYOUT_ELEMENTS = (() => {
 
   const body = opening('body');
   const main = opening('main');
-  const between = source
-    .slice(source.indexOf(body[0]) + body[0].length, source.indexOf(main[0]))
-    .replace(/<script\b[\s\S]*?<\/script>/gi, '')
-    .replace(/<style\b[\s\S]*?<\/style>/gi, '');
+  const between = withoutRawText(
+    source.slice(source.indexOf(body[0]) + body[0].length, source.indexOf(main[0])),
+    'layout/theme.liquid, between <body> and <main>,',
+  );
 
   assert.ok(
     !/\{%-?\s*(?:if|unless|for|case|else|elsif|when|end\w+)\b/.test(between),
@@ -1564,9 +1617,10 @@ const ancestriesFor = (name) => {
       /\{%-?\s*schema\s*-?%\}/,
     )[0];
     const conditional = conditionalClassesIn(source);
-    const markup = source
-      .replace(/\{%-?[\s\S]*?-?%\}/g, ' ')
-      .replace(/\{\{[\s\S]*?\}\}/g, 'x');
+    const markup = withoutRawText(
+      source.replace(/\{%-?[\s\S]*?-?%\}/g, ' ').replace(/\{\{[\s\S]*?\}\}/g, 'x'),
+      `sections/${file}`,
+    );
 
     const open = [];
     for (const [tag, closing, element, attributes] of markup
