@@ -62,4 +62,8 @@ test('shows an ended state after the campaign and keeps invalid dates as static 
   const invalid = mount(Date.parse(startAt), { startAt: 'invalid', endAt });
   assert.equal(invalid.scheduled, false);
   assert.equal(invalid.nodes.get('[data-countdown-clock]').hidden, true);
+
+  const noOffset = mount(Date.parse(startAt), { startAt: '2026-11-27T00:00:00', endAt });
+  assert.equal(noOffset.scheduled, false);
+  assert.equal(noOffset.nodes.get('[data-countdown-clock]').hidden, true);
 });

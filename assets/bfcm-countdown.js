@@ -1,5 +1,7 @@
 class BfcmCountdown extends HTMLElement {
   connectedCallback() {
+    const hasExplicitOffset = (value) => /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/.test(value || '');
+    if (!hasExplicitOffset(this.dataset.startAt) || !hasExplicitOffset(this.dataset.endAt)) return;
     this.startAt = Date.parse(this.dataset.startAt);
     this.endAt = Date.parse(this.dataset.endAt);
     if (!Number.isFinite(this.startAt) || !Number.isFinite(this.endAt) || this.endAt <= this.startAt) return;
@@ -47,7 +49,7 @@ class BfcmCountdown extends HTMLElement {
     [days, hours, minutes, seconds].forEach((value, index) => {
       this.values[index].textContent = String(value).padStart(2, '0');
     });
-    this.status.textContent = 'Starts in';
+    if (this.status.textContent !== 'Starts in') this.status.textContent = 'Starts in';
     this.clock.hidden = false;
     this.fallback.hidden = true;
     return true;
