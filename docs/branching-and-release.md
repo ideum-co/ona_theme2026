@@ -210,7 +210,7 @@ merge away from overwriting a merchant's decision:
 - every `sections/*-group.json`
 - `config/settings_data.json`
 
-That is 34 files today. Do not read the named files below as the set — they are
+That is 35 files today. Do not read the named files below as the set — they are
 the ones whose history is worth knowing, nothing more.
 `tests/shop-owned-templates.test.mjs` derives the real set from disk, so a
 template added tomorrow is covered the day it lands without anyone remembering
@@ -409,7 +409,7 @@ more often than it is used:
 
 ### The rule
 
-1. **Sync live → repo on a schedule, not on demand.** Pull the 34 shop-owned
+1. **Sync live → repo on a schedule, not on demand.** Pull the 35 shop-owned
    files from the live theme regularly and commit any drift as its own
    reconciliation commit, before anyone needs to ship through them. A drift
    commit landing on a quiet Tuesday is routine; the same drift discovered
