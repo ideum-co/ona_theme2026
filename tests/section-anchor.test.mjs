@@ -349,11 +349,38 @@ const STATIC = new Map(
     .map((name) => [name.replace(/\.liquid$/, ''), [...new Set(emitted(join('sections', name)))]])
 );
 
-const idsIn = (file) => {
-  const parsed = JSON.parse(stripBanner(read(file)));
+/*
+ * What one configured node puts on the page: the section's or block's own markup and its
+ * snippets, plus every block the JSON nests under it and theirs -- a configured block is as
+ * much on the page as the section holding it.
+ *
+ * `disabled: true` is what the editor's hide control writes, and Shopify renders neither a
+ * hidden section nor a hidden block, nor anything nested under one. A third of the sections in
+ * the committed templates carry it, so counting them reserved would both reject collisions
+ * with elements that are not on the page and let a real one through. This is the single place
+ * that decision is made, for sections and blocks alike, and it is called directly from the
+ * test below on both so neither path can lose it quietly.
+ */
+const nodeIds = (node, kind) => {
+  if (!node.type || node.disabled === true) return [];
+  const source = fileFor(node.type, kind);
+  return [
+    ...[...new Set(emitted(source))].map((id) => [id, source]),
+    ...Object.values(node.blocks ?? {}).flatMap((child) => nodeIds(child, 'block')),
+  ];
+};
+
+/* Split from the file read so the test below can hand it a template of its own making. */
+const inventory = (parsed, file) => {
   const anchors = [];
   const taken = [];
   for (const [key, section] of Object.entries(parsed.sections ?? {})) {
+    taken.push(...nodeIds(section, 'section'));
+
+    /* A hidden section is not a destination either -- an anchor stored on one points at
+       nothing -- so it is left out of the set the reachability checks are built from. */
+    if (section.disabled === true) continue;
+
     const settings = section.settings ?? {};
     const anchor = settings.anchor;
     if (anchor != null && String(anchor).trim() !== '') anchors.push({ key, anchor });
@@ -361,18 +388,11 @@ const idsIn = (file) => {
     if (typeof id === 'string' && id.trim() !== '') {
       for (const prefix of EMITS.get(section.type) ?? []) taken.push([`${prefix}${id}`, `${file} ${key} ${prefix || 'id'}`]);
     }
-    /* The section's own markup and its snippets, plus every block the JSON configures under it
-       and theirs -- a configured block is as much on the page as the section holding it. */
-    const walk = (node, kind) => {
-      if (!node.type) return;
-      const source = fileFor(node.type, kind);
-      for (const id of new Set(emitted(source))) taken.push([id, source]);
-      for (const child of Object.values(node.blocks ?? {})) walk(child, 'block');
-    };
-    walk(section, 'section');
   }
   return { anchors, taken };
 };
+
+const idsIn = (file) => inventory(JSON.parse(stripBanner(read(file))), file);
 
 test('every stored anchor is reachable and unique on the page it renders on', () => {
   const templates = readdirSync(join(root, 'templates')).filter((name) => name.endsWith('.json')).map((name) => join('templates', name));
@@ -423,6 +443,64 @@ test('every stored anchor is reachable and unique on the page it renders on', ()
   assert.ok(
     idsFor('templates/collection.json').taken.some(([id]) => id === 'filters-drawer-heading'),
     'filters-drawer-heading is not reserved on the collection page; a literal render argument is being dropped'
+  );
+
+  /*
+   * And a hidden one is not. `templates/product.json` carries a `coffee-quiz` section with
+   * `disabled: true`; `sections/coffee-quiz.liquid` emits `id="coffee-quiz"`, and that is the
+   * one id in the whole theme reserved by nothing but a hidden section. Counting it would cost
+   * a merchant `#coffee-quiz` on the product page for an element that is not there.
+   */
+  assert.ok(
+    !idsFor('templates/product.json').taken.some(([id]) => id === 'coffee-quiz'),
+    'coffee-quiz is reserved on the product page, but the section emitting it is hidden; the disabled filter is not firing',
+  );
+  assert.ok(
+    Object.values(JSON.parse(stripBanner(read('templates/product.json'))).sections ?? {}).some(
+      (section) => section.type === 'coffee-quiz' && section.disabled === true,
+    ),
+    'the hidden coffee-quiz section is gone from templates/product.json, so the check above no longer tests anything; point it at another hidden section that emits an id',
+  );
+
+  /*
+   * An anchor stored on a hidden section is the other half of it, and no section in the
+   * committed theme is both hidden and anchored -- so this one is put to a template of its
+   * own making rather than left to a condition that happens to be unreachable today. Hiding
+   * the four sections that do carry `anchor: "reviews"` is what this was failing to notice.
+   */
+  assert.deepEqual(
+    inventory(
+      {
+        sections: {
+          live: { type: 'section', settings: { anchor: 'alpha' } },
+          hidden: { type: 'section', disabled: true, settings: { anchor: 'beta' } },
+        },
+      },
+      'synthetic',
+    ).anchors.map(({ anchor }) => anchor),
+    ['alpha'],
+    'an anchor on a hidden section is still counted as a destination, so hiding every anchored section would leave this test green',
+  );
+
+  /*
+   * The same gate on a block, called directly because no block in the committed theme is both
+   * hidden and the source of a static id -- so without this the block half of `nodeIds` would
+   * be covered by nothing. `blocks/filters.liquid` emits `filters-drawer`, and the collection
+   * template configures it live, which is what the assertion above this one rests on.
+   */
+  const asBlock = (extra) => nodeIds({ type: 'section', blocks: { b: { type: 'filters', ...extra } } }, 'section');
+  assert.ok(
+    asBlock({}).some(([id]) => id === 'filters-drawer'),
+    'a live filters block no longer reserves filters-drawer; the probe below is testing nothing',
+  );
+  assert.ok(
+    !asBlock({ disabled: true }).some(([id]) => id === 'filters-drawer'),
+    'a hidden block still reserves its ids; the disabled filter does not reach blocks',
+  );
+  assert.ok(
+    !nodeIds({ type: 'section', blocks: { b: { type: 'group', blocks: { c: { type: 'filters' } } , disabled: true } } }, 'section')
+      .some(([id]) => id === 'filters-drawer'),
+    'a block nested under a hidden block still reserves its ids; hiding a parent must take its children with it',
   );
 
   /* The `data-testid` trap applies to every form the id can take, and the theme has no
