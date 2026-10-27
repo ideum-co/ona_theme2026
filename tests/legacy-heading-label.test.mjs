@@ -177,7 +177,21 @@ const templates = (() => {
       const parsed = JSON.parse(
         readFileSync(join(root, 'templates', file), 'utf8').replace(/^\s*\/\*[\s\S]*?\*\//, ''),
       );
-      const sections = parsed.sections ?? {};
+      /*
+       * Shopify does not render a disabled section, so its `{% style %}` never reaches the
+       * page -- but its type was in `types` all the same, and `live()` then treated those
+       * declarations as present. `templates/page.wholesale.json` disables
+       * `wholesale_sourcing_v6` today, and an `opacity: 1` in that section restored a faded
+       * `base.css` rule on a page that never loads it: all five tests green at a rendered
+       * 4.42:1 (Codex, #427). Six templates carry disabled sections, `product.json` alone
+       * thirteen of them, so this was masking rather more than one page.
+       *
+       * Dropped per instance, not per type: `index.json` disables one `club-invite` and
+       * keeps another, and a type still rendered somewhere on the template is still live.
+       */
+      const sections = Object.fromEntries(
+        Object.entries(parsed.sections ?? {}).filter(([, section]) => section?.disabled !== true),
+      );
       found.push({
         file,
         types: new Set(Object.values(sections).map((section) => section.type)),
@@ -1577,17 +1591,30 @@ const contextsFor = (name) => {
 
   const out = [];
   for (const entry of ancestries) {
-    /* The pages this section appears on. A section on no template still gets one context,
-       where only its own inline styles are live. */
+    /*
+     * The pages this section appears on. A section on no template still gets one context,
+     * where only its own inline styles are live.
+     *
+     * `everySheet` because that stand-in is not a template and has no page type or suffix
+     * for the stylesheet scopes of round thirty-five to match. Leaving it to be matched
+     * made `legacy-page-layout.css` dead there, which took away
+     * `#MainContent .subtitle:empty { display: none }` and failed three tests on sections
+     * that render nowhere. The context means "this section wherever it might render", so
+     * every sheet is available in it -- the reading that keeps the most rules live, which
+     * is the direction that catches rather than hides.
+     */
     const pages = templates.filter((page) => page.types.has(entry.section));
     const where =
-      pages.length > 0 ? pages : [{ file: `${entry.section} alone`, types: new Set([entry.section]) }];
+      pages.length > 0
+        ? pages
+        : [{ file: `${entry.section} alone`, types: new Set([entry.section]), everySheet: true }];
 
     for (const page of where) {
       /* `page.file` is the template: `index.json` is the `index` page type with no suffix,
          `page.wholesale.json` is a `page` with the suffix `wholesale`. */
       const segments = page.file.replace(/\.json$/, '').split('.');
       const inScope = (rule) =>
+        page.everySheet === true ||
         (rule.scope ?? []).every((condition) =>
           condition.name !== undefined
             ? condition.name === segments[0]
@@ -2184,6 +2211,11 @@ const grounds = () => {
       continue;
     }
     for (const [key, section] of Object.entries(parsed.sections ?? {})) {
+      /* A disabled section renders no band, for the same reason it contributes no inline
+         styles -- Shopify does not render it at all. This list is read back at the end of
+         the contrast test to check that every band was measured, so leaving disabled ones
+         in named bands no context could ever reach. */
+      if (section?.disabled === true) continue;
       /* Only sections that render an eyebrow. The band setting is being renamed to Horizon's
          own `background_color` on a separate branch (#307), and the two can land in either
          order -- so this reads both ids. But `background_color` is Horizon's id too, and 256
