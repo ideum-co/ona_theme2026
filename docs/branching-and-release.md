@@ -409,7 +409,7 @@ more often than it is used:
 
 ### The rule
 
-1. **Sync live → repo on a schedule, not on demand.** Pull the 34 shop-owned
+1. **Sync live → repo on a schedule, not on demand.** Pull the 35 shop-owned
    files from the live theme regularly and commit any drift as its own
    reconciliation commit, before anyone needs to ship through them. A drift
    commit landing on a quiet Tuesday is routine; the same drift discovered

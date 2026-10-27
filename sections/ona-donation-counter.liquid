@@ -30,8 +30,14 @@
   assign amount = donation_total | floor
 -%}
 
+{%- comment -%}
+  `spacing-style` is the class that defines --spacing-scale. The snippet below
+  emits `max(20px, calc(var(--spacing-scale) * Npx))` for any padding above
+  20px, so without the class that value is invalid and every padding setting
+  from 21 to 100 silently does nothing.
+{%- endcomment -%}
 <section
-  class="donation-counter"
+  class="donation-counter spacing-style"
   style="
     background-color: {{ section.settings.bg_color }};
     {% render 'spacing-style', settings: section.settings %}
@@ -100,9 +106,13 @@
 
 {% stylesheet %}
   .donation-counter {
-    /* Defaults match the live counter (43/30/52); spacing-style feeds the vars from the editor. */
-    padding-block: var(--padding-block-start, 43px) var(--padding-block-end, 52px);
-    padding-inline: var(--padding-inline-start, 30px) var(--padding-inline-end, 30px);
+    /* The four values come from the editor via spacing-style; the class on the
+       section supplies both --spacing-scale and the 0px defaults it falls back
+       to, so no literal fallback belongs here. Earlier ones read 43/30/52 and
+       matched the configured values exactly, which is why the broken scale
+       looked correct. */
+    padding-block: var(--padding-block-start) var(--padding-block-end);
+    padding-inline: var(--padding-inline-start) var(--padding-inline-end);
     text-align: center;
     color: #ffffff;
   }

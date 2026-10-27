@@ -133,6 +133,16 @@ the native complementary route below should be reached via the untouched
    `learn_with_ona` section config). Anything that only exists in Shopify is one publish
    away from being lost.
 
+## Measuring any of this
+
+The row that motivated this note shipped with no instrumentation, so we could not tell
+whether it worked. Before adding another merchandising surface here, read
+`measurement-and-attribution.md` in this directory. The summary: add-to-cart and purchase
+are already captured by Shopify's web pixels with zero theme code, Horizon's
+`StandardEvents` are component-coordination events rather than analytics, and the only
+real gap -- which surface caused the add -- is closed with a `?ref=` parameter on the
+links plus one custom pixel, not with a tracking layer.
+
 ## Known gap to fix when the PDP is built here
 
 Both subscription products (`single-origin-subscription-filter`,

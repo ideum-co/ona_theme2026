@@ -99,6 +99,19 @@ test('exposes spacing, size and colour controls with the live values as defaults
   // work if they are named for the properties they feed.
   assert.match(source, /{% render 'spacing-style', settings: section\.settings %}/);
 
+  // Rendering the snippet is only half of it. Above 20px the snippet emits
+  // `max(20px, calc(var(--spacing-scale) * Npx))`, and --spacing-scale is
+  // defined on `.spacing-style` alone. Without the class the whole custom
+  // property is invalid and settings 21-100 do nothing at all, while 0-20 keep
+  // working -- so the control looks half-alive rather than broken.
+  assert.match(source, /class="donation-counter spacing-style"/);
+
+  // With the class in place, blanks fall back to the 0px the class defines.
+  // A literal fallback here would mask a scale that had stopped resolving,
+  // which is exactly how the bug above stayed invisible.
+  assert.match(source, /padding-block: var\(--padding-block-start\) var\(--padding-block-end\);/);
+  assert.match(source, /padding-inline: var\(--padding-inline-start\) var\(--padding-inline-end\);/);
+
   const colourDefaults = {
     heading_color: '#fbf8f3',
     subtitle_color: '#fbf8f3',
