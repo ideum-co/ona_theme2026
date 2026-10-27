@@ -273,16 +273,17 @@ const flatten = (text) => {
   const absolute = (selectorList, parent) =>
     parent === ''
       ? selectorList
-      : /* The cross product of the two lists. Substituting the parent as one raw string put
-           the nested suffix on its last branch alone, so `a, b { &:hover { … } }` came out
-           as `a, b:hover` -- which restored every `a` unconditionally (Codex, #427). */
-        branchesOf(parent)
-          .flatMap((root) =>
-            branchesOf(selectorList).map((branch) =>
-              branch.includes('&') ? branch.replace(/&/g, root) : `${root} ${branch}`,
-            ),
-          )
-          .join(', ');
+      : /* `&` carries the specificity of the parent list's most specific branch, not of the
+           branch that happened to match -- the cascade works as if the whole list sat there
+           inside an `:is()`, which is exactly what is written here. Expanding each branch
+           separately gave `.subtitle, #never#matches { & { opacity: .6 } }` the weight of
+           `.subtitle` alone, and a later one-class rule masked it (Codex, #427). An earlier
+           version substituted the list as one raw string, which put the nested suffix on its
+           last branch only. */
+        ((root) =>
+          branchesOf(selectorList)
+            .map((branch) => (branch.includes('&') ? branch.replace(/&/g, root) : `${root} ${branch}`))
+            .join(', '))(branchesOf(parent).length > 1 ? `:is(${parent.trim()})` : parent.trim());
 
   const walk = (body, conditions, parent = '') => {
     /* Declarations sitting directly in this body belong to the rule that encloses it. At the
@@ -827,10 +828,20 @@ const attrMatch = (token, element) => {
  * same breath (Codex, #427). Types and attributes inside an argument now constrain it exactly
  * as they do outside one.
  */
-const matchesElement = (compound, element) => {
+const matchesElement = (compound, element, chain = null, index = -1) => {
   const anyOf = [...compound.matchAll(/:(?:is|where)\(([^)]*)\)/gi)];
   const noneOf = [...compound.matchAll(/:not\(([^)]*)\)/gi)];
   const bare = compound.replace(/:(?:is|where|not)\([^)]*\)/gi, '');
+
+  /* An argument can be a whole selector, not just a compound: `:is(.a .b)` asks about the
+     element's ancestors. Reading it as a compound demanded every part on one element, which
+     no element has, so the rule was dropped. The chain is threaded through for these, and
+     `absolute()` relies on it to expand nested `&` as `:is(<parent list>)`. Without a chain
+     -- the handful of callers that match an element on its own -- the old reading stands. */
+  const branchMatches = (branch) =>
+    chain !== null && /[\s>+~]/.test(branch.trim())
+      ? matchesPath(pathOf(branch), chain, index)
+      : matchesElement(branch, element, chain, index);
 
   const attributes = bracketsOf(bare).map((token) => attrMatch(token, element));
   if (attributes.includes(false)) return false;
@@ -838,12 +849,8 @@ const matchesElement = (compound, element) => {
   const rest =
     partsOf(bare).every((part) => element.has(part)) &&
     tagsOf(bare).every((tag) => element.has(tag)) &&
-    anyOf.every((match) =>
-      splitSelectors(match[1]).some((branch) => matchesElement(branch, element)),
-    ) &&
-    noneOf.every((match) =>
-      splitSelectors(match[1]).every((branch) => !matchesElement(branch, element)),
-    );
+    anyOf.every((match) => splitSelectors(match[1]).some(branchMatches)) &&
+    noneOf.every((match) => splitSelectors(match[1]).every((branch) => !branchMatches(branch)));
   if (!rest) return false;
 
   /* Everything this can read says the compound selects the element, so an attribute it
@@ -924,7 +931,7 @@ const matchesPath = (parts, chain, endIndex) => {
   if (parts.length === 0) return false;
   const walk = (at, index) => {
     if (index < 0) return false;
-    if (!matchesElement(parts[at].compound, chain[index])) return false;
+    if (!matchesElement(parts[at].compound, chain[index], chain, index)) return false;
     if (at === 0) return true;
     const { combinator } = parts[at];
     if (combinator === '>') return walk(at - 1, index - 1);
