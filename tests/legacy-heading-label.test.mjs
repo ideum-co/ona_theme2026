@@ -2869,11 +2869,11 @@ const colourValue = (value) => {
     /* Only when no alpha has been read already: `rgba(0, 0, 0, var(--opacity-subdued-text))`
        names the token in its fourth argument, and counting it here as well would square it
        into 0.64. */
-    if (/--opacity-muted-text/.test(value)) alpha *= clampAlpha(opacityToken('muted'));
-    if (/--opacity-subdued-text/.test(value)) alpha *= clampAlpha(opacityToken('subdued'));
+    if (/--opacity-muted-text(?![\w-])/.test(value)) alpha *= clampAlpha(opacityToken('muted'));
+    if (/--opacity-subdued-text(?![\w-])/.test(value)) alpha *= clampAlpha(opacityToken('subdued'));
   }
-  if (/--color-foreground-muted/.test(value)) alpha *= clampAlpha(opacityToken('muted'));
-  if (/--color-foreground-subdued/.test(value)) alpha *= clampAlpha(opacityToken('subdued'));
+  if (/--color-foreground-muted(?![\w-])/.test(value)) alpha *= clampAlpha(opacityToken('muted'));
+  if (/--color-foreground-subdued(?![\w-])/.test(value)) alpha *= clampAlpha(opacityToken('subdued'));
 
   /* `--palette-lightest` and `--palette-darkest` name one fixed colour each. Reading them as
      inherited let the contrast test pick whichever palette extreme suited each ground, so
@@ -2920,10 +2920,20 @@ const colourValue = (value) => {
       'that variable rather than measuring a fallback the browser may never reach',
   );
 
-  const inherits =
-    /currentColor|inherit|--color-foreground(?![\w-])|--color-foreground-rgb|--color-foreground-muted|--color-foreground-subdued/.test(
-      value,
-    );
+  /*
+   * A custom property's name ends where its identifier does. Three of the four foreground
+   * spellings here were written without that boundary, so
+   * `color: rgb(var(--color-foreground-rgb-probe))` was read as "inherited" and passed all
+   * five tests, while the same colour written as `#f4f3e9` fails at 1:1 -- cream on cream
+   * either way (Codex, #427). `FOREGROUND_TOKEN` had the boundary and so declined to
+   * substitute the variable, which is how the two halves disagreed.
+   *
+   * `FOREGROUND_IN` already spells all four with the boundary, so it is reused rather than
+   * restated; `inherit` and `currentColor` get the same treatment, since
+   * `var(--brand-inherit)` is not the keyword. A value this cannot place now reaches the
+   * refusal below, which is where an unrecognised variable belongs.
+   */
+  const inherits = /(?<![\w-])(?:currentColor|inherit)(?![\w-])/i.test(value) || FOREGROUND_IN.test(value);
   assert.ok(
     inherits,
     `cannot work out what colour the eyebrow is painted in from "${value}" -- extend this ` +
