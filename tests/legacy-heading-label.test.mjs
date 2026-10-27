@@ -273,8 +273,15 @@ const flatten = (text) => {
   const absolute = (selectorList, parent) =>
     parent === ''
       ? selectorList
-      : branchesOf(selectorList)
-          .map((branch) => (branch.includes('&') ? branch.replace(/&/g, parent) : `${parent} ${branch}`))
+      : /* The cross product of the two lists. Substituting the parent as one raw string put
+           the nested suffix on its last branch alone, so `a, b { &:hover { … } }` came out
+           as `a, b:hover` -- which restored every `a` unconditionally (Codex, #427). */
+        branchesOf(parent)
+          .flatMap((root) =>
+            branchesOf(selectorList).map((branch) =>
+              branch.includes('&') ? branch.replace(/&/g, root) : `${root} ${branch}`,
+            ),
+          )
           .join(', ');
 
   const walk = (body, conditions, parent = '') => {
@@ -948,15 +955,98 @@ const alternativesOf = (condition) => {
   return parts.map((part) => part.trim()).filter((part) => part !== '');
 };
 
+/* `rem` and `em` both resolve against the root font size in a media query, which is the
+   browser default -- a page `font-size` cannot change it there. Units beyond these are
+   refused outright: returning false used to mean "cannot happen", so
+   `@media (min-width: 40rem) { .subtitle { opacity: .6 } }` had every context holding it
+   discarded and the suite stayed green while the label sat under the bar at matching
+   viewports (Codex, #427). */
+const widthIn = (value, where) => {
+  const measure = String(value).trim().match(/^(-?[\d.]+)(px|rem|em)?$/i);
+  assert.ok(
+    measure,
+    `cannot read the viewport width "${String(value).trim()}" in "${where}" -- ` +
+      'extend this resolver rather than dropping every rule inside that query',
+  );
+  const ROOT_FONT_SIZE = 16;
+  const unit = (measure[2] ?? 'px').toLowerCase();
+  return Number(measure[1]) * (unit === 'px' ? 1 : ROOT_FONT_SIZE);
+};
+
 const regionOf = (conditions) => {
   let low = 0;
   let high = Infinity;
   const fixed = new Map();
 
   for (const condition of conditions) {
-    for (const [, bound, feature, value] of condition.matchAll(
-      /\(\s*(?:(min|max)-)?([a-z-]+)\s*:\s*([^)]+)\)/gi,
-    )) {
+    /* Only a media query describes a viewport. A pseudo-class state arrives here as a
+       condition too, and `:is(:hover, :focus-visible)` has parentheses of its own -- reading
+       those as a media expression made the refusal below fire on a perfectly good state.
+       `@supports` and `@container` likewise constrain nothing this models. */
+    if (!/^@media\b/i.test(condition)) continue;
+
+    /* `not` and `only` invert or gate the whole query, and reading the features inside one
+       without honouring it gets the region backwards. Nothing in the theme uses either. */
+    assert.ok(
+      !/@media\s+(?:not|only)\b/i.test(condition),
+      `"${condition}" uses a media qualifier this resolver does not honour -- teach it the ` +
+        'inversion rather than reading the features inside as if they stood alone',
+    );
+
+    for (const group of condition.match(/\([^()]*\)/g) ?? []) {
+      /* Range syntax: `(width >= 750px)`, `(750px <= width)`, `(400px < width <= 700px)`.
+         The colon form below cannot see it, so `regionOf` read the query as constraining
+         nothing, `falsifiable` found it true at every viewport, and every context where it
+         was off was discarded -- `@media (width >= 750px)` masked a failing mobile opacity
+         with the suite green (Codex, #427). */
+      const both = group.match(
+        /^\(\s*([\w.-]+)\s*(<=|>=|<|>|=)\s*([a-z-]+)\s*(<=|>=|<|>|=)\s*([\w.-]+)\s*\)$/i,
+      );
+      const after = group.match(/^\(\s*([a-z-]+)\s*(<=|>=|<|>|=)\s*([\w.-]+)\s*\)$/i);
+      const before = group.match(/^\(\s*([\w.-]+)\s*(<=|>=|<|>|=)\s*([a-z-]+)\s*\)$/i);
+      if (both || after || before) {
+        const name = (both?.[3] ?? after?.[1] ?? before?.[3]).toLowerCase();
+        assert.ok(
+          name === 'width',
+          `"${group}" compares ${name} as a range, which this resolver only does for width ` +
+            '-- extend it rather than reading the query as constraining nothing',
+        );
+        /* `400px < width` is `width > 400px` read from the other side. */
+        const FLIP = { '<': '>', '<=': '>=', '>': '<', '>=': '<=', '=': '=' };
+        const bounds = both
+          ? [[FLIP[both[2]], both[1]], [both[4], both[5]]]
+          : after
+            ? [[after[2], after[3]]]
+            : [[FLIP[before[2]], before[1]]];
+
+        for (const [operator, value] of bounds) {
+          /* `width > 750px` is 751 and up at whole-pixel viewports, the granularity
+             everything else here works in. */
+          const pixels = widthIn(value, group);
+          if (operator === '>=') low = Math.max(low, pixels);
+          else if (operator === '>') low = Math.max(low, pixels + 1);
+          else if (operator === '<=') high = Math.min(high, pixels);
+          else if (operator === '<') high = Math.min(high, pixels - 1);
+          else {
+            low = Math.max(low, pixels);
+            high = Math.min(high, pixels);
+          }
+        }
+        continue;
+      }
+
+      /* A boolean feature test -- `(prefers-reduced-motion)` -- constrains nothing this
+         model tracks, and the theme has one. Recognised here so the refusal below can be
+         strict about everything it has not been taught. */
+      if (/^\(\s*[a-z-]+\s*\)$/i.test(group)) continue;
+
+      const parsed = group.match(/^\(\s*(?:(min|max)-)?([a-z-]+)\s*:\s*([^)]+)\)$/i);
+      assert.ok(
+        parsed,
+        `cannot read the media expression "${group}" in "${condition}" -- teach this ` +
+          'resolver its shape rather than letting the query constrain nothing',
+      );
+      const [, bound, feature, value] = parsed;
       const name = feature.toLowerCase();
       if (name === 'width' && bound) {
         /* `rem` and `em` both resolve against the root font size in a media query, which is
@@ -965,15 +1055,7 @@ const regionOf = (conditions) => {
            `@media (min-width: 40rem) { .subtitle { opacity: .6 } }` had every context
            holding it discarded and the suite stayed green while the label sat under the bar
            at matching viewports (Codex, #427). */
-        const measure = String(value).trim().match(/^(-?[\d.]+)(px|rem|em)?$/i);
-        assert.ok(
-          measure,
-          `cannot read the viewport width "${String(value).trim()}" in "${condition}" -- ` +
-            'extend this resolver rather than dropping every rule inside that query',
-        );
-        const ROOT_FONT_SIZE = 16;
-        const unit = (measure[2] ?? 'px').toLowerCase();
-        const pixels = Number(measure[1]) * (unit === 'px' ? 1 : ROOT_FONT_SIZE);
+        const pixels = widthIn(value, condition);
         if (Number.isNaN(pixels)) return null;
         if (bound.toLowerCase() === 'min') low = Math.max(low, pixels);
         else high = Math.min(high, pixels);
