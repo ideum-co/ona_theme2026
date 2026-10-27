@@ -1152,6 +1152,23 @@ const matchesPath = (parts, chain, endIndex) => {
   return walk(parts.length - 1, endIndex);
 };
 
+/* The contents of a part that is nothing but one parenthesised group wrapping further
+   groups, or null for anything else -- a single feature test, or a part whose first group
+   closes before the end, as `(a) and (b)` does. */
+const soleGroupIn = (part) => {
+  if (!part.startsWith('(') || !part.endsWith(')')) return null;
+  let depth = 0;
+  for (let at = 0; at < part.length; at += 1) {
+    if (part[at] === '(') depth += 1;
+    else if (part[at] === ')') {
+      depth -= 1;
+      if (depth === 0 && at !== part.length - 1) return null;
+    }
+  }
+  const inner = part.slice(1, -1).trim();
+  return inner.includes('(') ? inner : null;
+};
+
 /* Top-level commas only: `@media (max-width: 749px), (min-width: 750px)` is two queries, but
    a comma inside parentheses belongs to whatever it is nested in. */
 const alternativesOf = (condition) => {
@@ -1189,10 +1206,24 @@ const alternativesOf = (condition) => {
     }
   }
   parts.push(body.slice(start));
-  return parts
+
+  /* Parentheses of its own hide an alternation from the scan above. `@media ((max-width:
+     749px) or (min-width: 750px))` left the `or` at depth 1, so the whole thing stayed one
+     condition, `regionOf` intersected the two bounds into a viewport that cannot exist, and
+     a failing `opacity: .6` passed all five tests -- while the same query without the outer
+     grouping fails at 4.42:1 (Codex, #427). A part that is one group wrapping further
+     groups is unwrapped and split again; a part that is a single feature test -- `(hover)`,
+     `(max-width: 749px)` -- holds no parentheses inside and is left exactly as it is. What
+     this cannot flatten, `regionOf` refuses rather than intersecting. */
+  const unwrapped = parts
     .map((part) => part.trim())
     .filter((part) => part !== '')
-    .map((part) => (prefix ? `${prefix[0].trim()} ${part}` : part));
+    .flatMap((part) => {
+      const inner = soleGroupIn(part);
+      return inner === null ? [part] : alternativesOf(inner);
+    });
+
+  return unwrapped.map((part) => (prefix ? `${prefix[0].trim()} ${part}` : part));
 };
 
 /* `rem` and `em` both resolve against the root font size in a media query, which is the
@@ -1231,6 +1262,19 @@ const regionOf = (conditions) => {
       !/@media\s+(?:not|only)\b/i.test(condition),
       `"${condition}" uses a media qualifier this resolver does not honour -- teach it the ` +
         'inversion rather than reading the features inside as if they stood alone',
+    );
+
+    /* Everything reaching here has been through `alternativesOf`, which splits every `or` it
+       can reach. One still here sat in a group that could not be flattened -- `(a) and ((b)
+       or (c))` -- and the loop below would intersect the alternatives into a region narrower
+       than the query, or into no region at all, discarding rules that do apply. Refuse it:
+       the theme writes no grouped media condition today, so this costs nothing to be strict
+       about, and silently narrowing the region is how the ungrouped `or` slipped through. */
+    assert.ok(
+      !/(?:^|[\s)])or(?:[\s(]|$)/i.test(condition.replace(/^@media\s*/i, '')),
+      `"${condition}" keeps an \`or\` inside a group this resolver cannot flatten -- teach ` +
+        'it the grouping rather than intersecting alternatives that were never meant to hold ' +
+        'at once',
     );
 
     /* The media type lives outside the parentheses, so a query that is nothing but a type
@@ -2025,6 +2069,7 @@ const withoutFallbacks = (value) => {
 
 const colourValue = (value) => {
   let alpha = 1;
+  let read = false;
 
   /* The shortcut is for a value that *is* a colour, not one that contains one. Unanchored, the
      hex inside `color-mix(in srgb, #470a12 60%, transparent)` came back as an opaque colour
@@ -2055,23 +2100,72 @@ const colourValue = (value) => {
      followed by `)`, so the perfectly valid `rgb(var(--color-foreground-rgb) / 60%)` fell
      through to the `inherits` check below, which accepted the foreground variable and left
      alpha at 1 (Codex, #300). Anything after the slash this cannot resolve now fails. */
+  /*
+   * The alpha expression is resolved whole. Matching the token name as a substring accepted
+   * the arithmetic around it and then threw it away: `rgb(var(--color-foreground-rgb) /
+   * calc(var(--opacity-subdued-text) * .1))` was read as the configured 0.8 when the real
+   * alpha is 0.08, and passed all five tests -- while the literal `.1` fails at 1.22:1
+   * (Codex, #427). A token reference is accepted only when it *is* the whole expression;
+   * anything else, arithmetic included, falls to the refusal below. `withoutFallbacks`
+   * first, because `var(--opacity-subdued-text, .6)` is the token whenever the token is
+   * defined, and `theme-styles-variables.liquid:392` defines both.
+   */
+  const TOKEN_ALPHA = [
+    { is: /^var\(\s*--opacity-muted-text\s*\)$/i, token: 'muted' },
+    { is: /^var\(\s*--opacity-subdued-text\s*\)$/i, token: 'subdued' },
+  ];
+  const alphaFrom = (part, how) => {
+    const literal = part.match(/^([0-9.]+)(%?)$/);
+    if (literal) return literal[2] ? Number(literal[1]) / 100 : Number(literal[1]);
+    const named = TOKEN_ALPHA.find((entry) => entry.is.test(withoutFallbacks(part)));
+    if (named) return opacityToken(named.token);
+    return assert.fail(
+      `cannot read the eyebrow's alpha from "${part}" (${how}) -- extend this resolver ` +
+        'rather than treating the label as fully opaque',
+    );
+  };
+
+  /*
+   * `rgba(r, g, b, a)` carries its alpha as a last argument rather than after a slash, and
+   * the slash reader simply did not see it: `rgba(var(--color-foreground-rgb), .1)` passed
+   * all five tests at a real 1.22:1, and so did the same value with `calc()` around the
+   * token. The theme writes this form (`rgba(0, 0, 0, 0.1)` and friends), so it is read, not
+   * refused.
+   *
+   * Two arguments or four, because a packed triple is one argument: `rgba(var(--triple), a)`
+   * is the same colour as `rgba(r, g, b, a)`. Counting only four was my own first try at
+   * this and it read neither -- the injected `rgba(var(--color-foreground-rgb), .1)` still
+   * passed, which is what caught it. One argument or three carry no alpha, and a flattened
+   * Liquid `rgba({{ ... }})` that leaves either count falls through to the resolvers below
+   * exactly as before.
+   */
+  const legacy = value.match(/^(?:rgba|hsla)\(([\s\S]*)\)$/i);
+  if (legacy) {
+    const args = [];
+    let depth = 0;
+    let start = 0;
+    for (let at = 0; at < legacy[1].length; at += 1) {
+      if (legacy[1][at] === '(') depth += 1;
+      else if (legacy[1][at] === ')') depth -= 1;
+      else if (legacy[1][at] === ',' && depth === 0) {
+        args.push(legacy[1].slice(start, at).trim());
+        start = at + 1;
+      }
+    }
+    args.push(legacy[1].slice(start).trim());
+    if (args.length === 2 || args.length === 4) {
+      alpha *= alphaFrom(args[args.length - 1], value);
+      read = true;
+    }
+  }
+
   const slashed = value.match(/\/\s*([^)]+?)\s*\)/);
   if (slashed) {
-    const part = slashed[1].trim();
-    const literal = part.match(/^([0-9.]+)(%?)$/);
-    if (literal) {
-      alpha *= literal[2] ? Number(literal[1]) / 100 : Number(literal[1]);
-    } else if (/--opacity-muted-text/.test(part)) {
-      alpha *= opacityToken('muted');
-    } else if (/--opacity-subdued-text/.test(part)) {
-      alpha *= opacityToken('subdued');
-    } else {
-      assert.fail(
-        `cannot read the eyebrow's alpha from "${part}" -- extend this resolver rather than ` +
-          'treating the label as fully opaque',
-      );
-    }
-  } else {
+    alpha *= alphaFrom(slashed[1].trim(), value);
+  } else if (!read) {
+    /* Only when no alpha has been read already: `rgba(0, 0, 0, var(--opacity-subdued-text))`
+       names the token in its fourth argument, and counting it here as well would square it
+       into 0.64. */
     if (/--opacity-muted-text/.test(value)) alpha *= opacityToken('muted');
     if (/--opacity-subdued-text/.test(value)) alpha *= opacityToken('subdued');
   }
