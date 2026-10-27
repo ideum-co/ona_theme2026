@@ -1,4 +1,5 @@
 {% assign bfcm_fallback_hero_url = 'Espresso_web.png' | file_url %}
+<script src="{{ 'bfcm-countdown.js' | asset_url }}" type="module"></script>
 
 <div
   class="bfcm-landing"
@@ -49,10 +50,20 @@
   </section>
 
   <div class="bfcm-landing__intro">
-    <div>
-      <span class="bfcm-landing__eyebrow">{{ section.settings.intro_eyebrow | escape }}</span>
-      <p>{{ section.settings.intro_text | escape }}</p>
-    </div>
+    <bfcm-countdown
+      class="bfcm-landing__countdown"
+      data-start-at="{{ section.settings.countdown_start_at | escape }}"
+      data-end-at="{{ section.settings.countdown_end_at | escape }}"
+    >
+      <span class="bfcm-landing__eyebrow" data-countdown-status>Black Friday Cyber Monday</span>
+      <div class="bfcm-landing__clock" role="timer" aria-live="off" aria-label="Time until Black Friday Cyber Monday" data-countdown-clock hidden>
+        <span class="bfcm-landing__clock-unit"><strong data-countdown-days>00</strong><span>Days</span></span>
+        <span class="bfcm-landing__clock-unit"><strong data-countdown-hours>00</strong><span>Hours</span></span>
+        <span class="bfcm-landing__clock-unit"><strong data-countdown-minutes>00</strong><span>Mins</span></span>
+        <span class="bfcm-landing__clock-unit"><strong data-countdown-seconds>00</strong><span>Secs</span></span>
+      </div>
+      <p class="bfcm-landing__countdown-fallback" data-countdown-fallback>{{ section.settings.date_line | escape }}</p>
+    </bfcm-countdown>
     <div class="bfcm-landing__actions">
       <a class="bfcm-landing__button bfcm-landing__button--light" href="#bfcm-landing-signup-{{ section.id }}">{{ section.settings.signup_label | escape }}</a>
       <a class="bfcm-landing__button bfcm-landing__button--outline" href="/collections/all">{{ section.settings.shop_label | escape }}</a>
@@ -136,7 +147,12 @@
   .bfcm-landing__hero-media { position: relative; min-height: 420px; }
   .bfcm-landing__hero-image { display: block; width: 100%; height: 100%; position: absolute; inset: 0; object-fit: cover; }
   .bfcm-landing__intro { background: var(--bfcm-ink); color: var(--bfcm-cream); display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: clamp(36px, 3.3vw, 60px) var(--bfcm-page-inset); }
-  .bfcm-landing__intro p { margin: 10px 0 0; font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif); font-size: clamp(24px, 2vw, 38px); line-height: 1.1; }
+  .bfcm-landing__countdown { display: flex; flex-direction: column; gap: 14px; }
+  .bfcm-landing__clock { display: flex; gap: clamp(6px, .8vw, 14px); }
+  .bfcm-landing__clock[hidden], .bfcm-landing__countdown-fallback[hidden] { display: none; }
+  .bfcm-landing__clock-unit { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  .bfcm-landing__clock-unit strong { display: grid; place-items: center; min-width: clamp(60px, 4.8vw, 92px); height: clamp(72px, 5.8vw, 112px); padding: 0 5px; background: var(--bfcm-cream); color: var(--bfcm-ink); font-size: clamp(34px, 3.4vw, 66px); line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .bfcm-landing__countdown-fallback { margin: 0; font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif); font-size: clamp(24px, 2vw, 38px); line-height: 1.1; }
   .bfcm-landing__actions { display: flex; flex-wrap: wrap; gap: 10px; flex-shrink: 0; }
   .bfcm-landing__button { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 24px; text-decoration: none; font-size: 16px; line-height: 1.2; text-align: center; }
   .bfcm-landing__button--light { background: var(--bfcm-cream); color: var(--bfcm-ink); }
@@ -190,8 +206,8 @@
     { "type": "text", "id": "title_emphasis", "label": "Hero italic title", "default": "Cyber Monday" },
     { "type": "text", "id": "date_line", "label": "Date line", "default": "Fri 27 Nov – Mon 30 Nov 2026" },
     { "type": "image_picker", "id": "hero_image", "label": "Hero image" },
-    { "type": "text", "id": "intro_eyebrow", "label": "Intro eyebrow", "default": "Coming soon" },
-    { "type": "text", "id": "intro_text", "label": "Intro text", "default": "Something special is on its way. Stay in the loop and explore ONA while you wait." },
+    { "type": "text", "id": "countdown_start_at", "label": "Countdown start (ISO 8601)", "default": "2026-11-27T00:00:00+11:00", "info": "Use a full date, time and UTC offset for Sydney." },
+    { "type": "text", "id": "countdown_end_at", "label": "Countdown end (ISO 8601)", "default": "2026-12-01T00:00:00+11:00", "info": "After this time the timer shows that the event has ended." },
     { "type": "text", "id": "signup_label", "label": "Signup link", "default": "Sign up" },
     { "type": "text", "id": "shop_label", "label": "Shop link", "default": "Shop coffees" },
     { "type": "text", "id": "signup_eyebrow", "label": "Signup eyebrow", "default": "Stay in the loop" },
