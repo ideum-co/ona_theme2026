@@ -9,6 +9,13 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 /* Comments mention class names in prose; a rule has to actually select one. */
 const decomment = (text) => text.replace(/\/\*[\s\S]*?\*\//g, ' ');
 
+/* The properties this file measures: a rule setting none of them cannot change what any
+   check here reads. Defined once, because the sheet collection below, the ordering guard
+   and the unnamed-rule path in `contextsFor` all need it and copies would drift. */
+const MEASURED =
+  /(?:^|;|\s)(?:display|color|opacity|margin|margin-bottom|--color-foreground[\w-]*)\s*:/;
+
+
 /*
  * Every stylesheet that can reach a legacy eyebrow, in the order the browser applies them.
  *
@@ -34,21 +41,73 @@ const sheets = (() => {
    * is refused below rather than flattened away, because flattening is the failure this is
    * fixing.
    */
+  const liquid = (text) =>
+    decomment(text)
+      .replace(/\{%-?[\s\S]*?-?%\}/g, ' ')
+      .replace(/\{\{[\s\S]*?\}\}/g, 'x');
+
   const loaded = [];
   const scopeOf = new Map();
+  /*
+   * A `{% style %}` or `<style>` in the layout itself was collected by nothing: this scan
+   * read only asset references, and the section scan below reads only `sections` and
+   * `snippets`. `{% style %}#shopify-section-ona-wholesale-partnership .subtitle
+   * { opacity:.6 }{% endstyle %}` appended to `layout/theme.liquid` left all five tests
+   * green, while the identical block in `snippets/stylesheets.liquid` failed the contrast
+   * test (Codex, #427). The layout renders on every page, so a block there reaches every
+   * eyebrow in the theme.
+   */
+  const headInline = [];
+  /* Where a file first pulls in a stylesheet, counting the `{% render 'stylesheets' %}`
+     that loads the rest of them, so a head block can be placed against the links. */
+  const firstSheetIn = (text) =>
+    text.match(/'[\w.-]+\.css'\s*\|\s*asset_url\s*\|\s*stylesheet_tag|render\s+'stylesheets'/)
+      ?.index ?? Infinity;
   for (const file of ['snippets/stylesheets.liquid', 'layout/theme.liquid']) {
     let source;
     try {
-      source = readFileSync(join(root, file), 'utf8');
+      /* Prose, not markup -- the same cut the section scan makes, and for the same reason:
+         the `{% comment %}` above this layout's style block talks about stylesheets. */
+      source = readFileSync(join(root, file), 'utf8')
+        .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, ' ')
+        .replace(/\{%-?\s*doc\s*-?%\}[\s\S]*?\{%-?\s*enddoc\s*-?%\}/g, ' ');
     } catch {
       continue;
     }
     const open = [];
     const lists = new Map();
     const TAG =
-      /\{%-?\s*(if|elsif|else|endif|unless|endunless|assign)\b([^%]*?)-?%\}|'([\w.-]+\.css)'\s*\|\s*asset_url\s*\|\s*stylesheet_tag/g;
+      /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b[^>]*>([\s\S]*?)<\/style>|\{%-?\s*(if|elsif|else|endif|unless|endunless|assign)\b([^%]*?)-?%\}|'([\w.-]+\.css)'\s*\|\s*asset_url\s*\|\s*stylesheet_tag/g;
     for (const found of source.matchAll(TAG)) {
-      const [, keyword, rest, asset] = found;
+      const [, styled, native, keyword, rest, asset] = found;
+
+      const css = styled ?? native;
+      if (css !== undefined) {
+        /* Only the layout's own. `snippets/stylesheets.liquid` is read again by the section
+           scan below, which is where its blocks are collected; taking them here too would
+           apply every declaration twice. */
+        if (!file.startsWith('layout/')) continue;
+        /* Under a condition this scan cannot read, the block's applicability is unknown.
+           Refused when it sets something measured, skipped when it cannot change any
+           answer here -- which is what today's `@view-transition` block is, behind
+           `{% if settings.page_transition_enabled %}`. */
+        if (open.includes(false)) {
+          assert.ok(
+            !MEASURED.test(decomment(css)),
+            `a {% style %} block in ${file} sets a property this file measures under a ` +
+              'condition this scan cannot read -- teach it that condition rather than ' +
+              'guessing which pages the block reaches',
+          );
+          continue;
+        }
+        headInline.push({
+          origin: null,
+          scope: open.filter((condition) => condition !== null),
+          text: liquid(css),
+          belowTheSheets: found.index > firstSheetIn(source),
+        });
+        continue;
+      }
 
       if (asset !== undefined) {
         /* An asset under no condition is global; one under conditions this can read keeps
@@ -103,16 +162,48 @@ const sheets = (() => {
     }
   }
 
-  const out = loaded.map((asset) => ({
-    origin: null,
-    scope: scopeOf.get(asset) ?? [],
-    text: decomment(readFileSync(join(root, 'assets', asset), 'utf8')),
-  }));
+  /* Every head block this layout carries today sits above the first stylesheet it loads,
+     so they lead. Rather than assume that holds, the scan records where each one was and
+     refuses a measured block written below the links, where it would outrank them. */
+  for (const entry of headInline) {
+    assert.ok(
+      !entry.belowTheSheets || !MEASURED.test(entry.text),
+      'a {% style %} block in the layout sets a property this file measures below the ' +
+        'stylesheets it loads, so it now outranks them -- order the head blocks against ' +
+        'those links rather than reading them as the first thing on the page',
+    );
+  }
 
-  const liquid = (text) =>
-    decomment(text)
-      .replace(/\{%-?[\s\S]*?-?%\}/g, ' ')
-      .replace(/\{\{[\s\S]*?\}\}/g, 'x');
+  /* The other layouts. Shopify renders a JSON template under `layout/theme.liquid`, except
+     `password.json`, which it renders under `layout/password.liquid` -- so a style block in
+     any layout but `theme` reaches only a page this harness builds no eyebrow context for,
+     and placing its declarations on the pages it does measure would be a leak. Their
+     applicability is left unresolved and refused if it ever starts to matter. */
+  for (const file of readdirSync(join(root, 'layout'))) {
+    if (!file.endsWith('.liquid') || file === 'theme.liquid') continue;
+    const source = readFileSync(join(root, 'layout', file), 'utf8')
+      .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, ' ')
+      .replace(/\{%-?\s*doc\s*-?%\}[\s\S]*?\{%-?\s*enddoc\s*-?%\}/g, ' ');
+    for (const match of source.matchAll(
+      /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b[^>]*>([\s\S]*?)<\/style>/g,
+    )) {
+      assert.ok(
+        !MEASURED.test(decomment(match[1] ?? match[2])),
+        `layout/${file} sets a property this file measures in a style block. It is not the ` +
+          'layout the measured templates render under, so work out which pages it reaches ' +
+          'before letting those declarations into the cascade',
+      );
+    }
+  }
+
+  const out = [
+    ...headInline.map(({ origin, scope, text }) => ({ origin, scope, text })),
+    ...loaded.map((asset) => ({
+      origin: null,
+      scope: scopeOf.get(asset) ?? [],
+      text: decomment(readFileSync(join(root, 'assets', asset), 'utf8')),
+    })),
+  ];
 
   /*
    * Two buckets, not one. Shopify concatenates every `{% stylesheet %}` into one asset
@@ -181,7 +272,7 @@ const sheets = (() => {
     return closed;
   })();
 
-  for (const dir of ['sections', 'snippets']) {
+  for (const dir of ['sections', 'snippets', 'blocks']) {
     for (const file of readdirSync(join(root, dir))) {
       if (!file.endsWith('.liquid')) continue;
       /* A `{% comment %}` or `{% doc %}` block is prose, not markup, and scanning it was not
@@ -207,6 +298,12 @@ const sheets = (() => {
          renders that section. Pooling them globally let CSS from a section no template uses
          override a real regression (Codex, #300). A snippet can be rendered from anywhere,
          so those stay global. */
+      /* `blocks` was not read at all, and 66 block files carry a style block today: the
+         same injection that passes from the layout passes from `blocks/page-content.liquid`
+         (Codex, #427). A block renders inside whichever section accepts it, which the
+         template JSON decides, so they are pooled globally -- over-inclusive in exactly the
+         way a snippet is, and a documented limit rather than a resolved one. Including them
+         leaves the measurement where it was: 176 contexts, widest qualifier set 3. */
       /* A native `<style>` element renders in exactly the same place and was not collected
          at all, so `<style>#MainContent .subtitle { opacity: .6 }</style>` in a section left
          all five tests green while the identical CSS in a `{% style %}` block failed at
@@ -292,12 +389,6 @@ const templates = (() => {
  * this file takes on `!important` and sibling combinators -- rather than quietly resolving
  * them the wrong way round.
  */
-/* The properties this file measures: a rule setting none of them cannot change what any
-   check here reads. Defined once, because the ordering guard below and the unnamed-rule
-   path in `contextsFor` both need it and two copies would drift. */
-const MEASURED =
-  /(?:^|;|\s)(?:display|color|opacity|margin|margin-bottom|--color-foreground[\w-]*)\s*:/;
-
 const assertInlineOrderUnambiguous = (name) => {
   /*
    * Membership used to be "this sheet's text mentions `.name`", which misses a section
