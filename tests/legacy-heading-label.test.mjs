@@ -772,7 +772,26 @@ const matchesPath = (parts, chain, endIndex) => {
   return walk(parts.length - 1, endIndex);
 };
 
-const satisfiable = (conditions) => {
+/* Top-level commas only: `@media (max-width: 749px), (min-width: 750px)` is two queries, but
+   a comma inside parentheses belongs to whatever it is nested in. */
+const alternativesOf = (condition) => {
+  const parts = [];
+  let depth = 0;
+  let start = 0;
+  for (let at = 0; at < condition.length; at += 1) {
+    const character = condition[at];
+    if (character === '(') depth += 1;
+    else if (character === ')') depth = Math.max(0, depth - 1);
+    else if (character === ',' && depth === 0) {
+      parts.push(condition.slice(start, at));
+      start = at + 1;
+    }
+  }
+  parts.push(condition.slice(start));
+  return parts.map((part) => part.trim()).filter((part) => part !== '');
+};
+
+const feasible = (conditions) => {
   let low = 0;
   let high = Infinity;
   const fixed = new Map();
@@ -813,6 +832,31 @@ const satisfiable = (conditions) => {
     }
   }
   return low <= high;
+};
+
+/*
+ * A media query list is an alternation, not a conjunction. Intersecting the bounds of every
+ * alternative made `@media (max-width: 749px), (min-width: 750px)` -- which covers every
+ * viewport there is -- impossible, so every context holding a rule inside it was discarded
+ * and the muting went unmeasured (Codex, #427). Each condition contributes one alternative
+ * at a time, and the combination holds if any choice across all of them does.
+ */
+const satisfiable = (conditions) => {
+  const choices = conditions.map(alternativesOf);
+  const COMBINATIONS = 4096;
+  const total = choices.reduce((count, options) => count * Math.max(1, options.length), 1);
+  assert.ok(
+    total <= COMBINATIONS,
+    `${total} combinations of ${choices.length} media query lists -- too many to enumerate; ` +
+      'narrow the conditions rather than letting this run away',
+  );
+
+  const walk = (at, picked) => {
+    if (at === choices.length) return feasible(picked);
+    const options = choices[at].length === 0 ? [''] : choices[at];
+    return options.some((option) => walk(at + 1, [...picked, option]));
+  };
+  return walk(0, []);
 };
 
 /*
@@ -938,6 +982,8 @@ const contextsFor = (name) => {
 
         out.push({
           where: [`${entry.section} on ${page.file}`, ...conditions].join(' inside '),
+          section: entry.section,
+          page: page.file,
           inline: entry.inline,
           ancestorAlpha: fromAbove.alpha,
           ancestorColour: fromAbove.colour,
@@ -1081,8 +1127,21 @@ const paletteExtreme = (which) => {
 /* The section types that render one of the derived eyebrows. */
 const eyebrowed = new Set([...labels.values()].flatMap((sections) => [...sections]));
 
+/*
+ * Every ground an eyebrow is read on, each tagged with the section instance it belongs to.
+ *
+ * A band is painted on its own section's wrapper, so it is behind that section's eyebrow and
+ * nobody else's. Measuring every label against every band failed an accessible colour:
+ * `#6d6d6d` scoped to `ona-wholesale-partnership` is 4.64:1 on the page background it
+ * actually sits on, and was rejected at 4.09:1 against `wholesale_sourcing_v2`'s sand band,
+ * a ground that eyebrow never occupies (Codex, #427). The page background keeps `section:
+ * null` and is read under every label, which is the cheap guard for a band setting being
+ * cleared.
+ */
 const grounds = () => {
-  const found = new Map([['the page background', palette.background]]);
+  const found = new Map([
+    ['the page background', { colour: palette.background, section: null, file: null }],
+  ]);
   for (const file of readdirSync(join(root, 'templates'))) {
     if (!file.endsWith('.json')) continue;
     let parsed;
@@ -1102,10 +1161,11 @@ const grounds = () => {
          what says whether it does. */
       if (!eyebrowed.has(section.type)) continue;
       const band = section.settings?.background_color ?? section.settings?.band_background;
-      if (typeof band === 'string' && /^#[0-9a-f]{6}$/i.test(band)) found.set(`${file} ${key}`, band);
+      if (typeof band === 'string' && /^#[0-9a-f]{6}$/i.test(band))
+        found.set(`${file} ${key}`, { colour: band, section: section.type, file });
     }
   }
-  return [...found];
+  return [...found].map(([name, rest]) => ({ name, ...rest }));
 };
 
 const channel = (value) => {
@@ -1304,6 +1364,13 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
     'no template declares a band colour, so this is measuring the page background and nothing else'
   );
 
+  /* Scoping each label to its own section's bands is only an improvement while every band
+     still has a label reading it. If the filter stopped matching -- a section renamed, a
+     chain that no longer carries the section -- each context would fall back to the page
+     background and the band coverage would go with it, silently. The assertion after the
+     loop names the bands nobody read. */
+  const read = new Set();
+
   for (const [name] of labels) {
     assertInlineOrderUnambiguous(name);
     const contexts = contextsFor(name);
@@ -1324,7 +1391,16 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
       );
       const effective = alpha * context.ancestorAlpha;
 
-      for (const [ground_name, ground] of where) {
+      /* Only the grounds this eyebrow is actually read on: the page background, plus the
+         bands configured on its own section on its own page. */
+      const under = where.filter(
+        (ground) =>
+          ground.section === null ||
+          (ground.section === context.section && ground.file === context.page),
+      );
+      for (const ground of under) if (ground.section !== null) read.add(ground.name);
+
+      for (const { name: ground_name, colour: ground } of under) {
         const ink = rgb(ground);
         /* Inherited, the eyebrow takes the section's foreground, and the band snippet has
            already chosen the palette extreme that contrasts best with the band. */
@@ -1341,6 +1417,13 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
       }
     }
   }
+
+  assert.deepEqual(
+    where.filter((ground) => ground.section !== null && !read.has(ground.name)).map((ground) => ground.name),
+    [],
+    'these bands have an eyebrow configured on them but no context read the label against ' +
+      'one -- the per-section ground filter is matching less than it should',
+  );
 });
 
 /*
