@@ -333,7 +333,7 @@ const everyRule = () => {
 
 /* What the ancestors do to the label: opacity composites, so it multiplies; color is
    inherited, so the nearest ancestor that sets one supplies it. */
-const ancestorEffects = (chain, conditions, live) => {
+const ancestorEffects = (chain, conditions, live, inlines = []) => {
   let alpha = 1;
   let colour = null;
 
@@ -344,7 +344,10 @@ const ancestorEffects = (chain, conditions, live) => {
         rule.conditions.every((condition) => conditions.includes(condition)) &&
         matchesPath(rule.path, chain, index),
     );
-    if (applicable.length === 0) continue;
+    /* The ancestor's own `style=""` beats every rule on it, so it goes last. Checked before
+       the early return, since an inline style can be the only thing this ancestor does. */
+    const inline = inlines[index] ?? '';
+    if (applicable.length === 0 && inline === '') continue;
 
     /* The rejection in rulesFor() only covers selectors naming the label, so an ancestor's
        `opacity: .6 !important` was overridden here by a later `opacity: 1` the browser
@@ -357,7 +360,7 @@ const ancestorEffects = (chain, conditions, live) => {
       );
     }
 
-    const body = merge(applicable);
+    const body = merge(applicable, inline);
     const faded = lastValue(body, 'opacity');
     if (faded !== null) {
       const literal = faded.match(/^([0-9.]+)%?$/);
@@ -552,11 +555,27 @@ const ancestriesFor = (name) => {
             ),
             new Set([element, ...classes.map((c) => `.${c}`), ...attrs]),
           ],
+          /* An ancestor's own `style=""` outranks every stylesheet rule on that ancestor, and
+             `opacity` there composites the label just as a rule would. Recording only the
+             label's inline styles meant `style="opacity:0.6"` on the partnership wrapper
+             faded its eyebrow below the bar with the suite green (Codex, #427). Parallel to
+             `chain`, so index n is the inline style of chain[n]. */
+          inlines: [
+            '',
+            ...open.map((entry) => entry.inline),
+            attributes.match(/style="([^"]*)"/)?.[1] ?? '',
+          ],
           inline: attributes.match(/style="([^"]*)"/)?.[1] ?? '',
           section: file.slice(0, -'.liquid'.length),
         });
       }
-      if (!VOID_TAGS.has(element) && !/\/\s*$/.test(attributes)) open.push({ element, classes, attrs });
+      if (!VOID_TAGS.has(element) && !/\/\s*$/.test(attributes))
+        open.push({
+          element,
+          classes,
+          attrs,
+          inline: attributes.match(/style="([^"]*)"/)?.[1] ?? '',
+        });
     }
   }
   return found;
@@ -669,12 +688,21 @@ const satisfiable = (conditions) => {
     )) {
       const name = feature.toLowerCase();
       if (name === 'width' && bound) {
-        const pixels = Number(
-          String(value)
-            .replace(/px\s*$/i, '')
-            .trim(),
+        /* `rem` and `em` both resolve against the root font size in a media query, which is
+           the browser default -- a page `font-size` cannot change it there. Units beyond
+           these are refused outright: returning false used to mean "cannot happen", so
+           `@media (min-width: 40rem) { .subtitle { opacity: .6 } }` had every context
+           holding it discarded and the suite stayed green while the label sat under the bar
+           at matching viewports (Codex, #427). */
+        const measure = String(value).trim().match(/^(-?[\d.]+)(px|rem|em)?$/i);
+        assert.ok(
+          measure,
+          `cannot read the viewport width "${String(value).trim()}" in "${condition}" -- ` +
+            'extend this resolver rather than dropping every rule inside that query',
         );
-        /* A width this cannot read is a width this cannot intersect. */
+        const ROOT_FONT_SIZE = 16;
+        const unit = (measure[2] ?? 'px').toLowerCase();
+        const pixels = Number(measure[1]) * (unit === 'px' ? 1 : ROOT_FONT_SIZE);
         if (Number.isNaN(pixels)) return false;
         if (bound.toLowerCase() === 'min') low = Math.max(low, pixels);
         else high = Math.min(high, pixels);
@@ -811,7 +839,7 @@ const contextsFor = (name) => {
         );
         if (applicable.length === 0) continue;
 
-        const fromAbove = ancestorEffects(entry.chain, conditions, live);
+        const fromAbove = ancestorEffects(entry.chain, conditions, live, entry.inlines);
 
         out.push({
           where: [`${entry.section} on ${page.file}`, ...conditions].join(' inside '),
