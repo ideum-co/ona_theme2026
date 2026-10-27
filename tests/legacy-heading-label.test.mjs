@@ -1105,6 +1105,19 @@ const alternativesOf = (condition) => {
     else if (character === ',' && depth === 0) {
       parts.push(body.slice(start, at));
       start = at + 1;
+    } else if (depth === 0) {
+      /* `or` is the same alternation spelled as a keyword. Only the comma was split on, so
+         `@media (max-width: 749px) or (min-width: 750px)` had its two halves intersected
+         into a viewport that cannot exist, the rule inside was discarded as unreachable,
+         and a failing `opacity: .6` passed all five tests -- while the comma spelling of
+         the same query failed at 4.42:1 (Codex, #427). Matched as a whole word, so the
+         `or` inside "ancestor" is not one. */
+      const keyword = /^\s+or\s+/i.exec(body.slice(at));
+      if (keyword !== null) {
+        parts.push(body.slice(start, at));
+        at += keyword[0].length - 1;
+        start = at + 1;
+      }
     }
   }
   parts.push(body.slice(start));
@@ -1797,6 +1810,44 @@ const bottomMargin = (declarations) => {
 
 /* One `color` value, resolved on its own. `alpha` is the factor the value contributes, which
    the element's own `opacity` multiplies rather than replaces. */
+/*
+ * The value with every `var()` fallback dropped, leaving only what the browser reaches when
+ * each variable is defined: `var(--a, var(--b))` becomes `var(--a)`.
+ */
+const withoutFallbacks = (value) => {
+  let out = '';
+  for (let at = 0; at < value.length; at += 1) {
+    if (!/^var\s*\(/i.test(value.slice(at))) {
+      out += value[at];
+      continue;
+    }
+    const open = value.indexOf('(', at);
+    let depth = 0;
+    let close = open;
+    for (; close < value.length; close += 1) {
+      if (value[close] === '(') depth += 1;
+      else if (value[close] === ')') {
+        depth -= 1;
+        if (depth === 0) break;
+      }
+    }
+    const inner = value.slice(open + 1, Math.min(close, value.length));
+    let nested = 0;
+    let cut = -1;
+    for (let index = 0; index < inner.length; index += 1) {
+      if (inner[index] === '(') nested += 1;
+      else if (inner[index] === ')') nested -= 1;
+      else if (inner[index] === ',' && nested === 0) {
+        cut = index;
+        break;
+      }
+    }
+    out += `var(${cut === -1 ? inner : inner.slice(0, cut)})`;
+    at = close;
+  }
+  return out;
+};
+
 const colourValue = (value) => {
   let alpha = 1;
 
@@ -1861,6 +1912,26 @@ const colourValue = (value) => {
   if (extreme) {
     return { alpha, literal: rgb(paletteExtreme(extreme[1])), how: value };
   }
+
+  /*
+   * A `var()` fallback only applies when the variable before it is undefined, so a
+   * foreground token sitting there is not what the eyebrow is painted in. The check below
+   * reads the whole string, so `rgb(var(--color-rgb, var(--color-foreground-rgb)) / 1)`
+   * came back as "inherited" and passed all five tests -- while the same declaration with
+   * `--color-rgb` read directly fails, which is the asymmetry that gives it away
+   * (Codex, #427). `snippets/color-palette.liquid` writes this shape for real.
+   *
+   * Resolving it means tracking arbitrary custom properties, which this model does not do,
+   * so it refuses. The theme passes exactly one `var()` value to this resolver today --
+   * `var(--color-foreground)`, no fallback -- measured through the resolver itself.
+   */
+  const FOREGROUND_IN = /--color-foreground(?:-rgb|-muted|-subdued)?(?![\w-])/;
+  assert.ok(
+    !FOREGROUND_IN.test(value) || FOREGROUND_IN.test(withoutFallbacks(value)),
+    `the eyebrow's colour in "${value}" names a foreground token only inside a var() ` +
+      'fallback, which applies only when the variable before it is undefined -- resolve ' +
+      'that variable rather than measuring a fallback the browser may never reach',
+  );
 
   const inherits =
     /currentColor|inherit|--color-foreground(?![\w-])|--color-foreground-rgb|--color-foreground-muted|--color-foreground-subdued/.test(
