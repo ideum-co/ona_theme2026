@@ -1043,7 +1043,7 @@ const ancestorEffects = (chain, conditions, live, inlines = []) => {
     const applicable = everyRule().filter(
       (rule) =>
         live(rule) &&
-        conditionsAt(rule, chain.length, index).every((condition) => conditions.includes(condition)) &&
+        conditionsAt(rule, chain, index).every((condition) => conditions.includes(condition)) &&
         matchesPath(rule.path, chain, index),
     );
     /* The ancestor's own `style=""` beats every rule on it, so it goes last. Checked before
@@ -1681,10 +1681,9 @@ const statesOf = (compound) => {
  * under `.text .subtitle:hover { opacity: 1 }` passed all five tests while the browser
  * fades the label whenever the pointer is in the wrapper but off the text (Codex, #427).
  *
- * Depth from the end of the branch is the identity, which is the same footing `matchesPath`
- * walks the chain on: the label is 0, its parent 1. Two different ancestors at the same
- * depth still share a condition, so this separates the states the model can tell apart
- * rather than claiming to tell all of them apart.
+ * Depth from the end of the branch is recorded here, and `conditionsAt` turns it into the
+ * element the compound actually matched -- two ancestors at the same selector depth are
+ * different conditions when the chain puts them at different indices.
  */
 const statesIn = (parts) => {
   const out = [];
@@ -1709,22 +1708,52 @@ const statesIn = (parts) => {
  * merge: `.text:hover` matched on the wrapper and `.text:hover .subtitle` matched on the
  * label both name the wrapper, because both are hovering the same element.
  *
- * Exact for the matched compound. A descendant combinator above it can match further up
- * than `endIndex - depth`, so those names remain the approximation the previous round
- * already documented -- two ancestors the model cannot tell apart still share a condition.
+ * The index comes from the element the compound really matched, not from its position in
+ * the selector. Counting back `endIndex - depth` gave two states on genuinely different
+ * ancestors the same name whenever a descendant combinator sat between them, which is a
+ * regression this file could not see (Codex, #427); `matchedIndices` resolves it. When a
+ * compound could match several elements in the chain the state is not attributable at all,
+ * and that is refused rather than pinned on one of them.
  *
  * This costs enumeration, and it is meant to: contexts go from 88 to 176 and the widest
  * qualifier set from 2 to 3, against a cap of 12. The extra contexts are exactly the
  * combinations that used to collapse -- an ancestor's state on while the label's is off --
  * so the growth is the coverage this fix exists to add, not overhead.
  */
-const conditionsAt = (rule, chainLength, endIndex) => [
-  ...rule.conditions,
-  ...rule.states.map(({ depth, state }) => {
-    const at = Math.max(0, endIndex - depth);
-    return `${state} on ${at === chainLength - 1 ? 'the label' : `chain element ${at}`}`;
-  }),
-];
+const conditionsAt = (rule, chain, endIndex) => {
+  /*
+   * Only a rule that can move something this file measures needs its states anchored to the
+   * exact element, because the index is what decides which context a measured declaration
+   * lands in. Resolving the rest would mean walking a path for every live rule at every
+   * index, including the ones this context has already excluded -- and a compound that
+   * matches on everything but an attribute `attrMatch` cannot read refuses there rather than
+   * answering, which is a refusal about a rule that could never have mattered. base.css
+   * carries one: `html:active-view-transition-type(page-navigation)
+   * main[data-page-transition-enabled='true']`, setting `view-transition-name`.
+   *
+   * A state on the label alone is already exact -- its compound matched at `endIndex` -- so
+   * the walk is only worth it when some state sits above it.
+   */
+  const anchored =
+    rule.states.some(({ depth }) => depth > 0) && MEASURED.test(rule.declarations ?? '')
+      ? matchedIndices(rule.path, chain, endIndex)
+      : null;
+  return [
+    ...rule.conditions,
+    ...rule.states.map(({ depth, state }) => {
+      /* `path` and `states` are built from one `parts` array, so depth names the compound. */
+      const candidates = [...(anchored?.[rule.path.length - 1 - depth] ?? [])].sort((a, b) => a - b);
+      assert.ok(
+        candidates.length <= 1,
+        `"${rule.selector}" puts ${state} on a compound this chain matches at ` +
+          `${candidates.join(' and ')}, so which element has to be ${state} before the rule ` +
+          'applies is ambiguous -- resolve that rather than crediting the state to one of them',
+      );
+      const at = candidates.length === 1 ? candidates[0] : Math.max(0, endIndex - depth);
+      return `${state} on ${at === chain.length - 1 ? 'the label' : `chain element ${at}`}`;
+    }),
+  ];
+};
 
 /* A compound with its state pseudos removed, leaving what identifies the element. A function
    emptied by that -- `:is(:hover)` becoming `:is()` -- goes too, since an empty argument list
@@ -1967,9 +1996,9 @@ const holdsEmpty = (compound) => {
   });
 };
 
-const matchesPath = (parts, chain, endIndex) => {
+const walkPath = (parts, chain, endIndex, sets) => {
   if (parts.length === 0) return false;
-  const walk = (at, index) => {
+  const walk = (at, index, picked) => {
     if (index < 0) return false;
     if (!matchesElement(parts[at].compound, chain[index], chain, index)) return false;
     /*
@@ -1986,15 +2015,48 @@ const matchesPath = (parts, chain, endIndex) => {
      * the places its author remembered.
      */
     if (index !== chain.length - 1 && holdsEmpty(parts[at].raw ?? parts[at].compound)) return false;
-    if (at === 0) return true;
-    const { combinator } = parts[at];
-    if (combinator === '>') return walk(at - 1, index - 1);
-    for (let above = index - 1; above >= 0; above -= 1) {
-      if (walk(at - 1, above)) return true;
+    const taken = sets === null ? picked : [...picked, [at, index]];
+    if (at === 0) {
+      if (sets !== null) for (const [part, element] of taken) sets[part].add(element);
+      return true;
     }
-    return false;
+    const { combinator } = parts[at];
+    if (combinator === '>') return walk(at - 1, index - 1, taken);
+    /* Collecting wants every assignment, so it cannot stop at the first one that works. */
+    let any = false;
+    for (let above = index - 1; above >= 0; above -= 1) {
+      if (walk(at - 1, above, taken)) {
+        any = true;
+        if (sets === null) return true;
+      }
+    }
+    return any;
   };
-  return walk(parts.length - 1, endIndex);
+  return walk(parts.length - 1, endIndex, []);
+};
+
+const matchesPath = (parts, chain, endIndex) => walkPath(parts, chain, endIndex, null);
+
+/*
+ * Which chain element each compound of a selector actually matches, across every assignment
+ * that makes the whole selector match at `endIndex`.
+ *
+ * Depth in a selector is not depth in the DOM. `.add-image-and-text:hover .subtitle` and
+ * `.text:hover .subtitle` both put their state one compound above the label, so anchoring
+ * the state to `endIndex - depth` gave them the same condition name -- and the partnership
+ * section puts `.img` inside `.add-image-and-text` but outside `.text`, so the browser
+ * really can hover the image, fade the eyebrow and never reach the restore. The powerset
+ * switched the two on together and all five tests passed (Codex, #427).
+ *
+ * A descendant combinator can place one compound at more than one index, so this answers
+ * with a set per compound rather than an index. One walker serves this and `matchesPath`
+ * because two copies of a selector walk are two things to keep in step -- the lesson round
+ * 61 applied to `assertResolvable` and round 63 to `withoutComments`.
+ */
+const matchedIndices = (parts, chain, endIndex) => {
+  const sets = parts.map(() => new Set());
+  walkPath(parts, chain, endIndex, sets);
+  return sets;
 };
 
 /* The contents of a part that is nothing but one parenthesised group wrapping further
@@ -2514,7 +2576,7 @@ const contextsFor = (name) => {
         .sort((a, b) => a.weight - b.weight || a.at - b.at)
         .map((rule) => ({
           ...rule,
-          anchored: conditionsAt(rule, entry.chain.length, entry.chain.length - 1),
+          anchored: conditionsAt(rule, entry.chain, entry.chain.length - 1),
         }));
       for (const rule of reaches) {
         assert.ok(
@@ -2607,7 +2669,7 @@ const contextsFor = (name) => {
           const varies = rule.states.some(({ state }) => !/^:root$/i.test(state));
           const seen = new Set();
           return (varies ? matches : matches.slice(0, 1)).flatMap((at) => {
-            const anchored = conditionsAt(rule, entry.chain.length, at);
+            const anchored = conditionsAt(rule, entry.chain, at);
             const key = anchored.join('\u0000');
             if (seen.has(key)) return [];
             seen.add(key);
