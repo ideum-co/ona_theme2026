@@ -161,6 +161,60 @@ const appliesAsCss = (attributes) => {
   return type === '' || type.replace(/[A-Z]/g, (letter) => letter.toLowerCase()) === 'text/css';
 };
 
+/*
+ * Spans of a file where a `<style>` tag is not a style element.
+ *
+ * Inside a raw-text element -- `script`, `textarea`, `title`, `xmp`, `noembed`, `noframes`,
+ * `plaintext`, and `noscript` while scripting is enabled -- the parser reads characters as
+ * text, so there is no element and nothing is styled. Inside a `<template>` the markup IS
+ * parsed, but into a separate fragment whose style elements are never connected to the
+ * document, so they style nothing until something clones them in.
+ *
+ * Collecting either kind let a dead `opacity: 1` cancel a live `opacity: .6` and all five
+ * tests passed while every visitor kept the faded eyebrow at 4.42:1 (Codex, #427). That is
+ * the same shape as the HTML comment of round 63 and the non-CSS `type` of round 65, and the
+ * reason this reads as one list rather than a third special case: the question is never what
+ * the text says, it is whether the browser is reading markup there at all.
+ *
+ * Raw text ends at its first end tag, nested tags included, which is exactly what the parser
+ * does. `template` is counted by depth instead, because its contents are parsed and so a
+ * nested `<template>` closes only itself. An element left open at end of file is closed
+ * there, as the parser closes it.
+ *
+ * The one place this is wider than the parser is an SVG `<title>`: in foreign content that
+ * tag is not raw text. Every live `<title>` closes on its own line, so the span stays small,
+ * but an unclosed one would reach further than a browser would.
+ */
+const INERT_RAW_TEXT = 'script|textarea|title|xmp|noembed|noframes|plaintext|noscript';
+
+const inertRanges = (text) => {
+  const ranges = [];
+  const tag = new RegExp(`<(${INERT_RAW_TEXT})\\b[^>]*>|<(template)\\b[^>]*>|<\\/template\\s*>`, 'gi');
+  let depth = 0;
+  let opened = 0;
+  for (let found = tag.exec(text); found !== null; found = tag.exec(text)) {
+    if (found[1] !== undefined) {
+      const closed = new RegExp(`</${found[1]}\\s*>`, 'i').exec(text.slice(found.index));
+      const stop = closed === null ? text.length : found.index + closed.index + closed[0].length;
+      ranges.push([found.index, stop]);
+      tag.lastIndex = stop;
+      continue;
+    }
+    if (found[2] !== undefined) {
+      if (depth === 0) opened = found.index;
+      depth += 1;
+      continue;
+    }
+    if (depth === 0) continue;
+    depth -= 1;
+    if (depth === 0) ranges.push([opened, found.index + found[0].length]);
+  }
+  if (depth > 0) ranges.push([opened, text.length]);
+  return ranges;
+};
+
+const insideInert = (ranges, at) => ranges.some(([from, to]) => at >= from && at < to);
+
 /* A native `<style>` carries its own media restriction in an attribute, and a `{% style %}`
    cannot. Dropping it applied print-only or narrow-viewport declarations to every rendering:
    a restoring `opacity: 1` inside `<style media="print">` cancelled a real `opacity: .6` in
@@ -236,6 +290,7 @@ const sheets = (() => {
     let recognised = 0;
     const TAG =
       /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b([^>]*)>([\s\S]*?)<\/style>|\{%-?\s*(if|elsif|else|endif|unless|endunless|assign)\b([^%]*?)-?%\}|['"]([\w.-]+\.css)['"]\s*\|\s*asset_url\s*\|\s*stylesheet_tag/g;
+    const inert = inertRanges(source);
     for (const found of source.matchAll(TAG)) {
       const [, styled, nativeAttributes, native, keyword, rest, asset] = found;
 
@@ -243,6 +298,8 @@ const sheets = (() => {
       if (css !== undefined) {
         /* Not a stylesheet, so nothing in it reaches any rendering. */
         if (!appliesAsCss(nativeAttributes)) continue;
+        /* Text, or an inert fragment -- either way the browser styles nothing from here. */
+        if (insideInert(inert, found.index)) continue;
         /* Only the layout's own. `snippets/stylesheets.liquid` is read again by the section
            scan below, which is where its blocks are collected; taking them here too would
            apply every declaration twice. */
@@ -369,12 +426,14 @@ const sheets = (() => {
   for (const file of readdirSync(join(root, 'layout'))) {
     if (!file.endsWith('.liquid') || file === 'theme.liquid') continue;
     const source = withoutComments(readFileSync(join(root, 'layout', file), 'utf8'));
+    const inert = inertRanges(source);
     for (const match of source.matchAll(
       /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b([^>]*)>([\s\S]*?)<\/style>/g,
     )) {
       /* A block the browser never parses as CSS cannot leak onto any page, so refusing it
-         would be a refusal about nothing. */
+         would be a refusal about nothing. The same goes for one it never parses as markup. */
       if (!appliesAsCss(match[2])) continue;
+      if (insideInert(inert, match.index)) continue;
       assert.ok(
         !MEASURED.test(decomment(match[1] ?? match[3])),
         `layout/${file} sets a property this file measures in a style block. It is not the ` +
@@ -475,6 +534,7 @@ const sheets = (() => {
          also keeps the `<style>` scan below off the one `snippets/svg-without-styles.liquid`
          documents in its own doc block, which is a paragraph of English. */
       const source = withoutComments(readFileSync(join(root, dir, file), 'utf8'));
+      const inert = inertRanges(source);
 
       /* Shopify concatenates every `{% stylesheet %}` into one asset served on every page,
          so these are global whether or not the section renders. */
@@ -556,6 +616,7 @@ const sheets = (() => {
         }
         const body = match[1] ?? match[3];
         if (!appliesAsCss(match[2])) continue;
+        if (insideInert(inert, match.index)) continue;
         if (dir === 'snippets' && editorOnly.has(file.slice(0, -'.liquid'.length))) continue;
         if (open.includes(EDITOR)) continue;
         const unresolved = open.filter((condition) => condition !== STOREFRONT);
