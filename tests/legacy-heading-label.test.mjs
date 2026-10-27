@@ -9,6 +9,39 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 /* Comments mention class names in prose; a rule has to actually select one. */
 const decomment = (text) => text.replace(/\/\*[\s\S]*?\*\//g, ' ');
 
+/*
+ * Neither comment form reaches a browser, and every reader below was stripping a different
+ * subset of them: four stripped `{% comment %}` and `{% doc %}` but not `<!-- -->`, the
+ * layout's markup parser stripped `<!-- -->` and not Liquid, and the section ancestry
+ * parser stripped neither -- its blanket `{% ... %}` cut removes a comment's tags and
+ * leaves the body between them standing as markup.
+ *
+ * Both directions were wrong. A `<style>` inside an HTML comment was collected into the
+ * cascade, so appending `<!-- <style>#shopify-section-ona-wholesale-partnership .subtitle
+ * { opacity: 1 }</style> -->` to a section masked a real contrast regression in base.css
+ * and all five tests passed (Codex, #427). In the other direction, markup inside a comment
+ * was read as a real element: `<!-- <div class="wrap"> -->` at the top of a section made
+ * `.wrap` an ancestor of the label, so a restore written through it masked the same
+ * regression. The theme does keep comments of that shape -- ona-unique-coffees explaining
+ * that a tab "was a <p> with a click handler", ona-wholesale-testimonial keeping a disabled
+ * `<select>` for reference -- but none of them sits in a chain this file measures today:
+ * every ancestry chain is byte-identical before and after this change.
+ *
+ * Liquid renders first, so a `{% style %}` inside an HTML comment emits its `<style>`
+ * between the comment markers and never applies either, and a Liquid comment wins over an
+ * HTML one that contains it: strip Liquid first, then HTML. One helper, called by every
+ * Liquid reader, because a tenth reader would otherwise drift the same way -- the lesson
+ * round 61 applied to `assertResolvable`.
+ *
+ * Liquid sources only. `<!--` and `-->` are legal tokens in CSS (CDO/CDC), so running this
+ * over an asset would truncate real rules; assets keep `decomment` above.
+ */
+const withoutComments = (text) =>
+  text
+    .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, ' ')
+    .replace(/\{%-?\s*doc\s*-?%\}[\s\S]*?\{%-?\s*enddoc\s*-?%\}/g, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ');
+
 /* The properties this file measures: a rule setting none of them cannot change what any
    check here reads. Defined once, because the sheet collection below, the ordering guard
    and the unnamed-rule path in `contextsFor` all need it and copies would drift. */
@@ -162,9 +195,7 @@ const sheets = (() => {
     try {
       /* Prose, not markup -- the same cut the section scan makes, and for the same reason:
          the `{% comment %}` above this layout's style block talks about stylesheets. */
-      source = readFileSync(join(root, file), 'utf8')
-        .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, ' ')
-        .replace(/\{%-?\s*doc\s*-?%\}[\s\S]*?\{%-?\s*enddoc\s*-?%\}/g, ' ');
+      source = withoutComments(readFileSync(join(root, file), 'utf8'));
     } catch {
       continue;
     }
@@ -303,9 +334,7 @@ const sheets = (() => {
      applicability is left unresolved and refused if it ever starts to matter. */
   for (const file of readdirSync(join(root, 'layout'))) {
     if (!file.endsWith('.liquid') || file === 'theme.liquid') continue;
-    const source = readFileSync(join(root, 'layout', file), 'utf8')
-      .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, ' ')
-      .replace(/\{%-?\s*doc\s*-?%\}[\s\S]*?\{%-?\s*enddoc\s*-?%\}/g, ' ');
+    const source = withoutComments(readFileSync(join(root, 'layout', file), 'utf8'));
     for (const match of source.matchAll(
       /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b([^>]*)>([\s\S]*?)<\/style>/g,
     )) {
@@ -363,9 +392,7 @@ const sheets = (() => {
     for (const dir of ['sections', 'snippets', 'blocks', 'layout']) {
       for (const file of readdirSync(join(root, dir))) {
         if (!file.endsWith('.liquid')) continue;
-        const text = readFileSync(join(root, dir, file), 'utf8')
-          .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, ' ')
-          .replace(/\{%-?\s*doc\s*-?%\}[\s\S]*?\{%-?\s*enddoc\s*-?%\}/g, ' ');
+        const text = withoutComments(readFileSync(join(root, dir, file), 'utf8'));
         const from = dir === 'snippets' ? file.slice(0, -'.liquid'.length) : null;
         const open = [];
         for (const [, tag, expression, rendered] of text.matchAll(
@@ -410,9 +437,7 @@ const sheets = (() => {
          tail, Liquid assigns and section markup as one stylesheet. Cutting the blocks first
          also keeps the `<style>` scan below off the one `snippets/svg-without-styles.liquid`
          documents in its own doc block, which is a paragraph of English. */
-      const source = readFileSync(join(root, dir, file), 'utf8')
-        .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, ' ')
-        .replace(/\{%-?\s*doc\s*-?%\}[\s\S]*?\{%-?\s*enddoc\s*-?%\}/g, ' ');
+      const source = withoutComments(readFileSync(join(root, dir, file), 'utf8'));
 
       /* Shopify concatenates every `{% stylesheet %}` into one asset served on every page,
          so these are global whether or not the section renders. */
@@ -661,7 +686,7 @@ const labels = (() => {
        deliberately hidden since #249; stripping outputs too made it indistinguishable from
        `<span class="subtitle">{{ ... }}</span>` and put a permanently invisible element under
        the same typography and contrast bar as a label a shopper reads. */
-    const markup = readFileSync(join(root, 'sections', file), 'utf8')
+    const markup = withoutComments(readFileSync(join(root, 'sections', file), 'utf8'))
       .split(/\{%-?\s*schema\s*-?%\}/)[0]
       .replace(/\{%-?[\s\S]*?-?%\}/g, ' ')
       .replace(/\{\{[\s\S]*?\}\}/g, 'x');
@@ -1282,7 +1307,7 @@ const inlineStyle = (attributes) =>
  * in the header-measuring block would otherwise read as the end of a tag.
  */
 const LAYOUT_ELEMENTS = (() => {
-  const source = readFileSync(join(root, 'layout', 'theme.liquid'), 'utf8');
+  const source = withoutComments(readFileSync(join(root, 'layout', 'theme.liquid'), 'utf8'));
 
   const opening = (tag) => {
     const found = source.match(new RegExp(`<${tag}\\b([^>]*)>`));
@@ -1335,7 +1360,6 @@ const LAYOUT_ELEMENTS = (() => {
   const main = opening('main');
   const between = source
     .slice(source.indexOf(body[0]) + body[0].length, source.indexOf(main[0]))
-    .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/<script\b[\s\S]*?<\/script>/gi, '')
     .replace(/<style\b[\s\S]*?<\/style>/gi, '');
 
@@ -1437,7 +1461,9 @@ const ancestriesFor = (name) => {
   const found = [];
   for (const file of readdirSync(join(root, 'sections'))) {
     if (!file.startsWith('ona-') || !file.endsWith('.liquid')) continue;
-    const source = readFileSync(join(root, 'sections', file), 'utf8').split(/\{%-?\s*schema\s*-?%\}/)[0];
+    const source = withoutComments(readFileSync(join(root, 'sections', file), 'utf8')).split(
+      /\{%-?\s*schema\s*-?%\}/,
+    )[0];
     const conditional = conditionalClassesIn(source);
     const markup = source
       .replace(/\{%-?[\s\S]*?-?%\}/g, ' ')
@@ -3098,7 +3124,9 @@ const over = (fore, ground, alpha) => fore.map((value, at) => alpha * value + (1
  * rendered label failed (Codex, #300). Resolve the declaration, then measure that.
  */
 const opacityToken = (name) => {
-  const tokens = readFileSync(join(root, 'snippets/theme-styles-variables.liquid'), 'utf8');
+  const tokens = withoutComments(
+    readFileSync(join(root, 'snippets/theme-styles-variables.liquid'), 'utf8'),
+  );
   const found = tokens.match(new RegExp(`--opacity-${name}-text:\\s*([0-9.]+)`));
   assert.ok(found, `cannot read --opacity-${name}-text`);
   /* The value the theme declares, unclamped: the root-token guard compares this against
@@ -3665,7 +3693,11 @@ test('no page template renders more than one H1', () => {
       readdirSync(join(root, dir))
         .filter((file) => file.endsWith('.liquid'))
         .filter((file) =>
-          /<h1\b/.test(readFileSync(join(root, dir, file), 'utf8').split(/\{%-?\s*schema\s*-?%\}/)[0])
+          /<h1\b/.test(
+            withoutComments(readFileSync(join(root, dir, file), 'utf8')).split(
+              /\{%-?\s*schema\s*-?%\}/,
+            )[0]
+          )
         )
         .map((file) => file.slice(0, -'.liquid'.length))
     )
