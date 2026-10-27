@@ -248,6 +248,12 @@ const sheets = (() => {
   const bundled = [];
   const inline = [];
 
+  /* Sentinels for the two branches of `request.design_mode`, the one Liquid condition this
+     file resolves: `EDITOR` never reaches a storefront visitor, `STOREFRONT` always does.
+     Distinct from any condition text, so neither can be confused with one. */
+  const EDITOR = Symbol('editor-only');
+  const STOREFRONT = Symbol('storefront');
+
   /* A snippet's `{% style %}` is pooled globally because a snippet can be rendered from
      anywhere -- but not when every place that renders it sits behind
      `{% if request.design_mode %}`. `layout/theme.liquid` renders `theme-editor` only
@@ -340,11 +346,65 @@ const sheets = (() => {
          4.42:1 (Codex, #427). Both forms are read here, in one pass, so a file that writes
          both keeps the order the browser sees. The theme emits no native `<style>` today --
          this is so that one added later is not invisible. */
+      /*
+       * With the Liquid conditions the block is written under. The scan read the file for
+       * style blocks alone, so a block the section emits only sometimes was collected as if
+       * it always rendered: an `opacity: 1` inside
+       * `{% if request.design_mode %}{% style %}...{% endstyle %}{% endif %}` restored a
+       * faded `base.css` rule on every run while only the theme editor ever sees it -- all
+       * five green at a rendered 4.42:1 (Codex, #427). The layout scan above has carried its
+       * conditions since the round that added it; this one never did. `editorOnly` asks a
+       * different question -- whether every *render* of a snippet sits behind that condition
+       * -- and cannot see a condition written inside the file.
+       *
+       * `request.design_mode` is the one condition resolved, the same one resolved elsewhere
+       * here and the only one that decides the rendering this harness measures -- and it is
+       * read in both directions, because getting only one of them right trades a false pass
+       * for a false refusal. `{% if request.design_mode %}` is editor-only and its block is
+       * dropped; `{% unless request.design_mode %}` provably *does* reach the storefront and
+       * counts as no condition at all; and `{% else %}` is the other branch of whichever of
+       * those opened the block, so it resolves the other way rather than becoming unknown.
+       *
+       * Anything else is recorded and left in, because refusing it is not affordable: 19 of
+       * the theme's 30 inline blocks sit behind a condition and 8 of those set a property
+       * this file measures -- icon, inventory, social-link, megamenu and band colours, all
+       * setting-dependent and none resolvable here. Refusing them would make the test
+       * unrunnable rather than more honest. The refusal is narrowed instead to the case that
+       * can actually mislead -- a conditional block whose rules reach a label or one of its
+       * ancestors -- which `assertConditionalBlocksDoNotReach` asks once the ancestries are
+       * known. None does today.
+       */
+      const open = [];
       for (const match of source.matchAll(
-        /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b([^>]*)>([\s\S]*?)<\/style>/g,
+        /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b([^>]*)>([\s\S]*?)<\/style>|\{%-?\s*(if|elsif|else|endif|unless|endunless|case|when|endcase|for|endfor)\b([^%]*?)-?%\}/g,
       )) {
+        const word = match[4];
+        if (word !== undefined) {
+          const test = (match[5] ?? '').replace(/\s+/g, ' ').trim();
+          const editor = /^request\.design_mode$/.test(test);
+          if (/^end/.test(word)) open.pop();
+          else if (word === 'else') {
+            /* `else` is the other branch of whatever opened this block, so a resolved
+               condition resolves the other way rather than becoming unknown. */
+            const was = open.pop();
+            open.push(was === EDITOR ? STOREFRONT : was === STOREFRONT ? EDITOR : was ?? 'else');
+          } else {
+            if (word === 'elsif' || word === 'when') open.pop();
+            open.push(
+              editor && (word === 'if' || word === 'elsif')
+                ? EDITOR
+                : editor && word === 'unless'
+                  ? STOREFRONT
+                  : `${word} ${test}`.trim(),
+            );
+          }
+          continue;
+        }
         const body = match[1] ?? match[3];
         if (dir === 'snippets' && editorOnly.has(file.slice(0, -'.liquid'.length))) continue;
+        if (open.includes(EDITOR)) continue;
+        const unresolved = open.filter((condition) => condition !== STOREFRONT);
+        const conditional = unresolved.length === 0 ? null : unresolved.join(' && ');
         const origin = dir === 'sections' ? file.slice(0, -'.liquid'.length) : null;
         /* `#shopify-section-{{ section.id }}` names this section's own wrapper. Letting
            `liquid()` flatten the output to `x` left `#shopify-section-x`, which matches no
@@ -359,7 +419,7 @@ const sheets = (() => {
         const scoped = origin
           ? body.replace(/#shopify-section-\{\{-?\s*section\.id\s*-?\}\}/g, `#shopify-section-${origin}`)
           : body;
-        inline.push({ origin, text: underMedia(liquid(scoped), match[2]) });
+        inline.push({ origin, conditional, text: underMedia(liquid(scoped), match[2]) });
       }
     }
   }
@@ -419,6 +479,32 @@ const templates = (() => {
  * this file takes on `!important` and sibling combinators -- rather than quietly resolving
  * them the wrong way round.
  */
+/*
+ * A `{% style %}` block written under a Liquid condition must not be what decides how a
+ * label reads.
+ *
+ * The condition cannot be resolved here -- it is a theme setting, a block setting or a
+ * product's shape -- so a block that reaches an eyebrow carries declarations that may or may
+ * not be on the page, and a restoring `opacity: 1` among them would cancel a real regression
+ * on every run while a visitor whose settings differ keeps the fade. Refused rather than
+ * guessed, by the same reach test `assertInlineOrderUnambiguous` uses: what matters is the
+ * rules that actually touch the label or an ancestor, not a name in the text. No block in
+ * the theme reaches one today, so this guards the one added later rather than describing now.
+ */
+const assertConditionalBlocksDoNotReach = (name) => {
+  const chains = ancestriesFor(name).map((entry) => entry.chain);
+  for (const rule of everyRule()) {
+    if (rule.conditional === null || !MEASURED.test(rule.declarations)) continue;
+    if (!chains.some((chain) => chain.some((_, index) => matchesPath(rule.path, chain, index)))) continue;
+    assert.ok(
+      false,
+      `"${rule.selector}" reaches .${name} from a {% style %} block that renders only under ` +
+        `the Liquid condition "${rule.conditional}", which this scan cannot resolve -- read ` +
+        'that condition rather than treating the block as present on every page',
+    );
+  }
+};
+
 const assertInlineOrderUnambiguous = (name) => {
   /*
    * Membership used to be "this sheet's text mentions `.name`", which misses a section
@@ -776,6 +862,7 @@ const flat = sheets
       ...rule,
       origin: sheet.origin,
       scope: sheet.scope ?? [],
+      conditional: sheet.conditional ?? null,
     })),
   )
   .map((rule, index) => ({ ...rule, at: index + 1 }));
@@ -792,7 +879,7 @@ let everyRuleCache = null;
 const everyRule = () => {
   if (everyRuleCache) return everyRuleCache;
   const found = [];
-  for (const { conditions, selectorList, declarations, at, origin, scope } of flat) {
+  for (const { conditions, selectorList, declarations, at, origin, scope, conditional } of flat) {
     for (const branch of splitSelectors(selectorList)) {
       if (PSEUDO_ELEMENT.test(branch)) continue;
       const parts = pathOf(branch);
@@ -818,6 +905,7 @@ const everyRule = () => {
         at,
         origin,
         scope,
+        conditional,
       });
     }
   }
@@ -901,7 +989,7 @@ const rulesFor = (name) => {
   const escaped = name.replace(/-/g, '\\-');
   const target = new RegExp(`\\.${escaped}(?![\\w-])`);
   const found = [];
-  for (const { conditions, selectorList, declarations, at, origin, scope } of flat) {
+  for (const { conditions, selectorList, declarations, at, origin, scope, conditional } of flat) {
     for (const branch of splitSelectors(selectorList)) {
       if (!target.test(branch) || PSEUDO_ELEMENT.test(branch)) continue;
       /* `!important` reorders the cascade in a way none of this models, so it fails rather
@@ -978,6 +1066,7 @@ const rulesFor = (name) => {
         at,
         origin,
         scope,
+        conditional,
       });
     }
   }
@@ -2705,6 +2794,7 @@ test('an eyebrow with nothing in it takes up no room', () => {
 test('the eyebrow sits on its own line above the heading', () => {
   for (const [name] of labels) {
     assertInlineOrderUnambiguous(name);
+    assertConditionalBlocksDoNotReach(name);
     for (const context of contextsFor(name)) {
       if (context.filled.length === 0) continue;
       /* `.some()` passed while a later `display: inline` won in the browser (Codex, #300). */
@@ -3347,6 +3437,7 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
 
   for (const [name] of labels) {
     assertInlineOrderUnambiguous(name);
+    assertConditionalBlocksDoNotReach(name);
     const contexts = contextsFor(name);
     assert.ok(contexts.length > 0, `no rule paints .${name}`);
 
