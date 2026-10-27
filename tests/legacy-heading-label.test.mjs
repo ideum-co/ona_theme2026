@@ -44,6 +44,39 @@ const RESETS_EVERYTHING = /(?:^|;)\s*all\s*:/i;
  */
 const TURNS_THE_BLOCK_AXIS = /(?:^|;)\s*writing-mode\s*:\s*(?!horizontal-tb\b)/i;
 
+/*
+ * Every refusal a block of declarations earns, whichever path reached the label.
+ *
+ * Five paths read declarations onto a label: a rule naming its class, a rule reaching it by
+ * tag, a rule on an ancestor, an ancestor's `style=""` and the label's own. `!important` was
+ * added to all five one at a time. `all` and the writing-mode guard were then added to four
+ * of them, and the fifth -- the by-tag path -- was missed, so `#MainContent
+ * #shopify-section-... span { all: unset }` passed all five tests while the same reset
+ * written with the class refused (Codex, #427). The comment sitting on that very path says
+ * a filter that enumerates protects only the ones you remembered, and it was right twice.
+ *
+ * So the refusals live here and every path calls this. The next one that needs adding gets
+ * added once, and no path can be the one that was forgotten.
+ */
+const assertResolvable = (subject, declarations) => {
+  assert.ok(
+    !/!important/.test(declarations),
+    `${subject} uses !important, which this cascade model does not resolve -- extend it ` +
+      'rather than trusting the result',
+  );
+  assert.ok(
+    !RESETS_EVERYTHING.test(declarations),
+    `${subject} uses "all", which resets every property at once -- resolve that rather ` +
+      'than reading the properties this file names and missing it',
+  );
+  assert.ok(
+    !TURNS_THE_BLOCK_AXIS.test(declarations),
+    `${subject} sets a writing-mode, so the block axis this file reads logical margins ` +
+      'against may not run top to bottom -- resolve that rather than reading ' +
+      'margin-block-end as the bottom edge',
+  );
+};
+
 
 /*
  * An attribute's value, however it is quoted.
@@ -997,46 +1030,14 @@ const ancestorEffects = (chain, conditions, live, inlines = []) => {
        `opacity: .6 !important` was overridden here by a later `opacity: 1` the browser
        ignores (Codex, #300). Ancestor rules that reach the label get the same treatment. */
     for (const rule of applicable) {
-      assert.ok(
-        !/!important/.test(rule.declarations),
-        `an ancestor of the label is styled with !important ("${rule.selector}"), which this ` +
-          'cascade model does not resolve -- extend it rather than trusting the result'
-      );
-      assert.ok(
-        !RESETS_EVERYTHING.test(rule.declarations),
-        `an ancestor of the label is styled with "all" ("${rule.selector}"), which resets ` +
-          'every property at once -- resolve that rather than reading the properties this ' +
-          'file names and missing it',
-      );
-      assert.ok(
-        !TURNS_THE_BLOCK_AXIS.test(rule.declarations),
-        `an ancestor of the label sets a writing-mode ("${rule.selector}"), so the block ` +
-          'axis this file reads logical margins against may not run top to bottom -- ' +
-          'resolve that rather than reading margin-block-end as the bottom edge',
-      );
+      assertResolvable(`an ancestor of the label is styled through "${rule.selector}", which`, rule.declarations);
     }
     /* The same refusal for the ancestor's own `style=""`. The guard above read stylesheet
        rules only, so `style="opacity:.6 !important;opacity:1"` on the partnership wrapper
        passed all five tests while the browser keeps 0.6 and the eyebrow falls to 4.42:1;
        `lastValue` takes the last declaration and importance is what decides it (Codex,
        #427). The plain `style="opacity:.6"` control failed, which is the asymmetry. */
-    assert.ok(
-      !/!important/.test(inline),
-      `an ancestor of the label carries !important in its style="" ("${inline.trim()}"), ` +
-        'which this cascade model does not resolve -- extend it rather than trusting the result',
-    );
-    assert.ok(
-      !RESETS_EVERYTHING.test(inline),
-      `an ancestor of the label carries "all" in its style="" ("${inline.trim()}"), which ` +
-        'resets every property at once -- resolve that rather than reading the properties ' +
-        'this file names and missing it',
-    );
-    assert.ok(
-      !TURNS_THE_BLOCK_AXIS.test(inline),
-      `an ancestor of the label sets a writing-mode in its style="" ("${inline.trim()}"), ` +
-        'so the block axis this file reads logical margins against may not run top to ' +
-        'bottom -- resolve that rather than reading margin-block-end as the bottom edge',
-    );
+    assertResolvable(`an ancestor of the label carries style="${inline.trim()}", which`, inline);
 
     const body = merge(applicable, inline);
     const faded = lastValue(body, 'opacity');
@@ -1077,23 +1078,7 @@ const rulesFor = (name) => {
       if (!target.test(branch) || PSEUDO_ELEMENT.test(branch)) continue;
       /* `!important` reorders the cascade in a way none of this models, so it fails rather
          than being silently mis-resolved. Nothing in the stylesheet uses it today. */
-      assert.ok(
-        !RESETS_EVERYTHING.test(declarations),
-        `.${name} is styled with "all" ("${branch.trim()}"), which resets every property at ` +
-          'once -- resolve that rather than reading the properties this file names and ' +
-          'missing it',
-      );
-      assert.ok(
-        !TURNS_THE_BLOCK_AXIS.test(declarations),
-        `.${name} is given a writing-mode ("${branch.trim()}"), so the block axis this file ` +
-          'reads logical margins against may not run top to bottom -- resolve that rather ' +
-          'than reading margin-block-end as the bottom edge',
-      );
-      assert.ok(
-        !/!important/.test(declarations),
-        `.${name} is styled with !important ("${branch.trim()}"), which this cascade model ` +
-          'does not resolve -- extend it rather than trusting the result',
-      );
+      assertResolvable(`.${name} is styled through "${branch.trim()}", which`, declarations);
 
       assert.ok(
         !negatesAState(branch),
@@ -2411,10 +2396,9 @@ const contextsFor = (name) => {
         )
         .map((rule) => {
           const label = rule.path[rule.path.length - 1].raw;
-          assert.ok(
-            !/!important/.test(rule.declarations),
-            `.${name} is painted with !important through "${rule.selector}", which this ` +
-              'cascade model does not resolve -- extend it rather than trusting the result',
+          assertResolvable(
+            `.${name} is painted through "${rule.selector}", which`,
+            rule.declarations,
           );
           /* `rulesFor` refuses a negated pseudo-class and the ancestor walk refuses one too,
              but this path -- a rule that reaches the label by tag rather than by its class
@@ -2786,24 +2770,9 @@ const contextsFor = (name) => {
          nothing here resolves it. Codex reported the ancestor case; the label's own inline
          style is the same hole one element down, and enumerating only the half that was
          reported is how the token guard had to be fixed twice. */
-      assert.ok(
-        !RESETS_EVERYTHING.test(entry.inline),
-        `the label itself carries "all" in its style="" ("${entry.inline.trim()}"), which ` +
-          'resets every property at once -- resolve that rather than reading the properties ' +
-          'this file names and missing it',
-      );
-      assert.ok(
-        !TURNS_THE_BLOCK_AXIS.test(entry.inline),
-        `the label itself carries a writing-mode in its style="" ` +
-          `("${entry.inline.trim()}"), so the block axis this file reads logical margins ` +
-          'against may not run top to bottom -- resolve that rather than reading ' +
-          'margin-block-end as the bottom edge',
-      );
-      assert.ok(
-        !/!important/.test(entry.inline),
-        `.${name} in ${entry.section} carries !important in its style="" ` +
-          `("${entry.inline.trim()}"), which this cascade model does not resolve -- extend ` +
-          'it rather than trusting the result',
+      assertResolvable(
+        `.${name} in ${entry.section} carries style="${entry.inline.trim()}", which`,
+        entry.inline,
       );
 
       /* The powerset is exponential, so an unexpectedly branchy stylesheet stops the test
