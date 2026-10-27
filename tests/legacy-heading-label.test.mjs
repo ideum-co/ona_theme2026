@@ -660,6 +660,21 @@ const VOID_TAGS = new Set([
  * Liquid in it (`page-width-{{ ... }}`) is not a token any selector here can name, so only
  * the static ones are recorded.
  */
+/*
+ * The `style` attribute, however it is quoted. Only the double-quoted form was read, so
+ * `style='opacity:.6'` on the partnership wrapper recorded no declarations at all and
+ * slipped past both the cascade and the background guard with all five tests green, while
+ * the same markup with double quotes failed at 4.42:1 (Codex, #427). HTML allows single
+ * quotes and, for a value without spaces, none; all three are read here so equivalent
+ * markup gets equivalent checking. Anchored on a boundary so `data-style="..."` is not
+ * mistaken for it.
+ */
+const inlineStyle = (attributes) =>
+  attributes.match(/(?:^|\s)style\s*=\s*"([^"]*)"/i)?.[1] ??
+  attributes.match(/(?:^|\s)style\s*=\s*'([^']*)'/i)?.[1] ??
+  attributes.match(/(?:^|\s)style\s*=\s*([^\s"'>]+)/i)?.[1] ??
+  '';
+
 const LAYOUT_CHAIN = (() => {
   const source = readFileSync(join(root, 'layout', 'theme.liquid'), 'utf8');
   const tokensOf = (tag) => {
@@ -680,19 +695,19 @@ const LAYOUT_CHAIN = (() => {
 })();
 
 /*
- * The `style` attribute, however it is quoted. Only the double-quoted form was read, so
- * `style='opacity:.6'` on the partnership wrapper recorded no declarations at all and
- * slipped past both the cascade and the background guard with all five tests green, while
- * the same markup with double quotes failed at 4.42:1 (Codex, #427). HTML allows single
- * quotes and, for a value without spaces, none; all three are read here so equivalent
- * markup gets equivalent checking. Anchored on a boundary so `data-style="..."` is not
- * mistaken for it.
+ * What `html`, `body` and `main` carry in their own `style` attributes, parallel to
+ * LAYOUT_CHAIN. These three were filled in as empty strings, so an inline style on the
+ * layout was invisible to both the ancestor cascade and the background guard:
+ * `style="opacity:.6"` on the existing `<main>` left all five tests green while every
+ * unbanded eyebrow fell under the bar (Codex, #427). The section ancestors got their
+ * inline styles in an earlier round; these are the three above them.
  */
-const inlineStyle = (attributes) =>
-  attributes.match(/(?:^|\s)style\s*=\s*"([^"]*)"/i)?.[1] ??
-  attributes.match(/(?:^|\s)style\s*=\s*'([^']*)'/i)?.[1] ??
-  attributes.match(/(?:^|\s)style\s*=\s*([^\s"'>]+)/i)?.[1] ??
-  '';
+const LAYOUT_INLINES = (() => {
+  const source = readFileSync(join(root, 'layout', 'theme.liquid'), 'utf8');
+  return ['html', 'body', 'main'].map((tag) =>
+    inlineStyle(source.match(new RegExp(`<${tag}\\b([^>]*)>`))?.[1] ?? ''),
+  );
+})();
 
 const ancestriesFor = (name) => {
   const found = [];
@@ -761,7 +776,7 @@ const ancestriesFor = (name) => {
              faded its eyebrow below the bar with the suite green (Codex, #427). Parallel to
              `chain`, so index n is the inline style of chain[n]. */
           inlines: [
-            ...LAYOUT_CHAIN.map(() => ''),
+            ...LAYOUT_INLINES,
             '',
             ...open.map((entry) => entry.inline),
             inlineStyle(attributes),
@@ -1740,7 +1755,36 @@ const palette = (() => {
     readFileSync(join(root, 'config/settings_data.json'), 'utf8').replace(/^\s*\/\*[\s\S]*?\*\//, ''),
   ).current;
   const colors = settings.color_palette?.[0]?.settings ?? settings.color_palette ?? {};
-  return { background: colors.background, foreground: colors.foreground, all: colors };
+
+  /*
+   * `snippets/color-palette.liquid` emits `--color-foreground` from `settings.page_text_color`
+   * and `--color-background` from `settings.page_background_color` (lines 168-171), so those
+   * are what an eyebrow inherits and what it sits on away from a band. The palette entries
+   * are only their schema defaults -- `settings_schema.json` gives each the matching
+   * `{{ settings.color_palette.* }}` -- and the two coincide in this theme today, which is
+   * exactly why measuring the palette looked right: setting `page_text_color` to the page
+   * background left the eyebrow identical to its ground with all five tests green
+   * (Codex, #427).
+   */
+  const configured = (value, fallback, id) => {
+    if (value === undefined || value === null || value === '') return fallback;
+    assert.ok(
+      /^#[0-9a-f]{6}$/i.test(value),
+      `settings.${id} is "${value}", which this resolver cannot read as a colour -- teach it ` +
+        'that form rather than measuring the palette default instead',
+    );
+    return value;
+  };
+
+  return {
+    background: colors.background,
+    foreground: colors.foreground,
+    all: colors,
+    page: {
+      foreground: configured(settings.page_text_color, colors.foreground, 'page_text_color'),
+      background: configured(settings.page_background_color, colors.background, 'page_background_color'),
+    },
+  };
 })();
 
 /*
@@ -1784,7 +1828,7 @@ const eyebrowed = new Set([...labels.values()].flatMap((sections) => [...section
  */
 const grounds = () => {
   const found = new Map([
-    ['the page background', { colour: palette.background, section: null, file: null }],
+    ['the page background', { colour: palette.page.background, section: null, file: null }],
   ]);
   for (const file of readdirSync(join(root, 'templates'))) {
     if (!file.endsWith('.json')) continue;
@@ -2153,13 +2197,19 @@ test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
       );
       for (const ground of under) if (ground.section !== null) read.add(ground.name);
 
-      for (const { name: ground_name, colour: ground } of under) {
+      for (const { name: ground_name, colour: ground, section: banded } of under) {
         const ink = rgb(ground);
-        /* Inherited, the eyebrow takes the section's foreground, and the band snippet has
-           already chosen the palette extreme that contrasts best with the band. */
-        const inherited = [palette.foreground, palette.background]
-          .map(rgb)
-          .sort((a, b) => contrast(b, ink) - contrast(a, ink))[0];
+        /* On a band the eyebrow takes the section's foreground, and the band snippet has
+           already chosen the palette extreme that contrasts best with the band. The page
+           ground is not a band: there the label inherits `--color-foreground`, which is
+           `page_text_color`, and choosing the better-contrasting extreme instead meant the
+           test picked a colour the page never paints (Codex, #427). */
+        const inherited =
+          banded === null
+            ? rgb(palette.page.foreground)
+            : [palette.foreground, palette.background]
+                .map(rgb)
+                .sort((a, b) => contrast(b, ink) - contrast(a, ink))[0];
         const ratio = contrast(over(literal ?? inherited, ink, effective), ink);
         assert.ok(
           ratio >= 4.5,
