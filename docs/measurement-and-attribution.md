@@ -110,7 +110,12 @@ Two things make the naive version wrong, both verified against this theme's sour
    `layout/theme.liquid:224` renders that dialog (via the `quick-add-modal` snippet) immediately before `</body>` — a
    body-level sibling of the merchandising content. The event target is therefore outside
    any `[data-ona-surface]`. Stamp the surface onto the dialog when it opens and fall
-   back to it.
+   back to it — but reach it **through the event target**, never with a global lookup.
+   There is one `<quick-add-dialog id="quick-add-dialog">` for the whole page, nothing in
+   `assets/quick-add.js` or `assets/dialog.js` clears its dataset on close, and the PDP's
+   own add fires the same event. A global read therefore stamps the last dialog's surface
+   onto an add that never came from it, which is precisely the attribution error this note
+   exists to prevent.
 2. **The event fires before the cart request.** `assets/product-form.js:439` calls
    `CartLinesUpdateEvent.createPromise()` and dispatches the event *first*; the outcome
    arrives later on `event.promise`, resolving with `detail.didError`. Publishing on the
@@ -123,9 +128,13 @@ import { StandardEvents } from '@shopify/events';
 document.addEventListener(StandardEvents.cartLinesUpdate, (event) => {
   if (event.action !== 'add') return;
 
+  /* Both reads go through the event target. The dialog is a body-level sibling, so the
+     first misses when the add came from inside it -- but the second is scoped to the
+     dialog the event is actually in, so an add from anywhere else cannot inherit a
+     surface left behind by a dialog that has since closed. */
   const surface =
     event.target?.closest?.('[data-ona-surface]')?.dataset.onaSurface ??
-    document.getElementById('quick-add-dialog')?.dataset.onaSurface;
+    event.target?.closest?.('quick-add-dialog')?.dataset.onaSurface;
   if (!surface) return;
 
   event.promise
