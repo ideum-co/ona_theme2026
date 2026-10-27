@@ -612,28 +612,39 @@ const tagsOf = (text) =>
     (tag) => tag.toLowerCase(),
   );
 
+const attrsOf = (text) =>
+  (text.match(/\[[^\]]*\]/g) ?? []).map((token) =>
+    token.replace(
+      /\[\s*([\w-]+)\s*(?:([~^|$*]?=)\s*["']?([^\]"']*)["']?\s*)?\]/,
+      (whole, key, operator, value) => (operator === '=' ? `[${key}="${value}"]` : operator ? whole : `[${key}]`)
+    )
+  );
+
+/*
+ * Whether one compound selects one element.
+ *
+ * The arguments of `:is()`, `:where()` and `:not()` are compounds in their own right, so they
+ * are matched by the same function rather than by a classes-and-ids reading of their text. On
+ * that reading `:not(div)` carried no parts at all, every branch vacuously matched, and the
+ * whole rule was dropped -- so `#MainContent .subtitle:not(div) { opacity: 0.6 }` muted every
+ * `<span>` eyebrow with all five tests green, and `:is(div)` would have matched them in the
+ * same breath (Codex, #427). Types and attributes inside an argument now constrain it exactly
+ * as they do outside one.
+ */
 const matchesElement = (compound, element) => {
   const anyOf = [...compound.matchAll(/:(?:is|where)\(([^)]*)\)/gi)];
   const noneOf = [...compound.matchAll(/:not\(([^)]*)\)/gi)];
   const bare = compound.replace(/:(?:is|where|not)\([^)]*\)/gi, '');
 
   return (
-    (bare.match(/\[[^\]]*\]/g) ?? [])
-      .map((token) =>
-        token.replace(
-          /\[\s*([\w-]+)\s*(?:([~^|$*]?=)\s*["']?([^\]"']*)["']?\s*)?\]/,
-          (whole, key, operator, value) =>
-            operator === '=' ? `[${key}="${value}"]` : operator ? whole : `[${key}]`
-        )
-      )
-      .every((token) => element.has(token)) &&
+    attrsOf(bare).every((token) => element.has(token)) &&
     partsOf(bare).every((part) => element.has(part)) &&
     tagsOf(bare).every((tag) => element.has(tag)) &&
     anyOf.every((match) =>
-      splitSelectors(match[1]).some((branch) => partsOf(branch).every((part) => element.has(part))),
+      splitSelectors(match[1]).some((branch) => matchesElement(branch, element)),
     ) &&
     noneOf.every((match) =>
-      splitSelectors(match[1]).every((branch) => !partsOf(branch).every((part) => element.has(part))),
+      splitSelectors(match[1]).every((branch) => !matchesElement(branch, element)),
     )
   );
 };
@@ -1074,24 +1085,10 @@ const bottomMargin = (declarations) => {
   return value;
 };
 
-const painted = (declarations) => {
-  /* An element's own opacity multiplies whatever colour it ends up with. A value this cannot
-     read -- `opacity: var(--opacity-muted-text)` -- used to fall through to alpha 1 and report
-     the label as fully opaque, so an opacity present and unresolved now fails (Codex, #300). */
-  const faded = lastValue(declarations, 'opacity');
+/* One `color` value, resolved on its own. `alpha` is the factor the value contributes, which
+   the element's own `opacity` multiplies rather than replaces. */
+const colourValue = (value) => {
   let alpha = 1;
-  if (faded) {
-    const literal = faded.match(/^([0-9.]+)%?$/);
-    assert.ok(
-      literal,
-      `cannot read the eyebrow's opacity from "${faded}" -- extend this resolver ` +
-        'rather than treating the label as fully opaque',
-    );
-    alpha = faded.includes('%') ? Number(literal[1]) / 100 : Number(literal[1]);
-  }
-
-  const value = lastValue(declarations, 'color');
-  if (value === null) return { alpha, literal: null, how: 'inherited' };
 
   const hex = value.match(/#([0-9a-f]{6})\b/i);
   if (hex)
@@ -1148,6 +1145,45 @@ const painted = (declarations) => {
       'resolver rather than leaving the contrast unchecked',
   );
   return { alpha, literal: null, how: value };
+};
+
+/* A value that is nothing but `inherit` or `currentColor` -- `color: currentColor` computes to
+   the inherited colour, same as `color: inherit`. Either way the element takes what the
+   cascade above already worked out, down to its alpha; it is not a colour of its own. */
+const RESTATES_INHERITANCE = /^(?:inherit|currentcolor)$/i;
+
+const painted = (declarations) => {
+  /* An element's own opacity multiplies whatever colour it ends up with. A value this cannot
+     read -- `opacity: var(--opacity-muted-text)` -- used to fall through to alpha 1 and report
+     the label as fully opaque, so an opacity present and unresolved now fails (Codex, #300). */
+  const faded = lastValue(declarations, 'opacity');
+  let opacity = 1;
+  if (faded) {
+    const literal = faded.match(/^([0-9.]+)%?$/);
+    assert.ok(
+      literal,
+      `cannot read the eyebrow's opacity from "${faded}" -- extend this resolver ` +
+        'rather than treating the label as fully opaque',
+    );
+    opacity = faded.includes('%') ? Number(literal[1]) / 100 : Number(literal[1]);
+  }
+
+  /*
+   * The ancestor's colour arrives first in this string and the label's own declarations after
+   * it, so the colours are walked in order and the last one that says something wins. Taking
+   * the last value outright read a label that merely restates its inheritance -- `color:
+   * inherit` over a wrapper painted `#fdfbf5` -- as having no colour at all, and an eyebrow
+   * with no colour is measured against whichever palette extreme suits each ground best. A
+   * white-on-cream label at 1.08:1 passed on exactly that (Codex, #427).
+   */
+  let resolved = { alpha: 1, literal: null, how: 'inherited' };
+  for (const [, value] of declarations.matchAll(/(?:^|;)\s*color\s*:\s*([^;]+)/g)) {
+    const text = value.trim();
+    if (RESTATES_INHERITANCE.test(text)) continue;
+    resolved = colourValue(text);
+  }
+
+  return { alpha: opacity * resolved.alpha, literal: resolved.literal, how: resolved.how };
 };
 
 test('the eyebrow clears 4.5:1 on every ground it is used on', () => {
