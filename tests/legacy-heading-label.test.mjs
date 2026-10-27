@@ -420,7 +420,8 @@ const everyRule = () => {
           compound: structural(part.compound),
         })),
         siblings: parts.some((part) => part.combinator === '+' || part.combinator === '~'),
-        conditions: [...conditions, ...statesIn(parts)],
+        conditions,
+        states: statesIn(parts),
         weight: specificity(branch),
         at,
         origin,
@@ -444,7 +445,7 @@ const ancestorEffects = (chain, conditions, live, inlines = []) => {
     const applicable = everyRule().filter(
       (rule) =>
         live(rule) &&
-        rule.conditions.every((condition) => conditions.includes(condition)) &&
+        conditionsAt(rule, chain.length, index).every((condition) => conditions.includes(condition)) &&
         matchesPath(rule.path, chain, index),
     );
     /* The ancestor's own `style=""` beats every rule on it, so it goes last. Checked before
@@ -559,7 +560,8 @@ const rulesFor = (name) => {
           raw: part.compound,
           compound: structural(part.compound),
         })),
-        conditions: [...conditions, ...states],
+        conditions,
+        states,
         needsEmpty,
         needsFilled,
         weight: specificity(branch),
@@ -887,11 +889,36 @@ const statesIn = (parts) => {
   const out = [];
   parts.forEach((part, index) => {
     const depth = parts.length - 1 - index;
-    const whose = depth === 0 ? 'the label' : `ancestor ${depth}`;
-    for (const state of statesOf(part.compound)) out.push(`${state} on ${whose}`);
+    for (const state of statesOf(part.compound)) out.push({ depth, state });
   });
   return out;
 };
+
+/*
+ * A rule's conditions as they stand against one position in the chain.
+ *
+ * Depth alone is not an identity. A rule whose last compound is the label and one that
+ * targets an ancestor directly both call their last compound depth 0, so
+ * `.text:hover { color: #f4f3e9 }` and `.subtitle:hover { color: #470a12 }` came out
+ * holding the same condition: the powerset switched them on together, the label's override
+ * was always present with the ancestor's, and the state the browser really has -- pointer
+ * in the wrapper, off the eyebrow -- was never built. All five tests passed (Codex, #427).
+ *
+ * Anchoring to the chain index the rule is matched at fixes that and merges what should
+ * merge: `.text:hover` matched on the wrapper and `.text:hover .subtitle` matched on the
+ * label both name the wrapper, because both are hovering the same element.
+ *
+ * Exact for the matched compound. A descendant combinator above it can match further up
+ * than `endIndex - depth`, so those names remain the approximation the previous round
+ * already documented -- two ancestors the model cannot tell apart still share a condition.
+ */
+const conditionsAt = (rule, chainLength, endIndex) => [
+  ...rule.conditions,
+  ...rule.states.map(({ depth, state }) => {
+    const at = Math.max(0, endIndex - depth);
+    return `${state} on ${at === chainLength - 1 ? 'the label' : `chain element ${at}`}`;
+  }),
+];
 
 /* A compound with its state pseudos removed, leaving what identifies the element. A function
    emptied by that -- `:is(:hover)` becoming `:is()` -- goes too, since an empty argument list
@@ -1459,7 +1486,13 @@ const contextsFor = (name) => {
           };
         });
 
-      const reaches = [...named, ...unnamed].sort((a, b) => a.weight - b.weight || a.at - b.at);
+      /* Anchored at the label, which is where every rule in `reaches` matched. */
+      const reaches = [...named, ...unnamed]
+        .sort((a, b) => a.weight - b.weight || a.at - b.at)
+        .map((rule) => ({
+          ...rule,
+          anchored: conditionsAt(rule, entry.chain.length, entry.chain.length - 1),
+        }));
       if (reaches.length === 0) continue;
 
       /* Only the ancestor declarations that can reach the label need their own contexts --
@@ -1471,12 +1504,18 @@ const contextsFor = (name) => {
        query never had that query enumerated, so `ancestorEffects` was never called under it
        and the override went unapplied (Codex, #427). */
       const AFFECTS_LABEL = /(?:^|;|\s)(?:opacity|color|--color-foreground[\w-]*)\s*:/;
-      const touching = everyRule().filter(
-        (rule) =>
-          live(rule) &&
-          AFFECTS_LABEL.test(rule.declarations) &&
-          entry.chain.slice(0, -1).some((_, at) => matchesPath(rule.path, entry.chain, at)),
-      );
+      /* Anchored where each one actually matched, not at the label: a rule that targets an
+         ancestor directly ends on that ancestor, and calling its last compound "the label"
+         is exactly how its state collided with the label's own. */
+      const touching = everyRule()
+        .filter((rule) => live(rule) && AFFECTS_LABEL.test(rule.declarations))
+        .flatMap((rule) => {
+          const at = entry.chain
+            .slice(0, -1)
+            .findIndex((_, index) => matchesPath(rule.path, entry.chain, index));
+          if (at === -1) return [];
+          return [{ ...rule, anchored: conditionsAt(rule, entry.chain.length, at) }];
+        });
 
       /*
        * Cascade layers decide precedence, they do not qualify a rule. An unlayered normal
@@ -1623,10 +1662,10 @@ const contextsFor = (name) => {
       const sets = [];
       const seen = new Set();
       for (const rule of [...reaches, ...touching]) {
-        const key = JSON.stringify(rule.conditions);
+        const key = JSON.stringify(rule.anchored);
         if (seen.has(key)) continue;
         seen.add(key);
-        sets.push(rule.conditions);
+        sets.push(rule.anchored);
       }
       /* The powerset is exponential, so an unexpectedly branchy stylesheet stops the test
        rather than quietly measuring a subset of the combinations. */
@@ -1650,7 +1689,7 @@ const contextsFor = (name) => {
         built.add(key);
 
         const applicable = reaches.filter((rule) =>
-          rule.conditions.every((condition) => conditions.includes(condition)),
+          rule.anchored.every((condition) => conditions.includes(condition)),
         );
         if (applicable.length === 0) continue;
 
