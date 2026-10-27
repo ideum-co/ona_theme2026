@@ -31,6 +31,7 @@
           "name": "t:names.heading",
           "settings": {
             "text": "<p>Coffee, <em>elevated.</em></p>",
+            "fallback_to_product_description": false,
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "center",
@@ -57,6 +58,7 @@
           "name": "t:names.text",
           "settings": {
             "text": "<p>Exceptional coffees, thoughtfully sourced and expertly roasted in Canberra. Founded by World Barista Champion Saša Šestić.</p>",
+            "fallback_to_product_description": false,
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "left",
@@ -220,16 +222,48 @@
         "padding-block-end": 64
       }
     },
+    "wfg_campaign_banner": {
+      "type": "ona-campaign-banner",
+      "settings": {
+        "bg_color": "#f9f8f3",
+        "logo": "shopify://shop_images/WFG2_-_stacked.png",
+        "logo_alt": "Water for Good",
+        "title": "Coffee That Supports Clean Water",
+        "title_preset": "h2",
+        "title_font": "var(--font-heading--family)",
+        "campaign_label": "Campaign running now until",
+        "campaign_note": "",
+        "description": "<p>Together with <a href=\"https://waterforgood.org/\">Water for Good</a> and Project Origin, we’re continuing our long-term commitment to support safe, reliable water in coffee-growing communities.</p><p>From <strong>1–31 October</strong>, we’ll make a fixed contribution from every participating purchase toward our <strong>$20,000 fundraising goal</strong>. You don’t need to make a separate donation—simply choose a participating coffee or product and be part of the impact.</p><p>This campaign brings us closer to our longer-term goal of helping support <strong>250 community water points over seven years</strong>, creating lasting, community-led access to clean water.</p>",
+        "cta_text": "Learn more",
+        "cta_url": "shopify://blogs/news/coffee-community-and-clean-water-continuing-our-work-with-water-for-good"
+      }
+    },
     "wfg_donation_counter": {
       "type": "ona-donation-counter",
       "settings": {
         "bg_color": "#441925",
         "title": "DOLLARS CONTRIBUTED SO FAR",
         "subtitle": "Enjoy great coffee while helping fund clean water access.",
+        "heading_color": "#fbf8f3",
+        "subtitle_color": "#fbf8f3",
+        "card_bg_color": "#f2f0eb",
+        "card_ink_color": "#441925",
+        "frame_color": "#000000",
+        "digit_size": 83,
+        "card_gap": 16,
+        "heading_size": 16,
+        "subtitle_size": 16,
+        "gap_title": 20,
+        "gap_counter": 39,
+        "gap_subtitle": 24,
         "button_bg_color": "#f2f0eb",
         "button_text_color": "#441925",
         "learn_more_text": "Shop Coffees",
-        "learn_more_url": "shopify://collections/donation-products"
+        "learn_more_url": "shopify://collections/donation-products",
+        "padding-block-start": 43,
+        "padding-block-end": 52,
+        "padding-inline-start": 30,
+        "padding-inline-end": 30
       }
     },
     "floating_badge_r89NRP": {
@@ -327,6 +361,7 @@
                   "name": "t:names.heading",
                   "settings": {
                     "text": "<h3>Find <em>your</em> Coffee</h3>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "left",
@@ -366,6 +401,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<p>Finding great coffee shouldn't be complicated.</p>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "center",
@@ -391,6 +427,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<p>Answer a few quick questions and we'll recommend ONA coffees you'll love.</p>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "narrow",
                     "alignment": "left",
@@ -610,6 +647,8 @@
             "ona_promo_tags": {
               "type": "ona-product-tags",
               "settings": {
+                "tag_alignment": "left",
+                "tag_font_size": 14,
                 "padding-block-start": 0,
                 "padding-block-end": 0
               },
@@ -975,6 +1014,7 @@
                   "name": "t:names.heading",
                   "settings": {
                     "text": "<h3>Special <em>release</em></h3>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "left",
@@ -1000,6 +1040,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<p>Ugly Sweater is a cosy blend with notes of milk chocolate and hazelnut — something a little unconventional that always ends up being a favourite.</p>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "narrow",
                     "alignment": "left",
@@ -1354,12 +1395,12 @@
                 "border_opacity": 100,
                 "border_color": "",
                 "border_radius": 0,
+                "decorative_shape": "none",
+                "decorative_shape_color": "",
                 "padding-block-start": 0,
                 "padding-block-end": 0,
                 "padding-inline-start": 0,
-                "padding-inline-end": 0,
-                "decorative_shape": "none",
-                "decorative_shape_color": ""
+                "padding-inline-end": 0
               },
               "blocks": {}
             },
@@ -1368,6 +1409,7 @@
               "name": "t:names.heading",
               "settings": {
                 "text": "<p>Subscribe & Save</p>",
+                "fallback_to_product_description": false,
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",
@@ -1393,6 +1435,7 @@
               "type": "text",
               "settings": {
                 "text": "<p>Freshly roasted, delivered on your schedule.<br/>Choose the coffee you come back to, or let us guide you somewhere new.</p>",
+                "fallback_to_product_description": false,
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",
@@ -1450,6 +1493,7 @@
               "name": "t:names.heading",
               "settings": {
                 "text": "<h2>Bestsellers</h2>",
+                "fallback_to_product_description": false,
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",
@@ -1475,6 +1519,7 @@
               "type": "text",
               "settings": {
                 "text": "<p>Discover the bestsellers that have captured the hearts of our customers with their perfect blend of functionality and style.</p>",
+                "fallback_to_product_description": false,
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",
@@ -1647,12 +1692,12 @@
             "border_opacity": 100,
             "border_color": "",
             "border_radius": 0,
+            "decorative_shape": "none",
+            "decorative_shape_color": "",
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
-            "padding-inline-end": 0,
-            "decorative_shape": "none",
-            "decorative_shape_color": ""
+            "padding-inline-end": 0
           },
           "blocks": {}
         },
@@ -1700,6 +1745,7 @@
               "name": "t:names.heading",
               "settings": {
                 "text": "<p>The Sweet spot</p>",
+                "fallback_to_product_description": false,
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",
@@ -1725,6 +1771,7 @@
               "type": "text",
               "settings": {
                 "text": "<p>Sweet berries, creamy white chocolate and a silky finish have made Raspberry Candy one of ONA's most iconic coffees.</p>",
+                "fallback_to_product_description": false,
                 "width": "fit-content",
                 "max_width": "narrow",
                 "alignment": "left",
@@ -1966,6 +2013,7 @@
           "name": "t:names.heading",
           "settings": {
             "text": "<h3>Club <em>benefits</em></h3>",
+            "fallback_to_product_description": false,
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "center",
@@ -2077,6 +2125,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<h4>Freshly <em>roasted</em></h4>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "center",
@@ -2154,6 +2203,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<h4>New <em>releases</em></h4>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "center",
@@ -2231,6 +2281,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<h4>Flexible <em>delivery</em></h4>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "center",
@@ -2435,6 +2486,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<p>Introducing</p>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "left",
@@ -2461,6 +2513,7 @@
                   "name": "t:names.heading",
                   "settings": {
                     "text": "<h3>Raspberry <em>Candy</em></h3>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "left",
@@ -2486,6 +2539,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<p><em>The sweet spot.</em></p>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "left",
@@ -2511,6 +2565,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<p>Bright, juicy and easy to love &mdash; the coffee that first made ONA's name, and the one our community keeps coming back for.</p>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "narrow",
                     "alignment": "left",
@@ -2760,6 +2815,7 @@
           "name": "t:names.heading",
           "settings": {
             "text": "<h3>Learn with <em>ONA</em></h3>",
+            "fallback_to_product_description": false,
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "center",
@@ -2785,6 +2841,7 @@
           "type": "text",
           "settings": {
             "text": "<p>Whether you're just getting started or refining your craft, explore our barista courses, brewing guides and the latest stories from the world of specialty coffee.</p>",
+            "fallback_to_product_description": false,
             "width": "100%",
             "max_width": "normal",
             "alignment": "center",
@@ -2900,12 +2957,12 @@
                     "border_opacity": 100,
                     "border_color": "",
                     "border_radius": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": "",
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0,
-                    "decorative_shape": "none",
-                    "decorative_shape_color": ""
+                    "padding-inline-end": 0
                   },
                   "blocks": {}
                 },
@@ -2913,6 +2970,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<h4>Barista Courses</h4>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "center",
@@ -2995,12 +3053,12 @@
                     "border_opacity": 100,
                     "border_color": "",
                     "border_radius": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": "",
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0,
-                    "decorative_shape": "none",
-                    "decorative_shape_color": ""
+                    "padding-inline-end": 0
                   },
                   "blocks": {}
                 },
@@ -3008,6 +3066,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<h4>Brewing Guides</h4>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "center",
@@ -3090,12 +3149,12 @@
                     "border_opacity": 100,
                     "border_color": "",
                     "border_radius": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": "",
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0,
-                    "decorative_shape": "none",
-                    "decorative_shape_color": ""
+                    "padding-inline-end": 0
                   },
                   "blocks": {}
                 },
@@ -3103,6 +3162,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<h4>Journal</h4>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "center",
@@ -3313,6 +3373,7 @@
               "type": "text",
               "settings": {
                 "text": "<h5>Urban List</h5>",
+                "fallback_to_product_description": false,
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",
@@ -3338,6 +3399,7 @@
               "type": "text",
               "settings": {
                 "text": "<p>“If you've been fortunate enough to visit ONA's flagship, you'll know exceptional coffee when you taste it.”</p>",
+                "fallback_to_product_description": false,
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",
@@ -3408,6 +3470,7 @@
               "type": "text",
               "settings": {
                 "text": "<h5>Espresso Room</h5>",
+                "fallback_to_product_description": false,
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",
@@ -3433,6 +3496,7 @@
               "type": "text",
               "settings": {
                 "text": "<p>“Since 2012, our partnership with ONA Coffee has demonstrated their commitment to quality.”</p>",
+                "fallback_to_product_description": false,
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",
@@ -3503,6 +3567,7 @@
               "type": "text",
               "settings": {
                 "text": "<h5>Broadsheet</h5>",
+                "fallback_to_product_description": false,
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",
@@ -3528,6 +3593,7 @@
               "type": "text",
               "settings": {
                 "text": "<p>&ldquo;Canberra's ONA Coffee is one of the country's most awarded specialty roasters.&rdquo;</p>",
+                "fallback_to_product_description": false,
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",
@@ -3671,6 +3737,7 @@
                   "name": "t:names.heading",
                   "settings": {
                     "text": "<h3>Find <em>ONA</em></h3>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "left",
@@ -3710,6 +3777,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<p>Your next ONA coffee is closer than you think.<br/></p>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "narrow",
                     "alignment": "left",
@@ -3749,6 +3817,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<p>Find cafés serving ONA near you, from our flagship cafés to our wholesale partners. Explore the map and find your next coffee stop.<br/></p>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "narrow",
                     "alignment": "left",
@@ -3858,6 +3927,7 @@
           "name": "t:names.heading",
           "settings": {
             "text": "<h3>Discover by <em>category</em></h3>",
+            "fallback_to_product_description": false,
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "center",
@@ -3973,12 +4043,12 @@
                     "border_opacity": 100,
                     "border_color": "",
                     "border_radius": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": "",
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0,
-                    "decorative_shape": "none",
-                    "decorative_shape_color": ""
+                    "padding-inline-end": 0
                   },
                   "blocks": {}
                 },
@@ -3986,6 +4056,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<h4>Milk-based</h4>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "center",
@@ -4068,12 +4139,12 @@
                     "border_opacity": 100,
                     "border_color": "",
                     "border_radius": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": "",
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0,
-                    "decorative_shape": "none",
-                    "decorative_shape_color": ""
+                    "padding-inline-end": 0
                   },
                   "blocks": {}
                 },
@@ -4081,6 +4152,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<h4>Filter</h4>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "center",
@@ -4163,12 +4235,12 @@
                     "border_opacity": 100,
                     "border_color": "",
                     "border_radius": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": "",
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0,
-                    "decorative_shape": "none",
-                    "decorative_shape_color": ""
+                    "padding-inline-end": 0
                   },
                   "blocks": {}
                 },
@@ -4176,6 +4248,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<h4>Espresso</h4>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "center",
@@ -4258,12 +4331,12 @@
                     "border_opacity": 100,
                     "border_color": "",
                     "border_radius": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": "",
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0,
-                    "decorative_shape": "none",
-                    "decorative_shape_color": ""
+                    "padding-inline-end": 0
                   },
                   "blocks": {}
                 },
@@ -4271,6 +4344,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<h4>Brew Gear</h4>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "center",
@@ -4353,12 +4427,12 @@
                     "border_opacity": 100,
                     "border_color": "",
                     "border_radius": 0,
+                    "decorative_shape": "none",
+                    "decorative_shape_color": "",
                     "padding-block-start": 0,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
-                    "padding-inline-end": 0,
-                    "decorative_shape": "none",
-                    "decorative_shape_color": ""
+                    "padding-inline-end": 0
                   },
                   "blocks": {}
                 },
@@ -4366,6 +4440,7 @@
                   "type": "text",
                   "settings": {
                     "text": "<h4>Merchandise</h4>",
+                    "fallback_to_product_description": false,
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "center",
@@ -4706,22 +4781,6 @@
         "padding-block-end": 80,
         "padding_inline": 0,
         "padding_inline_mobile": 0
-      }
-    },
-    "wfg_campaign_banner": {
-      "type": "ona-campaign-banner",
-      "settings": {
-        "bg_color": "#f9f8f3",
-        "logo": "shopify://shop_images/WFG2_-_stacked.png",
-        "logo_alt": "Water for Good",
-        "title": "Coffee That Supports Clean Water",
-        "campaign_label": "Campaign running now until",
-        "campaign_note": "",
-        "description": "<p>Together with <a href=\"https://waterforgood.org/\">Water for Good</a> and Project Origin, we’re continuing our long-term commitment to support safe, reliable water in coffee-growing communities.</p><p>From <strong>1–31 October</strong>, we’ll make a fixed contribution from every participating purchase toward our <strong>$20,000 fundraising goal</strong>. You don’t need to make a separate donation—simply choose a participating coffee or product and be part of the impact.</p><p>This campaign brings us closer to our longer-term goal of helping support <strong>250 community water points over seven years</strong>, creating lasting, community-led access to clean water.</p>",
-        "cta_text": "Learn more",
-        "cta_url": "shopify://blogs/news/coffee-community-and-clean-water-continuing-our-work-with-water-for-good",
-        "title_preset": "h2",
-        "title_font": "var(--font-heading--family)"
       }
     }
   },

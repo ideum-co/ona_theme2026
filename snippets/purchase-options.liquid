@@ -88,6 +88,27 @@
         %}
         {% unless allocation == blank %}
           {% liquid
+            # The cadence the panel defaults to. Appstle returns a group's plans ascending by
+            # frequency, so the first allocation is Weekly; shoppers asked for Monthly as the
+            # default, with the frequency dropdown still free to change it. Matched on the plan's
+            # delivery name because the two blend groups name their monthly plan differently
+            # ("4 week subscription" for 200g, "Monthly delivery ..." for 1kg). Scoped to this
+            # group and broken on the first hit; if none matches, the first allocation stands, so
+            # a group with no monthly plan is left exactly as it was.
+            assign monthly_allocation = blank
+            for candidate_monthly in variant.selling_plan_allocations
+              if candidate_monthly.selling_plan_group_id == group.id
+                assign candidate_monthly_name = candidate_monthly.selling_plan.name | downcase
+                if candidate_monthly_name contains 'month' or candidate_monthly_name contains '4 week'
+                  assign monthly_allocation = candidate_monthly
+                  break
+                endif
+              endif
+            endfor
+            unless monthly_allocation == blank
+              assign allocation = monthly_allocation
+            endunless
+
             assign save_pct = 0
             if allocation.compare_at_price > allocation.price
               assign save_pct = allocation.compare_at_price | minus: allocation.price | times: 100.0 | divided_by: allocation.compare_at_price | round
