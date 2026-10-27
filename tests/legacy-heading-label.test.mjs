@@ -1553,17 +1553,55 @@ const contextsFor = (name) => {
        query never had that query enumerated, so `ancestorEffects` was never called under it
        and the override went unapplied (Codex, #427). */
       const AFFECTS_LABEL = /(?:^|;|\s)(?:opacity|color|--color-foreground[\w-]*)\s*:/;
-      /* Anchored where each one actually matched, not at the label: a rule that targets an
-         ancestor directly ends on that ancestor, and calling its last compound "the label"
-         is exactly how its state collided with the label's own. */
+      /*
+       * Anchored where each one actually matched, not at the label: a rule that targets an
+       * ancestor directly ends on that ancestor, and calling its last compound "the label"
+       * is exactly how its state collided with the label's own.
+       *
+       * Every ancestor it matches, not the first. One selector can match several links in
+       * the chain -- `div:hover` matches each `<div>` above the label -- and taking only
+       * `findIndex`'s first left the inner ones with no condition of their own, so an
+       * override on an outer ancestor was read as covering the hover on an inner one:
+       * `#shopify-section-ona-wholesale-partnership div:hover { color: #f4f3e9 }` beside a
+       * `.container.container` override passed all five tests, while the browser keeps the
+       * cream-on-cream eyebrow whenever the inner `.text` is hovered. Spelling the same
+       * rule `.text:hover`, which matches one link, failed at 1:1 -- that asymmetry is the
+       * tell (Codex, #427). Each match becomes its own entry, so `ancestorEffects` sees a
+       * separately anchored condition for every one of them.
+       *
+       * Only where the anchor can change the answer, and only for a state that can differ
+       * from one element to the next. `:root` names a single element by definition, but
+       * `structural()` strips it off the compound and what is left selects anything, so the
+       * theme's `:root` rules match seven and eight links of a chain apiece. Anchoring each
+       * of those separately took this file from 176 contexts to 12288 and the widest
+       * qualifier set from 3 to 10 against a cap of 12 -- four and a half minutes for one
+       * test file, out of rules a browser applies to exactly one element.
+       *
+       * So a `:root`-only rule keeps the single anchoring it has always had, which leaves
+       * every context this file built before exactly as it was, and the enumeration is
+       * spent on the states the fix is actually about. Two tidier-looking versions of this
+       * came first and both cost coverage: dropping `:root` from `statesOf`, and anchoring
+       * it at the root. The context where the theme's own `:root` definition is off is what
+       * lets an injected `html:root { --color-foreground: #f4f3e9 }` be read at all, and
+       * both of those took it away. Identical anchorings are still collapsed, since a
+       * stateless rule reads the same at every index it matches.
+       */
       const touching = everyRule()
         .filter((rule) => live(rule) && AFFECTS_LABEL.test(rule.declarations))
         .flatMap((rule) => {
-          const at = entry.chain
+          const matches = entry.chain
             .slice(0, -1)
-            .findIndex((_, index) => matchesPath(rule.path, entry.chain, index));
-          if (at === -1) return [];
-          return [{ ...rule, anchored: conditionsAt(rule, entry.chain.length, at) }];
+            .map((_, index) => index)
+            .filter((index) => matchesPath(rule.path, entry.chain, index));
+          const varies = rule.states.some(({ state }) => !/^:root$/i.test(state));
+          const seen = new Set();
+          return (varies ? matches : matches.slice(0, 1)).flatMap((at) => {
+            const anchored = conditionsAt(rule, entry.chain.length, at);
+            const key = anchored.join('\u0000');
+            if (seen.has(key)) return [];
+            seen.add(key);
+            return [{ ...rule, anchored }];
+          });
         });
 
       /*
@@ -2138,8 +2176,14 @@ const colourValue = (value) => {
    * passed, which is what caught it. One argument or three carry no alpha, and a flattened
    * Liquid `rgba({{ ... }})` that leaves either count falls through to the resolvers below
    * exactly as before.
+   *
+   * All four spellings. `rgb()` and `hsl()` take a comma alpha exactly as their `a` forms
+   * do, and naming only `rgba|hsla` here -- my own enumeration, one round after writing
+   * this reader -- left `rgb(var(--color-foreground-rgb), .1)` passing all five tests while
+   * the identical `rgba()` failed at 1.22:1, so two spellings of one browser colour got two
+   * different answers (Codex, #427).
    */
-  const legacy = value.match(/^(?:rgba|hsla)\(([\s\S]*)\)$/i);
+  const legacy = value.match(/^(?:rgba?|hsla?)\(([\s\S]*)\)$/i);
   if (legacy) {
     const args = [];
     let depth = 0;
