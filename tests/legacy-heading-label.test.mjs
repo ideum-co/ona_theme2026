@@ -531,7 +531,13 @@ const rulesFor = (name) => {
          the declaration away, so `:not(:empty) { opacity: 0.6 }` muted every visible eyebrow
          with nothing failing (Codex, #300). The negation is stripped before the test. */
       const needsFilled = /:not\(\s*:empty\s*\)/.test(label);
-      const needsEmpty = /:empty/.test(label.replace(/:not\([^)]*\)/g, ''));
+      /* Through `holdsEmpty`, so an alternation is read as one: `.subtitle:is(.subtitle,
+         :empty)` matches a label with text, and classifying it empty-only dropped the rule
+         from every populated context -- it passed all five tests while the plain `.subtitle`
+         spelling failed at 4.42:1 (Codex, #427). The ancestor side got this in round
+         twenty-four; the label side is the same question one element along.
+         `needsFilled` keeps its own reading, which is not what was reported. */
+      const needsEmpty = holdsEmpty(label);
       /* Anything else on the label -- `:hover`, `:focus-visible`, `:first-child`, `::before`
          -- only holds in that state, and treating such a rule as always applying let
          `.subtitle:hover { display: block }` mask a default-state `display: inline`
@@ -673,6 +679,21 @@ const LAYOUT_CHAIN = (() => {
   return [new Set(['html']), tokensOf('body'), main];
 })();
 
+/*
+ * The `style` attribute, however it is quoted. Only the double-quoted form was read, so
+ * `style='opacity:.6'` on the partnership wrapper recorded no declarations at all and
+ * slipped past both the cascade and the background guard with all five tests green, while
+ * the same markup with double quotes failed at 4.42:1 (Codex, #427). HTML allows single
+ * quotes and, for a value without spaces, none; all three are read here so equivalent
+ * markup gets equivalent checking. Anchored on a boundary so `data-style="..."` is not
+ * mistaken for it.
+ */
+const inlineStyle = (attributes) =>
+  attributes.match(/(?:^|\s)style\s*=\s*"([^"]*)"/i)?.[1] ??
+  attributes.match(/(?:^|\s)style\s*=\s*'([^']*)'/i)?.[1] ??
+  attributes.match(/(?:^|\s)style\s*=\s*([^\s"'>]+)/i)?.[1] ??
+  '';
+
 const ancestriesFor = (name) => {
   const found = [];
   for (const file of readdirSync(join(root, 'sections'))) {
@@ -743,9 +764,9 @@ const ancestriesFor = (name) => {
             ...LAYOUT_CHAIN.map(() => ''),
             '',
             ...open.map((entry) => entry.inline),
-            attributes.match(/style="([^"]*)"/)?.[1] ?? '',
+            inlineStyle(attributes),
           ],
-          inline: attributes.match(/style="([^"]*)"/)?.[1] ?? '',
+          inline: inlineStyle(attributes),
           section: file.slice(0, -'.liquid'.length),
         });
       }
@@ -754,7 +775,7 @@ const ancestriesFor = (name) => {
           element,
           classes,
           attrs,
-          inline: attributes.match(/style="([^"]*)"/)?.[1] ?? '',
+          inline: inlineStyle(attributes),
         });
     }
   }
@@ -1419,7 +1440,7 @@ const contextsFor = (name) => {
             ...rule,
             label,
             needsFilled: /:not\(\s*:empty\s*\)/.test(label),
-            needsEmpty: /:empty/.test(label.replace(/:not\([^)]*\)/g, '')),
+            needsEmpty: holdsEmpty(label),
           };
         });
 
