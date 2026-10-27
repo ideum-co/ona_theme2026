@@ -2001,7 +2001,7 @@ const contextsFor = (name) => {
       const GLOBAL_TOKENS = [
         {
           defines: /(?:^|;|\s)--color-background\s*:/,
-          reads: /(?:^|;)\s*--color-background\s*:\s*([^;]+)/gi,
+          reads: /(?:^|;)\s*--color-background\s*:\s*([^;]+)/g,
           names: '--color-background',
           means: 'what `background: var(--color-background)` paints there is no longer the configured page ground',
           agrees: (found) =>
@@ -2009,7 +2009,7 @@ const contextsFor = (name) => {
         },
         {
           defines: /(?:^|;|\s)--opacity-(?:muted|subdued)-text\s*:/,
-          reads: /(?:^|;)\s*--opacity-(muted|subdued)-text\s*:\s*([^;]+)/gi,
+          reads: /(?:^|;)\s*--opacity-(muted|subdued)-text\s*:\s*([^;]+)/g,
           names: 'an --opacity-*-text token',
           means: 'the alpha this model reads from theme-styles-variables.liquid is no longer the one that applies',
           agrees: (found) =>
@@ -2026,7 +2026,7 @@ const contextsFor = (name) => {
            reason, after the ground in round twenty-seven and the alphas in round thirty. */
         {
           defines: /(?:^|;|\s)--palette-(?:darkest|lightest)\s*:/,
-          reads: /(?:^|;)\s*--palette-(darkest|lightest)\s*:\s*([^;]+)/gi,
+          reads: /(?:^|;)\s*--palette-(darkest|lightest)\s*:\s*([^;]+)/g,
           names: 'a --palette-* extreme',
           means: 'the extreme this model reads from the configured palette is no longer the one that applies',
           agrees: (found) =>
@@ -2536,9 +2536,15 @@ const colourValue = (value) => {
    * first, because `var(--opacity-subdued-text, .6)` is the token whenever the token is
    * defined, and `theme-styles-variables.liquid:392` defines both.
    */
+  /* Case-sensitively, unlike a standard property name. `--OPACITY-SUBDUED-TEXT` and
+     `--opacity-subdued-text` are two different properties, and the theme defines only the
+     lowercase one -- so `var(--OPACITY-SUBDUED-TEXT, .1)` paints at the `.1` fallback. These
+     patterns carried an `i`, read it as the lowercase token's 0.8, and passed all five tests
+     where the literal `.1` fails at 1.22:1 (Codex, #427). An unknown name now falls through
+     to the refusal below, which is the other half of the same answer. */
   const TOKEN_ALPHA = [
-    { is: /^var\(\s*--opacity-muted-text\s*\)$/i, token: 'muted' },
-    { is: /^var\(\s*--opacity-subdued-text\s*\)$/i, token: 'subdued' },
+    { is: /^var\(\s*--opacity-muted-text\s*\)$/, token: 'muted' },
+    { is: /^var\(\s*--opacity-subdued-text\s*\)$/, token: 'subdued' },
   ];
   const alphaFrom = (part, how) => {
     const literal = part.match(/^([0-9.]+)(%?)$/);
