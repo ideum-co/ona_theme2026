@@ -40,7 +40,7 @@ function mount(now, dates = { startAt, endAt }) {
   };
 }
 
-test('counts down to the Sydney launch instant and stops when the sale begins', () => {
+test('counts down to the Sydney launch instant and updates through the event end', () => {
   const countdown = mount(Date.parse('2026-11-26T23:59:58+11:00'));
   assert.equal(countdown.nodes.get('[data-countdown-status]').textContent, 'Starts in');
   assert.deepEqual(
@@ -51,6 +51,9 @@ test('counts down to the Sydney launch instant and stops when the sale begins', 
   countdown.advanceTo(Date.parse(startAt));
   assert.equal(countdown.nodes.get('[data-countdown-status]').textContent, 'Black Friday Cyber Monday is on');
   assert.equal(countdown.nodes.get('[data-countdown-clock]').hidden, true);
+  assert.equal(countdown.cleared, false);
+  countdown.advanceTo(Date.parse(endAt));
+  assert.equal(countdown.nodes.get('[data-countdown-status]').textContent, 'The event has ended');
   assert.equal(countdown.cleared, true);
 });
 

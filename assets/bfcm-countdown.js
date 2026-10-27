@@ -34,11 +34,13 @@ class BfcmCountdown extends HTMLElement {
     }
 
     if (now >= this.startAt) {
-      this.status.textContent = 'Black Friday Cyber Monday is on';
-      this.fallback.textContent = 'Explore the latest ONA coffees.';
+      if (this.status.textContent !== 'Black Friday Cyber Monday is on') {
+        this.status.textContent = 'Black Friday Cyber Monday is on';
+        this.fallback.textContent = 'Explore the latest ONA coffees.';
+      }
       this.clock.hidden = true;
       this.fallback.hidden = false;
-      return false;
+      return true;
     }
 
     const remaining = Math.ceil((this.startAt - now) / 1000);
