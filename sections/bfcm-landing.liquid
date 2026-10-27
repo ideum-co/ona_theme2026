@@ -116,16 +116,17 @@
   .bfcm-landing {
     --bfcm-cream: var(--color-background, #f4f3e9);
     --bfcm-ink: var(--color-foreground, #470a12);
+    --bfcm-page-inset: max(var(--page-margin, 16px), calc((100vw - var(--page-content-width, 90rem)) / 2));
     color: var(--bfcm-ink);
     background: var(--bfcm-cream);
     font-family: var(--font-brand-text, 'Karla', sans-serif);
   }
   .bfcm-landing * { box-sizing: border-box; }
   .bfcm-landing__hero { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); min-height: min(46vw, 860px); }
-  .bfcm-landing__hero-copy { position: relative; display: flex; align-items: center; overflow: hidden; padding: clamp(48px, 5.2vw, 100px) max(var(--page-margin, 16px), min(4.6vw, 88px)); }
+  .bfcm-landing__hero-copy { position: relative; display: flex; align-items: center; overflow: hidden; padding-block: clamp(48px, 5.2vw, 100px); padding-inline-start: var(--bfcm-page-inset); padding-inline-end: var(--page-margin, 16px); }
   .bfcm-landing__hero-copy::before, .bfcm-landing__hero-copy::after { content: ''; position: absolute; border-radius: 50%; pointer-events: none; }
-  .bfcm-landing__hero-copy::before { width: min(42vw, 520px); aspect-ratio: 1; background: var(--bfcm-wine); left: -5%; bottom: -30%; }
-  .bfcm-landing__hero-copy::after { width: min(34vw, 420px); aspect-ratio: 1; background: var(--bfcm-rose); left: 21%; bottom: -20%; opacity: .9; }
+  .bfcm-landing__hero-copy::before { width: min(42vw, 520px); aspect-ratio: 1; background: var(--bfcm-wine); left: calc(var(--bfcm-page-inset) - min(8vw, 100px)); bottom: -30%; }
+  .bfcm-landing__hero-copy::after { width: min(34vw, 420px); aspect-ratio: 1; background: var(--bfcm-rose); left: calc(var(--bfcm-page-inset) + min(14vw, 220px)); bottom: -20%; opacity: .9; }
   .bfcm-landing__hero-content { position: relative; z-index: 1; padding-bottom: clamp(90px, 10vw, 190px); }
   .bfcm-landing__mark { display: block; width: 64px; height: auto; margin-bottom: 26px; }
   .bfcm-landing__eyebrow, .bfcm-landing__date { font-size: clamp(12px, .95vw, 17px); letter-spacing: .08em; text-transform: uppercase; }
@@ -134,7 +135,7 @@
   .bfcm-landing__date { margin: 0; }
   .bfcm-landing__hero-media { position: relative; min-height: 420px; }
   .bfcm-landing__hero-image { display: block; width: 100%; height: 100%; position: absolute; inset: 0; object-fit: cover; }
-  .bfcm-landing__intro { background: var(--bfcm-ink); color: var(--bfcm-cream); display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: clamp(36px, 3.3vw, 60px) max(var(--page-margin, 16px), min(4.6vw, 88px)); }
+  .bfcm-landing__intro { background: var(--bfcm-ink); color: var(--bfcm-cream); display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: clamp(36px, 3.3vw, 60px) var(--bfcm-page-inset); }
   .bfcm-landing__intro p { margin: 10px 0 0; font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif); font-size: clamp(24px, 2vw, 38px); line-height: 1.1; }
   .bfcm-landing__actions { display: flex; flex-wrap: wrap; gap: 10px; flex-shrink: 0; }
   .bfcm-landing__button { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 24px; text-decoration: none; font-size: 16px; line-height: 1.2; text-align: center; }
@@ -143,17 +144,17 @@
   .bfcm-landing__button--wine { background: var(--bfcm-wine); color: var(--bfcm-cream); }
   .bfcm-landing__button:hover { opacity: .85; }
   .bfcm-landing__button:focus-visible, .bfcm-landing a:focus-visible, .bfcm-landing button:focus-visible, .bfcm-landing input:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
-  .bfcm-landing__signup { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: 30px 70px; padding: clamp(48px, 4.2vw, 80px) max(var(--page-margin, 16px), min(4.6vw, 88px)); background: var(--bfcm-wine); color: var(--bfcm-cream); }
+  .bfcm-landing__signup { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: 30px 70px; padding: clamp(48px, 4.2vw, 80px) var(--bfcm-page-inset); background: var(--bfcm-wine); color: var(--bfcm-cream); }
   .bfcm-landing__signup h2, .bfcm-landing__schedule h2 { margin: 12px 0 0; font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif); font-size: clamp(30px, 2.2vw, 42px); font-weight: 400; line-height: 1.1; }
   .bfcm-landing__form { display: grid; gap: 9px; }
   .bfcm-landing__form label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
   .bfcm-landing__form-row { display: flex; gap: 10px; }
   .bfcm-landing__form input { min-width: 0; flex: 1; min-height: 50px; border: 0; border-radius: 0; padding: 10px 14px; background: var(--bfcm-cream); color: var(--bfcm-ink); font: inherit; }
   .bfcm-landing__form button { min-height: 50px; border: 0; border-radius: 0; padding: 10px 22px; background: var(--bfcm-cream); color: var(--bfcm-wine); font: inherit; cursor: pointer; }
-  .bfcm-landing__collections { display: flex; flex-wrap: wrap; gap: 8px; padding: clamp(40px, 3.6vw, 64px) max(var(--page-margin, 16px), min(4.6vw, 88px)); border-bottom: 1px solid var(--bfcm-ink); }
+  .bfcm-landing__collections { display: flex; flex-wrap: wrap; gap: 8px; padding: clamp(40px, 3.6vw, 64px) var(--bfcm-page-inset); border-bottom: 1px solid var(--bfcm-ink); }
   .bfcm-landing__collections a { display: inline-flex; align-items: center; min-height: 38px; padding: 8px 16px; box-shadow: inset 0 0 0 1px var(--bfcm-ink); color: var(--bfcm-ink); font-size: 14px; text-decoration: none; }
   .bfcm-landing__collections a:hover { background: var(--bfcm-wine); color: var(--bfcm-cream); box-shadow: none; }
-  .bfcm-landing__schedule { padding: clamp(50px, 5vw, 90px) max(var(--page-margin, 16px), min(4.6vw, 88px)); }
+  .bfcm-landing__schedule { padding: clamp(50px, 5vw, 90px) var(--bfcm-page-inset); }
   .bfcm-landing__schedule ol { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; margin: 38px 0; padding: 0; border-top: 1px solid var(--bfcm-ink); border-bottom: 1px solid var(--bfcm-ink); }
   .bfcm-landing__schedule li { display: grid; gap: 10px; padding: 25px 16px 30px; }
   .bfcm-landing__schedule li + li { border-left: 1px solid var(--bfcm-ink); }
