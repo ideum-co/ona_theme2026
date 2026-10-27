@@ -211,22 +211,48 @@ const specificity = (selector) => {
      argument. Counting each functional pseudo as one class made
      `:where(.add-image-and-text-slider) .subtitle` tie with the plain descendant selector,
      so a later low-specificity rule appeared to mask a real regression (Codex, #300). */
-  let rest = selector;
+  let rest = '';
   let ids = 0;
   let classes = 0;
   let elements = 0;
 
-  for (;;) {
-    const found = rest.match(/:(is|where|not|has)\(([^()]*)\)/i);
-    if (!found) break;
+  /* Scanned outermost first, with balanced arguments. Matching the innermost function and
+     working outwards banked its weight before the function around it had a say, so the `#id`
+     in `:where(:is(#MainContent))` was counted although the `:where()` discards everything
+     inside it -- and a rule with no id at all outranked one that should have beaten it
+     (Codex, #427). */
+  for (let at = 0; at < selector.length; at += 1) {
+    const found = /^:(is|where|not|has)\(/i.exec(selector.slice(at));
+    if (found === null) {
+      rest += selector[at];
+      continue;
+    }
+
+    const open = at + found[0].length - 1;
+    let depth = 0;
+    let close = open;
+    for (; close < selector.length; close += 1) {
+      if (selector[close] === '(') depth += 1;
+      else if (selector[close] === ')') {
+        depth -= 1;
+        if (depth === 0) break;
+      }
+    }
+
     const inner =
       found[1].toLowerCase() === 'where'
         ? 0
-        : Math.max(0, ...splitSelectors(found[2]).map((branch) => specificity(branch)));
+        : Math.max(
+            0,
+            ...splitSelectors(selector.slice(open + 1, Math.min(close, selector.length))).map((branch) =>
+              specificity(branch),
+            ),
+          );
     ids += Math.floor(inner / 10000);
     classes += Math.floor((inner % 10000) / 100);
     elements += inner % 100;
-    rest = rest.replace(found[0], ' ');
+    rest += ' ';
+    at = close;
   }
 
   ids += (rest.match(/#[\w-]+/g) ?? []).length;
@@ -730,6 +756,42 @@ const partsOf = (text) => text.match(/[#.][\w-]+/g) ?? [];
 /* The pseudo-classes that make a rule hold only sometimes. `:is`, `:where` and `:not` are
    structural -- matchesElement resolves those against the element -- and `:empty` is the
    fill state, handled on its own. */
+/*
+ * A compound split into its top-level `:is()`, `:where()` and `:not()` functions and the text
+ * left over, with balanced arguments.
+ *
+ * Every reader here used to find these with `\([^)]*\)`, which stops at the first `)` and so
+ * mistakes a nested function for a top-level one. `:not(:is(#nowhere))` was read as carrying
+ * a positive `:is(#nowhere)` on the same element, and the whole rule stopped matching -- it
+ * left an `opacity: 1` override unapplied and the failing 0.6 below it standing (Codex,
+ * #427, found in `specificity` and sitting in the matcher too).
+ */
+const functionalsOf = (compound) => {
+  const parts = [];
+  let bare = '';
+  for (let at = 0; at < compound.length; at += 1) {
+    const found = /^:(is|where|not)\(/i.exec(compound.slice(at));
+    if (found === null) {
+      bare += compound[at];
+      continue;
+    }
+    const open = at + found[0].length - 1;
+    let depth = 0;
+    let close = open;
+    for (; close < compound.length; close += 1) {
+      if (compound[close] === '(') depth += 1;
+      else if (compound[close] === ')') {
+        depth -= 1;
+        if (depth === 0) break;
+      }
+    }
+    parts.push({ name: found[1].toLowerCase(), inner: compound.slice(open + 1, Math.min(close, compound.length)) });
+    bare += ' ';
+    at = close;
+  }
+  return { parts, bare };
+};
+
 const PSEUDO_IN_ARGUMENT = /:(?!is\(|where\(|not\()[a-z-]+(?:\([^)]*\))?/i;
 
 const statesOf = (compound) => {
@@ -747,27 +809,28 @@ const statesOf = (compound) => {
    * inside a `:not()`, and giving each the negation of a condition -- along with the rule that
    * a context cannot hold both a state and its negation -- is a larger change than this one.
    */
-  const nested = (compound.match(/:(?:is|where)\([^)]*\)/gi) ?? []).filter((fn) =>
-    PSEUDO_IN_ARGUMENT.test(fn.replace(/^:(?:is|where)\(/i, '').replace(/\)$/, '')),
-  );
-  const direct =
-    compound
-      .replace(/:(?:is|where|not)\([^)]*\)/gi, '')
-      .replace(/:empty\b/gi, '')
-      .match(/::?[a-z-]+(?:\([^)]*\))?/gi) ?? [];
+  const { parts, bare } = functionalsOf(compound);
+  const nested = parts
+    .filter((part) => part.name !== 'not' && PSEUDO_IN_ARGUMENT.test(part.inner))
+    .map((part) => `:${part.name}(${part.inner})`);
+  const direct = bare.replace(/:empty\b/gi, '').match(/::?[a-z-]+(?:\([^)]*\))?/gi) ?? [];
   return [...nested, ...direct].map((state) => state.toLowerCase().replace(/\s+/g, ''));
 };
 
 /* A compound with its state pseudos removed, leaving what identifies the element. A function
    emptied by that -- `:is(:hover)` becoming `:is()` -- goes too, since an empty argument list
    matches nothing and would drop the rule the states above have just qualified. */
-const structural = (compound) =>
-  compound
-    .replace(/:empty\b/gi, '')
-    .replace(/:(?!is\(|where\(|not\()[a-z-]+(?:\([^)]*\))?/gi, '')
-    .replace(/:(?:is|where|not)\(([^)]*)\)/gi, (whole, args) =>
-      args.split(',').every((part) => part.trim() === '') ? '' : whole,
-    );
+const structural = (compound) => {
+  const { parts, bare } = functionalsOf(compound);
+  const kept = parts
+    .map((part) => ({ name: part.name, inner: splitSelectors(part.inner).map(structural).filter((b) => b.trim() !== '') }))
+    .filter((part) => part.inner.length > 0)
+    .map((part) => `:${part.name}(${part.inner.join(', ')})`)
+    .join('');
+  return (
+    bare.replace(/:empty\b/gi, '').replace(/:(?!:)[a-z-]+(?:\([^)]*\))?/gi, '').trim() + kept
+  );
+};
 
 /* Bare element names in a compound. Without these, `text-component { color: transparent }`
    -- a selector with no class or id at all -- matched every ancestor, because a compound
@@ -829,9 +892,9 @@ const attrMatch = (token, element) => {
  * as they do outside one.
  */
 const matchesElement = (compound, element, chain = null, index = -1) => {
-  const anyOf = [...compound.matchAll(/:(?:is|where)\(([^)]*)\)/gi)];
-  const noneOf = [...compound.matchAll(/:not\(([^)]*)\)/gi)];
-  const bare = compound.replace(/:(?:is|where|not)\([^)]*\)/gi, '');
+  const { parts, bare } = functionalsOf(compound);
+  const anyOf = parts.filter((part) => part.name !== 'not').map((part) => part.inner);
+  const noneOf = parts.filter((part) => part.name === 'not').map((part) => part.inner);
 
   /* An argument can be a whole selector, not just a compound: `:is(.a .b)` asks about the
      element's ancestors. Reading it as a compound demanded every part on one element, which
@@ -849,8 +912,8 @@ const matchesElement = (compound, element, chain = null, index = -1) => {
   const rest =
     partsOf(bare).every((part) => element.has(part)) &&
     tagsOf(bare).every((tag) => element.has(tag)) &&
-    anyOf.every((match) => splitSelectors(match[1]).some(branchMatches)) &&
-    noneOf.every((match) => splitSelectors(match[1]).every((branch) => !branchMatches(branch)));
+    anyOf.every((inner) => splitSelectors(inner).some(branchMatches)) &&
+    noneOf.every((inner) => splitSelectors(inner).every((branch) => !branchMatches(branch)));
   if (!rest) return false;
 
   /* Everything this can read says the compound selects the element, so an attribute it
