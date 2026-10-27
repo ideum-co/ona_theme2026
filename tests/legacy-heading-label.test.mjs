@@ -130,7 +130,16 @@ const sheets = (() => {
   for (const dir of ['sections', 'snippets']) {
     for (const file of readdirSync(join(root, dir))) {
       if (!file.endsWith('.liquid')) continue;
-      const source = readFileSync(join(root, dir, file), 'utf8');
+      /* A `{% comment %}` or `{% doc %}` block is prose, not markup, and scanning it was not
+         harmless. Three sections open their file by saying "CSS lives in {% stylesheet %}
+         ... never an inline <style>", and the lazy match ran from that mention to the real
+         `{% endstylesheet %}` far below -- handing the flattener 2308 characters of comment
+         tail, Liquid assigns and section markup as one stylesheet. Cutting the blocks first
+         also keeps the `<style>` scan below off the one `snippets/svg-without-styles.liquid`
+         documents in its own doc block, which is a paragraph of English. */
+      const source = readFileSync(join(root, dir, file), 'utf8')
+        .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, ' ')
+        .replace(/\{%-?\s*doc\s*-?%\}[\s\S]*?\{%-?\s*enddoc\s*-?%\}/g, ' ');
 
       /* Shopify concatenates every `{% stylesheet %}` into one asset served on every page,
          so these are global whether or not the section renders. */
@@ -144,7 +153,16 @@ const sheets = (() => {
          renders that section. Pooling them globally let CSS from a section no template uses
          override a real regression (Codex, #300). A snippet can be rendered from anywhere,
          so those stay global. */
-      for (const [, body] of source.matchAll(/\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}/g)) {
+      /* A native `<style>` element renders in exactly the same place and was not collected
+         at all, so `<style>#MainContent .subtitle { opacity: .6 }</style>` in a section left
+         all five tests green while the identical CSS in a `{% style %}` block failed at
+         4.42:1 (Codex, #427). Both forms are read here, in one pass, so a file that writes
+         both keeps the order the browser sees. The theme emits no native `<style>` today --
+         this is so that one added later is not invisible. */
+      for (const match of source.matchAll(
+        /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b[^>]*>([\s\S]*?)<\/style>/g,
+      )) {
+        const body = match[1] ?? match[2];
         const origin = dir === 'sections' ? file.slice(0, -'.liquid'.length) : null;
         /* `#shopify-section-{{ section.id }}` names this section's own wrapper. Letting
            `liquid()` flatten the output to `x` left `#shopify-section-x`, which matches no
@@ -1459,6 +1477,19 @@ const regionOf = (conditions) => {
       `"${condition}" keeps an \`or\` inside a group this resolver cannot flatten -- teach ` +
         'it the grouping rather than intersecting alternatives that were never meant to hold ' +
         'at once',
+    );
+
+    /* A `not` nested inside a group is the same inversion as a leading one, but the guard
+       above only sees the leading form and the type scan below strips only the innermost
+       parentheses -- so `(min-width: 0px) and (not (hover))` left a stranded `not` in the
+       word list, read as a medium this harness does not render, and the whole query was
+       discarded. It fades the label on every device that cannot hover, and all five tests
+       stayed green, while the equivalent `(hover: none)` fails at 4.42:1 (Codex, #427).
+       Refuse it the same way; the theme writes no negated media condition today. */
+    assert.ok(
+      !/(?:^|[\s(])not(?:[\s(]|$)/i.test(condition.replace(/^@media\s*/i, '')),
+      `"${condition}" negates a media feature inside a group, which this resolver does not ` +
+        'honour -- teach it the inversion rather than discarding every rule the query carries',
     );
 
     /* The media type lives outside the parentheses, so a query that is nothing but a type
