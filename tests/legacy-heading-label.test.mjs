@@ -127,6 +127,60 @@ const sheets = (() => {
   const bundled = [];
   const inline = [];
 
+  /* A snippet's `{% style %}` is pooled globally because a snippet can be rendered from
+     anywhere -- but not when every place that renders it sits behind
+     `{% if request.design_mode %}`. `layout/theme.liquid` renders `theme-editor` only
+     there, so its CSS reaches the theme editor and never a storefront visitor, and pooling
+     it globally let an editor-only `opacity: 1` cancel a real regression with all five
+     tests green (Codex, #427).
+
+     Only this condition is resolved, and deliberately only this one: it is the single
+     condition that provably excludes the rendering this harness measures. A snippet behind
+     a content condition -- `variant-main-picker` inside an `{% if %}` on a product page --
+     stays global, which is over-inclusive in the same way. That is a known limit, not a
+     resolved one, and three snippets here are reached only through such a condition. */
+  const editorOnly = (() => {
+    const sites = new Map();
+    for (const dir of ['sections', 'snippets', 'blocks', 'layout']) {
+      for (const file of readdirSync(join(root, dir))) {
+        if (!file.endsWith('.liquid')) continue;
+        const text = readFileSync(join(root, dir, file), 'utf8')
+          .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, ' ')
+          .replace(/\{%-?\s*doc\s*-?%\}[\s\S]*?\{%-?\s*enddoc\s*-?%\}/g, ' ');
+        const from = dir === 'snippets' ? file.slice(0, -'.liquid'.length) : null;
+        const open = [];
+        for (const [, tag, expression, rendered] of text.matchAll(
+          /\{%-?\s*(if|unless|case|for|endif|endunless|endcase|endfor)\b([^%]*?)-?%\}|render\s+['"]([\w-]+)['"]/g,
+        )) {
+          if (tag !== undefined) {
+            if (tag.startsWith('end')) open.pop();
+            else open.push(tag === 'if' && /^\s*request\.design_mode\s*$/.test(expression));
+            continue;
+          }
+          /* A snippet's own `@example` renders itself; that is documentation, not a site. */
+          if (rendered === from) continue;
+          if (!sites.has(rendered)) sites.set(rendered, []);
+          sites.get(rendered).push({ from, behindEditor: open.includes(true) });
+        }
+      }
+    }
+
+    /* A snippet reached only from an editor-only snippet is editor-only too, so the set is
+       closed rather than read one level deep. */
+    const closed = new Set();
+    for (let changed = true; changed; ) {
+      changed = false;
+      for (const [name, where] of sites) {
+        if (closed.has(name) || where.length === 0) continue;
+        if (where.every((site) => site.behindEditor || (site.from !== null && closed.has(site.from)))) {
+          closed.add(name);
+          changed = true;
+        }
+      }
+    }
+    return closed;
+  })();
+
   for (const dir of ['sections', 'snippets']) {
     for (const file of readdirSync(join(root, dir))) {
       if (!file.endsWith('.liquid')) continue;
@@ -163,6 +217,7 @@ const sheets = (() => {
         /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b[^>]*>([\s\S]*?)<\/style>/g,
       )) {
         const body = match[1] ?? match[2];
+        if (dir === 'snippets' && editorOnly.has(file.slice(0, -'.liquid'.length))) continue;
         const origin = dir === 'sections' ? file.slice(0, -'.liquid'.length) : null;
         /* `#shopify-section-{{ section.id }}` names this section's own wrapper. Letting
            `liquid()` flatten the output to `x` left `#shopify-section-x`, which matches no
@@ -677,6 +732,13 @@ const rulesFor = (name) => {
           'does not resolve -- extend it rather than trusting the result',
       );
 
+      assert.ok(
+        !negatesAState(branch),
+        `.${name} is styled through "${branch.trim()}", which negates a pseudo-class this ` +
+          'cascade model reads as always true -- teach it the negation rather than letting ' +
+          'the rule apply in the state it excludes',
+      );
+
       /* The ancestors the rule asks for, and what it asks of the label itself. A rule applies
          wherever another one does when everything it asks for is also present there, which is
          what keeps two mutually exclusive sections from resolving as one element. */
@@ -1088,6 +1150,23 @@ const functionalsOf = (compound) => {
 };
 
 const PSEUDO_IN_ARGUMENT = /:(?!is\(|where\(|not\()[a-z-]+(?:\([^)]*\))?/i;
+
+/*
+ * A `:not()` carrying a pseudo-class, which `statesOf` reads as always true.
+ *
+ * That reading is right in the default context and wrong in the one the negation excludes:
+ * `.subtitle:not(:hover) { opacity: 1 }` under `.subtitle:hover { opacity: .6 }` restored
+ * the label in the hovered state too, so the fade the browser keeps there passed all five
+ * tests (Codex, #427). Modelling it properly means giving every context the rule that a
+ * state and its negation cannot both hold, which is the larger change `statesOf` names
+ * above and still has not been made. Until it is, a rule like this is refused where it
+ * reaches a label rather than restoring in a state the browser excludes. 72 selectors in
+ * the theme negate a pseudo-class and none of them reaches an eyebrow, so this is free
+ * today and will say so the moment one does.
+ */
+const NEGATED_PSEUDO = /:not\(([^()]*(?:\([^()]*\)[^()]*)*)\)/gi;
+const negatesAState = (selector) =>
+  [...selector.matchAll(NEGATED_PSEUDO)].some((match) => /:[a-z-]+/i.test(match[1]));
 
 const statesOf = (compound) => {
   /*
@@ -1890,6 +1969,12 @@ const contextsFor = (name) => {
             .slice(0, -1)
             .map((_, index) => index)
             .filter((index) => matchesPath(rule.path, entry.chain, index));
+          assert.ok(
+            matches.length === 0 || !negatesAState(rule.selector),
+            `an ancestor of the label is styled through "${rule.selector}", which negates a ` +
+              'pseudo-class this cascade model reads as always true -- teach it the negation ' +
+              'rather than letting the rule apply in the state it excludes',
+          );
           const varies = rule.states.some(({ state }) => !/^:root$/i.test(state));
           const seen = new Set();
           return (varies ? matches : matches.slice(0, 1)).flatMap((at) => {
