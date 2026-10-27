@@ -1761,21 +1761,63 @@ const contextsFor = (name) => {
        * Anything below the root is refused, since resolving it means carrying a second
        * cascade for a value this model takes as fixed.
        */
+      /*
+       * The root was exempt because a definition there is the global one -- except that the
+       * values this model reads are taken from `theme-styles-variables.liquid` and the
+       * palette, not from whichever rule the browser ends up applying. A second root rule
+       * at higher specificity therefore redefined a token and was waved through:
+       * `html:root { --opacity-subdued-text: .1 }` with the eyebrow painted
+       * `rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text))` passed all five
+       * tests at a rendered alpha of 0.1 while this measured 0.8 (Codex, #427). The
+       * `:root` and bare `html` spellings did the same, and so did a root
+       * `--color-background`.
+       *
+       * So the root is no longer exempt, it is checked: a definition there has to agree
+       * with the value the resolver read. Anything else -- a different value, or one this
+       * cannot compare -- is refused with the rest.
+       */
+      /*
+       * `liquid()` rewrites every `{{ ... }}` to `x`, so a definition whose value is that
+       * marker came from a theme setting rather than from a literal in the stylesheet --
+       * and the settings these two tokens are written from, `color-palette.liquid:168` for
+       * the background and `theme-styles-variables.liquid:392` for the opacities, are the
+       * same settings `palette` and `opacityToken` read. The theme has exactly one such
+       * definition at the root today, `:root { --color-background: x }`, printed from the
+       * built rules rather than assumed. A literal value has to match what was measured.
+       */
+      const FROM_A_SETTING = /^x$/;
+      const sameHex = (value, against) => {
+        const found = value.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+        if (found === null) return false;
+        const full =
+          found[1].length === 3 ? [...found[1]].map((digit) => digit + digit).join('') : found[1];
+        return full.toLowerCase() === against.replace('#', '').toLowerCase();
+      };
       const GLOBAL_TOKENS = [
         {
           defines: /(?:^|;|\s)--color-background\s*:/,
+          reads: /(?:^|;)\s*--color-background\s*:\s*([^;]+)/gi,
           names: '--color-background',
           means: 'what `background: var(--color-background)` paints there is no longer the configured page ground',
+          agrees: (found) =>
+            FROM_A_SETTING.test(found[1].trim()) || sameHex(found[1], palette.page.background),
         },
         {
           defines: /(?:^|;|\s)--opacity-(?:muted|subdued)-text\s*:/,
+          reads: /(?:^|;)\s*--opacity-(muted|subdued)-text\s*:\s*([^;]+)/gi,
           names: 'an --opacity-*-text token',
           means: 'the alpha this model reads from theme-styles-variables.liquid is no longer the one that applies',
+          agrees: (found) =>
+            FROM_A_SETTING.test(found[2].trim()) ||
+            Number(found[2].trim()) === opacityToken(found[1].toLowerCase()),
         },
       ];
       const whereInChain = (at) =>
         at === entry.chain.length - 1 ? `.${name}` : `an ancestor of .${name}`;
       for (const token of GLOBAL_TOKENS) {
+        /* Every definition in the text has to agree, not just one of them. */
+        const restates = (text) =>
+          [...text.matchAll(token.reads)].every((found) => token.agrees(found));
         for (const rule of everyRule()) {
           if (!live(rule) || !token.defines.test(rule.declarations)) continue;
           const at = entry.chain.findIndex((_, index) => matchesPath(rule.path, entry.chain, index));
@@ -1785,12 +1827,24 @@ const contextsFor = (name) => {
               `${token.means} -- resolve the token through the ancestry rather than trust a ` +
               'measurement taken against the global value',
           );
+          assert.ok(
+            at !== 0 || restates(rule.declarations),
+            `"${rule.selector}" redefines ${token.names} at the document root to something ` +
+              `other than the value this model reads, so ${token.means} -- resolve the token ` +
+              'rather than trust a measurement taken against the global value',
+          );
         }
         entry.inlines.forEach((style, at) => {
           assert.ok(
             !token.defines.test(style) || at === 0,
             `style="" on ${whereInChain(at)} redefines ${token.names}, so ${token.means} -- ` +
               'resolve the token rather than trust a measurement taken against the global value',
+          );
+          assert.ok(
+            !token.defines.test(style) || at !== 0 || restates(style),
+            `style="" on the document root redefines ${token.names} to something other than ` +
+              `the value this model reads, so ${token.means} -- resolve the token rather than ` +
+              'trust a measurement taken against the global value',
           );
         });
       }
