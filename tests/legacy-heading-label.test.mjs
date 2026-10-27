@@ -721,9 +721,52 @@ const contextsFor = (name) => {
     for (const page of where) {
       const live = (rule) => rule.origin === null || page.types.has(rule.origin);
 
-      const reaches = all.filter(
+      const named = all.filter(
         (rule) => live(rule) && matchesPath(rule.path, entry.chain, entry.chain.length - 1),
       );
+
+      /*
+       * A rule does not have to name the class to paint the eyebrow. The label is a
+       * `<span>`, so `#MainContent span { opacity: .6 }` fades all eleven of them -- and
+       * filtering the label's own rules on `.subtitle` discarded it, leaving every test
+       * green while the text sat under the contrast bar (Codex, #427).
+       *
+       * `matchesPath` against the last link in the chain is already the right question, and
+       * `matchesElement` never required the class, so the same predicate over `everyRule()`
+       * picks these up. Only the two fields `rulesFor` derives from the label compound have
+       * to be recovered here.
+       */
+      const seenSelectors = new Set(named.map((rule) => `${rule.at}:${rule.selector}`));
+      /* Only what these tests measure. Pulling in every rule that merely matches a `<span>`
+         took ona-sourcing to 56 qualifier sets and tripped the powerset cap -- the model
+         refused rather than mis-measuring, which is right, but it also stopped covering the
+         case. A rule that sets none of these cannot change any answer here. */
+      const MEASURED = /(?:^|;|\s)(?:display|color|opacity|margin|margin-bottom)\s*:/;
+      const unnamed = everyRule()
+        .filter(
+          (rule) =>
+            live(rule) &&
+            !seenSelectors.has(`${rule.at}:${rule.selector}`) &&
+            !rule.siblings &&
+            MEASURED.test(rule.declarations) &&
+            matchesPath(rule.path, entry.chain, entry.chain.length - 1),
+        )
+        .map((rule) => {
+          const label = rule.path[rule.path.length - 1].compound;
+          assert.ok(
+            !/!important/.test(rule.declarations),
+            `.${name} is painted with !important through "${rule.selector}", which this ` +
+              'cascade model does not resolve -- extend it rather than trusting the result',
+          );
+          return {
+            ...rule,
+            label,
+            needsFilled: /:not\(\s*:empty\s*\)/.test(label),
+            needsEmpty: /:empty/.test(label.replace(/:not\([^)]*\)/g, '')),
+          };
+        });
+
+      const reaches = [...named, ...unnamed].sort((a, b) => a.weight - b.weight || a.at - b.at);
       if (reaches.length === 0) continue;
 
       /* Only the two ancestor declarations that can reach the label need their own contexts --
@@ -853,11 +896,7 @@ test('the eyebrow sits on its own line above the heading', () => {
          this one did not, so `margin: 0 0 14px` -> `margin: 0` passed (Codex, #427).
          Shorthand or longhand, the bottom of the box is what separates the two: in
          `margin: 0 0 14px` that is the third value, in `margin: 0` the only one. */
-      const declared = merge(context.filled, context.inline);
-      const shorthand = lastValue(declared, 'margin');
-      const longhand = lastValue(declared, 'margin-bottom');
-      const parts = shorthand ? shorthand.trim().split(/\s+/) : null;
-      const gap = longhand ?? (parts ? (parts[2] ?? parts[0]) : null);
+      const gap = bottomMargin(merge(context.filled, context.inline));
       assert.ok(
         gap,
         `.${name} in ${context.where} declares no bottom margin, so the label butts against ` +
@@ -979,6 +1018,32 @@ const opacityToken = (name) => {
 const lastValue = (declarations, property) => {
   const all = [...declarations.matchAll(new RegExp(`(?:^|;)\\s*${property}\\s*:\\s*([^;]+)`, 'g'))];
   return all.length ? all[all.length - 1][1].trim() : null;
+};
+
+/*
+ * The bottom margin, resolved as one property.
+ *
+ * `margin` and `margin-bottom` both write it, so taking the last value of each independently
+ * and preferring the longhand read `margin-bottom: 14px; margin: 0` as a 14px gap when the
+ * browser computes zero (Codex, #427). Both forms are walked in declaration order instead,
+ * and the last write wins whichever form it came in.
+ */
+const bottomMargin = (declarations) => {
+  let value = null;
+  for (const [, property, raw] of declarations.matchAll(
+    /(?:^|;)\s*(margin|margin-bottom)\s*:\s*([^;]+)/g,
+  )) {
+    const text = raw.trim();
+    if (property === 'margin-bottom') {
+      value = text;
+      continue;
+    }
+    /* In the shorthand the bottom is the third value, or the first when fewer are given.
+       Two values are block/inline, so the block one is the bottom as well as the top. */
+    const parts = text.split(/\s+/);
+    value = parts.length >= 3 ? parts[2] : parts[0];
+  }
+  return value;
 };
 
 const painted = (declarations) => {
