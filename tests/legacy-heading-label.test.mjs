@@ -17,6 +17,36 @@ const MEASURED =
 
 
 /*
+ * An attribute's value, however it is quoted.
+ *
+ * Only the double-quoted form was read, so `class='text wowo fadeInDown'` on the partnership
+ * wrapper recorded no classes at all: the ancestor lost its selector identity and
+ * `#shopify-section-ona-wholesale-partnership .text { opacity: .6 }` matched nothing with all
+ * five tests green, while the same markup in double quotes fails at 4.42:1 (Codex, #427).
+ * HTML allows single quotes and, for a value without spaces, none.
+ *
+ * Anchored on a boundary, which `\bid=` is not: a word boundary sits between the `-` and the
+ * `i` of `data-id=`, so that attribute was being read as the element's id.
+ */
+const attributeValue = (attributes, name) =>
+  attributes.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*"([^"]*)"`, 'i'))?.[1] ??
+  attributes.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*'([^']*)'`, 'i'))?.[1] ??
+  attributes.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*([^\\s"'>]+)`, 'i'))?.[1] ??
+  null;
+
+/* A native `<style>` carries its own media restriction in an attribute, and a `{% style %}`
+   cannot. Dropping it applied print-only or narrow-viewport declarations to every rendering:
+   a restoring `opacity: 1` inside `<style media="print">` cancelled a real `opacity: .6` in
+   `base.css` with all five tests green, while screen visitors kept the faded eyebrow at
+   4.42:1 (Codex, #427). Wrapping the body in the equivalent `@media` hands it to the machinery
+   that already reads media queries -- including its refusal for a condition this model cannot
+   read, and its reading of a non-screen type as a rendering this harness does not measure. */
+const underMedia = (css, attributes) => {
+  const media = attributes === undefined ? null : attributeValue(attributes, 'media');
+  return media === null || media.trim() === '' ? css : `@media ${media} { ${css} }`;
+};
+
+/*
  * Every stylesheet that can reach a legacy eyebrow, in the order the browser applies them.
  *
  * Reading only legacy-page-layout.css missed the `{% style %}` and `{% stylesheet %}` blocks
@@ -77,9 +107,9 @@ const sheets = (() => {
     const open = [];
     const lists = new Map();
     const TAG =
-      /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b[^>]*>([\s\S]*?)<\/style>|\{%-?\s*(if|elsif|else|endif|unless|endunless|assign)\b([^%]*?)-?%\}|'([\w.-]+\.css)'\s*\|\s*asset_url\s*\|\s*stylesheet_tag/g;
+      /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b([^>]*)>([\s\S]*?)<\/style>|\{%-?\s*(if|elsif|else|endif|unless|endunless|assign)\b([^%]*?)-?%\}|'([\w.-]+\.css)'\s*\|\s*asset_url\s*\|\s*stylesheet_tag/g;
     for (const found of source.matchAll(TAG)) {
-      const [, styled, native, keyword, rest, asset] = found;
+      const [, styled, nativeAttributes, native, keyword, rest, asset] = found;
 
       const css = styled ?? native;
       if (css !== undefined) {
@@ -103,7 +133,7 @@ const sheets = (() => {
         headInline.push({
           origin: null,
           scope: open.filter((condition) => condition !== null),
-          text: liquid(css),
+          text: underMedia(liquid(css), nativeAttributes),
           belowTheSheets: found.index > firstSheetIn(source),
         });
         continue;
@@ -185,10 +215,10 @@ const sheets = (() => {
       .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, ' ')
       .replace(/\{%-?\s*doc\s*-?%\}[\s\S]*?\{%-?\s*enddoc\s*-?%\}/g, ' ');
     for (const match of source.matchAll(
-      /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b[^>]*>([\s\S]*?)<\/style>/g,
+      /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b([^>]*)>([\s\S]*?)<\/style>/g,
     )) {
       assert.ok(
-        !MEASURED.test(decomment(match[1] ?? match[2])),
+        !MEASURED.test(decomment(match[1] ?? match[3])),
         `layout/${file} sets a property this file measures in a style block. It is not the ` +
           'layout the measured templates render under, so work out which pages it reaches ' +
           'before letting those declarations into the cascade',
@@ -311,9 +341,9 @@ const sheets = (() => {
          both keeps the order the browser sees. The theme emits no native `<style>` today --
          this is so that one added later is not invisible. */
       for (const match of source.matchAll(
-        /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b[^>]*>([\s\S]*?)<\/style>/g,
+        /\{%-?\s*style\s*-?%\}([\s\S]*?)\{%-?\s*endstyle\s*-?%\}|<style\b([^>]*)>([\s\S]*?)<\/style>/g,
       )) {
-        const body = match[1] ?? match[2];
+        const body = match[1] ?? match[3];
         if (dir === 'snippets' && editorOnly.has(file.slice(0, -'.liquid'.length))) continue;
         const origin = dir === 'sections' ? file.slice(0, -'.liquid'.length) : null;
         /* `#shopify-section-{{ section.id }}` names this section's own wrapper. Letting
@@ -329,7 +359,7 @@ const sheets = (() => {
         const scoped = origin
           ? body.replace(/#shopify-section-\{\{-?\s*section\.id\s*-?\}\}/g, `#shopify-section-${origin}`)
           : body;
-        inline.push({ origin, text: liquid(scoped) });
+        inline.push({ origin, text: underMedia(liquid(scoped), match[2]) });
       }
     }
   }
@@ -576,24 +606,6 @@ const caseFold = (text) =>
  * contrast measurement rather than a question.
  */
 const clampAlpha = (value) => Math.min(1, value);
-
-/*
- * An attribute's value, however it is quoted.
- *
- * Only the double-quoted form was read, so `class='text wowo fadeInDown'` on the partnership
- * wrapper recorded no classes at all: the ancestor lost its selector identity and
- * `#shopify-section-ona-wholesale-partnership .text { opacity: .6 }` matched nothing with all
- * five tests green, while the same markup in double quotes fails at 4.42:1 (Codex, #427).
- * HTML allows single quotes and, for a value without spaces, none.
- *
- * Anchored on a boundary, which `\bid=` is not: a word boundary sits between the `-` and the
- * `i` of `data-id=`, so that attribute was being read as the element's id.
- */
-const attributeValue = (attributes, name) =>
-  attributes.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*"([^"]*)"`, 'i'))?.[1] ??
-  attributes.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*'([^']*)'`, 'i'))?.[1] ??
-  attributes.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*([^\\s"'>]+)`, 'i'))?.[1] ??
-  null;
 
 /*
  * The stylesheet flattened into rules, carrying whatever at-rules each one sits inside.
@@ -1067,7 +1079,8 @@ const LAYOUT_ELEMENTS = (() => {
       ...attributes
         .replace(/\{\{[\s\S]*?\}\}|\{%-?[\s\S]*?-?%\}/g, '{')
         .matchAll(/([\w-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g),
-    ].flatMap(([, key, double, single, raw]) => {
+    ].flatMap(([, named, double, single, raw]) => {
+      const key = named.toLowerCase();
       const value = double ?? single ?? raw;
       if (value === undefined) return [`[${key}]`];
       return value.includes('{') ? [`[${key}]`] : [`[${key}]`, `[${key}="${value}"]`];
@@ -1210,7 +1223,8 @@ const ancestriesFor = (name) => {
          the element does not carry was credited to every eyebrow (Codex, #300). */
       const attrs = [
         ...attributes.matchAll(/([\w-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g),
-      ].flatMap(([, key, double, single, bare]) => {
+      ].flatMap(([, named, double, single, bare]) => {
+        const key = named.toLowerCase();
         const value = double ?? single ?? bare;
         return value === undefined ? [`[${key}]`] : [`[${key}]`, `[${key}="${value}"]`];
       });
@@ -1503,7 +1517,15 @@ const TRACKED_ATTRIBUTES = new Set(['class', 'id']);
 const attrMatch = (token, element) => {
   const parsed = token.match(/^\[\s*([\w-]+)\s*(?:([~^|$*]?=)\s*["']?([^\]"']*)["']?\s*)?\]$/);
   if (parsed === null) return null;
-  const [, key, operator, value] = parsed;
+  /* An HTML attribute name is case-insensitive and its value is not, so the name is folded
+     and the value left alone. Compared verbatim, `main[ROLE="main"]` missed the `role="main"`
+     this model had just started recording and the rule was dropped with all five tests green
+     -- the previous round made these answerable and left them case-sensitive, which is the
+     same distinction the property-name folding above draws and the opposite answer to the one
+     a custom-property name gets (Codex, #427). `[CLASS~="..."]` missed the tracked path for
+     the same reason, which it had done since before that round. */
+  const [, named, operator, value] = parsed;
+  const key = named.toLowerCase();
 
   /* The element sets hold tags, classes and ids and nothing else, so a selector narrowing on
      any other attribute names elements this model cannot identify, and is read as reaching
