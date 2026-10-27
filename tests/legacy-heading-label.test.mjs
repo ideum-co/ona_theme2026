@@ -946,20 +946,31 @@ const matchesPath = (parts, chain, endIndex) => {
 /* Top-level commas only: `@media (max-width: 749px), (min-width: 750px)` is two queries, but
    a comma inside parentheses belongs to whatever it is nested in. */
 const alternativesOf = (condition) => {
+  /* The at-rule names what the alternatives are alternatives of, so each one carries it.
+     Splitting the raw string left `@media (min-width: 750px), (min-width: 1000px)` with the
+     prefix on its first alternative only, and `regionOf` and `falsifiable` -- which read
+     nothing but a media query -- skipped the second, called it unconstrained, and threw away
+     the contexts where the query is off (Codex, #427). */
+  const prefix = condition.match(/^@[a-z-]+\s*/i);
+  const body = prefix ? condition.slice(prefix[0].length) : condition;
+
   const parts = [];
   let depth = 0;
   let start = 0;
-  for (let at = 0; at < condition.length; at += 1) {
-    const character = condition[at];
+  for (let at = 0; at < body.length; at += 1) {
+    const character = body[at];
     if (character === '(') depth += 1;
     else if (character === ')') depth = Math.max(0, depth - 1);
     else if (character === ',' && depth === 0) {
-      parts.push(condition.slice(start, at));
+      parts.push(body.slice(start, at));
       start = at + 1;
     }
   }
-  parts.push(condition.slice(start));
-  return parts.map((part) => part.trim()).filter((part) => part !== '');
+  parts.push(body.slice(start));
+  return parts
+    .map((part) => part.trim())
+    .filter((part) => part !== '')
+    .map((part) => (prefix ? `${prefix[0].trim()} ${part}` : part));
 };
 
 /* `rem` and `em` both resolve against the root font size in a media query, which is the
