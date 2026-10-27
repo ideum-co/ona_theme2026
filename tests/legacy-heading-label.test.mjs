@@ -722,17 +722,44 @@ const partsOf = (text) => text.match(/[#.][\w-]+/g) ?? [];
 /* The pseudo-classes that make a rule hold only sometimes. `:is`, `:where` and `:not` are
    structural -- matchesElement resolves those against the element -- and `:empty` is the
    fill state, handled on its own. */
-const statesOf = (compound) =>
-  (
+const PSEUDO_IN_ARGUMENT = /:(?!is\(|where\(|not\()[a-z-]+(?:\([^)]*\))?/i;
+
+const statesOf = (compound) => {
+  /*
+   * A pseudo-class inside `:is()` or `:where()` gates the rule exactly as one written on the
+   * compound: `:is(:hover)` holds only while hovered. Stripping the whole function lost that
+   * condition while `structural()` stripped the inner pseudo, so the rule came out both
+   * unconditional and unmatchable -- `.subtitle:is(:hover) { opacity: .6 }` was dropped with
+   * the suite green (Codex, #427). The function is kept whole as one condition, which is the
+   * honest reading of an alternation: it holds when any argument does.
+   *
+   * `:not()` is deliberately left as it was. `:not(:hover)` holds in the default state, which
+   * is the context this model builds first, so reading it as unconditional is right there and
+   * over-applies only in the state it excludes. 73 selectors in the theme put a pseudo-class
+   * inside a `:not()`, and giving each the negation of a condition -- along with the rule that
+   * a context cannot hold both a state and its negation -- is a larger change than this one.
+   */
+  const nested = (compound.match(/:(?:is|where)\([^)]*\)/gi) ?? []).filter((fn) =>
+    PSEUDO_IN_ARGUMENT.test(fn.replace(/^:(?:is|where)\(/i, '').replace(/\)$/, '')),
+  );
+  const direct =
     compound
       .replace(/:(?:is|where|not)\([^)]*\)/gi, '')
       .replace(/:empty\b/gi, '')
-      .match(/::?[a-z-]+(?:\([^)]*\))?/gi) ?? []
-  ).map((state) => state.toLowerCase());
+      .match(/::?[a-z-]+(?:\([^)]*\))?/gi) ?? [];
+  return [...nested, ...direct].map((state) => state.toLowerCase().replace(/\s+/g, ''));
+};
 
-/* A compound with its state pseudos removed, leaving what identifies the element. */
+/* A compound with its state pseudos removed, leaving what identifies the element. A function
+   emptied by that -- `:is(:hover)` becoming `:is()` -- goes too, since an empty argument list
+   matches nothing and would drop the rule the states above have just qualified. */
 const structural = (compound) =>
-  compound.replace(/:empty\b/gi, '').replace(/:(?!is\(|where\(|not\()[a-z-]+(?:\([^)]*\))?/gi, '');
+  compound
+    .replace(/:empty\b/gi, '')
+    .replace(/:(?!is\(|where\(|not\()[a-z-]+(?:\([^)]*\))?/gi, '')
+    .replace(/:(?:is|where|not)\(([^)]*)\)/gi, (whole, args) =>
+      args.split(',').every((part) => part.trim() === '') ? '' : whole,
+    );
 
 /* Bare element names in a compound. Without these, `text-component { color: transparent }`
    -- a selector with no class or id at all -- matched every ancestor, because a compound
