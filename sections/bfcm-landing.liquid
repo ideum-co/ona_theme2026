@@ -2,7 +2,11 @@
   <section class="bfcm-landing__hero" aria-labelledby="bfcm-landing-title-{{ section.id }}">
     <div class="bfcm-landing__hero-copy">
       <div class="bfcm-landing__hero-content">
-        <span class="bfcm-landing__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+        {%- if settings.logo != blank -%}
+          {{ settings.logo | image_url: width: 160 | image_tag: width: 64, class: 'bfcm-landing__mark', alt: 'ONA Coffee' }}
+        {%- else -%}
+          <span class="bfcm-landing__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+        {%- endif -%}
         <h1 id="bfcm-landing-title-{{ section.id }}" class="bfcm-landing__title">
           {{ section.settings.title | escape }}<br>
           <em>{{ section.settings.title_emphasis | escape }}</em>
@@ -117,6 +121,7 @@
   .bfcm-landing__hero-copy::before { width: min(42vw, 520px); aspect-ratio: 1; background: var(--bfcm-wine); left: -18%; bottom: -50%; }
   .bfcm-landing__hero-copy::after { width: min(34vw, 420px); aspect-ratio: 1; background: var(--bfcm-rose); left: 28%; bottom: -54%; opacity: .9; }
   .bfcm-landing__hero-content { position: relative; z-index: 1; padding-bottom: clamp(90px, 10vw, 190px); }
+  .bfcm-landing__mark { display: block; width: 64px; height: auto; margin-bottom: 26px; }
   .bfcm-landing__eyebrow, .bfcm-landing__date { font-size: clamp(12px, .95vw, 17px); letter-spacing: .08em; text-transform: uppercase; }
   .bfcm-landing__title { font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif); font-size: clamp(48px, 4.7vw, 90px); line-height: .98; font-weight: 400; letter-spacing: 0; margin: 18px 0 22px; }
   .bfcm-landing__title em { font-weight: 400; }
