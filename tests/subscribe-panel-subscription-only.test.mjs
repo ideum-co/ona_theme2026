@@ -513,3 +513,56 @@ test('subscribable_count actually counts', () => {
     ].join(' ')
   );
 });
+
+/*
+ * The panel defaults the cadence to monthly rather than the first plan. Appstle returns a group's
+ * plans ascending by frequency, so `... | first` is Weekly; the whole change is one reassignment of
+ * `allocation` to the monthly allocation, which the radio value, the price, the saving and the
+ * selected <option> all read. Both callers inherit it: the product page's subscribe card (one-time
+ * still leads, but the subscription it offers is monthly) and the subscription-only panel (monthly
+ * preselected). Guarded by value because a loop that computes the monthly allocation and never
+ * assigns it over the default leaves the panel on Weekly while reading perfectly correct.
+ */
+test('the monthly allocation is found within the group, by delivery name, and stops at the first', () => {
+  const snippet = read(SNIPPET);
+  assert.match(
+    snippet,
+    /assign monthly_allocation = blank/,
+    'it starts unset, so a group with no monthly plan falls back to the first allocation'
+  );
+  assert.match(
+    snippet,
+    /if candidate_monthly\.selling_plan_group_id == group\.id/,
+    'the monthly plan is looked for inside the group being rendered, not across every group'
+  );
+  assert.match(
+    snippet,
+    /contains 'month' or candidate_monthly_name contains '4 week'/,
+    "matched by delivery name: the blend groups call it 'Monthly delivery ...' and '4 week subscription'"
+  );
+  assert.match(
+    snippet,
+    /assign monthly_allocation = candidate_monthly\s+break/,
+    'the first match wins and the search stops, so a longer cadence listed after it cannot override'
+  );
+});
+
+test('the monthly allocation replaces the default before anything reads it', () => {
+  const snippet = read(SNIPPET);
+  const reassign = snippet.indexOf('assign allocation = monthly_allocation');
+  assert.ok(reassign > 0, 'the found monthly allocation has to replace the default, not merely be computed');
+
+  // Only when one was found: a group with no monthly plan must keep leading with its first plan
+  // rather than collapse to a blank allocation and drop out of the panel entirely.
+  const guard = snippet.lastIndexOf('unless monthly_allocation == blank', reassign);
+  assert.ok(guard > 0 && guard < reassign, 'the reassignment must sit inside `unless monthly_allocation == blank`');
+
+  // Everything that describes the chosen plan has to read the allocation after it has moved, or
+  // the price, saving, posted plan id and preselected frequency split across two cadences.
+  const savePct = snippet.indexOf('assign save_pct = 0');
+  const radio = snippet.indexOf('value="{{ allocation.selling_plan.id }}"');
+  const optionSelected = snippet.indexOf('if plan.id == allocation.selling_plan.id');
+  assert.ok(savePct > reassign, 'the saving is computed from the monthly allocation');
+  assert.ok(radio > reassign, 'the posted plan id is the monthly one');
+  assert.ok(optionSelected > reassign, 'the preselected frequency option is the monthly one');
+});
