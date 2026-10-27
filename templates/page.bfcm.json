@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "main": {
+      "type": "bfcm-landing",
+      "blocks": {
+        "all_coffee": { "type": "collection_link", "settings": { "label": "All coffee", "link": "/collections/all" } },
+        "espresso": { "type": "collection_link", "settings": { "label": "Espresso coffee", "link": "/collections/espresso" } },
+        "filter": { "type": "collection_link", "settings": { "label": "Filter coffee", "link": "/collections/filter" } },
+        "milk": { "type": "collection_link", "settings": { "label": "Milk-based coffee", "link": "/collections/milk-based" } },
+        "gear": { "type": "collection_link", "settings": { "label": "Brew gear", "link": "/collections/brew-gear" } },
+        "merch": { "type": "collection_link", "settings": { "label": "Merch", "link": "/collections/merch" } }
+      },
+      "block_order": ["all_coffee", "espresso", "filter", "milk", "gear", "merch"],
+      "settings": {}
+    }
+  },
+  "order": ["main"]
+}
