@@ -1451,18 +1451,26 @@ const contextsFor = (name) => {
        * .subtitle { opacity: .6 } }` failed the contrast test at 4.42:1 on labels the
        * browser keeps fully opaque (Codex, #427).
        *
-       * `walk` still descends into the block, so a layered rule is never simply unseen;
+       * `@scope` is refused beside it for the mirror reason. Its prelude names a root and
+       * a limit -- a structural restriction on which elements the rules inside can reach --
+       * and recording the prelude as a condition keeps the words and drops the restriction,
+       * so `@scope (.not-rendered) { #MainContent .subtitle { opacity: .6 } }` failed the
+       * contrast test at 4.42:1 over an element the theme does not contain (Codex, #427).
+       * That is a false alarm where the layer case is a false reading, but the remedy is
+       * the same and the theme uses `@scope` nowhere at all.
+       *
+       * `walk` still descends into both blocks, so such a rule is never simply unseen;
        * it is seen and refused.
        */
       for (const rule of [...reaches, ...touching]) {
-        const layered = rule.conditions.filter((condition) => /^@layer\b/i.test(condition));
+        const held = rule.conditions.filter((condition) => /^@(?:layer|scope)\b/i.test(condition));
         assert.equal(
-          layered.length,
+          held.length,
           0,
-          `"${rule.selector}" reaches .${name} from inside ${layered.join(' inside ')}, and ` +
-            'this model orders declarations by specificity and source order only -- layer ' +
-            'precedence would have to be carried separately before a ratio taken across ' +
-            'one means anything',
+          `"${rule.selector}" reaches .${name} from inside ${held.join(' inside ')}, and this ` +
+            'model orders declarations by specificity and source order inside conditions it ' +
+            'can switch on and off -- a layer precedence or a scope boundary would have to ' +
+            'be carried separately before a ratio taken across one means anything',
         );
       }
 
@@ -1479,6 +1487,42 @@ const contextsFor = (name) => {
        * The one declaration it accepts is the page ground restated: `body { background:
        * var(--color-background) }` is the premise, not an exception to it.
        */
+      /*
+       * `background: var(--color-background)` is only the page ground restated while
+       * `--color-background` still holds the value the settings gave it. Redefine the token
+       * anywhere below the root and the same declaration paints something else entirely,
+       * which is how the exception below was walked straight through:
+       * `.text { --color-background: #470a12; background: var(--color-background) }` with
+       * `.subtitle { color: #470a12 }` left the eyebrow at 1:1 with all five tests green
+       * (Codex, #427) -- the third way into this guard, after the literal background and
+       * the inline one.
+       *
+       * The root's own definition is the premise and is left alone; it is the only one in
+       * the theme today, measured through the harness. Anything below it is refused rather
+       * than resolved, because resolving it means carrying a second cascade for the ground.
+       */
+      const DEFINES_GROUND = /(?:^|;|\s)--color-background\s*:/;
+      for (const rule of everyRule()) {
+        if (!live(rule) || !DEFINES_GROUND.test(rule.declarations)) continue;
+        const at = entry.chain.findIndex((_, index) => matchesPath(rule.path, entry.chain, index));
+        assert.ok(
+          at <= 0,
+          `"${rule.selector}" redefines --color-background on an ancestor of .${name}, so ` +
+            'what `background: var(--color-background)` paints there is no longer the ' +
+            'configured page ground -- resolve the token through the ancestry rather than ' +
+            'trust a ratio taken against the settings value',
+        );
+      }
+      entry.inlines.forEach((style, at) => {
+        assert.ok(
+          !DEFINES_GROUND.test(style) || at === 0,
+          `style="" on ${at === entry.chain.length - 1 ? `.${name}` : `an ancestor of .${name}`} ` +
+            'redefines --color-background, so what `background: var(--color-background)` ' +
+            'paints there is no longer the configured page ground -- resolve the token ' +
+            'rather than trust a ratio taken against the settings value',
+        );
+      });
+
       const PAINTS = /(?:^|;|\s)background(?:-color|-image)?\s*:/;
       const RESTATES_THE_GROUND =
         /^\s*background(?:-color)?\s*:\s*var\(\s*--color-background\s*\)\s*$/;
