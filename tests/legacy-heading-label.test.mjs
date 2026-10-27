@@ -291,8 +291,10 @@ const labels = (() => {
       .replace(/\{\{[\s\S]*?\}\}/g, 'x');
 
     /* A one-element run of text, then a heading: the shape of an eyebrow. */
-    const pattern = /<(span|p|div)\b[^>]*class="([^"]*)"[^>]*>([^<]*)<\/\1>\s*<h[1-6]\b/g;
-    for (const [, , classes, content] of markup.matchAll(pattern)) {
+    const pattern =
+      /<(span|p|div)\b[^>]*\sclass\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))[^>]*>([^<]*)<\/\1>\s*<h[1-6]\b/g;
+    for (const [, , double, single, bare, content] of markup.matchAll(pattern)) {
+      const classes = double ?? single ?? bare ?? '';
       if (content.trim() === '') continue;
       for (const name of classes.split(/\s+/).filter(Boolean)) {
         if (!found.has(name)) found.set(name, new Set());
@@ -406,6 +408,24 @@ const caseFold = (text) =>
  * contrast measurement rather than a question.
  */
 const clampAlpha = (value) => Math.min(1, value);
+
+/*
+ * An attribute's value, however it is quoted.
+ *
+ * Only the double-quoted form was read, so `class='text wowo fadeInDown'` on the partnership
+ * wrapper recorded no classes at all: the ancestor lost its selector identity and
+ * `#shopify-section-ona-wholesale-partnership .text { opacity: .6 }` matched nothing with all
+ * five tests green, while the same markup in double quotes fails at 4.42:1 (Codex, #427).
+ * HTML allows single quotes and, for a value without spaces, none.
+ *
+ * Anchored on a boundary, which `\bid=` is not: a word boundary sits between the `-` and the
+ * `i` of `data-id=`, so that attribute was being read as the element's id.
+ */
+const attributeValue = (attributes, name) =>
+  attributes.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*"([^"]*)"`, 'i'))?.[1] ??
+  attributes.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*'([^']*)'`, 'i'))?.[1] ??
+  attributes.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*([^\\s"'>]+)`, 'i'))?.[1] ??
+  null;
 
 /*
  * The stylesheet flattened into rules, carrying whatever at-rules each one sits inside.
@@ -850,7 +870,7 @@ const LAYOUT_ELEMENTS = (() => {
   };
 
   const element = (tag, attributes) => {
-    const classes = (attributes.match(/class="([^"]*)"/)?.[1] ?? '')
+    const classes = (attributeValue(attributes, 'class') ?? '')
       /* An interpolation contains spaces, so splitting first tore
          `class="page-width-{{ settings.page_width }} card-hover-effect-{{ ... }}"` into six
          pieces and kept `settings.page_width` and `}}` as if they were classes on <body>:
@@ -860,7 +880,9 @@ const LAYOUT_ELEMENTS = (() => {
       .replace(/\{\{[\s\S]*?\}\}|\{%-?[\s\S]*?-?%\}/g, '{')
       .split(/\s+/)
       .filter((value) => value && !value.includes('{'));
-    const identifier = attributes.match(/\bid="([^"{]*)"/)?.[1];
+    const named = attributeValue(attributes, 'id');
+    /* An id written with Liquid in it is not a token a selector here can name. */
+    const identifier = named !== null && !named.includes('{') ? named : undefined;
     return {
       tag,
       tokens: new Set([
@@ -945,17 +967,20 @@ const ancestriesFor = (name) => {
         if (at !== -1) open.length = at;
         continue;
       }
-      const classes = (attributes.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/).filter(Boolean);
+      const classes = (attributeValue(attributes, 'class') ?? '').split(/\s+/).filter(Boolean);
       /* `[data-x]` was treated as always matching, so a selector qualified by an attribute
          the element does not carry was credited to every eyebrow (Codex, #300). */
-      const attrs = [...attributes.matchAll(/([\w-]+)(?:="([^"]*)")?/g)].flatMap(([, key, value]) =>
-        value === undefined ? [`[${key}]`] : [`[${key}]`, `[${key}="${value}"]`]
-      );
+      const attrs = [
+        ...attributes.matchAll(/([\w-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g),
+      ].flatMap(([, key, double, single, bare]) => {
+        const value = double ?? single ?? bare;
+        return value === undefined ? [`[${key}]`] : [`[${key}]`, `[${key}="${value}"]`];
+      });
       /* An id reaches an element two ways -- `#name` in a selector, `[id="name"]` in the
          attribute form -- and only the second was recorded, so `#MainContent #probe-label`
          could never match the element it names (Codex, #427). Both forms now, on ancestors
          and on the label, since `attrs` feeds each link of the chain. */
-      const identifier = attributes.match(/\bid="([^"]*)"/)?.[1];
+      const identifier = attributeValue(attributes, 'id');
       if (identifier) attrs.push(`#${identifier}`);
       if (classes.includes(name)) {
         /* An inline `style` outranks every rule in the stylesheet, and reading only the
