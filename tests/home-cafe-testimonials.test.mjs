@@ -138,3 +138,41 @@ test('the wholesale page keeps its own copy', () => {
   assert.ok(wholesale.sections.cafe_testimonial, 'the wholesale section must stay');
   assert.ok(wholesale.order.includes('cafe_testimonial'), 'and stay in the order');
 });
+
+/*
+ * Section width is a customizer control now, like the theme's other homepage sections (carousel,
+ * hero). It reaches the markup through the standard `.section` grid: `section--page-width` holds the
+ * quotes in the central page-width column, `section--full-width` spans the viewport.
+ */
+test('the section width is a page/full control applied through the .section grid', () => {
+  const schema = JSON.parse(sectionSource.match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/)[1]);
+  const width = schema.settings.find((s) => s.id === 'section_width');
+  assert.ok(width, 'press-quotes must expose a section_width control, like the other homepage sections');
+  assert.deepEqual(width.options.map((o) => o.value).sort(), ['full-width', 'page-width']);
+  assert.equal(width.default, 'page-width', 'defaults to page width, as the theme does elsewhere');
+
+  assert.match(
+    section,
+    /class="press-quotes section section--\{\{ settings\.section_width \}\}/,
+    'the chosen width must reach the markup through the standard section modifier class',
+  );
+});
+
+test('the colour band is a full-bleed sibling, so page-width does not clip it', () => {
+  /*
+   * `.shopify-section ... .section { background: transparent }` zeroes a background set on the
+   * section wrapper, and `.section--page-width` would in any case hold it to the central column, so
+   * the band lives on an absolutely-positioned `.section-background` sibling painted with the chosen
+   * colour -- exactly as carousel and hero do.
+   */
+  assert.match(
+    section,
+    /<div class="section-background" style="background-color: \{\{ settings\.background_color \}\};"><\/div>/,
+    'the colour band must be painted on a separate full-bleed sibling',
+  );
+  assert.doesNotMatch(
+    sectionSource,
+    /background:\s*var\(--press-quotes-background\)/,
+    'the band must not sit on the .section wrapper, where the grid would clip it in page-width mode',
+  );
+});
