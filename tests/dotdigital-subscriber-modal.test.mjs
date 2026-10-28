@@ -87,9 +87,51 @@ test('Dotdigital subscriber loader is guarded, URL-encodes configuration, and le
   );
   assert.doesNotMatch(
     snippet,
-    /<(?:form|input)\b|\b(?:fetch|XMLHttpRequest|addEventListener)\b/i,
+    /<(?:form|input)\b|\b(?:fetch|XMLHttpRequest)\b/i,
     'the theme must not reproduce the form or intercept subscriber data',
   );
+});
+
+test('Dotdigital popover is requested at idle, not at parse time', () => {
+  /*
+   * The vendor script carried `async`, which stops it blocking the parser but
+   * not it executing on the main thread the moment it arrives -- measured at
+   * ~821ms of scripting, the heaviest script on the site (issue #359). Creating
+   * the tag after load + idle moves that cost off the critical path.
+   *
+   * This test previously banned `addEventListener` outright, alongside the
+   * form and network primitives. That ban was wider than the rule it encodes:
+   * the Dotdigital design spec leaves subscriber data and the form to
+   * Dotdigital, which a load scheduler does not touch. The form and network
+   * bans above are unchanged; the listener is now bounded instead.
+   */
+  const snippet = read('snippets/dotdigital-subscriber-modal.liquid');
+
+  assert.doesNotMatch(
+    snippet,
+    /<script[^>]*\bsrc=/i,
+    'the loader must not emit a parse-time <script src>; it builds the tag itself',
+  );
+  assert.match(
+    snippet,
+    /document\.createElement\('script'\)/,
+    'the vendor script must be injected rather than inlined',
+  );
+
+  const listeners = snippet.match(/addEventListener\(/g) ?? [];
+  assert.equal(listeners.length, 1, 'exactly one listener -- the load scheduler -- is permitted here');
+  assert.match(
+    snippet,
+    /window\.addEventListener\('load',[^)]*\{ once: true \}\)/,
+    'the only listener must be a one-shot window load handler',
+  );
+
+  assert.match(
+    snippet,
+    /window\.requestIdleCallback \|\| \(\(\w+\) => window\.setTimeout\(/,
+    'idle scheduling must be feature-detected -- Safari has no requestIdleCallback (#363)',
+  );
+  assert.match(snippet, /let started = false/, 'the loader must be idempotent');
 });
 
 test('Dotdigital subscriber loader is rendered once at the end of the body', () => {
