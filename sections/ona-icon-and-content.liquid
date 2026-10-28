@@ -1,4 +1,4 @@
-<section class="col-4-icons wowo fadeIn" data-wow-duration="0.75s" data-wow-delay="300ms">
+<section class="col-4-icons wowo fadeIn" data-wow-duration="0.75s" data-wow-delay="300ms" style="--icon-content-title-gap: {{ section.settings.title_gap | default: 0 }}px;">
     <div class="container">
         <div class="title wow fadeInDown" data-wow-duration="1s" data-wow-delay="600ms">
             <h2>{{ section.settings.title }}</h2>
@@ -35,6 +35,8 @@
   #MainContent .col-4-icons .content {
     align-items: stretch;
     gap: clamp(14px, 1.5vw, 24px);
+    /* Space between the title and the blocks, set per section in the editor. */
+    margin-block-start: var(--icon-content-title-gap, 0px);
   }
 
   #MainContent .col-4-icons .content .block { display: flex; }
@@ -95,6 +97,17 @@
       "label": {
 		"en": "Title"
       }
+    },
+    {
+      "type": "range",
+      "id": "title_gap",
+      "label": "Gap below title",
+      "info": "Space between the title and the blocks.",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 0
     }
   ],
   "blocks": [
