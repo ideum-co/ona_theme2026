@@ -101,13 +101,6 @@
         "disabled": false,
         "settings": {}
       },
-      "14553338588657095991": {
-        "type": "shopify://apps/dotdigital/blocks/chat/c700cfad-505e-4909-b824-9f4209a2754e",
-        "disabled": false,
-        "settings": {
-          "region": "none"
-        }
-      },
       "9573800597631519415": {
         "type": "shopify://apps/dotdigital/blocks/back-in-stock/c700cfad-505e-4909-b824-9f4209a2754e",
         "disabled": false,
@@ -164,6 +157,48 @@
         "type": "shopify://apps/accentuate/blocks/recently-viewed-embed/428a4822-57b4-4291-92b3-3f34bc7a240e",
         "disabled": false,
         "settings": {}
+      },
+      "10641372206048101839": {
+        "type": "shopify://apps/rebuy-personalization-engine/blocks/rebuy-global-embed/a26ae9b9-933b-40bf-bbc6-bf1220bbc4dc",
+        "disabled": false,
+        "settings": {}
+      },
+      "10936144425145618957": {
+        "type": "shopify://apps/rebuy-personalization-engine/blocks/rebuy-ab-testing-embed/a26ae9b9-933b-40bf-bbc6-bf1220bbc4dc",
+        "disabled": false,
+        "settings": {
+          "rebuy_search_template_wrapper": ""
+        }
+      },
+      "14553338588657095991": {
+        "type": "shopify://apps/dotdigital/blocks/chat/c700cfad-505e-4909-b824-9f4209a2754e",
+        "disabled": true,
+        "settings": {
+          "region": "none"
+        }
+      },
+      "15683396631634586217": {
+        "type": "shopify://apps/inbox/blocks/chat/841fc607-4181-4ad1-842d-e24d7f8bad6b",
+        "disabled": false,
+        "settings": {
+          "greeting_message": "",
+          "show_featured_products": true,
+          "featured_products": [],
+          "background_color": "#FFFFFF",
+          "font_color": "#000000",
+          "agent_invert_activator_colors": true,
+          "button_color": "#000000",
+          "launcher_style": "button",
+          "button_icon": "chat_bubble",
+          "button_text": "chat_with_us",
+          "button_horizontal_position": "bottom_right",
+          "button_vertical_position": "lowest",
+          "agent_inherit_fonts": true,
+          "agent_font": "system_ui_n4",
+          "agent_font_size": 14,
+          "agent_activator_font_size": 16,
+          "agent_border_radius": 16
+        }
       }
     },
     "color_palette": {
