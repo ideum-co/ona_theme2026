@@ -105,12 +105,37 @@
   assign mobile_widths = '416, 600, 800, 1200, 1600'
   assign mobile_widths_array = mobile_widths | split: ', '
 
+  comment
+    The poster size for every hero video. Shared with the preload in
+    snippets/hero-video-poster-preload.liquid so the preloaded URL and the
+    one video_tag puts in the poster attribute cannot drift apart.
+  endcomment
+  assign poster_size = '1600x'
+
   assign fetch_priority = 'auto'
 
   if section.index == 1
     assign fetch_priority = 'high'
   endif
 %}
+
+{%- comment -%}
+  The hero's largest paint is the video poster, and a poster attribute is only
+  discovered once the <video> element has been parsed. Preload it so it is found
+  in the head instead. The snippet holds the whole decision -- including whether
+  this is the first section -- because this file sits exactly on theme-check's
+  Liquid complexity ceiling, so one more `if` here is one too many.
+{%- endcomment -%}
+{%- render 'hero-video-poster-preload',
+  section_index: section.index,
+  size: poster_size,
+  mobile_max: 749,
+  desktop_media: media_1,
+  mobile_media: media_1_mobile,
+  fallback_to_desktop: fallback_to_desktop,
+  desktop_video: section.settings.video_1,
+  mobile_video: section.settings.video_1_mobile
+-%}
 
 {% capture media_slot_1 %}
   {%- if media_1 == 'image' and media_1_mobile == 'image' -%}
@@ -167,7 +192,7 @@
       {{
         section.settings.video_1
         | video_tag:
-          image_size: '1600x',
+          image_size: poster_size,
           autoplay: true,
           loop: true,
           controls: false,
@@ -203,7 +228,7 @@
         {{
           section.settings.video_1_mobile
           | video_tag:
-            image_size: '1600x',
+            image_size: poster_size,
             autoplay: true,
             loop: true,
             controls: false,
@@ -271,7 +296,7 @@
       {{
         section.settings.video_2
         | video_tag:
-          image_size: '1600x',
+          image_size: poster_size,
           autoplay: true,
           loop: true,
           controls: false,
@@ -307,7 +332,7 @@
         {{
           section.settings.video_2_mobile
           | video_tag:
-            image_size: '1600x',
+            image_size: poster_size,
             autoplay: true,
             loop: true,
             controls: false,
