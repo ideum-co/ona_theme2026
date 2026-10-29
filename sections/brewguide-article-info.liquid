@@ -44,6 +44,14 @@
 {%- if is_brewguide_article -%}
   {%- liquid
     assign guide_intro = article.metafields.accentuate.content_brew_guide
+
+    # The mock sets this heading's second half in italics. The copy lives in the metafield,
+    # not in the theme, and all 24 Brew Guides carry the identical pasted string -- so the
+    # emphasis has to be applied on the way out. The replace is inert the moment an author
+    # writes anything else there, which is the point: it adds a flourish to known copy and
+    # never rewrites copy it does not recognise.
+    assign guide_intro = guide_intro | replace: 'How to get the best tasting cup', 'How to get the <em>best tasting cup</em>'
+
     assign spec_labels = article.metafields.accentuate.title_item
     assign spec_values = article.metafields.accentuate.content_item
 
@@ -102,15 +110,16 @@
   -%}
 
   {%- if has_any_content -%}
-    {%- comment -%}
-      .section is Horizon's own page-width grid wrapper (assets/base.css): a direct child of
-      it is auto-placed in the centred content column with the theme's standard gutters.
-      Without it this content would render edge-to-edge against the viewport, since it isn't
-      nested inside the existing main-blog-post section -- it's a sibling top-level section in
-      templates/article.json, so it needs its own instance of that wrapper.
-    {%- endcomment -%}
-    <div class="section">
-      {%- if has_recipe -%}
+    {%- if has_recipe -%}
+      {%- comment -%}
+        The band is deliberately NOT inside .section. In the mock the brew guide table is a
+        full-bleed maroon panel, and .section is Horizon's page-width grid -- a child of it is
+        placed in the centred content column, which is what kept this block to a 736px measure
+        on a 1363px page. The band is a plain child of the section wrapper instead, so it
+        reaches the viewport edge the way Horizon's own full-width sections do, and the measure
+        is restored inside it by .brewguide-article-recipe's own max-width.
+      {%- endcomment -%}
+      <div class="brewguide-article-recipe-band">
         <div class="brewguide-article-recipe">
           <h2 class="brewguide-article-recipe__heading">Brew guide</h2>
           {%- if guide_intro != blank -%}
@@ -120,9 +129,19 @@
             <dl class="brewguide-article-recipe__spec">{{ spec_rows }}</dl>
           {%- endif -%}
         </div>
-      {%- endif -%}
+      </div>
+    {%- endif -%}
 
-      {%- if cross_sell_product != blank -%}
+    {%- if cross_sell_product != blank -%}
+      {%- comment -%}
+        .section is Horizon's own page-width grid wrapper (assets/base.css): a direct child of
+        it is auto-placed in the centred content column with the theme's standard gutters.
+        Without it this card would render edge-to-edge against the viewport, since it isn't
+        nested inside the existing main-blog-post section -- it's a sibling top-level section in
+        templates/article.json, so it needs its own instance of that wrapper. The recipe band
+        above wants the opposite and so stays outside it.
+      {%- endcomment -%}
+      <div class="section">
         <div class="brewguide-article-cross-sell">
           {%- if cross_sell_product.featured_media != blank -%}
             <a href="{{ cross_sell_product.url }}" class="brewguide-article-cross-sell__image" aria-hidden="true" tabindex="-1">
@@ -139,37 +158,118 @@
             <a href="{{ cross_sell_product.url }}" class="button brewguide-article-cross-sell__link">Buy another bag</a>
           </div>
         </div>
-      {%- endif -%}
-    </div>
+      </div>
+    {%- endif -%}
   {%- endif -%}
 {%- endif -%}
 
 {% stylesheet %}
+  /*
+   * The mock's "Brew guide table" is a full-bleed maroon panel in the palette's two extremes,
+   * not in the page's own scheme -- so the band sets both ground and text from
+   * --palette-darkest/--palette-lightest (snippets/color-palette.liquid), the same pair
+   * snippets/contrast-override.liquid and snippets/header-megamenu.liquid already resolve
+   * against. Everything inside inherits that cream, which is why the rules below can hand
+   * `inherit` to the pasted metafield markup instead of naming a colour twice.
+   */
+  .brewguide-article-recipe-band {
+    background-color: var(--palette-darkest);
+    color: var(--palette-lightest);
+    padding-block: var(--gap-3xl);
+    padding-inline: var(--gap-lg);
+    /*
+     * Top margin only. A bottom margin sits OUTSIDE the full-bleed maroon panel, so it painted
+     * a cream strip between this band and the footer -- which is also maroon -- reading as an
+     * accidental sliver. The band already carries gap-3xl of (maroon) bottom padding to keep
+     * the content off its edge, so it meets whatever follows flush: seamless into the footer,
+     * and the cross-sell below restores its own gap-3xl top margin for the case it is present.
+     */
+    margin-block-start: var(--gap-3xl);
+  }
+
   .brewguide-article-recipe {
     display: grid;
     gap: var(--gap-lg);
     max-width: 46rem;
     margin-inline: auto;
-    margin-block: var(--gap-3xl);
   }
 
+  /*
+   * "Brew guide" is the mock's eyebrow, not its headline -- 12px uppercase above the serif
+   * title, where it used to render as a 24px Silk Serif heading competing with it. It stays
+   * an <h2> so the band keeps a heading in the document outline; only its presentation
+   * changes. --font-h6--size is 0.75rem, exactly the mock's 12px.
+   */
   .brewguide-article-recipe__heading {
     margin: 0;
-    font-size: var(--font-h4--size);
+    font-size: var(--font-h6--size);
+    font-family: var(--font-body--family);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
-  .brewguide-article-recipe__intro > :first-child {
-    margin-block-start: 0;
+  /*
+   * The intro is a metafield whose HTML was pasted out of the pre-Horizon site. All 24 Brew
+   * Guides carry byte-identical markup: an <h3> in Karla at 50px in grey rgb(43,44,48), and a
+   * note in 13px "Karla Bold" with 3px tracking -- both sitting on the pale blue
+   * rgb(189,214,230) highlight the paste brought with it, every value in an inline style
+   * attribute and flagged data-pasted="true".
+   *
+   * Inline styles outrank a stylesheet, so neutralising them needs !important. Every rule here
+   * is scoped inside .brewguide-article-recipe__intro, so nothing outside this one container
+   * is affected, and each hands presentation back to a theme token rather than to another
+   * fixed value -- anything an author writes here in future inherits the band instead.
+   *
+   * The real fix is on the content side: clearing the pasted styles out of
+   * accentuate.content_brew_guide. Until that happens this keeps the band readable.
+   */
+  .brewguide-article-recipe__intro :is(h1, h2, h3, h4, h5, h6, p, span, strong, em, li, a) {
+    font-family: inherit !important;
+    color: inherit !important;
+    background-color: transparent !important;
+    max-width: none !important;
   }
 
-  .brewguide-article-recipe__intro > :last-child {
-    margin-block-end: 0;
+  .brewguide-article-recipe__intro :is(h1, h2, h3, h4, h5, h6) {
+    margin: 0 !important;
+    font-family: var(--font-heading--family) !important;
+    font-size: var(--font-h2--size) !important;
+    font-weight: 400 !important;
+    line-height: 1.12 !important;
+  }
+
+  .brewguide-article-recipe__intro p {
+    margin: 0 !important;
+    font-size: var(--font-paragraph--size) !important;
+    line-height: 1.45 !important;
+  }
+
+  .brewguide-article-recipe__intro p :is(span, strong, em) {
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    letter-spacing: normal !important;
+  }
+
+  /*
+   * The note reads "NOTE THESE ARE A STARTING POINT..." -- the capitals are in the stored copy
+   * itself, not a text-transform, so sentence case (what the mock shows) has to be recovered
+   * rather than simply switched off. Lower-casing the paragraph and restoring its first letter
+   * is safe for this exact sentence, which carries no proper noun; it is a presentation
+   * workaround for pasted copy, and the content-side fix above retires it.
+   */
+  .brewguide-article-recipe__intro p,
+  .brewguide-article-recipe__intro p :is(span, strong, em) {
+    text-transform: lowercase !important;
+  }
+
+  .brewguide-article-recipe__intro p::first-letter {
+    text-transform: uppercase !important;
   }
 
   .brewguide-article-recipe__spec {
     margin: 0;
     display: grid;
-    border-block-start: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
+    border-block-start: 1px solid rgb(var(--palette-lightest-rgb) / 0.55);
   }
 
   .brewguide-article-recipe__row {
@@ -178,7 +278,7 @@
     justify-content: space-between;
     gap: var(--gap-sm);
     padding-block: var(--gap-md);
-    border-block-end: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
+    border-block-end: 1px solid rgb(var(--palette-lightest-rgb) / 0.55);
   }
 
   .brewguide-article-recipe__label {
@@ -203,6 +303,9 @@
     border-radius: var(--style-border-radius-popover);
     max-width: 46rem;
     margin-inline: auto;
+    /* The band above no longer carries a bottom margin, so the cross-sell owns the gap that
+       separates it from the band when a matching product is set. */
+    margin-block-start: var(--gap-3xl);
   }
 
   .brewguide-article-cross-sell__image {

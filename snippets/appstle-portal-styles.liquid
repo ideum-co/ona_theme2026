@@ -1,0 +1,33 @@
+{%- comment -%}
+  Keeps the theme's own card geometry out of Appstle's customer portal.
+
+  On /apps/subscriptions Shopify renders Appstle's portal inside this theme's layout, so the
+  compiled theme bundle applies to Appstle's markup. Appstle ships that markup with the bare
+  class name `card`, and `blocks/_card.liquid` claims the same bare selector in the shared
+  bundle. The product-card geometry therefore lands on the portal's subscription cards:
+  `display: flex`, `flex-direction: column`, `width: 100%`, `height: 100%`, `overflow: hidden`
+  and `container-type: inline-size`.
+
+  Measured on live 2026-10-26: the theme rule does win there. On a portal with no subscriptions
+  the card holds one line and nothing is lost, but `height: 100%` with `overflow: hidden` is the
+  shape that clips a populated subscription card, and `container-type` changes how any container
+  query inside it resolves. Give Appstle's cards their intrinsic box back.
+
+  `position` and the border-* declarations are deliberately left alone. They do not clip, and
+  reverting `position: relative` could pull the containing block out from under an absolutely
+  positioned child we cannot see from an empty portal.
+
+  Usage, from layout/theme.liquid only:
+    {% render 'appstle-portal-styles' %}
+{%- endcomment -%}
+
+{% stylesheet %}
+  .appstle-customer-portal .card,
+  .appstle-wrapper .card {
+    display: block;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    container-type: normal;
+  }
+{% endstylesheet %}

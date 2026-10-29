@@ -1,3 +1,4 @@
+{% render 'ona-band', section: section %}
 <script src="{{ 'ona-faqs.js' | asset_url }}" type="module"></script>
 <section class="add-faqs-section " id="{{ section.settings.id }}">
     <div class="container">
@@ -101,6 +102,16 @@
     "en": "FAQ list"
   },
   "settings": [
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "placeholder": "t:settings.default"
+    },
     {
       "type": "text",
       "id": "id",

@@ -20,7 +20,7 @@
             "text": "Free Express Shipping on orders over $120 | Australia only",
             "link": "",
             "font": "var(--font-subheading--family)",
-            "font_size": "0.75rem",
+            "font_size": "1rem",
             "weight": "",
             "letter_spacing": "normal",
             "case": "none",
@@ -104,9 +104,11 @@
                 "tumblr_url": "",
                 "vimeo_url": "",
                 "custom_url": ""
-              }
+              },
+              "blocks": {}
             }
-          }
+          },
+          "block_order": []
         }
       },
       "settings": {
@@ -151,7 +153,31 @@
         "text_color_transparent_product": "#ffffff",
         "enable_transparent_header_collection": false,
         "collection_inverse_logo": false,
-        "text_color_transparent_collection": ""
+        "text_color_transparent_collection": "",
+        "transparent_when_sticky": false,
+        "quick_link_font_size": 16,
+        "header_icon_size": 27,
+        "solid_action_button_background": "#8a1238",
+        "solid_action_button_text": "#ffffff",
+        "solid_action_icon_color": "#4b0b16",
+        "transparent_action_button_background": "#8a1238",
+        "transparent_action_button_text": "#ffffff",
+        "transparent_action_icon_color": "#ffffff",
+        "sticky_header_home": "inherit",
+        "sticky_header_product": "inherit",
+        "sticky_header_collection": "inherit",
+        "enable_transparent_header_page": false,
+        "page_inverse_logo": false,
+        "text_color_transparent_page": "",
+        "sticky_header_page": "inherit",
+        "enable_transparent_header_blog": false,
+        "blog_inverse_logo": false,
+        "text_color_transparent_blog": "",
+        "sticky_header_blog": "inherit",
+        "enable_transparent_header_other": false,
+        "other_inverse_logo": false,
+        "text_color_transparent_other": "",
+        "sticky_header_other": "inherit"
       }
     }
   },

@@ -1,8 +1,4 @@
 /*
- * Re-emitted 2026-10-22: #302 fixed blocks/subscribe-button.liquid, which had blocked
- * every template using the `subscribe` block from syncing to the connected theme. The theme
- * sync only re-pulls changed files, so this one-line touch re-pulls this template now that the
- * block compiles. Invisible at runtime (Shopify strips template comments).
  * ------------------------------------------------------------
  * IMPORTANT: The contents of this file are auto-generated.
  *
@@ -102,8 +98,9 @@
                 "namespace": "accentuate",
                 "description_key": "tastes_like",
                 "badge_size": 18,
-                "title_size": 64,
-                "title_size_mobile": 48,
+                "fluid_title": true,
+                "title_size": 50,
+                "title_size_mobile": 36,
                 "description_size": 22,
                 "price_size": 32,
                 "rating_size": 20,
@@ -640,39 +637,12 @@
                         "padding-inline-end": 0
                       },
                       "blocks": {}
-                    },
-                    "button_L6TiwU": {
-                      "type": "button",
-                      "name": "t:names.button",
-                      "settings": {
-                        "label": "Shop now",
-                        "link": "shopify://collections/all",
-                        "open_in_new_tab": false,
-                        "style_class": "button",
-                        "custom_button_background": "{{ settings.color_palette.foreground }}",
-                        "custom_button_text": "{{ settings.color_palette.background }}",
-                        "custom_button_border": "{{ settings.color_palette.background }}",
-                        "link_text_color": "",
-                        "text_color": "",
-                        "text_size": 0,
-                        "text_size_mobile": 0,
-                        "padding_block": 0,
-                        "padding_block_mobile": 0,
-                        "padding_inline": 0,
-                        "padding_inline_mobile": 0,
-                        "width": "fit-content",
-                        "custom_width": 100,
-                        "width_mobile": "fit-content",
-                        "custom_width_mobile": 100
-                      },
-                      "blocks": {}
                     }
                   },
                   "block_order": [
                     "text_ytRgY6",
                     "text_dMNeWR",
-                    "text_C78MjG",
-                    "button_L6TiwU"
+                    "text_C78MjG"
                   ]
                 }
               },
@@ -681,26 +651,6 @@
           },
           "block_order": [
             "media_with_text_NwxVtm"
-          ]
-        },
-        "product_tab_dFwTTp": {
-          "type": "product-tab",
-          "settings": {
-            "label": "Reviews"
-          },
-          "blocks": {
-            "judge_me_reviews_review_widget_LLV6L8": {
-              "type": "shopify://apps/judge-me-reviews/blocks/review_widget/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
-              "settings": {
-                "review_data": "sample_data",
-                "max_width": 1200,
-                "show_shop_reviews": false,
-                "empty_state": "empty_widget"
-              }
-            }
-          },
-          "block_order": [
-            "judge_me_reviews_review_widget_LLV6L8"
           ]
         },
         "product_tab_faqs_Jv4Wmd": {
@@ -739,8 +689,7 @@
       "block_order": [
         "product_tab_ePcCkQ",
         "product_tab_specs",
-        "product_tab_faqs_Jv4Wmd",
-        "product_tab_dFwTTp"
+        "product_tab_faqs_Jv4Wmd"
       ],
       "name": "Product tabs",
       "settings": {
@@ -1612,7 +1561,6 @@
                   "name": "t:names.subscribe_button",
                   "settings": {
                     "label": "Subscribe",
-                    "submit_label": "Add to cart",
                     "style_class": "button"
                   },
                   "blocks": {}
@@ -1660,7 +1608,8 @@
         "background_color": "",
         "padding-block-start": 48,
         "padding-block-end": 48
-      }
+      },
+      "disabled": true
     },
     "inline_cta_8ann9f": {
       "type": "inline-cta",
@@ -1694,6 +1643,61 @@
         "padding_bottom": 96,
         "padding_inline": 40,
         "padding_inline_mobile": 20
+      },
+      "disabled": true
+    },
+    "product_reviews_bottom": {
+      "type": "section",
+      "name": "Reviews",
+      "blocks": {
+        "judge_me_reviews_review_widget_LLV6L8": {
+          "type": "shopify://apps/judge-me-reviews/blocks/review_widget/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
+          "settings": {
+            "review_data": "sample_data",
+            "max_width": 1200,
+            "show_shop_reviews": false,
+            "empty_state": "empty_widget"
+          }
+        }
+      },
+      "block_order": [
+        "judge_me_reviews_review_widget_LLV6L8"
+      ],
+      "settings": {
+        "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "flex-start",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 32,
+        "section_width": "page-width",
+        "limit_content_width": true,
+        "max_width": 1360,
+        "section_height": "",
+        "section_height_custom": 50,
+        "mobile_min_height": 600,
+        "mobile_content_top": 0,
+        "mobile_text_scrim": false,
+        "mobile_scrim_color": "#470a12",
+        "background_media": "none",
+        "background_color": "#470a12",
+        "mobile_video_position": "contain",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
+        "padding-block-start": 40,
+        "padding-block-end": 40,
+        "anchor": "reviews"
       }
     }
   },
@@ -1708,6 +1712,7 @@
     "brew_guide",
     "faqs",
     "product_recommendations_qggXJq",
+    "product_reviews_bottom",
     "inline_cta_8ann9f"
   ]
 }

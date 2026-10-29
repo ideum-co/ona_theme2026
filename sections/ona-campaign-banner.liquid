@@ -59,28 +59,27 @@
       </div>
     {%- endif -%}
 
-    <div class="campaign-banner__content" data-reveal-group>
+    <div class="campaign-banner__content">
       {%- if section.settings.title != blank -%}
         <h2
           class="campaign-banner__title {{ section.settings.title_preset | default: 'h2' }}"
-          data-reveal
           {%- if section.settings.title_font != blank %} style="font-family: {{ section.settings.title_font }};"{% endif -%}
         >{{ section.settings.title | escape }}</h2>
       {%- endif -%}
 
       {%- if campaign_end != blank and section.settings.campaign_label != blank -%}
-        <p class="campaign-banner__campaign" data-reveal>
+        <p class="campaign-banner__campaign">
           {{- section.settings.campaign_label }} {{ campaign_end | date: '%-d %B' -}}
           {%- if section.settings.campaign_note != blank %} {{ section.settings.campaign_note }}{% endif -%}
         </p>
       {%- endif -%}
 
       {%- if section.settings.description != blank -%}
-        <div class="campaign-banner__description rte" data-reveal>{{ section.settings.description }}</div>
+        <div class="campaign-banner__description rte">{{ section.settings.description }}</div>
       {%- endif -%}
 
       {%- if section.settings.cta_text != blank and section.settings.cta_url != blank -%}
-        <a href="{{ section.settings.cta_url }}" class="campaign-banner__cta button" data-reveal>
+        <a href="{{ section.settings.cta_url }}" class="campaign-banner__cta button">
           {{- section.settings.cta_text -}}
         </a>
       {%- endif -%}

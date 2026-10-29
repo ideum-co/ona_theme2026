@@ -1,0 +1,83 @@
+{%- doc -%}
+  Paints a legacy `ona-*` section as a full-bleed colour band.
+
+  The legacy sections carry no colour of their own: `assets/legacy-page-layout.css`
+  styles them entirely with `currentColor` and `inherit`, and the only colour hooks
+  the migration brought over -- `bg-red` on ona-training and ona-wholesale-testimonial --
+  have no rule behind them anywhere in the theme. So every migrated page renders as one
+  flat run of the page background. This gives a section a background without touching
+  its markup, and picks the text colour for contrast the way `contrast-override` does.
+
+  Scoped to `#shopify-section-{{ section.id }}`, the wrapper Shopify puts around every
+  section's output, so nothing inside the section has to change and no other section
+  on the page is affected.
+
+  Buttons are re-pointed as well. `.more-btn` and `.wholesale-roaster-form-btn` resolve
+  `--color-primary-button-background`, which is the page foreground (#470a12) -- on a
+  dark band that is maroon on maroon. The band inverts the pair against itself.
+
+  @param {section} section - The section being painted. Reads `section.settings.background_color`,
+  the same setting id and the same stock label every Horizon section uses for this.
+
+  @example
+  {% render 'ona-band', section: section %}
+{%- enddoc -%}
+
+{%- liquid
+  assign band = section.settings.background_color
+
+  if band != blank and band.alpha != 0
+    assign band_brightness = band | color_brightness
+    if band_brightness > 128
+      assign contrast_extreme = 'var(--palette-darkest)'
+      assign contrast_extreme_rgb = 'var(--palette-darkest-rgb)'
+    else
+      assign contrast_extreme = 'var(--palette-lightest)'
+      assign contrast_extreme_rgb = 'var(--palette-lightest-rgb)'
+    endif
+
+    assign page_text_contrast = band | color_contrast: settings.page_text_color
+    if page_text_contrast >= 4.5
+      assign band_text = settings.page_text_color
+      assign band_text_rgb = settings.page_text_color.rgb
+    else
+      assign band_text = contrast_extreme
+      assign band_text_rgb = contrast_extreme_rgb
+    endif
+  endif
+-%}
+
+{%- if band != blank and band.alpha != 0 -%}
+  {% style %}
+    #shopify-section-{{ section.id }} {
+      --color-background: {{ band }};
+      --color-background-rgb: {{ band.rgb }};
+      /* `assets/base.css` paints every h1-h6 with `color: var(--color)`. Nothing in the theme
+         defines --color globally, so today an unset one is invalid-at-computed-value-time and
+         the headings fall through to the inherited colour, which happens to be right. That is
+         a coincidence, not a mechanism: the day anything defines --color at a wider scope,
+         every heading inside a band takes the page foreground and goes invisible on the maroon
+         ones. contrast-override sets it for exactly this reason, so this does too. */
+      --color: {{ band_text }};
+      --color-rgb: {{ band_text_rgb }};
+      --color-foreground: {{ band_text }};
+      --color-foreground-rgb: {{ band_text_rgb }};
+      --color-foreground-muted: rgb({{ band_text_rgb }} / var(--opacity-muted-text));
+      --color-foreground-subdued: rgb({{ band_text_rgb }} / var(--opacity-subdued-text));
+      --color-border: {{ band_text }};
+      --color-border-rgb: {{ band_text_rgb }};
+
+      /* The CTA sits on the band, so it inverts against the band, not the page. */
+      --color-primary-button-background: {{ band_text }};
+      --color-primary-button-text: {{ band }};
+      --color-primary-button-border: {{ band_text }};
+      /* The band text can resolve to a palette variable rather than a colour, so the hover
+         state is mixed in CSS -- Liquid's colour filters cannot shift a var(). */
+      --color-primary-button-hover-background: color-mix(in srgb, {{ band_text }} 85%, {{ band }});
+      --color-primary-button-hover-text: {{ band }};
+
+      background-color: var(--color-background);
+      color: var(--color-foreground);
+    }
+  {% endstyle %}
+{%- endif -%}

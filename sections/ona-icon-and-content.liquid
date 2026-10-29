@@ -1,3 +1,4 @@
+{% render 'ona-band', section: section %}
 <section class="col-4-icons wowo fadeIn" data-wow-duration="0.75s" data-wow-delay="300ms" style="--icon-content-title-gap: {{ section.settings.title_gap | default: 0 }}px;">
     <div class="container">
         <div class="title wow fadeInDown" data-wow-duration="1s" data-wow-delay="600ms">
@@ -91,6 +92,16 @@
   },
   "max_blocks": 5,
   "settings": [
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "placeholder": "t:settings.default"
+    },
     {
       "type": "text",
       "id": "title",
