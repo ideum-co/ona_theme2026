@@ -44,8 +44,7 @@
   class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
 ></div>
 <div
-  class="section section--{{ section.settings.section_width }} disable-section-top-offset media-with-content{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %} spacing-style {{ media_class_modifier }}{% if section.settings.limit_content_width %} media-with-content--limited{% endif %}{% if section.settings.motion_reveal %} reveal--editorial{% endif %}"
-  {% if section.settings.motion_reveal %}data-reveal{% endif %}
+  class="section section--{{ section.settings.section_width }} disable-section-top-offset media-with-content{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %} spacing-style {{ media_class_modifier }}{% if section.settings.limit_content_width %} media-with-content--limited{% endif %}"
   data-testid="media-with-content"
   style="
     {%- render 'spacing-style', settings: section.settings %}
@@ -559,17 +558,6 @@
       "id": "background_color",
       "label": "t:settings.background_color",
       "placeholder": "t:settings.default"
-    },
-    {
-      "type": "header",
-      "content": "Motion"
-    },
-    {
-      "type": "checkbox",
-      "id": "motion_reveal",
-      "label": "Reveal on scroll",
-      "info": "Fades the image and text into place the first time the section scrolls into view, with a subtle image settle. Off by default; respects reduced motion and never hides content without JavaScript.",
-      "default": false
     },
     {
       "type": "header",

@@ -1,6 +1,7 @@
 <script src="{{ 'ona-video-play.js' | asset_url }}" type="module"></script>
+{% render 'ona-band', section: section %}
 <script src="{{ 'ona-faqs.js' | asset_url }}" type="module"></script>
-<section class="add-image-and-text show-faqs show-image-slider section-full-large wowo fadeInUp" data-wow-duration="1s" data-wow-delay="300ms"  id="{{ section.settings.id }}">
+<section class="add-image-and-text show-faqs show-image-slider section-full-large wowo fadeInUp{% if section.settings.media_position == 'right' %} invert-columns{% endif %}" data-wow-duration="1s" data-wow-delay="300ms"  id="{{ section.settings.id }}">
     <div class="container">
         <div class="content">
             <div class="img imgs-slider wowo fadeIn slider-{{ section.settings.id }}" data-auto="{{ section.settings.slider_autoplay }}" id="slider-{{ section.settings.id }}">
@@ -105,6 +106,32 @@
     "en": "Expressions"
   },
   "settings": [
+    {
+      "type": "select",
+      "id": "media_position",
+      "label": "t:settings.media_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "placeholder": "t:settings.default"
+    },
     {
       "type": "text",
       "id": "id",

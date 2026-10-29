@@ -1,3 +1,4 @@
+{% render 'ona-band', section: section %}
 <section class="add-image-and-text-slider section-full-large cafe-reviews" id="{{ section.settings.id }}">
     <div class="add-images-slider wowo fadeInUp">
         {% for block in section.blocks %}
@@ -94,6 +95,16 @@
     "en": "Cafe Testimonial"
   },
   "settings": [
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "placeholder": "t:settings.default"
+    },
     {
       "type": "text",
       "id": "id",

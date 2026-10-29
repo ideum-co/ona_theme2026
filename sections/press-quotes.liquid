@@ -66,10 +66,17 @@
   {%- endfor -%}
 {%- endcapture -%}
 
+{%- comment -%}
+  The colour band is painted on a separate, absolutely-positioned sibling -- the theme's standard
+  section pattern (see carousel, hero): the `.section` grid forces its own background transparent, so
+  the band spans the viewport while the quotes sit in the page-width or full-width column, chosen by
+  the `section_width` setting.
+{%- endcomment -%}
+<div class="section-background" style="background-color: {{ settings.background_color }};"></div>
+
 <div
-  class="press-quotes spacing-style"
+  class="press-quotes section section--{{ settings.section_width }} spacing-style"
   style="
-    --press-quotes-background: {{ settings.background_color }};
     --press-quotes-color: {{ settings.text_color }};
     --press-quotes-columns: {{ settings.columns }};
     {%- render 'spacing-style', settings: settings %}
@@ -97,8 +104,8 @@
   .press-quotes {
     --slide-width: calc(100% / var(--press-quotes-columns, 3));
 
-    padding-inline: var(--page-margin, 1rem);
-    background: var(--press-quotes-background);
+    /* No background or page-margin here: the colour band is the `.section-background` sibling, and
+       the `.section` grid places the carousel in the page-width or full-width column. */
     color: var(--press-quotes-color);
 
     @media screen and (max-width: 749px) {
@@ -250,6 +257,22 @@
         }
       ],
       "default": "arrow"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
     },
     {
       "type": "header",

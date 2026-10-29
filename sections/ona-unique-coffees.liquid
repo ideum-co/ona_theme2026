@@ -1,3 +1,4 @@
+{% render 'ona-band', section: section %}
 <script src="{{ 'ona-unique-coffees.js' | asset_url }}" type="module"></script>
 
 <ona-unique-coffees>
@@ -59,6 +60,16 @@
     "en": "Unique coffees"
   },
   "settings": [
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "placeholder": "t:settings.default"
+    },
     {
       "type": "text",
       "id": "id",

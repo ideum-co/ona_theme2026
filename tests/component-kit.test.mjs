@@ -439,11 +439,25 @@ test('the page-header contract keeps the dynamic title fallback', () => {
     `the contract should say ${NUMBER_WORDS[blanks.length]} instances are blank, for ${blanks.join(', ')}`
   );
 
-  /* The fallback each of those blanks relies on, cited where it lives. */
-  for (const [section, line] of [['ona-sr-heading', 5], ['ona-page-title', 14]]) {
-    const source = readFileSync(join(root, 'sections', `${section}.liquid`), 'utf8').split('\n')[line - 1];
-    assert.match(source, /page\.title/, `${section}.liquid:${line} no longer derives the title; the citation is stale`);
-    assert.ok(doc.includes(`sections/${section}.liquid:${line}`), `the contract should cite ${section}.liquid:${line}`);
+  /*
+   * The fallback each of those blanks relies on, cited where it lives.
+   *
+   * The line number used to be written here as well as in the contract, so a line added above
+   * the fallback broke a test that was asserting against its own copy of the number rather than
+   * against the theme. Derive it from the source and hold only the contract to it.
+   */
+  for (const section of ['ona-sr-heading', 'ona-page-title']) {
+    const lines = readFileSync(join(root, 'sections', `${section}.liquid`), 'utf8').split('\n');
+    const at = lines.flatMap((text, index) => (/page\.title/.test(text) ? [index + 1] : []));
+    assert.equal(
+      at.length,
+      1,
+      `${section}.liquid should derive the title in exactly one place, found ${at.length}`
+    );
+    assert.ok(
+      doc.includes(`sections/${section}.liquid:${at[0]}`),
+      `the contract cites the wrong line for ${section}.liquid -- the fallback is on line ${at[0]}`
+    );
   }
 
   assert.ok(
@@ -704,7 +718,7 @@ test('the Learn tiles map to a block a merchant can actually add', () => {
  * blocker recorded only in the shared paragraph is a blocker that row does not have.
  */
 test('the contact-form gap rows record the validation mismatch', () => {
-  const legacy = ['ona-gust-r', 'ona-training-form', 'ona-expericences-content'];
+  const legacy = ['ona-training-form', 'ona-expericences-content'];
 
   for (const name of legacy) {
     const source = readFileSync(join(root, 'sections', `${name}.liquid`), 'utf8');
@@ -1551,12 +1565,40 @@ test('an order-of-work step names the blockers step 2 does not clear', () => {
       `${name} is marked ${INDEPENDENT} but its gap row also says the blob is what blocks it`
     );
   }
+  /* A third state exists now that blocks/image.liquid carries the shape: released. A row may
+     only claim it when the section actually has an image for the shape to sit behind -- that is
+     the whole of the ona-content exception, and reading it off the section rather than trusting
+     the row is what stops "released" becoming a word anyone can type. */
+  const RELEASED = /\*\*Released by the shape\*\*/;
+  const hasImage = (name) => {
+    const source = readFileSync(join(root, 'sections', `${name}.liquid`), 'utf8');
+    return /<img\b/.test(source) || /"type":\s*"image_picker"/.test(source);
+  };
+
   for (const name of namedRows.filter((section) => carriers.includes(section) && !doubly.includes(section))) {
-    assert.match(
-      gapRow(name),
-      BLOB_IS_THE_BLOCKER,
-      `${name} carries a blob and has a gap row that neither claims an independent blocker nor says the blob is the blocker`
-    );
+    if (hasImage(name)) {
+      assert.match(
+        gapRow(name),
+        RELEASED,
+        `${name} carries a blob and an image, so the shape reaches it -- its gap row should say so rather than leaving it blocked`
+      );
+      assert.doesNotMatch(
+        gapRow(name),
+        BLOB_IS_THE_BLOCKER,
+        `${name} has an image the shape can sit behind, so the blob is no longer what blocks it`
+      );
+    } else {
+      assert.match(
+        gapRow(name),
+        BLOB_IS_THE_BLOCKER,
+        `${name} carries a blob, has no image for the shape to attach to, and its row neither claims an independent blocker nor says the blob is the blocker`
+      );
+      assert.doesNotMatch(
+        gapRow(name),
+        RELEASED,
+        `${name} has no image, so the shape cannot reach it and its row may not claim release`
+      );
+    }
   }
 
   /* Steps are numbered list items: from the marker to the next top-level number. */
@@ -1572,7 +1614,10 @@ test('an order-of-work step names the blockers step 2 does not clear', () => {
      corrected it I corrected step 5 and left step 2 saying all four carriers "carry their own
      gap rows for other reasons as well" (Codex, #247). One fact, two places, so check they
      agree rather than fixing the one that was quoted at me. */
-  const stepTwo = stepText(/^2\. \*\*Solve the decorative layer\*\*/);
+  /* The doc is hard-wrapped at ~75 characters, so the marker is routinely split across a line
+     break and a literal `includes` on the raw text fails on a reflow that changed nothing.
+     Collapse the whitespace first: the claim is about the words, not where the lines end. */
+  const stepTwo = stepText(/^2\. \*\*Solve the decorative layer\*\*/).replace(/\s+/g, ' ');
   const claim = stepTwo
     .split(/(?<=\.)\s+/)
     .find((sentence) => sentence.includes(INDEPENDENT));
@@ -1605,47 +1650,6 @@ test('an order-of-work step names the blockers step 2 does not clear', () => {
     [],
     `these steps present step 2 as sufficient for a section that is blocked for a second, ` +
       `unrelated reason: ${missing.join('; ')}`
-  );
-});
-
-/*
- * The wholesale page plan reduced `ona-gust-r` to its missing form fields, while its gap row
- * says the fields are only the first of two problems -- the two-column YouTube promo beside the
- * form needs a container target as well (Codex, #247). An actionable row that drops half a gap
- * restarts the conversion too early, so the plan has to carry both halves.
- */
-test('the wholesale plan carries both halves of the ona-gust-r gap', () => {
-  const gapRow = doc.split('\n').find((line) => line.startsWith('| `ona-gust-r` |'));
-  assert.ok(gapRow, 'the ona-gust-r gap row is gone');
-  assert.match(gapRow, /not just a form/i, 'the gap row no longer records the second problem');
-
-  const planRow = doc.split('\n').find((line) => line.startsWith('| `/pages/wholesale` |'));
-  assert.ok(planRow, 'the wholesale page-plan row is gone');
-  /* indexOf, not lastIndexOf: taking from the *last* mention would shrink the clause to
-     nothing if a second mention were added later in the row, and the test would fail for the
-     wrong reason. Pin the count so a second mention is a deliberate change. */
-  const mentions = planRow.match(/`ona-gust-r`/g) ?? [];
-  assert.equal(mentions.length, 1, `the wholesale row mentions ona-gust-r ${mentions.length} times; this guard assumes one`);
-  const clause = planRow.slice(planRow.indexOf('`ona-gust-r`'));
-  /* This used to require the clause to call for a `two-column container`, which pinned a layout
-     the page does not have: the form wrapper closes at `sections/ona-gust-r.liquid:55` and the
-     promo is the sibling <section> at 57, stacked below it. Enforcing the old claim would have
-     made correcting the page fail the suite, so the guard now holds the two things that are
-     actually true -- the promo is separate, and what is left blocking is the form. */
-  assert.doesNotMatch(
-    clause,
-    /two-column container|beside the form/i,
-    'the wholesale plan still puts the promo beside the form; it is a sibling section stacked below it'
-  );
-  assert.match(
-    clause,
-    /subject and business fields/i,
-    'the wholesale plan no longer names the subject and business fields, which are what block this section'
-  );
-  assert.match(
-    clause,
-    /field set and validation/i,
-    'the wholesale plan no longer names the field set and validation gap'
   );
 });
 
@@ -1897,6 +1901,66 @@ test('every in-page anchor owned by a section setting is recorded as a blocker',
     );
   }
 
+  /* Same shape, for the decorative layer. The row was written while nothing could carry the
+     blob; `blocks/image.liquid` can now, so the row says solved. Checked both ways round, so
+     removing the setting turns the row into a false all-clear rather than going unnoticed. */
+  const imageSchema = JSON.parse(
+    readFileSync(join(root, 'blocks/image.liquid'), 'utf8').match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/)[1]
+  );
+  const shapeSetting = (imageSchema.settings ?? []).find((setting) => setting.id === 'decorative_shape');
+  const carriersWithShape = readdirSync(join(root, 'sections'))
+    .filter((file) => file.endsWith('.liquid'))
+    .filter((file) => readFileSync(join(root, 'sections', file), 'utf8').includes('animated-svg'));
+  const blobRow = between('## Known gaps', '## Page by page')
+    .split('\n')
+    .filter((line) => /^\|/.test(line))
+    .find((row) => /animated-svg/.test(row.split('|')[1] ?? '')) ?? '';
+  assert.ok(blobRow, 'the decorative-layer gap row is gone');
+  assert.equal(
+    /\*\*Solved\b/.test(blobRow),
+    shapeSetting !== undefined,
+    shapeSetting
+      ? 'blocks/image.liquid carries a decorative shape but the gap row still reads as an open blocker'
+      : 'the gap row says the decorative layer is solved but blocks/image.liquid has no shape setting'
+  );
+  if (shapeSetting) {
+    /* The caveat is the whole value of the row now: the setting is on the public `image`
+       block, so these sections go to component 1 and row 2 of the kit is stale for them. */
+    assert.match(
+      blobRow,
+      /component 1/,
+      'the solved row no longer says the conversion target moves to component 1'
+    );
+
+    /* And the exception. An image block cannot carry the layer for a section with no image,
+       so the row has to name the ones that are still blocked rather than claim all 15. The
+       count is measured, not quoted, so adding an image to ona-content moves it on its own. */
+    const imageless = readdirSync(join(root, 'sections'))
+      .filter((file) => file.endsWith('.liquid'))
+      .filter((file) => readFileSync(join(root, 'sections', file), 'utf8').includes('animated-svg'))
+      .filter((file) => !/<img\b|"type":\s*"image_picker"/.test(readFileSync(join(root, 'sections', file), 'utf8')))
+      .map((file) => file.replace(/\.liquid$/, ''));
+    assert.ok(imageless.length >= 1, 'every .animated-svg section now has an image; the exception probe is broken');
+    assert.match(
+      blobRow,
+      new RegExp(`Solved for ${carriersWithShape.length - imageless.length} of the ${carriersWithShape.length}`),
+      `the row does not say how many of the ${carriersWithShape.length} are solved; ${imageless.length} carry no image for the shape to attach to`
+    );
+    /* Naming it ANYWHERE in the row is not enough -- the row already lists `ona-content` among
+       the sections that share a colour, so a plain `includes` stayed green when the exception
+       clause itself was deleted. The name has to sit next to the claim that it is blocked. */
+    for (const section of imageless) {
+      const named = new RegExp(
+        `\`${section}\`[^.|]{0,90}(?:blocked|exception)|(?:blocked|exception)[^.|]{0,90}\`${section}\``
+      );
+      assert.match(
+        blobRow,
+        named,
+        `${section} carries the layer and has no image, so an image block cannot hold it -- the row has to name it as still blocked, not merely mention it`
+      );
+    }
+  }
+
   /* The document has to state the OWNERSHIP, not merely mention both names somewhere in one
      row. Two earlier versions were satisfied by a row that happened to contain every section
      and every anchor -- first the wholesale plan row, then the gap row itself -- under which a
@@ -1981,4 +2045,75 @@ test('the ona-training gap row is measured against the target the mapping gives 
     /component 1 holds both|a build, not a design problem/,
     'the row names the blocks but no longer says the composition holds the interaction'
   );
+});
+
+/*
+ * The gap row and the tables are read by different people for different reasons, so marking the
+ * decorative layer solved in one place while three others still said "blocked" left the kit
+ * telling an engineer to defer exactly the sections the new block releases. The row was right
+ * and the tables were stale, and nothing connected them. Codex, #293.
+ *
+ * This matches any claim that the decorative layer currently blocks something, and requires
+ * ona-content -- the one section the shape cannot reach -- to be named alongside it. Claims in
+ * the past tense ("the layer that blocked them is solved", "was the 11th of the blocked set")
+ * are not current claims and do not match; re-adding a present-tense one does.
+ */
+test('no table still says the decorative layer blocks a section the shape reaches', () => {
+  const BLOB = String.raw`blob|animated-svg|decorative[- ]layer`;
+  /* "blocked ON the blob" is the claim that went stale. "blocked FOR a second reason, not the
+     blob" is a different and still-true claim about ona-training-form, and proximity alone
+     cannot tell them apart -- the preposition can. */
+  const CLAIM = new RegExp(String.raw`blocked\**[\s,]*(?:on|by)\b[^.]{0,80}?(?:${BLOB})`, 'gi');
+
+  for (const match of doc.matchAll(CLAIM)) {
+    const window = doc.slice(Math.max(0, match.index - 250), match.index + match[0].length + 250);
+    assert.match(
+      window,
+      /ona-content/,
+      `"${match[0].trim()}" claims the decorative layer still blocks something, without naming ` +
+        'ona-content -- the only section it does block. Reconcile it with the gap row.'
+    );
+  }
+});
+
+/*
+ * The released sections convert to component 1, not to media-with-content: the shape is a
+ * setting on the public `image` block, and media-with-content's media slot is the private
+ * `_media-without-appearance`, which has none. A table sending them to component 2 would send
+ * an engineer to a target that drops the decoration again.
+ */
+test('the kit does not route a decorated section to media-with-content', () => {
+  const row = doc.split('\n').find((line) => /^\| 2 \|/.test(line));
+  assert.ok(row, 'no row 2 in the component table');
+  assert.ok(
+    !/\*\*all 11 blocked\*\*/.test(row),
+    'row 2 still calls the 11 decorated sections blocked on the decorative layer'
+  );
+  assert.match(
+    row,
+    /component 1/i,
+    'row 2 should hand the decorated sections to component 1, which carries the shape'
+  );
+});
+
+/*
+ * A doc that says one of its own tables is wrong is a doc with a bug in it, and the warning
+ * outlives the fix: row 2 was rewritten in this same PR while the gap row still told readers to
+ * disregard it (Codex, #293, twice in a row). The fix for "table X is stale" is to update table
+ * X, never to annotate it from somewhere else -- so the annotation itself is the failure.
+ */
+test('the kit does not tell its readers that part of the kit is wrong', () => {
+  const SELF_CONTRADICTION = [
+    /\b(?:row|table|step|section) \d+[^.]{0,60}\bis wrong\b/i,
+    /\buntil it is rewritten\b/i,
+    /\bdisregard the (?:row|table|step)\b/i,
+  ];
+  for (const pattern of SELF_CONTRADICTION) {
+    const hit = doc.match(pattern);
+    assert.equal(
+      hit,
+      null,
+      `the kit contains "${hit?.[0]}" -- update the part it points at instead of warning about it`
+    );
+  }
 });

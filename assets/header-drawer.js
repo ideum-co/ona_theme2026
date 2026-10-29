@@ -33,7 +33,9 @@ class HeaderDrawer extends Component {
   #onKeyUp = (event) => {
     if (event.key !== 'Escape') return;
 
-    this.#close(this.#getDetailsElement(event));
+    // A previous Escape may have closed the focused submenu.
+    const details = this.#getDetailsElement(event);
+    this.#close(details.open ? details : this.refs.details);
   };
 
   /**
@@ -132,6 +134,9 @@ class HeaderDrawer extends Component {
         } else {
           trapFocus(this.refs.details);
         }
+        // The focus trap targets <details>, which is not itself focusable.
+        // Return keyboard focus to the control that opened this menu level.
+        summary.focus();
       },
       { subtree: false }
     );

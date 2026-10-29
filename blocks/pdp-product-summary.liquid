@@ -34,7 +34,7 @@
 -%}
 
 <div
-  class="product-summary"
+  class="product-summary{% if block_settings.fluid_title %} product-summary--fluid-title{% endif %}"
   style="
     --product-summary-badge-size: {{ block_settings.badge_size }}px;
     --product-summary-badge-padding-block: {{ block_settings.badge_padding_block }}px;
@@ -131,6 +131,11 @@
     text-wrap: balance;
   }
 
+  .product-summary--fluid-title .product-summary__title {
+    font-size: clamp(var(--product-summary-title-size-mobile), 2.6vw, var(--product-summary-title-size));
+    line-height: 1.05;
+  }
+
   .product-summary__description {
     margin-block-start: var(--product-summary-description-gap);
     color: inherit;
@@ -209,6 +214,7 @@
 
     { "type": "header", "content": "Typography" },
     { "type": "range", "id": "badge_size", "label": "Badge text size", "min": 10, "max": 30, "step": 1, "unit": "px", "default": 18 },
+    { "type": "checkbox", "id": "fluid_title", "label": "Scale title with viewport", "info": "Uses mobile title size as the minimum and title size as the maximum.", "default": false },
     { "type": "range", "id": "title_size", "label": "Title size", "min": 28, "max": 96, "step": 2, "unit": "px", "default": 64 },
     { "type": "range", "id": "title_size_mobile", "label": "Title size on mobile", "min": 24, "max": 64, "step": 2, "unit": "px", "default": 48 },
     { "type": "range", "id": "description_size", "label": "Description size", "min": 12, "max": 36, "step": 1, "unit": "px", "default": 22 },

@@ -10,6 +10,8 @@
   @param {object} product - The product object.
   @param {string} unique_id - Suffix that keeps ids and the radio group unique on the page.
   @param {string} form_component_id - Id of the `product-form-component` this dropdown points at.
+  @param {boolean} [subscription_only] - Set where the form can only add a subscription, so the
+    dropdown has to keep the submit shut on a variant that carries no plan.
 
   @example
   {% render 'variant-select-dropdown', product: product, unique_id: section.id, form_component_id: form_id %}
@@ -30,20 +32,25 @@
   class="variant-select"
   data-mode="cart"
   data-form-id="{{ form_component_id }}"
+  data-product-url="{{ product.url }}"
+  {% if subscription_only %}
+    data-subscription-only="true"
+  {% endif %}
 >
   <fieldset
     class="variant-select__field"
     ref="trigger"
     style="anchor-name: {{ anchor_name }};"
   >
-    <legend class="variant-select__legend">{{ panel_title }}</legend>
+    <legend id="{{ trigger_id }}-label" class="variant-select__legend">{{ panel_title }}</legend>
     <button
       type="button"
       id="{{ trigger_id }}"
       class="variant-select__trigger"
       popovertarget="{{ panel_id }}"
+      aria-labelledby="{{ trigger_id }}-label {{ trigger_id }}-value"
     >
-      <span class="variant-select__trigger-value">{{ selected_variant.title }}</span>
+      <span id="{{ trigger_id }}-value" class="variant-select__trigger-value">{{ selected_variant.title }}</span>
       <span
         aria-hidden="true"
         class="variant-select__trigger-icon"
@@ -102,6 +109,7 @@
             value="{{ variant.id }}"
             data-variant-id="{{ variant.id }}"
             data-variant-available="{{ variant.available }}"
+            data-variant-plans="{% for allocation in variant.selling_plan_allocations %}{{ allocation.selling_plan.id }}{% unless forloop.last %},{% endunless %}{% endfor %}"
             data-variant-price="{{ variant.price | money }}"
             {% unless variant.available %}
               disabled

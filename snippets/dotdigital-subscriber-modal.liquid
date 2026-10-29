@@ -2,6 +2,27 @@
 {%- if settings.dotdigital_subscriber_modal_enabled and dotdigital_campaign != blank and request.design_mode == false -%}
   {%- assign dotdigital_campaign = dotdigital_campaign | url_encode -%}
   {%- capture dotdigital_popover_url -%}//news.onacoffee.com.au/resources/sharing/popoverv3.js?sharing=lp-popover&domain=news.onacoffee.com.au&id={{ dotdigital_campaign }}&default-cookies-expiry-length-in-days={{ settings.dotdigital_subscriber_cookie_days | url_encode }}&hide-after-submission=true&delay={{ settings.dotdigital_subscriber_delay | url_encode }}{%- endcapture -%}
-  {% # theme-check-disable-next-line RemoteAsset %}
-  <script src="{{ dotdigital_popover_url | escape }}" async></script>
+  <script>
+    (() => {
+      const src = {{ dotdigital_popover_url | strip | json }};
+      let started = false;
+
+      const start = () => {
+        if (started) return;
+        started = true;
+        const tag = document.createElement('script');
+        tag.src = src;
+        tag.async = true;
+        document.head.appendChild(tag);
+      };
+
+      // Safari has never shipped requestIdleCallback; calling the bare global
+      // throws there. See issue #363.
+      const whenIdle = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 1200));
+      const schedule = () => whenIdle(start, { timeout: 4000 });
+
+      if (document.readyState === 'complete') schedule();
+      else window.addEventListener('load', schedule, { once: true });
+    })();
+  </script>
 {%- endif -%}

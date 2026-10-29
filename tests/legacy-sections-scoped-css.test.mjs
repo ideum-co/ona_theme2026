@@ -122,7 +122,7 @@ test('the selector inventory counts are what the sections hold', () => {
     ['section-full-large', 17],
     ['match-height', 12],
     ['equal-height', 11],
-    ['more-btn', 14],
+    ['more-btn', 13],
     ['fadeInUp', 64],
     ['fadeIn', 21],
     ['fadeInup', 16],
@@ -156,8 +156,13 @@ test('the animation sweep is sized to the sections that carry it', () => {
   assert.deepEqual(heartBeat, ['ona-icon-and-content']);
   assert.ok(!unscoped.includes('ona-icon-and-content'), 'ona-icon-and-content is no longer scoped');
 
+  /* Derived, not pinned. This used to assert the literal '**28 of these 30**' while the two
+     assertions above computed the 28 from the live `unscoped` set -- so when a section was
+     removed the sentence went stale, the guard still passed, and correcting the prose would
+     have turned the suite red. Both halves come off the same measurement now. */
+  const sweep = carries('wowo', unscoped).length;
   assert.ok(
-    doc.includes('**28 of these 30**'),
-    'the retire-the-markup step should size the sweep at 28 of 30'
+    doc.includes(`**${sweep} of these ${unscoped.length}**`),
+    `the retire-the-markup step should size the sweep at ${sweep} of ${unscoped.length}`
   );
 });

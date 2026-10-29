@@ -61,6 +61,11 @@
         {{ 'legacy-page-layout.css' | asset_url | stylesheet_tag }}
       {% endif %}
     {% endif %}
+    {%- comment -%}
+      Rendered unconditionally and scoped to Appstle's own containers: the rules are inert on
+      every page that is not the subscription portal, and the stylesheet block is collected once.
+    {%- endcomment -%}
+    {%- render 'appstle-portal-styles' -%}
     {%- render 'card-hover-effect-styles' -%}
     {%- render 'fonts' -%}
     {%- render 'scripts' -%}

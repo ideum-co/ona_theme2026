@@ -1,3 +1,4 @@
+{% render 'ona-band', section: section %}
 {% style %}
   .page-title .page-title__subtitle {
     font-family: "Karla", sans-serif;
@@ -23,6 +24,16 @@
     "en": "Page title"
   },
   "settings": [
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "placeholder": "t:settings.default"
+    },
     {
       "type": "text",
       "id": "title2",

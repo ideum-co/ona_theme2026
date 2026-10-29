@@ -81,6 +81,7 @@
                 <textarea
                   form="cart-form"
                   on:input="/updateCartNote"
+                  on:blur="/flushCartNote"
                   id="cart-note"
                   class="cart-note__instructions"
                   name="note"
@@ -314,6 +315,15 @@
 </div>
 
 {% stylesheet %}
+  /* A note write is in flight. The accelerated buttons sit outside `cart-form` with no `form`
+     attribute, so they leave with whatever note the server already has -- hold them until
+     cart-note.js clears the flag off <html>. Matched on :root because <cart-note> is not an
+     ancestor of these buttons. */
+  :root[data-cart-note-pending] .additional-checkout-buttons {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
   .cart-actions {
     display: flex;
     flex-direction: column;

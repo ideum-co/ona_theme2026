@@ -159,7 +159,10 @@
               data-index="{{ forloop.index0 }}"
               ref="primaryLinks[]"
               {% if forloop.first %}
-                aria-current="true"
+                data-active
+              {% endif %}
+              {% if link.current %}
+                aria-current="page"
               {% endif %}
             >
               {{- link.title | escape -}}
@@ -429,7 +432,7 @@
     }
 
     .header-megamenu__primary-link:is(:hover, :focus-visible),
-    .header-megamenu__primary-link[aria-current='true'] {
+    .header-megamenu__primary-link[data-active] {
       color: var(--color-foreground);
     }
 
@@ -453,7 +456,7 @@
     }
 
     .header-megamenu__secondary-link {
-      color: rgb(var(--color-foreground-rgb) / var(--opacity-50));
+      color: rgb(var(--color-foreground-rgb) / var(--opacity-70));
       text-decoration: none;
     }
 
