@@ -93,3 +93,44 @@ test('the editorial variant staggers its children and never hides its own wrappe
   assert.match(section, /section\.settings\.motion_reveal[\s\S]*?reveal--editorial/, 'the opt-in adds the editorial class');
   assert.match(section, /section\.settings\.motion_reveal\s*%\}data-reveal/, 'the opt-in adds the data-reveal hook');
 });
+
+/*
+ * The inline head script arms the hidden start state whether or not the engine
+ * module ever runs, and a module that 404s, is blocked or fails to parse cannot
+ * be caught by the try/catch around that inline script. Without a failsafe, such
+ * a failure leaves every opted-in section at opacity 0 permanently -- a worse
+ * outcome than no animation at all. These assertions hold the release path.
+ */
+test('a reveal engine that never runs releases the hidden start state', () => {
+  // The inline script arms a timer alongside reveal-ready...
+  assert.match(
+    scripts,
+    /classList\.add\('reveal-ready'\)[\s\S]*?setTimeout\([\s\S]*?classList\.remove\('reveal-ready'\)/,
+    'arming the gate also arms a failsafe that strips it',
+  );
+  // ...and a load error strips it at once rather than waiting out the timer.
+  assert.match(
+    scripts,
+    /reveal-on-scroll\.js[\s\S]*?onerror=[\s\S]*?classList\.remove\('reveal-ready'\)/,
+    'a failed module load releases the gate immediately',
+  );
+
+  // The engine stands the failsafe down only once init() has actually armed.
+  assert.match(
+    js,
+    /try\s*\{\s*init\(\);\s*window\.clearTimeout\(window\.__revealGateFailsafe\)/,
+    'the failsafe is cleared only after init() succeeds',
+  );
+  // And a throwing init() releases the gate instead of stranding the content.
+  assert.match(
+    js,
+    /catch\s*\([\s\S]*?classList\.remove\('reveal-ready'\)/,
+    'an engine that throws releases the gate',
+  );
+
+  // The two names must agree, or the handshake silently does nothing.
+  const inlineName = scripts.match(/window\.__revealGateFailsafe/g) || [];
+  const engineName = js.match(/window\.__revealGateFailsafe/g) || [];
+  assert.ok(inlineName.length >= 1, 'the inline script names the failsafe handle');
+  assert.ok(engineName.length >= 1, 'the engine clears the same handle');
+});

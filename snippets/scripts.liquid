@@ -77,6 +77,18 @@
   try {
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
       document.documentElement.classList.add('reveal-ready');
+      /*
+       * The hidden start state this arms is only safe while the engine is still on
+       * its way. This script runs whether or not reveal-on-scroll.js ever does, and
+       * a module that 404s, is blocked, or fails to parse cannot be caught by the
+       * try above -- nothing would then add `is-revealed`, and every opted-in
+       * section would sit at opacity 0 for good. So disarm the gate unless the
+       * engine checks in. Worst case is a reveal that does not play; never content
+       * that does not show.
+       */
+      window.__revealGateFailsafe = window.setTimeout(function () {
+        document.documentElement.classList.remove('reveal-ready');
+      }, 4000);
     }
   } catch (e) {}
 </script>
@@ -84,6 +96,7 @@
   src="{{ 'reveal-on-scroll.js' | asset_url }}"
   type="module"
   fetchpriority="low"
+  onerror="try{window.clearTimeout(window.__revealGateFailsafe);document.documentElement.classList.remove('reveal-ready')}catch(e){}"
 ></script>
 
 <link

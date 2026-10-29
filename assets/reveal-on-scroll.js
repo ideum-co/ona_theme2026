@@ -7,8 +7,10 @@
  * This only decides WHEN; the motion itself is CSS (assets/base.css), gated on
  * both `prefers-reduced-motion: no-preference` and the `reveal-ready` class that
  * the inline head script adds. So:
- *   - No JS, or the script fails  -> `reveal-ready` is never set -> every
- *     `[data-reveal]` stays visible. Nothing is ever hidden behind motion.
+ *   - No JS -> `reveal-ready` is never set -> every `[data-reveal]` stays visible.
+ *   - This module fails to load, parse or run -> the inline script's failsafe
+ *     strips `reveal-ready` (and the tag's onerror strips it at once), so the
+ *     hidden start state is released. Nothing is ever hidden behind motion.
  *   - `prefers-reduced-motion: reduce` -> no hidden state, and this script
  *     reveals everything at once with no transition.
  */
@@ -65,7 +67,20 @@ function init(root) {
   items.forEach((el) => obs.observe(el));
 }
 
-init();
+/*
+ * The inline head script armed the hidden start state plus a failsafe that strips
+ * it if this module never runs. Stand that failsafe down only once init() has
+ * actually armed the reveals -- if it throws, release the gate instead, so a
+ * broken engine shows content rather than hiding it.
+ */
+try {
+  init();
+  window.clearTimeout(window.__revealGateFailsafe);
+} catch (error) {
+  window.clearTimeout(window.__revealGateFailsafe);
+  document.documentElement.classList.remove('reveal-ready');
+  throw error;
+}
 
 // Re-arm after a section re-renders in the theme editor (its nodes are new).
 document.addEventListener('shopify:section:load', (event) => init(event.target));
