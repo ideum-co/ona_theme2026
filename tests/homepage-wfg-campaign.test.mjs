@@ -42,44 +42,53 @@ test('no JSON template exceeds Shopify\'s 25-section limit', () => {
 });
 
 /*
- * The Water For Good campaign is two sections that only make sense together:
- * the banner says what the campaign is and links to the article, the counter
- * shows the money raised and links to the participating coffees. The 2026
- * homepage shipped the counter alone, so a live campaign showed a number with
- * nothing next to it explaining the number.
+ * The Water For Good campaign CLOSED on 31 October 2026 at a final published
+ * total of $33,524. The banner ("Campaign running now until...") was removed on
+ * 1 November because it asserted a live campaign; the counter stays, reworded
+ * to thank people for what they contributed. The section files for both remain
+ * in the theme so the pair can be restored for the next campaign.
  *
- * The two destinations are not interchangeable and were checked against the
- * live store: the article returns 200, and so does the collection.
+ * What this guards now:
+ *   - the banner does NOT come back by accident while no campaign is running,
+ *   - the counter survives the banner's removal, enabled and near the top,
+ *   - its CTA still points at the participating COLLECTION, not the article,
+ *   - the copy is retrospective, not an active-campaign call to action.
  */
-test('the campaign banner sits directly above the counter and the two links point apart', () => {
+test('the closed campaign leaves the counter alone on the homepage', () => {
   const home = parse('templates/index.json');
-  const banner = home.sections.wfg_campaign_banner;
   const counter = home.sections.wfg_donation_counter;
 
-  assert.ok(banner, 'the campaign banner must be on the homepage');
-  assert.equal(banner.type, 'ona-campaign-banner');
-  assert.ok(!banner.disabled, 'the banner is the campaign explanation; disabled it explains nothing');
+  assert.ok(
+    !home.sections.wfg_campaign_banner,
+    'the campaign banner announces a LIVE campaign; it must not be on the homepage while none is running',
+  );
+  assert.ok(
+    !home.order.includes('wfg_campaign_banner'),
+    'a section left in order but not in sections is rejected by Shopify on sync',
+  );
+
+  assert.ok(counter, 'the contribution counter must stay on the homepage');
+  assert.equal(counter.type, 'ona-donation-counter');
   assert.ok(!counter.disabled, 'the counter must stay live');
-
   assert.equal(
-    home.order.indexOf('wfg_campaign_banner') + 1,
     home.order.indexOf('wfg_donation_counter'),
-    'the banner must render immediately above the counter, as it does on the legacy theme',
+    1,
+    'the counter stays directly under the hero, where the banner used to sit above it',
   );
 
-  assert.match(
-    banner.settings.cta_url,
-    /^shopify:\/\/blogs\//,
-    'the banner CTA goes to the campaign ARTICLE',
-  );
   assert.match(
     counter.settings.learn_more_url,
     /^shopify:\/\/collections\//,
     'the counter CTA goes to the participating COLLECTION, not the article',
   );
-  assert.notEqual(
-    banner.settings.cta_url,
-    counter.settings.learn_more_url,
-    'the two calls to action do different jobs and must not collapse onto one destination',
+  assert.match(
+    counter.settings.title,
+    /CONTRIBUTED/,
+    'the closed-campaign copy reports what was contributed; it does not solicit',
+  );
+  assert.doesNotMatch(
+    counter.settings.title,
+    /SO FAR/,
+    '"SO FAR" reads as a running campaign and was replaced at close-out',
   );
 });
