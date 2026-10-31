@@ -179,14 +179,12 @@ test('index.json keeps the editor-made homepage sections', () => {
     'special_release',
   ], 'the set of disabled homepage sections and blocks changed');
 
-  // The WFG campaign is the deliberate addition: the banner explains the
-  // campaign and links to the article, the counter shows the total and links
-  // to the participating coffees. They render as a pair, banner first, exactly
-  // as they do on the legacy theme. tests/homepage-wfg-campaign.test.mjs holds
-  // the adjacency and the two destinations.
-  assert.equal(order[1], 'wfg_campaign_banner');
-  assert.equal(sections.wfg_campaign_banner.type, 'ona-campaign-banner');
-  assert.equal(order[2], 'wfg_donation_counter');
+  // The WFG campaign closed on 31 October 2026. Its banner was removed and the
+  // counter reworded to thank contributors; the counter moved up into the slot
+  // the banner vacated, directly under the hero.
+  // tests/homepage-wfg-campaign.test.mjs holds the post-campaign layout and the
+  // guard against the banner reappearing.
+  assert.equal(order[1], 'wfg_donation_counter');
   assert.equal(sections.wfg_donation_counter.type, 'ona-donation-counter');
 });
 
