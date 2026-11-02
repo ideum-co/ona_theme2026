@@ -237,7 +237,7 @@ disabled placeholder testimonials on the homepage.
 So: before converting any section, read its Liquid. The schema tells you what
 a merchant can set, not what the page draws.
 
-Alongside that, three kinds of drift, measured across all 156 sections in
+Alongside that, three kinds of drift, measured across all 155 sections in
 `templates/*.json` and guarded by `tests/component-kit.test.mjs` so they do not
 go stale again — they already did once, when #276 added three product
 templates:
@@ -485,12 +485,13 @@ before it can be deleted, `ona-sr-heading` from bookings and private-courses,
 faq-subscriptions. Convert all uses in one PR, or the section stays and the
 page is the only thing that moved.
 
-**`templates/index.json` is at 24 of Shopify's 25 sections**, so there is
-exactly one slot left. A 26th makes the GitHub integration refuse the whole
+**`templates/index.json` is at 23 of Shopify's 25 sections**, so there are
+two slots left — the Water For Good banner gave one back when the campaign
+closed on 31 October 2026. A 26th makes the GitHub integration refuse the whole
 file rather than drop the extra section — `tests/shop-owned-templates.test.mjs`
 guards the file's contents and `tests/component-kit.test.mjs` guards this
-count. Nine of the 24 are disabled, so retiring one is how the homepage gets
-more room than that single slot.
+count. Nine of the 23 are disabled, so retiring one is how the homepage gets
+more room than those two slots.
 
 ## The tokens that make it one design
 
