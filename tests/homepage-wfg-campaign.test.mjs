@@ -48,9 +48,22 @@ test('no JSON template exceeds Shopify\'s 25-section limit', () => {
  * to thank people for what they contributed. The section files for both remain
  * in the theme so the pair can be restored for the next campaign.
  *
+ * The counter was then switched OFF in the theme editor on 2 November, once the
+ * thank-you had run its course. That is a merchant decision, and this test used
+ * to forbid it: it asserted `!counter.disabled` ("the counter must stay live"),
+ * which turned reconciling git to live into a CI failure. The guard now records
+ * the decision instead of contradicting it -- and in that direction it is worth
+ * more, because `staging-v2` still carries the pre-close-out homepage, so a
+ * merge of that branch would re-enable a counter for a campaign that ended.
+ *
+ * Re-enabling it is a one-line change to this file plus the template, which is
+ * the point: it should be deliberate, not a side effect of a merge.
+ *
  * What this guards now:
  *   - the banner does NOT come back by accident while no campaign is running,
- *   - the counter survives the banner's removal, enabled and near the top,
+ *   - the counter is still PRESENT and still near the top, so the next campaign
+ *     re-enables a configured section rather than rebuilding one,
+ *   - it stays switched off until someone decides otherwise,
  *   - its CTA still points at the participating COLLECTION, not the article,
  *   - the copy is retrospective, not an active-campaign call to action.
  */
@@ -69,7 +82,11 @@ test('the closed campaign leaves the counter alone on the homepage', () => {
 
   assert.ok(counter, 'the contribution counter must stay on the homepage');
   assert.equal(counter.type, 'ona-donation-counter');
-  assert.ok(!counter.disabled, 'the counter must stay live');
+  assert.equal(
+    counter.disabled,
+    true,
+    'the counter was switched off in the editor once the thank-you had run; a merge must not turn it back on',
+  );
   assert.equal(
     home.order.indexOf('wfg_donation_counter'),
     1,

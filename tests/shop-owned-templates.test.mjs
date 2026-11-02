@@ -137,6 +137,8 @@ test('index.json keeps the editor-made homepage sections', () => {
   assert.equal(sections.coffee_spotlight.settings.adaptive_max_width, 1280);
   assert.equal(sections.coffee_spotlight.settings.carousel_loop, true);
   assert.equal(sections.press_quotes_4kW9eF.settings.background_color, '{{ settings.color_palette.background }}');
+  // Set in the editor on 2026-11-02, using the control #440 added. git lacked it.
+  assert.equal(sections.press_quotes_4kW9eF.settings.section_width, 'page-width');
   assert.equal(Object.keys(sections.hero_ona.blocks).length, 4);
 
   // Sections the editor had switched off. They came back enabled once.
@@ -164,6 +166,13 @@ test('index.json keeps the editor-made homepage sections', () => {
   // that removed them. club_invite_QLL4T3 and club_invite_TGPaF8 duplicate
   // each other rather than anything live, so choosing a survivor is a content
   // call and both were left alone.
+  //
+  // 2026-11-02: wfg_donation_counter JOINED this list. The thank-you counter was
+  // switched off in the theme editor at 10:28 AEDT, two days after the campaign
+  // closed, and git did not carry it -- a promotion would have put the counter
+  // back on the homepage. Reconciled in the only safe direction, git to live.
+  // See tests/homepage-wfg-campaign.test.mjs, which now asserts the off state
+  // rather than forbidding it.
   assert.deepEqual(disabledPaths(sections), [
     'club_benefits',
     'club_invite_QLL4T3',
@@ -177,6 +186,7 @@ test('index.json keeps the editor-made homepage sections', () => {
     'raspberry_candy',
     'slideshow_nBcaMx.slide_8Ar7Nq',
     'special_release',
+    'wfg_donation_counter',
   ], 'the set of disabled homepage sections and blocks changed');
 
   // The WFG campaign closed on 31 October 2026. Its banner was removed and the
