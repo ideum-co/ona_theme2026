@@ -224,6 +224,7 @@
     },
     "wfg_donation_counter": {
       "type": "ona-donation-counter",
+      "disabled": true,
       "settings": {
         "bg_color": "#441925",
         "title": "THANK YOU. TOGETHER WE CONTRIBUTED",
@@ -3305,6 +3306,7 @@
       "settings": {
         "columns": 3,
         "icons_style": "arrow",
+        "section_width": "page-width",
         "background_color": "{{ settings.color_palette.background }}",
         "text_color": "{{ settings.color_palette.color1 }}",
         "padding-block-start": 0,

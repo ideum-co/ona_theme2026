@@ -492,8 +492,9 @@ two slots left — the Water For Good banner gave one back when the campaign
 closed on 31 October 2026. A 26th makes the GitHub integration refuse the whole
 file rather than drop the extra section — `tests/shop-owned-templates.test.mjs`
 guards the file's contents and `tests/component-kit.test.mjs` guards this
-count. Nine of the 23 are disabled, so retiring one is how the homepage gets
-more room than those two slots.
+count. Ten of the 23 are disabled — the thank-you counter joined them on
+2 November, switched off in the editor once the campaign thank-you had run —
+so retiring one is how the homepage gets more room than those two slots.
 
 ## The tokens that make it one design
 
