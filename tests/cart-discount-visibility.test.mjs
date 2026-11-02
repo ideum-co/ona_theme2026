@@ -10,25 +10,34 @@ const products = () => read('snippets/cart-products.liquid');
 const summary = () => read('snippets/cart-summary.liquid');
 
 /*
- * ONAIN-58. Two separate holes left a BFCM discount barely visible in the cart,
- * and both came from upstream Horizon rather than from anything ONA removed:
+ * ONAIN-58. Measured against a live collection-scoped discount code on a preview
+ * theme, 2 November 2026, cart and drawer:
  *
- *   1. cart-products.liquid nests the line-level discount list inside a gate that
- *      only opens for a product with multiple variants, line-item properties or a
- *      selling plan. 36 of the 91 active products satisfy none of those, so the
- *      discount's NAME never rendered on them -- every instant coffee, every gift
- *      card, all the matcha, most brew gear. PR #368 fixed it on 25 October and a
- *      Shopify editor write-back (3c35d42, 70 seconds after that merge) silently
- *      restored the stale live copy and undid it. Hence a test: the write-back
- *      path reaches main without review, so prose in the file is not a guard.
+ *   1. REAL. cart-summary.liquid lists only cart_level_discount_applications, and
+ *      a product or collection discount does not allocate there -- it allocates per
+ *      line. The totals block rendered no subtotal and no discount row at all: a
+ *      $101.00 cart with $30.30 off showed only "Estimated total $70.70", with the
+ *      discount nowhere on the page. Fixed, it reads $101.00 / -$30.30 / $70.70.
  *
- *   2. cart-summary.liquid lists only cart_level_discount_applications, and an
- *      automatic product or collection discount does not allocate there -- it
- *      allocates per line. So the totals block showed no subtotal and no discount
- *      row at all, just a total lower than the lines added up to.
+ *      The subtotal had to become cart.original_total_price. Measured on that cart,
+ *      items_subtotal_price was 7070 -- already net of the line discount -- against
+ *      original_total_price 10100 and total_discount 3030, so the old source would
+ *      have rendered "$70.70 - $30.30 = $70.70".
  *
- * Both are fixed with Horizon's own cart-discounts component, in Horizon's own
- * locations, so a line-level discount is indistinguishable from a cart-level one.
+ *   2. NOT A BUG, cleaned up anyway. The gate in cart-products.liquid looks like it
+ *      hides the discount name on the 36 of 91 active products that have a single
+ *      variant, no properties and no selling plan. It does not: item.properties.size
+ *      is nil (not 0) for a line with no properties, and `nil != 0` is true in
+ *      Liquid, so the gate is open for every line item. A probe on the preview theme
+ *      reported gate OPEN for In Sequence, which satisfies none of the three written
+ *      conditions. The list is moved out regardless, because the condition holds only
+ *      by accident and would hide 36 products' discounts if that accident changed.
+ *      PR #368 made the same move on 25 October and a Shopify editor write-back
+ *      (3c35d42, 70 seconds later) reverted it -- that path reaches main without
+ *      review, so prose in the file is not a guard.
+ *
+ * Both lists now render through Horizon's own cart-discounts component, in Horizon's
+ * own locations, so a line-level discount is indistinguishable from a cart-level one.
  */
 
 /* Matches the Liquid block tags that open and close a nesting level. Tags written
