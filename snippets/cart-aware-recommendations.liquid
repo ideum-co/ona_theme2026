@@ -1,0 +1,70 @@
+{%- doc -%}
+  Live, cart-aware cross-sell recommendations for the cart page.
+
+  Unlike `product-recommendations.liquid` (single-product, server-rendered
+  from a static `custom.cross_sell_products` metafield), this calls a live
+  endpoint that aggregates scores across every item currently in the cart --
+  validated against real order data first: aggregating across the whole
+  cart changes the top-4 recommendation set for 78.6% of real multi-item
+  baskets vs. a single-anchor product (avg Jaccard overlap only 0.49). See
+  ~/projects/ona-smart-cart/SPEC.md.
+
+  Hidden until JS has real data to show, and fails silently on any error,
+  slow response, or empty result -- this call must never block or slow down
+  checkout.
+
+  @example
+  {% render 'cart-aware-recommendations' %}
+{%- enddoc -%}
+
+{%- render 'resource-list-styles' -%}
+<cart-aware-recommendations
+  class="cart-aware-recommendations hidden"
+  data-money-format="{{ shop.money_format | escape }}"
+  data-currency="{{ cart.currency.iso_code | default: shop.currency }}"
+  data-skip-subtree-update
+>
+  <h2 class="cart-aware-recommendations__heading">You might also like</h2>
+  <ul class="cart-aware-recommendations__list resource-list resource-list--grid" role="list" style="--resource-list-columns: repeat(4, 1fr); --resource-list-columns-mobile: repeat(2, 1fr); --resource-list-column-gap-desktop: 16px; --resource-list-row-gap-desktop: 16px;"></ul>
+</cart-aware-recommendations>
+
+{% stylesheet %}
+  .cart-aware-recommendations {
+    margin-block-start: var(--margin-xl);
+  }
+
+  .cart-aware-recommendations__heading {
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight);
+    font-size: var(--font-size--lg, var(--font-size--2xl));
+    margin-block-end: var(--margin-md);
+  }
+
+  .cart-aware-recommendations__item a {
+    display: block;
+    text-decoration: none;
+    color: var(--color-foreground);
+  }
+
+  .cart-aware-recommendations__item img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: var(--border-radius, 0);
+    background: rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
+  }
+
+  .cart-aware-recommendations__item-title {
+    font-family: var(--font-paragraph--family);
+    font-size: var(--font-size--2xs);
+    margin-block-start: var(--margin-2xs);
+  }
+
+  .cart-aware-recommendations__item-price {
+    font-family: var(--font-paragraph--family);
+    font-size: var(--font-size--2xs);
+    color: var(--color-foreground-subdued);
+  }
+{% endstylesheet %}
+
+<script src="{{ 'cart-aware-recommendations.js' | asset_url }}" type="module"></script>
