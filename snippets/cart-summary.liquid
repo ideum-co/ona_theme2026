@@ -14,35 +14,85 @@
 {% render 'cart-typography-styles' %}
 
 <div class="cart-totals">
+  {%- comment -%}
+    Horizon lists cart_level_discount_applications here and nothing else, so a discount that
+    allocates per line -- which is what an automatic product or collection discount does --
+    leaves this whole block silent: no subtotal row, no discount row, just an estimated total
+    quietly lower than the sum of the line prices. The second loop below adds the line-level
+    allocations to the same cart-discounts list, summed per discount title, so every discount
+    is named and priced in one place whichever way Shopify allocates it.
+
+    Titles are collected by appending each one plus a delimiter and then split + uniq, rather
+    than testing `contains` on the accumulated string: `contains` would treat "Member 10%" as
+    already present once "Member 10% Extra" had been added, and silently drop a discount.
+
+    The subtotal is cart.original_total_price, not cart.items_subtotal_price, because
+    items_subtotal_price is already net of line-level discounts -- pairing it with a line-level
+    discount row would read $80.00 - $20.00 = $80.00. original_total_price minus
+    cart.total_discount equals cart.total_price in every case. The two subtotals are identical
+    when no discount allocates per line, so a cart-level-only cart is unchanged.
+  {%- endcomment -%}
+  {%- liquid
+    assign line_discount_titles = ''
+    for item in cart.items
+      for allocation in item.line_level_discount_allocations
+        assign line_discount_titles = line_discount_titles | append: allocation.discount_application.title | append: '|~|'
+      endfor
+    endfor
+    assign line_discount_titles = line_discount_titles | split: '|~|' | uniq
+  -%}
   {% # We need to keep this node in place to allow morphing to work properly # %}
   <div class="cart-totals__original-container cart-primary-typography">
-    {%- if cart.cart_level_discount_applications.size > 0 -%}
+    {%- if cart.total_discount > 0 -%}
       <span class="cart-totals__item cart-totals__original">
         <span class="cart-totals__original-label">{{ 'content.cart_subtotal' | t }}</span>
         <span
           class="cart-totals__original-value cart-secondary-typography"
           data-testid="cart-subtotal-value"
         >
-          {{- cart.items_subtotal_price | money -}}
+          {{- cart.original_total_price | money -}}
         </span>
       </span>
-      <ul
-        class="cart-discounts"
-        role="list"
-        aria-label="{{ 'content.discounts' | t }}"
-      >
-        {%- for discount in cart.cart_level_discount_applications -%}
-          <li class="cart-discounts__item">
-            <span class="cart-discounts__label">
-              {{- 'icon-discount.svg' | inline_asset_content -}}
-              {{ discount.title | escape }}
-            </span>
-            <span class="cart-discounts__value cart-secondary-typography"
-              >-{{ discount.total_allocated_amount | money -}}
-            </span>
-          </li>
-        {%- endfor -%}
-      </ul>
+      {%- if cart.cart_level_discount_applications.size > 0 or line_discount_titles.size > 0 -%}
+        <ul
+          class="cart-discounts"
+          role="list"
+          aria-label="{{ 'content.discounts' | t }}"
+        >
+          {%- for discount in cart.cart_level_discount_applications -%}
+            <li class="cart-discounts__item">
+              <span class="cart-discounts__label">
+                {{- 'icon-discount.svg' | inline_asset_content -}}
+                {{ discount.title | escape }}
+              </span>
+              <span class="cart-discounts__value cart-secondary-typography"
+                >-{{ discount.total_allocated_amount | money -}}
+              </span>
+            </li>
+          {%- endfor -%}
+          {%- for title in line_discount_titles -%}
+            {%- liquid
+              assign line_discount_amount = 0
+              for item in cart.items
+                for allocation in item.line_level_discount_allocations
+                  if allocation.discount_application.title == title
+                    assign line_discount_amount = line_discount_amount | plus: allocation.amount
+                  endif
+                endfor
+              endfor
+            -%}
+            <li class="cart-discounts__item">
+              <span class="cart-discounts__label">
+                {{- 'icon-discount.svg' | inline_asset_content -}}
+                {{ title | escape }}
+              </span>
+              <span class="cart-discounts__value cart-secondary-typography"
+                >-{{ line_discount_amount | money -}}
+              </span>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
     {%- endif -%}
   </div>
 

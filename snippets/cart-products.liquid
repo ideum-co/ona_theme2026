@@ -283,19 +283,41 @@
                         <p>{{ item.selling_plan_allocation.selling_plan.name }}</p>
                       {%- endif -%}
 
-                      {%- if item.line_level_discount_allocations.size > 0 -%}
-                        <ul
-                          class="list-unstyled"
-                          role="list"
-                        >
-                          {%- for discount in item.line_level_discount_allocations -%}
-                            <li>
+                    {%- endif -%}
+
+                    {%- comment -%}
+                      Horizon nests this list inside the variants / properties / selling-plan
+                      gate above, so a single-variant product with no properties and no
+                      subscription shows no discount name at all -- 36 of the 91 active products,
+                      including every instant coffee, every gift card and most brew gear. PR #368
+                      moved it out on 25 October; a Shopify editor write-back (3c35d42, one minute
+                      after that merge) restored the stale live copy and took the fix with it, so
+                      it is applied again here with a test to catch the next write-back.
+
+                      The markup is the cart-discounts component from cart-summary.liquid, used
+                      verbatim -- same classes, same icon-discount.svg, same label / value split --
+                      so a line-level discount reads exactly like a cart-level one. Those rules
+                      live in a {% stylesheet %} block, which Shopify aggregates theme-wide, so
+                      reusing the classes here needs no new CSS.
+                    {%- endcomment -%}
+                    {%- if item.line_level_discount_allocations.size > 0 -%}
+                      <ul
+                        class="cart-discounts"
+                        role="list"
+                        aria-label="{{ 'content.discounts' | t }}"
+                      >
+                        {%- for discount in item.line_level_discount_allocations -%}
+                          <li class="cart-discounts__item">
+                            <span class="cart-discounts__label">
+                              {{- 'icon-discount.svg' | inline_asset_content -}}
                               {{ discount.discount_application.title | escape }}
-                              (-{{ discount.amount | money }})
-                            </li>
-                          {%- endfor -%}
-                        </ul>
-                      {%- endif -%}
+                            </span>
+                            <span class="cart-discounts__value cart-secondary-typography"
+                              >-{{ discount.amount | money -}}
+                            </span>
+                          </li>
+                        {%- endfor -%}
+                      </ul>
                     {%- endif -%}
                   </div>
 
