@@ -118,13 +118,13 @@ test('the homepage is at Shopify\'s section ceiling, which is why these are bloc
    * file rather than dropping the extra section.
    */
   //
-  // 2026-10-21: this is now 24, not 25. Two disabled duplicates of live
-  // sections were deleted to make room for the Water For Good campaign
-  // banner, which took one of the two freed slots. The single remaining slot
-  // is headroom, deliberately not spent -- the reason these testimonials are
-  // blocks has not changed, and a page one section below a hard ceiling is not
-  // an invitation.
-  assert.equal(Object.keys(index.sections).length, 24, 'if this climbs to 25 the homepage is full again');
+  // 2026-11-01: this is now 23. It was 25, then 24 when #152-era cleanup
+  // deleted two disabled duplicates to make room for the Water For Good
+  // campaign banner; closing the campaign removed the banner and gave that
+  // slot back. Two slots of headroom, deliberately not spent -- the reason
+  // these testimonials are blocks has not changed, and a page two sections
+  // below a hard ceiling is not an invitation.
+  assert.equal(Object.keys(index.sections).length, 23, 'if this climbs to 25 the homepage is full again');
   assert.equal(index.order.length, Object.keys(index.sections).length);
 });
 
