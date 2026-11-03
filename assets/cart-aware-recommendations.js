@@ -87,18 +87,28 @@ class CartAwareRecommendations extends Component {
    * @returns {Promise<{ product_code: string, title: string, handle: string, score: number }[]>}
    */
   async #fetchRecommendations(skus, signal) {
-    const timeout = AbortSignal.timeout(FETCH_TIMEOUT_MS);
-    const combined = AbortSignal.any ? AbortSignal.any([signal, timeout]) : signal;
-
     const response = await fetch(RECOMMEND_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ cart: skus }),
-      signal: combined,
+      signal: this.#withTimeout(signal),
     });
     if (!response.ok) return [];
     const data = await response.json();
     return Array.isArray(data.recommendations) ? data.recommendations : [];
+  }
+
+  /**
+   * Combines the lifecycle abort signal with a hard per-request timeout, so
+   * a single stalled request can never hold up the whole rail indefinitely
+   * -- only the outer lifecycle signal (aborted on the next cart update)
+   * bounded every fetch before, which doesn't help when nothing else
+   * changes the cart while a request is stuck.
+   * @param {AbortSignal} signal
+   */
+  #withTimeout(signal) {
+    const timeout = AbortSignal.timeout(FETCH_TIMEOUT_MS);
+    return AbortSignal.any ? AbortSignal.any([signal, timeout]) : signal;
   }
 
   /**
@@ -116,7 +126,7 @@ class CartAwareRecommendations extends Component {
         // naively appending '/products/...' to that produces '//products/...',
         // a protocol-relative URL the browser resolves against host "products".
         const root = (window.Theme?.routes?.root_url ?? '').replace(/\/$/, '');
-        const response = await fetch(`${root}/products/${rec.handle}.js`, { signal });
+        const response = await fetch(`${root}/products/${rec.handle}.js`, { signal: this.#withTimeout(signal) });
         if (!response.ok) throw new Error(`${rec.handle}: ${response.status}`);
         return response.json();
       })
