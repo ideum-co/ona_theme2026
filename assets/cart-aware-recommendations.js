@@ -112,7 +112,11 @@ class CartAwareRecommendations extends Component {
   async #fetchProductDetails(recommendations, signal) {
     const results = await Promise.allSettled(
       recommendations.map(async (rec) => {
-        const response = await fetch(`${window.Theme?.routes?.root_url ?? ''}/products/${rec.handle}.js`, { signal });
+        // routes.root_url is '/' on the default locale (no prefix), not '' --
+        // naively appending '/products/...' to that produces '//products/...',
+        // a protocol-relative URL the browser resolves against host "products".
+        const root = (window.Theme?.routes?.root_url ?? '').replace(/\/$/, '');
+        const response = await fetch(`${root}/products/${rec.handle}.js`, { signal });
         if (!response.ok) throw new Error(`${rec.handle}: ${response.status}`);
         return response.json();
       })
