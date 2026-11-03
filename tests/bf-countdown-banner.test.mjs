@@ -155,3 +155,61 @@ test('the banner collects email only, and says why SMS is absent', () => {
   );
   assert.match(src, /SMS is NOT collected here/, 'the reason SMS is missing was removed from the comment');
 });
+
+test('the countdown fits a 375px phone without overflowing the page', () => {
+  /*
+   * Codex found the original mobile rules overflowing 375px and 390px screens,
+   * and it was right: the first version scaled every dimension by a flat 0.62,
+   * which cannot know the viewport. This recomputes the worst case from the CSS
+   * rather than trusting a remembered number, so raising the clamp, the padding
+   * or the frame fails here instead of on a customer's phone.
+   *
+   * The only estimate is the colon's advance width, over-stated at 0.35em
+   * (Karla's ":" is nearer 0.26em) so the check errs toward failing.
+   */
+  const src = banner();
+  const css = src.slice(src.indexOf('{% stylesheet %}'), src.indexOf('{% endstylesheet %}'));
+  const mobile = css.slice(css.indexOf('@media screen and (max-width: 749px)'));
+
+  const num = (re, where, label) => {
+    const m = where.match(re);
+    assert.ok(m, `could not read ${label} out of the CSS`);
+    return parseFloat(m[1]);
+  };
+
+  // Card width is a ratio of the base size: `calc(var(--bf-digit-size) * 142 / 83)`.
+  const widthRatio =
+    num(/\.bf-banner__card\s*\{[^}]*?width:\s*calc\(var\(--bf-digit-size[^)]*\)\s*\*\s*([\d.]+)\s*\//s, css, 'card width numerator') /
+    num(/\.bf-banner__card\s*\{[^}]*?width:\s*calc\(var\(--bf-digit-size[^)]*\)\s*\*\s*[\d.]+\s*\/\s*([\d.]+)/s, css, 'card width denominator');
+
+  const clamp = mobile.match(
+    /--bf-digit-size:\s*clamp\(\s*([\d.]+)px\s*,\s*([\d.]+)vw\s*,\s*min\(\s*([\d.]+)px/
+  );
+  assert.ok(clamp, 'the mobile base size is no longer a clamp(min, vw, min(cap, setting))');
+  const [, floorPx, vw, capPx] = clamp.map(Number);
+
+  const gapClamp = mobile.match(/gap:\s*clamp\(\s*([\d.]+)px\s*,\s*([\d.]+)vw/);
+  assert.ok(gapClamp, 'the mobile clock gap is no longer a clamp');
+
+  const cardsPad = num(/\.bf-banner__cards\s*\{[^}]*?padding:\s*[\d.]+px\s+([\d.]+)px/s, mobile, 'mobile cards padding');
+  const frame = num(/\.bf-banner__cards\s*\{[^}]*?border:\s*([\d.]+)px/s, css, 'cards frame width');
+  const colonFactor = num(/\.bf-banner__separator\s*\{[^}]*?font-size:\s*calc\(var\(--bf-digit-size[^)]*\)\s*\*\s*([\d.]+)\)/s, mobile, 'separator font factor');
+
+  const inline =
+    num(/"id":\s*"padding-inline-start"[^}]*?"default":\s*([\d.]+)/s, src, 'padding-inline-start default') +
+    num(/"id":\s*"padding-inline-end"[^}]*?"default":\s*([\d.]+)/s, src, 'padding-inline-end default');
+
+  for (const viewport of [375, 390]) {
+    const digit = Math.min(Math.max(floorPx, (vw / 100) * viewport), capPx);
+    const gap = Math.min(Math.max(gapClamp[1], (gapClamp[2] / 100) * viewport), 8);
+
+    const unit = digit * widthRatio + cardsPad * 2 + frame * 2;
+    const total = unit * 4 + gap * 6 + digit * colonFactor * 0.35 * 3;
+    const available = viewport - inline;
+
+    assert.ok(
+      total <= available,
+      `at ${viewport}px the clock needs ${total.toFixed(1)}px but only ${available}px is available, so it overflows the page`
+    );
+  }
+});

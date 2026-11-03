@@ -59,6 +59,7 @@
     --bf-button-text: {{ section.settings.button_text_color }};
     --bf-card-gap: {{ section.settings.card_gap }}px;
     --bf-digit-size: {{ section.settings.digit_size }}px;
+    --bf-digit-size-setting: {{ section.settings.digit_size }}px;
     --bf-heading-size: {{ section.settings.heading_size }}px;
     --bf-subtitle-size: {{ section.settings.subtitle_size }}px;
     --bf-heading-color: {{ section.settings.heading_color }};
@@ -397,23 +398,40 @@
   }
 
   @media screen and (max-width: 749px) {
+    /* Mobile redefines the BASE size and lets the proportional rules above do
+       the work, rather than scaling each one by a constant. A constant cannot
+       know the viewport: at the 64px default a flat 0.62 asks for roughly
+       429px of clock (four 68px cards, each inside 18px of padding and a 4px
+       frame, plus six gaps and three colons) inside the 335px a 375px phone
+       leaves after this section's 20px inline padding -- it overflowed the
+       page. Driving it from `vw` makes the fit a property of the layout
+       instead of a number someone has to re-check.
+
+       Capped by `--bf-digit-size-setting` as well as by 40px, so choosing a
+       size SMALLER than the cap is still honoured here; only oversized values
+       are clamped down to what the screen can hold. */
     .bf-banner__clock {
-      gap: calc(var(--bf-card-gap, 16px) / 2);
+      --bf-digit-size: clamp(22px, 7vw, min(40px, var(--bf-digit-size-setting, 64px)));
+      gap: clamp(4px, 1.6vw, calc(var(--bf-card-gap, 16px) / 2));
+      max-width: 100%;
     }
 
     .bf-banner__cards {
-      padding: 8px 9px;
+      padding: 6px 7px;
     }
 
-    .bf-banner__card {
-      width: calc(var(--bf-digit-size, 64px) * 142 / 83 * 0.62);
-      height: calc(var(--bf-digit-size, 64px) * 92 / 83 * 0.62);
-      font-size: calc(var(--bf-digit-size, 64px) * 0.62);
+    .bf-banner__unit {
+      gap: 6px;
+    }
+
+    .bf-banner__unit-label {
+      font-size: 10px;
     }
 
     .bf-banner__separator {
-      height: calc(var(--bf-digit-size, 64px) * 92 / 83 * 0.62 + 18px);
-      font-size: calc(var(--bf-digit-size, 64px) * 0.4);
+      /* Vertical padding (6px x 2) plus the 2px frame, matching the cards. */
+      height: calc(var(--bf-digit-size, 64px) * 92 / 83 + 16px);
+      font-size: calc(var(--bf-digit-size, 64px) * 0.5);
     }
 
     .bf-banner__form-row {
