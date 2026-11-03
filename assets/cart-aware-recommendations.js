@@ -112,7 +112,7 @@ class CartAwareRecommendations extends Component {
   async #fetchProductDetails(recommendations, signal) {
     const results = await Promise.allSettled(
       recommendations.map(async (rec) => {
-        const response = await fetch(`/products/${rec.handle}.js`, { signal });
+        const response = await fetch(`${window.Theme?.routes?.root_url ?? ''}/products/${rec.handle}.js`, { signal });
         if (!response.ok) throw new Error(`${rec.handle}: ${response.status}`);
         return response.json();
       })

@@ -13,6 +13,11 @@
   slow response, or empty result -- this call must never block or slow down
   checkout.
 
+  Markup only -- `cart-aware-recommendations.js` is loaded separately,
+  unconditionally, by the caller (see sections/main-cart.liquid). A script
+  tag here would never execute when this snippet is first rendered via a
+  post-page-load morph (e.g. a quick-add on an initially empty cart).
+
   @example
   {% render 'cart-aware-recommendations' %}
 {%- enddoc -%}
@@ -67,5 +72,3 @@
     color: var(--color-foreground-subdued);
   }
 {% endstylesheet %}
-
-<script src="{{ 'cart-aware-recommendations.js' | asset_url }}" type="module"></script>
