@@ -114,10 +114,19 @@
       <h2 id="bfcm-landing-schedule-title-{{ section.id }}">{{ section.settings.schedule_heading | escape }}</h2>
     </div>
     <ol>
+      {%- comment -%}
+        ONA's window is 21-27 November (Macarena, 4 Nov 2026), so the sale ENDS
+        on Black Friday rather than running past it, and Cyber Monday falls
+        outside it. If that changes to the 30th, add the three days back here
+        and move `countdown_end_at` with them.
+      {%- endcomment -%}
+      <li><time datetime="2026-11-21">Sat 21 Nov</time><span>Sale opens</span></li>
+      <li><time datetime="2026-11-22">Sun 22 Nov</time><span>Weekend</span></li>
+      <li><time datetime="2026-11-23">Mon 23 Nov</time><span>Week one</span></li>
+      <li><time datetime="2026-11-24">Tue 24 Nov</time><span>Week one</span></li>
+      <li><time datetime="2026-11-25">Wed 25 Nov</time><span>Week one</span></li>
+      <li><time datetime="2026-11-26">Thu 26 Nov</time><span>Eve of Black Friday</span></li>
       <li><time datetime="2026-11-27">Fri 27 Nov</time><span>Black Friday</span></li>
-      <li><time datetime="2026-11-28">Sat 28 Nov</time><span>Weekend</span></li>
-      <li><time datetime="2026-11-29">Sun 29 Nov</time><span>Weekend</span></li>
-      <li><time datetime="2026-11-30">Mon 30 Nov</time><span>Cyber Monday</span></li>
     </ol>
     <a class="bfcm-landing__button bfcm-landing__button--wine" href="/collections/all">{{ section.settings.shop_label | escape }}</a>
   </section>
@@ -204,15 +213,15 @@
     { "type": "text", "id": "eyebrow", "label": "Hero eyebrow", "default": "ONA Coffee" },
     { "type": "text", "id": "title", "label": "Hero title", "default": "Black Friday" },
     { "type": "text", "id": "title_emphasis", "label": "Hero italic title", "default": "Cyber Monday" },
-    { "type": "text", "id": "date_line", "label": "Date line", "default": "Fri 27 Nov – Mon 30 Nov 2026" },
+    { "type": "text", "id": "date_line", "label": "Date line", "default": "Sat 21 Nov – Fri 27 Nov 2026" },
     { "type": "image_picker", "id": "hero_image", "label": "Hero image" },
-    { "type": "text", "id": "countdown_start_at", "label": "Countdown start (ISO 8601)", "default": "2026-11-27T00:00:00+11:00", "info": "Use a full date, time and UTC offset for Sydney." },
-    { "type": "text", "id": "countdown_end_at", "label": "Countdown end (ISO 8601)", "default": "2026-12-01T00:00:00+11:00", "info": "After this time the timer shows that the event has ended." },
+    { "type": "text", "id": "countdown_start_at", "label": "Countdown start (ISO 8601)", "default": "2026-11-21T00:00:00+11:00", "info": "Use a full date, time and UTC offset for Sydney." },
+    { "type": "text", "id": "countdown_end_at", "label": "Countdown end (ISO 8601)", "default": "2026-11-28T00:00:00+11:00", "info": "After this time the timer shows that the event has ended." },
     { "type": "text", "id": "signup_label", "label": "Signup link", "default": "Sign up" },
     { "type": "text", "id": "shop_label", "label": "Shop link", "default": "Shop coffees" },
     { "type": "text", "id": "signup_eyebrow", "label": "Signup eyebrow", "default": "Stay in the loop" },
     { "type": "text", "id": "signup_heading", "label": "Signup heading", "default": "Get heads ups on special releases, exclusive mini sales and announcements!" },
-    { "type": "text", "id": "schedule_eyebrow", "label": "Schedule eyebrow", "default": "27–30 November 2026" },
+    { "type": "text", "id": "schedule_eyebrow", "label": "Schedule eyebrow", "default": "21–27 November 2026" },
     { "type": "text", "id": "schedule_heading", "label": "Schedule heading", "default": "Black Friday Cyber Monday" }
   ],
   "blocks": [
