@@ -104,11 +104,23 @@ class CartAwareRecommendations extends Component {
    * -- only the outer lifecycle signal (aborted on the next cart update)
    * bounded every fetch before, which doesn't help when nothing else
    * changes the cart while a request is stuck.
+   *
+   * Composed manually with a plain AbortController + setTimeout rather than
+   * AbortSignal.any()/AbortSignal.timeout(), which aren't available in every
+   * browser this storefront serves -- a feature-detected fallback that just
+   * dropped the timeout silently defeated the whole point of this method.
    * @param {AbortSignal} signal
    */
   #withTimeout(signal) {
-    const timeout = AbortSignal.timeout(FETCH_TIMEOUT_MS);
-    return AbortSignal.any ? AbortSignal.any([signal, timeout]) : signal;
+    const controller = new AbortController();
+    const abort = () => controller.abort(signal.reason);
+    if (signal.aborted) abort();
+    else signal.addEventListener('abort', abort, { once: true });
+    // No custom reason: an argument-less abort() defaults to a DOMException
+    // named 'AbortError', so a timeout is treated the same as any other
+    // abort by #load()'s catch block -- silent, not logged as an error.
+    setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    return controller.signal;
   }
 
   /**
