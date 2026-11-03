@@ -23,6 +23,7 @@
   data-money-format="{{ shop.money_format | escape }}"
   data-currency="{{ cart.currency.iso_code | default: shop.currency }}"
   data-skip-subtree-update
+  data-skip-node-update
 >
   <h2 class="cart-aware-recommendations__heading">You might also like</h2>
   <ul class="cart-aware-recommendations__list resource-list resource-list--grid" role="list" style="--resource-list-columns: repeat(4, 1fr); --resource-list-columns-mobile: repeat(2, 1fr); --resource-list-column-gap-desktop: 16px; --resource-list-row-gap-desktop: 16px;"></ul>

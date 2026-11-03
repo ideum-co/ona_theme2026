@@ -27,8 +27,20 @@ class CartAwareRecommendations extends Component {
   /** @type {AbortController | null} */
   #activeLoad = null;
 
-  #handleCartUpdate = () => {
-    this.#load();
+  /**
+   * CartLinesUpdateEvent fires the moment a mutation is *requested*, not once
+   * it lands -- `event.promise` resolves only after the server confirms the
+   * change (see component-cart-items.js's deferredUpdatePromise). Reading
+   * /cart.js before that resolves would read the pre-mutation cart.
+   * @param {import('@shopify/events').CartLinesUpdateEvent} event
+   */
+  #handleCartUpdate = (event) => {
+    event.promise
+      ?.then(() => this.#load())
+      .catch(() => {
+        // A rejected mutation means the cart didn't actually change --
+        // current recommendations are still valid, nothing to reload.
+      });
   };
 
   async #load() {

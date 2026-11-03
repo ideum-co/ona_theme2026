@@ -136,6 +136,12 @@
         else
           assign has_recommendations = 'false'
         endif
+
+        # The carousel's pagination/timeline tracking needs the count of
+        # products actually rendered into `slides` above -- recommendations.products.size
+        # is Shopify's own recommendation count, which is wrong once the
+        # cross_sell_products metafield branch takes over `products`.
+        assign slide_count = products.size | at_most: section.settings.max_products
       %}
 
       <div
@@ -161,7 +167,7 @@
             {% render 'resource-list-carousel',
               ref: 'resourceListCarousel',
               slides: slides,
-              slide_count: recommendations.products.size,
+              slide_count: slide_count,
               settings: section.settings
             %}
         {% endcase %}
@@ -185,7 +191,7 @@
           {% render 'resource-list-carousel',
             ref: 'resourceListCarouselMobile',
             slides: slides,
-            slide_count: recommendations.products.size,
+            slide_count: slide_count,
             settings: section.settings
           %}
         </div>
