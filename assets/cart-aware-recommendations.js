@@ -74,7 +74,7 @@ class CartAwareRecommendations extends Component {
    * @returns {Promise<string[]>}
    */
   async #getCartSkus(signal) {
-    const response = await fetch(`${window.Theme?.routes?.cart_url ?? '/cart'}.js`, { signal });
+    const response = await fetch(`${window.Theme?.routes?.cart_url ?? '/cart'}.js`, { signal: this.#withTimeout(signal) });
     if (!response.ok) return [];
     /** @type {{ items: { sku: string }[] }} */
     const cart = await response.json();
