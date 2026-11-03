@@ -222,6 +222,11 @@
         "padding-block-end": 64
       }
     },
+    "bf_countdown_banner": {
+      "type": "bf-countdown-banner",
+      "settings": {
+      }
+    },
     "wfg_donation_counter": {
       "type": "ona-donation-counter",
       "settings": {
@@ -4774,6 +4779,7 @@
   "order": [
     "hero_ona",
     "wfg_donation_counter",
+    "bf_countdown_banner",
     "floating_badge_r89NRP",
     "find_your_coffee",
     "coffee_spotlight",
