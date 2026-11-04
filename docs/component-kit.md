@@ -490,7 +490,7 @@ one slot left — the Water For Good banner gave one back when the campaign clos
 on 31 October 2026, and the Black Friday countdown banner took it in November
 2026. A 26th makes the GitHub integration refuse the whole file rather than drop
 the extra section — `tests/shop-owned-templates.test.mjs` guards the file's
-contents and `tests/component-kit.test.mjs` guards this count. Nine of the 24 are
+contents and `tests/component-kit.test.mjs` guards this count. Ten of the 24 are
 disabled, so retiring one is how the homepage gets more room than that one slot.
 
 ## The tokens that make it one design
