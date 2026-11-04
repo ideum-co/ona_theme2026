@@ -21,6 +21,14 @@
     src="{{ 'cart-drawer.js' | asset_url }}"
     fetchpriority="low"
   ></script>
+  {%- comment -%}
+    Registered unconditionally, same reasoning as main-cart.liquid: the
+    drawer's empty -> non-empty transition is morphed in (not a server
+    round trip the browser re-parses as a page), and a <script> tag
+    inserted via that morph never executes -- it must already be
+    registered before that happens.
+  {%- endcomment -%}
+  <script src="{{ 'cart-aware-recommendations.js' | asset_url }}" type="module"></script>
 
   {% capture empty_cart_drawer_content %}
     <div
@@ -113,6 +121,8 @@
                 <scroll-hint class="cart-drawer__items">
                   {% render 'cart-products', context: 'drawer' %}
                 </scroll-hint>
+
+                {%- render 'cart-aware-recommendations', variant: 'drawer' -%}
 
                 <div class="cart-drawer__summary">
                   {% render 'cart-summary', section_id: 'cart-drawer-section', context: 'drawer' %}

@@ -53,18 +53,35 @@ class CartAwareRecommendations extends Component {
       if (!skus.length) return this.#hide();
 
       const recommendations = await this.#fetchRecommendations(skus, controller.signal);
-      if (!recommendations.length) return this.#hide();
-
-      const products = await this.#fetchProductDetails(recommendations, controller.signal);
-      if (!products.length) return this.#hide();
-
-      this.#render(products);
+      if (recommendations.length) {
+        const products = await this.#fetchProductDetails(recommendations, controller.signal);
+        if (products.length) return this.#render(products);
+      }
     } catch (error) {
       // AbortError is expected whenever the cart changes again mid-fetch --
-      // the newer #load() call already owns the UI, this one just stops.
-      if (error instanceof Error && error.name !== 'AbortError') {
-        console.error('Cart-aware recommendations error:', error.message);
-      }
+      // the newer #load() call already owns the UI, this one just stops
+      // (and must NOT fall through to the fallback below, which would race
+      // the newer call's own render).
+      if (error instanceof Error && error.name === 'AbortError') return;
+      if (error instanceof Error) console.error('Cart-aware recommendations error:', error.message);
+    }
+
+    // The live endpoint failed, timed out, or returned nothing usable --
+    // fall back to the server-rendered static cross-sell data rather than
+    // showing nothing. Zero network calls: it was computed ahead of time
+    // from the Phase 0 metafield pipeline, into a sibling <script> tag.
+    this.#renderFallback();
+  }
+
+  #renderFallback() {
+    const script = this.nextElementSibling;
+    if (!(script instanceof HTMLScriptElement) || script.type !== 'application/json') return this.#hide();
+    try {
+      const products = JSON.parse(script.textContent || '[]');
+      if (Array.isArray(products) && products.length) this.#render(products);
+      else this.#hide();
+    } catch (error) {
+      console.error('Cart-aware recommendations fallback error:', error.message);
       this.#hide();
     }
   }
@@ -161,6 +178,10 @@ class CartAwareRecommendations extends Component {
       ...products.map((product) => {
         const item = document.createElement('li');
         item.className = 'cart-aware-recommendations__item resource-list__item';
+        // Explicit, not implicit: a <li> outside a real <ul>/<ol> (the
+        // drawer variant's <scroll-hint> list container) doesn't reliably
+        // get the implicit listitem role.
+        item.setAttribute('role', 'listitem');
         const image = product.featured_image || product.images?.[0];
         item.innerHTML = `
           <a href="${product.url}">
