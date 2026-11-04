@@ -104,8 +104,14 @@
 
   .cart-aware-recommendations__item img {
     width: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
+    /* ONA's coffee bag photography is portrait, not square -- 3/4 matches
+       the theme's own established ratio for this exact kind of card (see
+       product-recommendations-styles.liquid's skeleton placeholder) and
+       object-fit: contain (not cover) shows the whole bag, same as the
+       native "You may also like" block's image_fit: contain. 1/1 + cover
+       was cropping the top and bottom off every bag. */
+    aspect-ratio: 3 / 4;
+    object-fit: contain;
     border-radius: var(--border-radius, 0);
     background: rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
   }
