@@ -164,6 +164,16 @@ test('index.json keeps the editor-made homepage sections', () => {
   // that removed them. club_invite_QLL4T3 and club_invite_TGPaF8 duplicate
   // each other rather than anything live, so choosing a survivor is a content
   // call and both were left alone.
+  //
+  // 2026-11-02: wfg_donation_counter JOINED this list. The thank-you counter was
+  // switched off in the theme editor at 10:28 AEDT, two days after the campaign
+  // closed, and git did not carry it -- a promotion would have put the counter
+  // back on the homepage. Reconciled in the only safe direction, git to live.
+  // See tests/homepage-wfg-campaign.test.mjs, which now asserts the off state
+  // rather than forbidding it.
+  //
+  // Brought onto staging-v2 2026-11-04 so the Black Friday banner can be
+  // reviewed without a closed campaign's counter sitting next to it.
   assert.deepEqual(disabledPaths(sections), [
     'club_benefits',
     'club_invite_QLL4T3',
@@ -177,6 +187,7 @@ test('index.json keeps the editor-made homepage sections', () => {
     'raspberry_candy',
     'slideshow_nBcaMx.slide_8Ar7Nq',
     'special_release',
+    'wfg_donation_counter',
   ], 'the set of disabled homepage sections and blocks changed');
 
   // The WFG campaign closed on 31 October 2026. Its banner was removed and the
