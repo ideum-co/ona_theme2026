@@ -237,16 +237,16 @@ disabled placeholder testimonials on the homepage.
 So: before converting any section, read its Liquid. The schema tells you what
 a merchant can set, not what the page draws.
 
-Alongside that, three kinds of drift, measured across all 158 sections in
+Alongside that, three kinds of drift, measured across all 157 sections in
 `templates/*.json` and guarded by `tests/component-kit.test.mjs` so they do not
 go stale again — they already did once, when #276 added three product
 templates:
 
-- **82 settings sit on `type_preset: "custom"`** — nearly three times the next
-  most common preset (`paragraph` 29, `h2` 18, `h6` 15, `rte` 15, `h4` 14).
+- **81 settings sit on `type_preset: "custom"`** — nearly three times the next
+  most common preset (`paragraph` 27, `h2` 18, `rte` 15, `h6` 14, `h4` 13).
   Each one opts out of the type scale and restates a size; there are **11
   distinct literal `font_size` values** in the templates. They are not all
-  blocks: **75 are block settings and 7 are section settings** —
+  blocks: **74 are block settings and 7 are section settings** —
   `product-highlight` and `club-invite` on the homepage, and `story-video` on
   the homepage plus all four product templates. A cleanup that walks only
   blocks misses those seven, which is also why the first count of this figure
@@ -503,7 +503,7 @@ component still diverge if each restates its own sizes.
 
 1. **Type comes from the preset, not a literal.** `type_preset` is one of
    `h1…h6`, `paragraph`, `rte`. `custom` is for a genuine one-off and currently
-   covers 82 settings — 75 on blocks and 7 on sections, so a cleanup that walks
+   covers 81 settings — 74 on blocks and 7 on sections, so a cleanup that walks
    only blocks stops seven short. That number should fall, not grow. No
    `font_size` in a template.
 2. **Spacing comes from a short scale.** Pick one from the 17 values in use —
@@ -578,7 +578,7 @@ next one to have happened.
    45 are referenced — so there is no up-front sweep to do. The four shared
    sections above are the only ones whose deletion needs more than one page
    converted.
-7. **Tokens**: the 82 `custom` presets and the 15 padding values, once the
+7. **Tokens**: the 81 `custom` presets and the 15 padding values, once the
    sections they live in have stopped moving. Doing this first means doing it
    twice.
 8. **The 21 inline `<style>` blocks**, independent of all of the above.

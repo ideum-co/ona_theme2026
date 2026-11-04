@@ -222,9 +222,11 @@ test('the promo badge is actually placed on the card surfaces live uses', () => 
   }
 });
 
-test('cart and 404 cards stay badge-free, as on live', () => {
+test('404 cards stay badge-free, as on live', () => {
+  // Was also checking templates/cart.json's product_list_NNFgcy, removed
+  // (duplicate "You may also like" block, superseded by the real
+  // cross-sell widget -- see ona-smart-cart) along with the section itself.
   for (const [file, section, card] of [
-    ['templates/cart.json', 'product_list_NNFgcy', 'static-product-card'],
     ['templates/404.json', 'product_list_iA96Tq', 'static-product-card'],
   ]) {
     const raw = readFileSync(resolve(root, file), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
