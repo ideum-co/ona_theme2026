@@ -189,7 +189,7 @@ class CartAwareRecommendations extends Component {
         const image = product.featured_image || product.images?.[0];
         item.innerHTML = `
           <a href="${product.url}">
-            ${image ? `<img src="${image}" alt="${this.#escape(product.title)}" loading="lazy" width="200" height="200" />` : ''}
+            ${image ? `<img src="${image}" alt="${this.#escape(product.title)}" loading="lazy" width="150" height="200" />` : ''}
             <p class="cart-aware-recommendations__item-title">${this.#escape(product.title)}</p>
             <p class="cart-aware-recommendations__item-price">${formatMoney(product.price, format, currency)}</p>
           </a>
