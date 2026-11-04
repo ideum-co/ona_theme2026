@@ -58,12 +58,16 @@ class CartAwareRecommendations extends Component {
         if (products.length) return this.#render(products);
       }
     } catch (error) {
-      // AbortError is expected whenever the cart changes again mid-fetch --
-      // the newer #load() call already owns the UI, this one just stops
-      // (and must NOT fall through to the fallback below, which would race
-      // the newer call's own render).
-      if (error instanceof Error && error.name === 'AbortError') return;
-      if (error instanceof Error) console.error('Cart-aware recommendations error:', error.message);
+      // A per-request timeout (#withTimeout) also throws an AbortError --
+      // indistinguishable from a superseding call by error.name alone, but
+      // it must NOT be treated the same way: a timeout should still fall
+      // through to the fallback below, while a genuinely superseded call
+      // (this.#activeLoad now points at a newer controller) must not, since
+      // that newer call already owns the UI and will render its own result.
+      if (this.#activeLoad !== controller) return;
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Cart-aware recommendations error:', error.message);
+      }
     }
 
     // The live endpoint failed, timed out, or returned nothing usable --
