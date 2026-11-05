@@ -39,20 +39,42 @@
   # Rendered as a sibling script tag (NOT inside the protected element
   # below) so it stays current across morphs -- data-skip-subtree-update
   # means nothing inside <cart-aware-recommendations> itself ever refreshes.
-  assign fallback_pool = '' | split: ','
+  #
+  # NOTE: `| uniq` on an array of product objects (not primitives) was
+  # tried here first and silently produced an empty result in production
+  # -- confirmed live, 2026-11-05, with a genuine endpoint outage: metafield
+  # data was intact (checked via Admin API) but the rendered fallback
+  # script held `[]`. Every other `uniq` use in this theme dedupes plain
+  # strings (iso codes, discount titles); there was no real precedent for
+  # deduping objects with it. Dedup here instead by tracking seen ids as
+  # strings, and extract each surviving candidate as a 1-element array via
+  # `where` (confirmed safe on product objects elsewhere in this theme,
+  # e.g. product-recommendations.liquid's `reject: 'id', ...`), never `uniq`.
+  assign cart_product_ids = cart.items | map: 'product_id'
+  assign fallback_products = '' | split: ','
+  assign seen_ids = ','
+
   for item in cart.items
     assign item_cross_sell = item.product.metafields.custom.cross_sell_products.value
-    if item_cross_sell != blank
-      assign fallback_pool = fallback_pool | concat: item_cross_sell
+    if item_cross_sell == blank
+      continue
     endif
+    for candidate in item_cross_sell
+      if fallback_products.size >= 4
+        break
+      endif
+      if cart_product_ids contains candidate.id
+        continue
+      endif
+      assign candidate_id_str = candidate.id | append: ','
+      if seen_ids contains candidate_id_str
+        continue
+      endif
+      assign seen_ids = seen_ids | append: candidate_id_str
+      assign one = item_cross_sell | where: 'id', candidate.id
+      assign fallback_products = fallback_products | concat: one
+    endfor
   endfor
-  assign fallback_pool = fallback_pool | uniq
-
-  assign fallback_products = fallback_pool
-  for item in cart.items
-    assign fallback_products = fallback_products | reject: 'id', item.product_id
-  endfor
-  assign fallback_products = fallback_products | slice: 0, 4
 -%}
 
 {%- render 'resource-list-styles' -%}
