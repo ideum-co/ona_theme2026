@@ -193,6 +193,9 @@ class CartAwareRecommendations extends Component {
     const list = this.querySelector('.cart-aware-recommendations__list');
     if (!list) return;
 
+    this.#impressionObserver?.disconnect();
+    this.#impressionObserver = this.#makeImpressionObserver(cartSkus);
+
     const format = this.dataset.moneyFormat || '{{amount}}';
     const currency = this.dataset.currency || '';
 
@@ -213,51 +216,53 @@ class CartAwareRecommendations extends Component {
           </a>
         `;
         if (product.product_code) {
+          item.dataset.productCode = product.product_code;
           item.querySelector('a')?.addEventListener('click', () => {
             this.#track('click', cartSkus, [product.product_code]);
           });
+          this.#impressionObserver?.observe(item);
         }
         return item;
       })
     );
 
     this.classList.remove('hidden');
-
-    const shownCodes = products.map((p) => p.product_code).filter(Boolean);
-    if (shownCodes.length) this.#observeImpression(cartSkus, shownCodes);
   }
 
   /** @type {IntersectionObserver | null} */
   #impressionObserver = null;
 
   /**
-   * An impression means the shopper actually SAW the recommendations, not
-   * just that they were rendered into the DOM -- on the cart page the
-   * widget can render while scrolled out of view, and in the drawer it
-   * renders every time regardless of whether the <dialog> is ever opened
-   * (a closed, non-modal <dialog> has no layout at all, so this also
-   * naturally handles that case: nothing to observe intersecting until it
-   * opens). Fires once per render, then disconnects -- reopening the same
-   * drawer render isn't a second impression.
+   * An impression means the shopper actually SAW a given card, not just
+   * that it was rendered into the DOM -- the drawer's horizontal strip
+   * only shows ~3 of the usual 4 cards at once (the rest clipped by
+   * overflow-x, a deliberate "there's more, scroll" affordance), so
+   * observing the whole widget would count every card the instant any
+   * part of the strip is visible, including ones still scrolled out of
+   * view (Codex). Observes each card individually instead, and tracks
+   * (then unobserves) each one only once it individually crosses the
+   * threshold -- a closed, non-modal <dialog> still has no layout at all,
+   * so nothing intersects until it opens, same protection as before.
    * @param {string[]} cartSkus
-   * @param {string[]} shownCodes
+   * @returns {IntersectionObserver}
    */
-  #observeImpression(cartSkus, shownCodes) {
-    this.#impressionObserver?.disconnect();
-    this.#impressionObserver = new IntersectionObserver(
+  #makeImpressionObserver(cartSkus) {
+    return new IntersectionObserver(
       (entries) => {
-        // isIntersecting is just intersectionRatio > 0 -- it does NOT mean
-        // "met the configured threshold" (a common IntersectionObserver
-        // mix-up, Codex caught it here): the threshold array only
-        // controls when the callback fires, not what this flag means.
-        // Check the ratio directly.
-        if ((entries[0]?.intersectionRatio ?? 0) < 0.5) return;
-        this.#impressionObserver?.disconnect();
-        this.#track('impression', cartSkus, shownCodes);
+        for (const entry of entries) {
+          // isIntersecting is just intersectionRatio > 0 -- it does NOT
+          // mean "met the configured threshold" (a common
+          // IntersectionObserver mix-up, Codex caught it here): the
+          // threshold array only controls when the callback fires, not
+          // what this flag means. Check the ratio directly.
+          if (entry.intersectionRatio < 0.5) continue;
+          this.#impressionObserver?.unobserve(entry.target);
+          const productCode = /** @type {HTMLElement} */ (entry.target).dataset.productCode;
+          if (productCode) this.#track('impression', cartSkus, [productCode]);
+        }
       },
       { threshold: 0.5 }
     );
-    this.#impressionObserver.observe(this);
   }
 
   /**
