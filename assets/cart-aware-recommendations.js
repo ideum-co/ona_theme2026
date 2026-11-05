@@ -272,6 +272,16 @@ class CartAwareRecommendations extends Component {
    * widget itself. sendBeacon for clicks (survives the page navigating
    * away, which a cancelled fetch would not); plain fetch for impressions,
    * since nothing is navigating away at that point.
+   *
+   * The beacon's Blob is sent as 'text/plain', not 'application/json' --
+   * confirmed live, 2026-11-05: 'application/json' is not a CORS-simple
+   * content type, so a cross-origin request with it needs a preflight, and
+   * the Beacon API does not support preflight at all. sendBeacon() still
+   * returns true (it can't know ahead of time), but the request is
+   * silently dropped -- every click was going untracked despite looking
+   * like it worked. The server already JSON.parses the body regardless of
+   * Content-Type, so this has no effect except making the request
+   * CORS-simple.
    * @param {'impression'|'click'} event
    * @param {string[]} cartSkus
    * @param {string[]} productCodes
@@ -281,7 +291,7 @@ class CartAwareRecommendations extends Component {
     const body = JSON.stringify({ event, cart: cartSkus, products: productCodes });
     try {
       if (event === 'click' && navigator.sendBeacon) {
-        navigator.sendBeacon(TRACK_ENDPOINT, new Blob([body], { type: 'application/json' }));
+        navigator.sendBeacon(TRACK_ENDPOINT, new Blob([body], { type: 'text/plain' }));
       } else {
         fetch(TRACK_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {});
       }
