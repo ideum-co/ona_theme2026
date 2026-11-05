@@ -12,6 +12,13 @@ const RECOMMEND_ENDPOINT = 'https://ona-smart-cart-api.ideum.co/recommend';
 // endpoint must never visibly delay or block the cart page.
 const FETCH_TIMEOUT_MS = 1500;
 
+// Lightweight, in-house click/impression tracking (not GA4) -- feeds the
+// "Impressions / Clicks / CTR" columns in the embedded admin review
+// dashboard, keyed the same way as its manual exclude/restore (see
+// src/admin/server.mjs in the ona-smart-cart repo). Best-effort only:
+// never awaited, never blocks rendering, errors are swallowed.
+const TRACK_ENDPOINT = 'https://ona-smart-cart-api.ideum.co/track';
+
 class CartAwareRecommendations extends Component {
   connectedCallback() {
     super.connectedCallback();
@@ -47,15 +54,16 @@ class CartAwareRecommendations extends Component {
     this.#activeLoad?.abort();
     const controller = new AbortController();
     this.#activeLoad = controller;
+    let skus = [];
 
     try {
-      const skus = await this.#getCartSkus(controller.signal);
+      skus = await this.#getCartSkus(controller.signal);
       if (!skus.length) return this.#hide();
 
       const recommendations = await this.#fetchRecommendations(skus, controller.signal);
       if (recommendations.length) {
         const products = await this.#fetchProductDetails(recommendations, controller.signal);
-        if (products.length) return this.#render(products);
+        if (products.length) return this.#render(products, skus);
       }
     } catch (error) {
       // A per-request timeout (#withTimeout) also throws an AbortError --
@@ -74,15 +82,16 @@ class CartAwareRecommendations extends Component {
     // fall back to the server-rendered static cross-sell data rather than
     // showing nothing. Zero network calls: it was computed ahead of time
     // from the Phase 0 metafield pipeline, into a sibling <script> tag.
-    this.#renderFallback();
+    this.#renderFallback(skus);
   }
 
-  #renderFallback() {
+  /** @param {string[]} skus */
+  #renderFallback(skus) {
     const script = this.nextElementSibling;
     if (!(script instanceof HTMLScriptElement) || script.type !== 'application/json') return this.#hide();
     try {
       const products = JSON.parse(script.textContent || '[]');
-      if (Array.isArray(products) && products.length) this.#render(products);
+      if (Array.isArray(products) && products.length) this.#render(products, skus);
       else this.#hide();
     } catch (error) {
       console.error('Cart-aware recommendations fallback error:', error.message);
@@ -161,7 +170,12 @@ class CartAwareRecommendations extends Component {
         const root = (window.Theme?.routes?.root_url ?? '').replace(/\/$/, '');
         const response = await fetch(`${root}/products/${rec.handle}.js`, { signal: this.#withTimeout(signal) });
         if (!response.ok) throw new Error(`${rec.handle}: ${response.status}`);
-        return response.json();
+        const product = await response.json();
+        // Carried through from the /recommend response for tracking only --
+        // keys the click/impression counts to the same product_code the
+        // admin dashboard's recs table (and its manual exclude/restore) is
+        // already keyed by, not Shopify's own product id.
+        return { ...product, product_code: rec.product_code };
       })
     );
 
@@ -170,8 +184,11 @@ class CartAwareRecommendations extends Component {
       .map((result) => /** @type {PromiseFulfilledResult<any>} */ (result).value);
   }
 
-  /** @param {any[]} products */
-  #render(products) {
+  /**
+   * @param {any[]} products
+   * @param {string[]} cartSkus
+   */
+  #render(products, cartSkus) {
     const list = this.querySelector('.cart-aware-recommendations__list');
     if (!list) return;
 
@@ -194,11 +211,45 @@ class CartAwareRecommendations extends Component {
             <p class="cart-aware-recommendations__item-price">${formatMoney(product.price, format, currency)}</p>
           </a>
         `;
+        if (product.product_code) {
+          item.querySelector('a')?.addEventListener('click', () => {
+            this.#track('click', cartSkus, [product.product_code]);
+          });
+        }
         return item;
       })
     );
 
     this.classList.remove('hidden');
+
+    const shownCodes = products.map((p) => p.product_code).filter(Boolean);
+    if (shownCodes.length) this.#track('impression', cartSkus, shownCodes);
+  }
+
+  /**
+   * Best-effort only -- never awaited, errors swallowed, and this request
+   * is NEVER part of the signal/timeout chain the recommendation fetches
+   * use, so a slow or unreachable tracking endpoint can't affect the
+   * widget itself. sendBeacon for clicks (survives the page navigating
+   * away, which a cancelled fetch would not); plain fetch for impressions,
+   * since nothing is navigating away at that point.
+   * @param {'impression'|'click'} event
+   * @param {string[]} cartSkus
+   * @param {string[]} productCodes
+   */
+  #track(event, cartSkus, productCodes) {
+    if (!cartSkus.length || !productCodes.length) return;
+    const body = JSON.stringify({ event, cart: cartSkus, products: productCodes });
+    try {
+      if (event === 'click' && navigator.sendBeacon) {
+        navigator.sendBeacon(TRACK_ENDPOINT, new Blob([body], { type: 'application/json' }));
+      } else {
+        fetch(TRACK_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {});
+      }
+    } catch {
+      // Tracking is a nice-to-have, never worth surfacing to the user or
+      // retrying.
+    }
   }
 
   #hide() {
