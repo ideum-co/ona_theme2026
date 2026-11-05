@@ -66,11 +66,14 @@
       if cart_product_ids contains candidate.id
         continue
       endif
-      assign candidate_id_str = candidate.id | append: ','
-      if seen_ids contains candidate_id_str
+      # Both delimiters, not just the trailing one -- "123," alone is a
+      # substring match inside ",9123," for a *different* id, which would
+      # wrongly treat a distinct product as already-seen (Codex).
+      assign candidate_needle = candidate.id | prepend: ',' | append: ','
+      if seen_ids contains candidate_needle
         continue
       endif
-      assign seen_ids = seen_ids | append: candidate_id_str
+      assign seen_ids = seen_ids | append: candidate.id | append: ','
       assign one = item_cross_sell | where: 'id', candidate.id
       assign fallback_products = fallback_products | concat: one
     endfor
