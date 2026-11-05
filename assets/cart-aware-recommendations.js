@@ -29,6 +29,7 @@ class CartAwareRecommendations extends Component {
   disconnectedCallback() {
     super.disconnectedCallback();
     document.removeEventListener(StandardEvents.cartLinesUpdate, this.#handleCartUpdate);
+    this.#impressionObserver?.disconnect();
   }
 
   /** @type {AbortController | null} */
@@ -223,7 +224,35 @@ class CartAwareRecommendations extends Component {
     this.classList.remove('hidden');
 
     const shownCodes = products.map((p) => p.product_code).filter(Boolean);
-    if (shownCodes.length) this.#track('impression', cartSkus, shownCodes);
+    if (shownCodes.length) this.#observeImpression(cartSkus, shownCodes);
+  }
+
+  /** @type {IntersectionObserver | null} */
+  #impressionObserver = null;
+
+  /**
+   * An impression means the shopper actually SAW the recommendations, not
+   * just that they were rendered into the DOM -- on the cart page the
+   * widget can render while scrolled out of view, and in the drawer it
+   * renders every time regardless of whether the <dialog> is ever opened
+   * (a closed, non-modal <dialog> has no layout at all, so this also
+   * naturally handles that case: nothing to observe intersecting until it
+   * opens). Fires once per render, then disconnects -- reopening the same
+   * drawer render isn't a second impression.
+   * @param {string[]} cartSkus
+   * @param {string[]} shownCodes
+   */
+  #observeImpression(cartSkus, shownCodes) {
+    this.#impressionObserver?.disconnect();
+    this.#impressionObserver = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting) return;
+        this.#impressionObserver?.disconnect();
+        this.#track('impression', cartSkus, shownCodes);
+      },
+      { threshold: 0.5 }
+    );
+    this.#impressionObserver.observe(this);
   }
 
   /**
