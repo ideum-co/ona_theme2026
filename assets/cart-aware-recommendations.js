@@ -246,7 +246,12 @@ class CartAwareRecommendations extends Component {
     this.#impressionObserver?.disconnect();
     this.#impressionObserver = new IntersectionObserver(
       (entries) => {
-        if (!entries[0]?.isIntersecting) return;
+        // isIntersecting is just intersectionRatio > 0 -- it does NOT mean
+        // "met the configured threshold" (a common IntersectionObserver
+        // mix-up, Codex caught it here): the threshold array only
+        // controls when the callback fires, not what this flag means.
+        // Check the ratio directly.
+        if ((entries[0]?.intersectionRatio ?? 0) < 0.5) return;
         this.#impressionObserver?.disconnect();
         this.#track('impression', cartSkus, shownCodes);
       },
