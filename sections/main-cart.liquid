@@ -6,6 +6,18 @@
   endif
 %}
 
+{%- comment -%}
+  Registers <cart-aware-recommendations> unconditionally, regardless of
+  whether the cart starts empty -- the widget markup itself only renders
+  inside the `unless cart.empty?` branch below, but a quick-add on an
+  initially-empty cart page morphs that branch in via
+  component-cart-items.js's Section Rendering API call, and scripts
+  inserted that way (DOMParser-parsed HTML) never execute. Loading the
+  module here, unconditionally, means it's already registered by the time
+  that morph happens.
+{%- endcomment -%}
+<script src="{{ 'cart-aware-recommendations.js' | asset_url }}" type="module"></script>
+
 {% capture cart_page_more_blocks_content %}
   <div class="cart-page__more-blocks">
     {%- content_for 'blocks' -%}
@@ -53,6 +65,7 @@
         <div class="cart-page__summary">
           {%- content_for 'block', id: 'cart-page-summary', type: '_cart-summary' -%}
         </div>
+        {%- render 'cart-aware-recommendations' -%}
       {%- endunless -%}
 
       {{ cart_page_more_blocks_content }}

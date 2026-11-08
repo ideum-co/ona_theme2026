@@ -137,6 +137,8 @@ test('index.json keeps the editor-made homepage sections', () => {
   assert.equal(sections.coffee_spotlight.settings.adaptive_max_width, 1280);
   assert.equal(sections.coffee_spotlight.settings.carousel_loop, true);
   assert.equal(sections.press_quotes_4kW9eF.settings.background_color, '{{ settings.color_palette.background }}');
+  // Set in the editor on 2026-11-02, using the control #440 added. git lacked it.
+  assert.equal(sections.press_quotes_4kW9eF.settings.section_width, 'page-width');
   assert.equal(Object.keys(sections.hero_ona.blocks).length, 4);
 
   // Sections the editor had switched off. They came back enabled once.
@@ -164,6 +166,17 @@ test('index.json keeps the editor-made homepage sections', () => {
   // that removed them. club_invite_QLL4T3 and club_invite_TGPaF8 duplicate
   // each other rather than anything live, so choosing a survivor is a content
   // call and both were left alone.
+  //
+  // 2026-11-02: wfg_donation_counter JOINED this list. The thank-you counter was
+  // switched off in the theme editor at 10:28 AEDT, two days after the campaign
+  // closed, and git did not carry it -- a promotion would have put the counter
+  // back on the homepage. Reconciled in the only safe direction, git to live.
+  // See tests/homepage-wfg-campaign.test.mjs, which now asserts the off state
+  // rather than forbidding it.
+  //
+  // The QA branches place the Black Friday banner in the slot immediately after
+  // this one, so the counter being off also keeps a closed campaign from sitting
+  // next to the new one while Macarena reviews it.
   assert.deepEqual(disabledPaths(sections), [
     'club_benefits',
     'club_invite_QLL4T3',
@@ -177,16 +190,15 @@ test('index.json keeps the editor-made homepage sections', () => {
     'raspberry_candy',
     'slideshow_nBcaMx.slide_8Ar7Nq',
     'special_release',
+    'wfg_donation_counter',
   ], 'the set of disabled homepage sections and blocks changed');
 
-  // The WFG campaign is the deliberate addition: the banner explains the
-  // campaign and links to the article, the counter shows the total and links
-  // to the participating coffees. They render as a pair, banner first, exactly
-  // as they do on the legacy theme. tests/homepage-wfg-campaign.test.mjs holds
-  // the adjacency and the two destinations.
-  assert.equal(order[1], 'wfg_campaign_banner');
-  assert.equal(sections.wfg_campaign_banner.type, 'ona-campaign-banner');
-  assert.equal(order[2], 'wfg_donation_counter');
+  // The WFG campaign closed on 31 October 2026. Its banner was removed and the
+  // counter reworded to thank contributors; the counter moved up into the slot
+  // the banner vacated, directly under the hero.
+  // tests/homepage-wfg-campaign.test.mjs holds the post-campaign layout and the
+  // guard against the banner reappearing.
+  assert.equal(order[1], 'wfg_donation_counter');
   assert.equal(sections.wfg_donation_counter.type, 'ona-donation-counter');
 });
 
@@ -213,11 +225,12 @@ test('product.json keeps the editor-wired PDP', () => {
     'brew_guide',
     // Disabled 2026-10-25 at Felipe's instruction: everything below the
     // product-tabs section stays off until the PDP content below the Profile
-    // tab is reviewed and approved. This includes `product_recommendations_qggXJq`
-    // ("You may also like"), which is a deliberate, commercially-visible choice
-    // and not an oversight -- re-enable it with the rest when the page is signed
-    // off. The rule applied was "every section after `product_tabs_fW4maV` in
-    // `order`", applied to all four product templates.
+    // tab is reviewed and approved. `product_recommendations_qggXJq`
+    // ("You may also like") was pulled back out of this hold on 2026-10-30,
+    // Felipe's explicit instruction, as a standalone re-enable -- native
+    // Shopify recommendations, free, no Horizon-compatibility question -- not
+    // a signal that the rest of the batch below is reviewed. The remaining
+    // entries stay off until the full PDP-below-tabs review and signoff.
     'coffee_quiz_VLVDpw',
     'faqs',
     'inline_cta_8ann9f',
@@ -233,7 +246,6 @@ test('product.json keeps the editor-wired PDP', () => {
     'product_media_with_text_Vy9RW6',
     'product_origin_detail',
     'product_producer_quote',
-    'product_recommendations_qggXJq',
     'product_tabs_XnTEpK',
     // Disabled in the theme editor on 2026-10-21, in the same save that added
     // `product_media_with_text_Vy9RW6`. That section supersedes this one: #259
@@ -333,18 +345,19 @@ test('product.merch.json keeps the editor-wired merch PDP', () => {
     'faqs',
     // Disabled 2026-10-25 at Felipe's instruction: everything below the
     // product-tabs section stays off until the PDP content below the Profile
-    // tab is reviewed and approved. This includes `product_recommendations_qggXJq`
-    // ("You may also like"), which is a deliberate, commercially-visible choice
-    // and not an oversight -- re-enable it with the rest when the page is signed
-    // off. The rule applied was "every section after `product_tabs_fW4maV` in
-    // `order`", applied to all four product templates.
+    // tab is reviewed and approved. `product_recommendations_qggXJq`
+    // ("You may also like") was pulled back out of this hold on 2026-10-30,
+    // Felipe's explicit instruction, as a standalone re-enable across all
+    // four product templates -- native Shopify recommendations, free, no
+    // Horizon-compatibility question -- not a signal the rest of the batch
+    // below is reviewed. The remaining entries stay off until the full
+    // PDP-below-tabs review and signoff.
     'inline_cta_8ann9f',
     'main.product-details.best_for_pdp',
     'main.product-details.divider_VJhene',
     'main.product-details.group_icgrde',
     'main.product-details.tastes_like_pdp',
     'product_dna_trxBBN',
-    'product_recommendations_qggXJq',
     'product_tabs_XnTEpK',
     'product_tabs_fW4maV.product_tab_4tzPxX',
     // `product_tab_ePcCkQ` (Profile) was taken off this list on 2026-10-26.

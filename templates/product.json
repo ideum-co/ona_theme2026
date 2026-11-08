@@ -89,7 +89,7 @@
             "pdp_product_summary": {
               "type": "pdp-product-summary",
               "settings": {
-                "description": "<p>Caramel, biscuits, nuts and spices</p>",
+                "description": "",
                 "show_rating": true,
                 "rating_value": 5,
                 "rating_count": 0,
@@ -1804,7 +1804,6 @@
       "block_order": [
         "text_cbcgyb"
       ],
-      "disabled": true,
       "name": "t:names.product_recommendations",
       "settings": {
         "product": "{{ closest.product }}",

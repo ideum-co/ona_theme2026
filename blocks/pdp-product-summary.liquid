@@ -29,8 +29,15 @@
     endif
   endif
 
+  # The two rating settings below are a FALLBACK for a product that carries no
+  # review metafield, and the schema defaults them to 5 stars from 0 reviews.
+  # Rendered unguarded that invents a perfect score for anything Judge.me has
+  # never scored -- gift cards shipped "5.0 (0)" that way. So the count decides:
+  # no reviews, no rating. A merchant who sets a fallback count on purpose still
+  # gets the preview they asked for.
   assign rating = product_resource.metafields.reviews.rating.value.rating | default: block_settings.rating_value
   assign rating_count = product_resource.metafields.reviews.rating_count.value | default: block_settings.rating_count
+  assign rating_count_number = rating_count | plus: 0
 -%}
 
 <div
@@ -86,7 +93,7 @@
       {% render 'price', product_resource: product_resource, show_sale_price_first: true %}
     </product-price>
 
-    {%- if block_settings.show_rating and rating != blank -%}
+    {%- if block_settings.show_rating and rating != blank and rating_count_number > 0 -%}
       <div class="product-summary__rating" aria-label="Rating: {{ rating | round: 1 }} out of 5">
         <span class="product-summary__stars" aria-hidden="true">★★★★★</span>
         <span>{{ rating | round: 1 }}{% if rating_count != blank %} ({{ rating_count }}){% endif %}</span>
@@ -196,7 +203,7 @@
   "tag": null,
   "settings": [
     { "type": "header", "content": "Content" },
-    { "type": "richtext", "id": "description", "label": "Description", "default": "<p>Caramel, biscuits, nuts and spices</p>" },
+    { "type": "richtext", "id": "description", "label": "Description" },
     { "type": "checkbox", "id": "show_rating", "label": "Show rating", "default": true },
     { "type": "range", "id": "rating_value", "label": "Fallback rating", "min": 0, "max": 5, "step": 0.1, "default": 5 },
     { "type": "number", "id": "rating_count", "label": "Fallback review count", "default": 0 },

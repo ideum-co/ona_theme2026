@@ -1,0 +1,318 @@
+import { Component } from '@theme/component';
+import { formatMoney } from '@theme/money-formatting';
+import { StandardEvents } from '@shopify/events';
+
+// Live, cart-aware cross-sell endpoint -- ona-smart-cart project
+// (~/projects/ona-smart-cart), running on CT100 (pve-r720) behind a
+// dedicated Cloudflare Tunnel. Aggregates scores across the WHOLE cart,
+// unlike the static per-product metafield product-recommendations.js reads.
+const RECOMMEND_ENDPOINT = 'https://ona-smart-cart-api.ideum.co/recommend';
+
+// Every network call here has a hard budget. A slow or down third-party
+// endpoint must never visibly delay or block the cart page.
+const FETCH_TIMEOUT_MS = 1500;
+
+// Lightweight, in-house click/impression tracking (not GA4) -- feeds the
+// "Impressions / Clicks / CTR" columns in the embedded admin review
+// dashboard, keyed the same way as its manual exclude/restore (see
+// src/admin/server.mjs in the ona-smart-cart repo). Best-effort only:
+// never awaited, never blocks rendering, errors are swallowed.
+const TRACK_ENDPOINT = 'https://ona-smart-cart-api.ideum.co/track';
+
+class CartAwareRecommendations extends Component {
+  connectedCallback() {
+    super.connectedCallback();
+    this.#load();
+    document.addEventListener(StandardEvents.cartLinesUpdate, this.#handleCartUpdate);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener(StandardEvents.cartLinesUpdate, this.#handleCartUpdate);
+    this.#impressionObserver?.disconnect();
+  }
+
+  /** @type {AbortController | null} */
+  #activeLoad = null;
+
+  /**
+   * CartLinesUpdateEvent fires the moment a mutation is *requested*, not once
+   * it lands -- `event.promise` resolves only after the server confirms the
+   * change (see component-cart-items.js's deferredUpdatePromise). Reading
+   * /cart.js before that resolves would read the pre-mutation cart.
+   * @param {import('@shopify/events').CartLinesUpdateEvent} event
+   */
+  #handleCartUpdate = (event) => {
+    event.promise
+      ?.then(() => this.#load())
+      .catch(() => {
+        // A rejected mutation means the cart didn't actually change --
+        // current recommendations are still valid, nothing to reload.
+      });
+  };
+
+  async #load() {
+    this.#activeLoad?.abort();
+    const controller = new AbortController();
+    this.#activeLoad = controller;
+    let skus = [];
+
+    try {
+      skus = await this.#getCartSkus(controller.signal);
+      if (!skus.length) return this.#hide();
+
+      const recommendations = await this.#fetchRecommendations(skus, controller.signal);
+      if (recommendations.length) {
+        const products = await this.#fetchProductDetails(recommendations, controller.signal);
+        if (products.length) return this.#render(products, skus);
+      }
+    } catch (error) {
+      // A per-request timeout (#withTimeout) also throws an AbortError --
+      // indistinguishable from a superseding call by error.name alone, but
+      // it must NOT be treated the same way: a timeout should still fall
+      // through to the fallback below, while a genuinely superseded call
+      // (this.#activeLoad now points at a newer controller) must not, since
+      // that newer call already owns the UI and will render its own result.
+      if (this.#activeLoad !== controller) return;
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Cart-aware recommendations error:', error.message);
+      }
+    }
+
+    // The live endpoint failed, timed out, or returned nothing usable --
+    // fall back to the server-rendered static cross-sell data rather than
+    // showing nothing. Zero network calls: it was computed ahead of time
+    // from the Phase 0 metafield pipeline, into a sibling <script> tag.
+    this.#renderFallback(skus);
+  }
+
+  /** @param {string[]} skus */
+  #renderFallback(skus) {
+    const script = this.nextElementSibling;
+    if (!(script instanceof HTMLScriptElement) || script.type !== 'application/json') return this.#hide();
+    try {
+      const products = JSON.parse(script.textContent || '[]');
+      if (Array.isArray(products) && products.length) this.#render(products, skus);
+      else this.#hide();
+    } catch (error) {
+      console.error('Cart-aware recommendations fallback error:', error.message);
+      this.#hide();
+    }
+  }
+
+  /**
+   * @param {AbortSignal} signal
+   * @returns {Promise<string[]>}
+   */
+  async #getCartSkus(signal) {
+    const response = await fetch(`${window.Theme?.routes?.cart_url ?? '/cart'}.js`, { signal: this.#withTimeout(signal) });
+    if (!response.ok) return [];
+    /** @type {{ items: { sku: string }[] }} */
+    const cart = await response.json();
+    return [...new Set((cart.items ?? []).map((item) => item.sku).filter(Boolean))];
+  }
+
+  /**
+   * @param {string[]} skus
+   * @param {AbortSignal} signal
+   * @returns {Promise<{ product_code: string, title: string, handle: string, score: number }[]>}
+   */
+  async #fetchRecommendations(skus, signal) {
+    const response = await fetch(RECOMMEND_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cart: skus }),
+      signal: this.#withTimeout(signal),
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return Array.isArray(data.recommendations) ? data.recommendations : [];
+  }
+
+  /**
+   * Combines the lifecycle abort signal with a hard per-request timeout, so
+   * a single stalled request can never hold up the whole rail indefinitely
+   * -- only the outer lifecycle signal (aborted on the next cart update)
+   * bounded every fetch before, which doesn't help when nothing else
+   * changes the cart while a request is stuck.
+   *
+   * Composed manually with a plain AbortController + setTimeout rather than
+   * AbortSignal.any()/AbortSignal.timeout(), which aren't available in every
+   * browser this storefront serves -- a feature-detected fallback that just
+   * dropped the timeout silently defeated the whole point of this method.
+   * @param {AbortSignal} signal
+   */
+  #withTimeout(signal) {
+    const controller = new AbortController();
+    const abort = () => controller.abort(signal.reason);
+    if (signal.aborted) abort();
+    else signal.addEventListener('abort', abort, { once: true });
+    // No custom reason: an argument-less abort() defaults to a DOMException
+    // named 'AbortError', so a timeout is treated the same as any other
+    // abort by #load()'s catch block -- silent, not logged as an error.
+    setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    return controller.signal;
+  }
+
+  /**
+   * Enriches each recommended handle with live image/price from Shopify's
+   * own Ajax API -- the endpoint only returns the score graph's own data
+   * (code/title/handle), never pricing or imagery, so this is always the
+   * current storefront price, not a stale cached one.
+   * @param {{ handle: string, title: string }[]} recommendations
+   * @param {AbortSignal} signal
+   */
+  async #fetchProductDetails(recommendations, signal) {
+    const results = await Promise.allSettled(
+      recommendations.map(async (rec) => {
+        // routes.root_url is '/' on the default locale (no prefix), not '' --
+        // naively appending '/products/...' to that produces '//products/...',
+        // a protocol-relative URL the browser resolves against host "products".
+        const root = (window.Theme?.routes?.root_url ?? '').replace(/\/$/, '');
+        const response = await fetch(`${root}/products/${rec.handle}.js`, { signal: this.#withTimeout(signal) });
+        if (!response.ok) throw new Error(`${rec.handle}: ${response.status}`);
+        const product = await response.json();
+        // Carried through from the /recommend response for tracking only --
+        // keys the click/impression counts to the same product_code the
+        // admin dashboard's recs table (and its manual exclude/restore) is
+        // already keyed by, not Shopify's own product id.
+        return { ...product, product_code: rec.product_code };
+      })
+    );
+
+    return results
+      .filter((result) => result.status === 'fulfilled')
+      .map((result) => /** @type {PromiseFulfilledResult<any>} */ (result).value);
+  }
+
+  /**
+   * @param {any[]} products
+   * @param {string[]} cartSkus
+   */
+  #render(products, cartSkus) {
+    const list = this.querySelector('.cart-aware-recommendations__list');
+    if (!list) return;
+
+    this.#impressionObserver?.disconnect();
+    this.#impressionObserver = this.#makeImpressionObserver(cartSkus);
+
+    const format = this.dataset.moneyFormat || '{{amount}}';
+    const currency = this.dataset.currency || '';
+
+    list.replaceChildren(
+      ...products.map((product) => {
+        const item = document.createElement('li');
+        item.className = 'cart-aware-recommendations__item resource-list__item';
+        // Explicit, not implicit: a <li> outside a real <ul>/<ol> (the
+        // drawer variant's <scroll-hint> list container) doesn't reliably
+        // get the implicit listitem role.
+        item.setAttribute('role', 'listitem');
+        const image = product.featured_image || product.images?.[0];
+        item.innerHTML = `
+          <a href="${product.url}">
+            ${image ? `<img src="${image}" alt="${this.#escape(product.title)}" loading="lazy" width="150" height="200" />` : ''}
+            <p class="cart-aware-recommendations__item-title">${this.#escape(product.title)}</p>
+            <p class="cart-aware-recommendations__item-price">${formatMoney(product.price, format, currency)}</p>
+          </a>
+        `;
+        if (product.product_code) {
+          item.dataset.productCode = product.product_code;
+          item.querySelector('a')?.addEventListener('click', () => {
+            this.#track('click', cartSkus, [product.product_code]);
+          });
+          this.#impressionObserver?.observe(item);
+        }
+        return item;
+      })
+    );
+
+    this.classList.remove('hidden');
+  }
+
+  /** @type {IntersectionObserver | null} */
+  #impressionObserver = null;
+
+  /**
+   * An impression means the shopper actually SAW a given card, not just
+   * that it was rendered into the DOM -- the drawer's horizontal strip
+   * only shows ~3 of the usual 4 cards at once (the rest clipped by
+   * overflow-x, a deliberate "there's more, scroll" affordance), so
+   * observing the whole widget would count every card the instant any
+   * part of the strip is visible, including ones still scrolled out of
+   * view (Codex). Observes each card individually instead, and tracks
+   * (then unobserves) each one only once it individually crosses the
+   * threshold -- a closed, non-modal <dialog> still has no layout at all,
+   * so nothing intersects until it opens, same protection as before.
+   * @param {string[]} cartSkus
+   * @returns {IntersectionObserver}
+   */
+  #makeImpressionObserver(cartSkus) {
+    return new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          // isIntersecting is just intersectionRatio > 0 -- it does NOT
+          // mean "met the configured threshold" (a common
+          // IntersectionObserver mix-up, Codex caught it here): the
+          // threshold array only controls when the callback fires, not
+          // what this flag means. Check the ratio directly.
+          if (entry.intersectionRatio < 0.5) continue;
+          this.#impressionObserver?.unobserve(entry.target);
+          const productCode = /** @type {HTMLElement} */ (entry.target).dataset.productCode;
+          if (productCode) this.#track('impression', cartSkus, [productCode]);
+        }
+      },
+      { threshold: 0.5 }
+    );
+  }
+
+  /**
+   * Best-effort only -- never awaited, errors swallowed, and this request
+   * is NEVER part of the signal/timeout chain the recommendation fetches
+   * use, so a slow or unreachable tracking endpoint can't affect the
+   * widget itself. sendBeacon for clicks (survives the page navigating
+   * away, which a cancelled fetch would not); plain fetch for impressions,
+   * since nothing is navigating away at that point.
+   *
+   * The beacon's Blob is sent as 'text/plain', not 'application/json' --
+   * confirmed live, 2026-11-05: 'application/json' is not a CORS-simple
+   * content type, so a cross-origin request with it needs a preflight, and
+   * the Beacon API does not support preflight at all. sendBeacon() still
+   * returns true (it can't know ahead of time), but the request is
+   * silently dropped -- every click was going untracked despite looking
+   * like it worked. The server already JSON.parses the body regardless of
+   * Content-Type, so this has no effect except making the request
+   * CORS-simple.
+   * @param {'impression'|'click'} event
+   * @param {string[]} cartSkus
+   * @param {string[]} productCodes
+   */
+  #track(event, cartSkus, productCodes) {
+    if (!cartSkus.length || !productCodes.length) return;
+    const body = JSON.stringify({ event, cart: cartSkus, products: productCodes });
+    try {
+      if (event === 'click' && navigator.sendBeacon) {
+        navigator.sendBeacon(TRACK_ENDPOINT, new Blob([body], { type: 'text/plain' }));
+      } else {
+        fetch(TRACK_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {});
+      }
+    } catch {
+      // Tracking is a nice-to-have, never worth surfacing to the user or
+      // retrying.
+    }
+  }
+
+  #hide() {
+    this.classList.add('hidden');
+  }
+
+  /** @param {string} value */
+  #escape(value) {
+    const div = document.createElement('div');
+    div.textContent = value;
+    return div.innerHTML;
+  }
+}
+
+if (!customElements.get('cart-aware-recommendations')) {
+  customElements.define('cart-aware-recommendations', CartAwareRecommendations);
+}

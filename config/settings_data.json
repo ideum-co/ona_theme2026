@@ -291,7 +291,7 @@
     "custom_css": [
       ".spacing-style.sticky-content.media-gallery--two-column.media-gallery--grid,slideshow-container {align-content: center;}",
       ".product-recommendations .resource-list.force-full-width.resource-list__carousel {max-width: 1440px; margin: 0 auto;}",
-      ".purchase-options__list,.purchase-options {display: none;}"
+      ".product-information .purchase-options__list,.product-information .purchase-options {display: none;}"
     ]
   }
 }

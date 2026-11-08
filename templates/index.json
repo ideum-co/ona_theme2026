@@ -222,28 +222,18 @@
         "padding-block-end": 64
       }
     },
-    "wfg_campaign_banner": {
-      "type": "ona-campaign-banner",
+    "bf_countdown_banner": {
+      "type": "bf-countdown-banner",
       "settings": {
-        "bg_color": "#f9f8f3",
-        "logo": "shopify://shop_images/WFG2_-_stacked.png",
-        "logo_alt": "Water for Good",
-        "title": "Coffee That Supports Clean Water",
-        "title_preset": "h2",
-        "title_font": "var(--font-heading--family)",
-        "campaign_label": "Campaign running now until",
-        "campaign_note": "",
-        "description": "<p>Together with <a href=\"https://waterforgood.org/\">Water for Good</a> and Project Origin, we’re continuing our long-term commitment to support safe, reliable water in coffee-growing communities.</p><p>From <strong>1–31 October</strong>, we’ll make a fixed contribution from every participating purchase toward our <strong>$20,000 fundraising goal</strong>. You don’t need to make a separate donation—simply choose a participating coffee or product and be part of the impact.</p><p>This campaign brings us closer to our longer-term goal of helping support <strong>250 community water points over seven years</strong>, creating lasting, community-led access to clean water.</p>",
-        "cta_text": "Learn more",
-        "cta_url": "shopify://blogs/news/coffee-community-and-clean-water-continuing-our-work-with-water-for-good"
       }
     },
     "wfg_donation_counter": {
       "type": "ona-donation-counter",
+      "disabled": true,
       "settings": {
         "bg_color": "#441925",
-        "title": "DOLLARS CONTRIBUTED SO FAR",
-        "subtitle": "Enjoy great coffee while helping fund clean water access.",
+        "title": "THANK YOU. TOGETHER WE CONTRIBUTED",
+        "subtitle": "Every participating coffee bought in October added a fixed contribution. That money goes to Water for Good and Project Origin, to support safe, reliable water in coffee-growing communities.",
         "heading_color": "#fbf8f3",
         "subtitle_color": "#fbf8f3",
         "card_bg_color": "#f2f0eb",
@@ -491,6 +481,7 @@
       },
       "name": "t:names.media_with_text",
       "settings": {
+        "motion_reveal": true,
         "mobile_padding_inline": 16,
         "mobile_text_center": true,
         "content_padding_custom": true,
@@ -1103,6 +1094,7 @@
       "disabled": true,
       "name": "t:names.media_with_text",
       "settings": {
+        "motion_reveal": true,
         "mobile_padding_inline": 0,
         "mobile_text_center": false,
         "content_padding_custom": false,
@@ -3321,6 +3313,7 @@
       "settings": {
         "columns": 3,
         "icons_style": "arrow",
+        "section_width": "page-width",
         "background_color": "{{ settings.color_palette.background }}",
         "text_color": "{{ settings.color_palette.color1 }}",
         "padding-block-start": 0,
@@ -3897,6 +3890,7 @@
       },
       "name": "t:names.media_with_text",
       "settings": {
+        "motion_reveal": true,
         "mobile_padding_inline": 0,
         "mobile_text_center": true,
         "content_padding_custom": true,
@@ -4786,8 +4780,8 @@
   },
   "order": [
     "hero_ona",
-    "wfg_campaign_banner",
     "wfg_donation_counter",
+    "bf_countdown_banner",
     "floating_badge_r89NRP",
     "find_your_coffee",
     "coffee_spotlight",

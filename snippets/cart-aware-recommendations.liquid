@@ -1,0 +1,212 @@
+{%- doc -%}
+  Live, cart-aware cross-sell recommendations. Used on both the cart page
+  and the cart drawer (pass variant: 'drawer' for the latter) -- same JS
+  class and fetch/fallback logic for both, only layout/sizing differs.
+
+  Unlike `product-recommendations.liquid` (single-product, server-rendered
+  from a static `custom.cross_sell_products` metafield), this calls a live
+  endpoint that aggregates scores across every item currently in the cart --
+  validated against real order data first: aggregating across the whole
+  cart changes the top-4 recommendation set for 78.6% of real multi-item
+  baskets vs. a single-anchor product (avg Jaccard overlap only 0.49). See
+  ~/projects/ona-smart-cart/SPEC.md.
+
+  Hidden until JS has real data to show, and fails silently on any error,
+  slow response, or empty result -- this call must never block or slow down
+  checkout. If the live endpoint fails, times out, or returns nothing
+  usable, falls back to the Phase 0 static cross-sell data computed below
+  (server-rendered, zero network calls) rather than showing nothing.
+
+  Each card's click/impression is tracked in-house (not GA4) via
+  cart-aware-recommendations.js's #track(), keyed by product_code to match
+  the ona-smart-cart admin dashboard's existing per-pair rows. The
+  fallback data's product_code below uses
+  `selected_or_first_available_variant.sku` -- a representative SKU for
+  that product, not necessarily the exact variant the Phase 0 pipeline
+  originally scored (which can differ for a multi-size product); fine for
+  tracking engagement, not precise enough for anything that needs the
+  scored SKU itself.
+
+  Markup only -- `cart-aware-recommendations.js` is loaded separately,
+  unconditionally, by the caller (sections/main-cart.liquid,
+  snippets/cart-drawer.liquid). A script tag here would never execute when
+  this snippet is first rendered via a post-page-load morph (e.g. a
+  quick-add on an initially empty cart/drawer).
+
+  @param {string} [variant] - 'page' (default) or 'drawer'.
+
+  @example
+  {% render 'cart-aware-recommendations' %}
+  {% render 'cart-aware-recommendations', variant: 'drawer' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign variant = variant | default: 'page'
+
+  # Fallback data: the union of each cart item's OWN static cross-sell
+  # metafield (the Phase 0 pipeline, already live), deduped, excluding
+  # anything already in the cart, capped the same as the live endpoint.
+  # Rendered as a sibling script tag (NOT inside the protected element
+  # below) so it stays current across morphs -- data-skip-subtree-update
+  # means nothing inside <cart-aware-recommendations> itself ever refreshes.
+  #
+  # NOTE: `| uniq` on an array of product objects (not primitives) was
+  # tried here first and silently produced an empty result in production
+  # -- confirmed live, 2026-11-05, with a genuine endpoint outage: metafield
+  # data was intact (checked via Admin API) but the rendered fallback
+  # script held `[]`. Every other `uniq` use in this theme dedupes plain
+  # strings (iso codes, discount titles); there was no real precedent for
+  # deduping objects with it. Dedup here instead by tracking seen ids as
+  # strings, and extract each surviving candidate as a 1-element array via
+  # `where` (confirmed safe on product objects elsewhere in this theme,
+  # e.g. product-recommendations.liquid's `reject: 'id', ...`), never `uniq`.
+  assign cart_product_ids = cart.items | map: 'product_id'
+  assign fallback_products = '' | split: ','
+  assign seen_ids = ','
+
+  for item in cart.items
+    assign item_cross_sell = item.product.metafields.custom.cross_sell_products.value
+    if item_cross_sell == blank
+      continue
+    endif
+    for candidate in item_cross_sell
+      if fallback_products.size >= 4
+        break
+      endif
+      if cart_product_ids contains candidate.id
+        continue
+      endif
+      # Both delimiters, not just the trailing one -- "123," alone is a
+      # substring match inside ",9123," for a *different* id, which would
+      # wrongly treat a distinct product as already-seen (Codex).
+      assign candidate_needle = candidate.id | prepend: ',' | append: ','
+      if seen_ids contains candidate_needle
+        continue
+      endif
+      assign seen_ids = seen_ids | append: candidate.id | append: ','
+      assign one = item_cross_sell | where: 'id', candidate.id
+      assign fallback_products = fallback_products | concat: one
+    endfor
+  endfor
+-%}
+
+{%- render 'resource-list-styles' -%}
+<cart-aware-recommendations
+  class="cart-aware-recommendations cart-aware-recommendations--{{ variant }} hidden"
+  data-money-format="{{ shop.money_format | escape }}"
+  data-currency="{{ cart.currency.iso_code | default: shop.currency }}"
+  data-skip-subtree-update
+  data-skip-node-update
+>
+  <h2 class="cart-aware-recommendations__heading">You might also like</h2>
+  {%- if variant == 'drawer' -%}
+    <scroll-hint class="cart-aware-recommendations__list" role="list"></scroll-hint>
+  {%- else -%}
+    <ul class="cart-aware-recommendations__list resource-list resource-list--grid" role="list" style="--resource-list-columns: repeat(4, 1fr); --resource-list-columns-mobile: repeat(2, 1fr); --resource-list-column-gap-desktop: 16px; --resource-list-row-gap-desktop: 16px;"></ul>
+  {%- endif -%}
+</cart-aware-recommendations>
+<script type="application/json" data-cart-fallback-recommendations>
+  [
+    {%- for candidate in fallback_products -%}
+      {
+        "title": {{ candidate.title | json }},
+        "url": {{ candidate.url | json }},
+        "price": {{ candidate.price | json }},
+        "featured_image": {{ candidate.featured_image | image_url: width: 400 | json }},
+        "product_code": {{ candidate.selected_or_first_available_variant.sku | json }}
+      }{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  ]
+</script>
+
+{% stylesheet %}
+  .cart-aware-recommendations {
+    container-type: inline-size;
+    margin-block-start: var(--margin-xl);
+  }
+
+  .cart-aware-recommendations__heading {
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight);
+    font-size: var(--font-size--lg, var(--font-size--2xl));
+    margin-block-end: var(--margin-md);
+  }
+
+  .cart-aware-recommendations__item a {
+    display: block;
+    text-decoration: none;
+    color: var(--color-foreground);
+  }
+
+  .cart-aware-recommendations__item img {
+    width: 100%;
+    /* ONA's coffee bag photography is portrait, not square -- 3/4 matches
+       the theme's own established ratio for this exact kind of card (see
+       product-recommendations-styles.liquid's skeleton placeholder) and
+       object-fit: contain (not cover) shows the whole bag, same as the
+       native "You may also like" block's image_fit: contain. 1/1 + cover
+       was cropping the top and bottom off every bag. */
+    aspect-ratio: 3 / 4;
+    object-fit: contain;
+    border-radius: var(--border-radius, 0);
+    background: rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
+  }
+
+  .cart-aware-recommendations__item-title {
+    font-family: var(--font-paragraph--family);
+    font-size: var(--font-size--2xs);
+    margin-block-start: var(--margin-2xs);
+  }
+
+  .cart-aware-recommendations__item-price {
+    font-family: var(--font-paragraph--family);
+    font-size: var(--font-size--2xs);
+    color: var(--color-foreground-subdued);
+  }
+
+  /* Drawer variant: the cart page gets a multi-column grid (plenty of
+     width); the drawer (400px desktop, full viewport on mobile -- never
+     wide enough for a readable grid) gets a horizontal scroll-snap strip
+     instead, sized off its own container width so it degrades gracefully
+     on a narrow phone-width drawer too. */
+  .cart-aware-recommendations--drawer {
+    /* Sits outside .cart-drawer__items, so it doesn't inherit that
+       element's own inline padding -- match it explicitly to stay
+       aligned with the rest of the drawer's content. */
+    padding-inline: var(--cart-drawer-padding, var(--padding-xl));
+    margin-block-start: var(--margin-lg);
+  }
+
+  .cart-aware-recommendations--drawer .cart-aware-recommendations__heading {
+    font-size: var(--font-size--sm, var(--font-size--md));
+    margin-block-end: var(--margin-sm);
+  }
+
+  .cart-aware-recommendations--drawer .cart-aware-recommendations__list {
+    display: flex;
+    gap: var(--padding-sm);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    /* no visible scrollbar -- the scroll-hint edge fade is the affordance */
+    scrollbar-width: none;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cart-aware-recommendations--drawer .cart-aware-recommendations__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cart-aware-recommendations--drawer .cart-aware-recommendations__item {
+    flex: 0 0 clamp(96px, 32cqi, 116px);
+    scroll-snap-align: start;
+  }
+
+  .cart-aware-recommendations--drawer .cart-aware-recommendations__item-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+{% endstylesheet %}

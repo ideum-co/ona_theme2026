@@ -124,7 +124,27 @@ test('every ona-* section is referenced, and every referenced one exists', () =>
   const orphaned = [...referenced].filter((type) => !onDisk.has(type)).sort();
   assert.deepEqual(orphaned, [], 'a template references an ona-* section that does not exist');
 
-  const unused = [...onDisk].filter((type) => !referenced.has(type)).sort();
+  /*
+   * A section with no template reference is normally dead and should have left with the PR that
+   * removed its last use. The exception is a section kept on purpose for a campaign that will run
+   * again: `ona-campaign-banner` came off the homepage when Water For Good closed on 2026-11-01,
+   * and the kit's behavioural table says why it stays (it is the other half of the counter and
+   * reads the same metafields). Keeping it costs nothing -- an unreferenced section renders
+   * nowhere and is not one of the 25 a template may hold.
+   *
+   * This is an allowlist, so it only protects what someone remembered to list. Both assertions
+   * below exist to make a stale entry fail rather than sit here silently: an entry must still be
+   * on disk, and it must still be unreferenced -- put it back on a template and it leaves here.
+   */
+  const RETAINED_UNREFERENCED = ['ona-campaign-banner'];
+  for (const type of RETAINED_UNREFERENCED) {
+    assert.ok(onDisk.has(type), `${type} is allowlisted as retained but sections/${type}.liquid is gone`);
+    assert.ok(!referenced.has(type), `${type} is referenced again; drop it from RETAINED_UNREFERENCED`);
+  }
+
+  const unused = [...onDisk]
+    .filter((type) => !referenced.has(type) && !RETAINED_UNREFERENCED.includes(type))
+    .sort();
   assert.deepEqual(unused, [], 'an ona-* section has no remaining use and should go in the PR that removed it');
 
   /*
