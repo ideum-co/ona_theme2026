@@ -210,7 +210,7 @@ merge away from overwriting a merchant's decision:
 - every `sections/*-group.json`
 - `config/settings_data.json`
 
-That is 35 files today. Do not read the named files below as the set — they are
+That is 36 files today. Do not read the named files below as the set — they are
 the ones whose history is worth knowing, nothing more.
 `tests/shop-owned-templates.test.mjs` derives the real set from disk, so a
 template added tomorrow is covered the day it lands without anyone remembering

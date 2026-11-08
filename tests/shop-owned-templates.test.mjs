@@ -137,6 +137,8 @@ test('index.json keeps the editor-made homepage sections', () => {
   assert.equal(sections.coffee_spotlight.settings.adaptive_max_width, 1280);
   assert.equal(sections.coffee_spotlight.settings.carousel_loop, true);
   assert.equal(sections.press_quotes_4kW9eF.settings.background_color, '{{ settings.color_palette.background }}');
+  // Set in the editor on 2026-11-02, using the control #440 added. git lacked it.
+  assert.equal(sections.press_quotes_4kW9eF.settings.section_width, 'page-width');
   assert.equal(Object.keys(sections.hero_ona.blocks).length, 4);
 
   // Sections the editor had switched off. They came back enabled once.
@@ -172,8 +174,9 @@ test('index.json keeps the editor-made homepage sections', () => {
   // See tests/homepage-wfg-campaign.test.mjs, which now asserts the off state
   // rather than forbidding it.
   //
-  // Brought onto staging-v2 2026-11-04 so the Black Friday banner can be
-  // reviewed without a closed campaign's counter sitting next to it.
+  // The QA branches place the Black Friday banner in the slot immediately after
+  // this one, so the counter being off also keeps a closed campaign from sitting
+  // next to the new one while Macarena reviews it.
   assert.deepEqual(disabledPaths(sections), [
     'club_benefits',
     'club_invite_QLL4T3',

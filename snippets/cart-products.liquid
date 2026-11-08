@@ -283,19 +283,50 @@
                         <p>{{ item.selling_plan_allocation.selling_plan.name }}</p>
                       {%- endif -%}
 
-                      {%- if item.line_level_discount_allocations.size > 0 -%}
-                        <ul
-                          class="list-unstyled"
-                          role="list"
-                        >
-                          {%- for discount in item.line_level_discount_allocations -%}
-                            <li>
+                    {%- endif -%}
+
+                    {%- comment -%}
+                      Horizon nests this list inside the variants / properties / selling-plan
+                      gate above. The gate reads as though it hides the discount name on any
+                      single-variant product with no properties and no subscription -- 36 of the
+                      91 active products -- but it does not, and the reason is worth recording:
+                      item.properties.size is nil, not 0, for a line with no properties, and in
+                      Liquid `nil != 0` is true. The middle clause is therefore true for every
+                      line item and the gate never closes. Measured on a preview theme on
+                      2 November 2026 with a probe rendering each operand against In Sequence
+                      (has_only_default_variant true, no properties, no selling plan):
+                      props-size "", is-nil NIL, "!= 0" TRUE, gate OPEN.
+
+                      The list comes out of the gate anyway. A condition that holds only by
+                      accident is one Liquid change away from hiding the discount on those 36
+                      products, and it never described what it appears to describe. PR #368 made
+                      this same change on 25 October and a Shopify editor write-back (3c35d42,
+                      70 seconds after that merge) reverted it; the test guards a repeat.
+
+                      The markup is the cart-discounts component from cart-summary.liquid, used
+                      verbatim -- same classes, same icon-discount.svg, same label / value split --
+                      so a line-level discount reads exactly like a cart-level one. Those rules
+                      live in a theme stylesheet block, which Shopify aggregates theme-wide, so
+                      reusing the classes here needs no new CSS.
+                    {%- endcomment -%}
+                    {%- if item.line_level_discount_allocations.size > 0 -%}
+                      <ul
+                        class="cart-discounts"
+                        role="list"
+                        aria-label="{{ 'content.discounts' | t }}"
+                      >
+                        {%- for discount in item.line_level_discount_allocations -%}
+                          <li class="cart-discounts__item">
+                            <span class="cart-discounts__label">
+                              {{- 'icon-discount.svg' | inline_asset_content -}}
                               {{ discount.discount_application.title | escape }}
-                              (-{{ discount.amount | money }})
-                            </li>
-                          {%- endfor -%}
-                        </ul>
-                      {%- endif -%}
+                            </span>
+                            <span class="cart-discounts__value cart-secondary-typography"
+                              >-{{ discount.amount | money -}}
+                            </span>
+                          </li>
+                        {%- endfor -%}
+                      </ul>
                     {%- endif -%}
                   </div>
 
