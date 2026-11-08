@@ -222,6 +222,11 @@
         "padding-block-end": 64
       }
     },
+    "bf_countdown_banner": {
+      "type": "bf-countdown-banner",
+      "settings": {
+      }
+    },
     "wfg_donation_counter": {
       "type": "ona-donation-counter",
       "disabled": true,
@@ -476,6 +481,7 @@
       },
       "name": "t:names.media_with_text",
       "settings": {
+        "motion_reveal": true,
         "mobile_padding_inline": 16,
         "mobile_text_center": true,
         "content_padding_custom": true,
@@ -1088,6 +1094,7 @@
       "disabled": true,
       "name": "t:names.media_with_text",
       "settings": {
+        "motion_reveal": true,
         "mobile_padding_inline": 0,
         "mobile_text_center": false,
         "content_padding_custom": false,
@@ -3883,6 +3890,7 @@
       },
       "name": "t:names.media_with_text",
       "settings": {
+        "motion_reveal": true,
         "mobile_padding_inline": 0,
         "mobile_text_center": true,
         "content_padding_custom": true,
@@ -4773,6 +4781,7 @@
   "order": [
     "hero_ona",
     "wfg_donation_counter",
+    "bf_countdown_banner",
     "floating_badge_r89NRP",
     "find_your_coffee",
     "coffee_spotlight",

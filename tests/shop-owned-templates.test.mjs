@@ -173,6 +173,10 @@ test('index.json keeps the editor-made homepage sections', () => {
   // back on the homepage. Reconciled in the only safe direction, git to live.
   // See tests/homepage-wfg-campaign.test.mjs, which now asserts the off state
   // rather than forbidding it.
+  //
+  // The QA branches place the Black Friday banner in the slot immediately after
+  // this one, so the counter being off also keeps a closed campaign from sitting
+  // next to the new one while Macarena reviews it.
   assert.deepEqual(disabledPaths(sections), [
     'club_benefits',
     'club_invite_QLL4T3',
