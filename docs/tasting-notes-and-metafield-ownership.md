@@ -185,6 +185,14 @@ profile intro, producer, region, process, varietal, altitude. **A rotating
 product cannot hold fixed per-lot fields**; they are stale the moment the
 featured coffee changes.
 
+That data is **dormant, not visible**. Both subscriptions render from
+`product.merch.json`, which contains no reference to `profile_intro`,
+`custom.tastes_like`, `who_is_for`, the origin-story sections or the brew-guide
+section — those live only in `product.json`. So the Peaberry fields are a
+landmine rather than a live bug: they surface the moment anyone moves these
+products onto the coffee template. Only `accentuate.tastes_like` leaks today,
+through the summary line in §3.
+
 All five blends reading `Milk-based` is also worth a check by the coffee owner;
 Raspberry Candy does not obviously belong in that group.
 
@@ -199,12 +207,23 @@ espresso range"; "Will the coffee change each month? Absolutely."), and
 
 ## 6. Fix
 
-**A — data, on the two Single Origin Subscription products.** Clear
-`accentuate.roast`, `accentuate.tastes_like`, and the rotating-lot fields
-(sourcing / origin / profile intro, producer, region, process, varietal,
-altitude). This fixes the cards **and** the PDP line in one move, because both
-read the same field, and it is durable per §4. Confirm neither product is linked
-to a brew guide via `custom.brew_guide`.
+**A — data, on the two Single Origin Subscription products.** Two fields, and
+**values are replaced, not deleted** — the metafield records stay in place:
+
+| Product | Field | From | To |
+|---|---|---|---|
+| S/O Subscription (Espresso) | `accentuate.roast` | `Filter` | `Espresso` |
+| S/O Subscription (Filter) | `accentuate.tastes_like` | Floral, yellow peach and citrus | *(emptied)* |
+| S/O Subscription (Espresso) | `accentuate.tastes_like` | Floral, yellow peach and citrus | *(emptied)* |
+
+This fixes the cards **and** the PDP line in one move, because both read the
+same field, and it is durable per §4. The theme hides the block when the value
+is blank, so an empty value is enough — the record does not need removing.
+
+The dormant per-lot fields in §5 are deliberately left alone: they render
+nowhere on the merch template, and replacing them is a content decision for the
+coffee owner, not a bug fix. Confirm neither product is linked to a brew guide
+via `custom.brew_guide` before considering that cleanup.
 
 **B — theme, afterwards.** Blank `namespace` / `description_key` on
 `pdp_product_summary` in `product.merch.json` (and equipment / non-coffee),
