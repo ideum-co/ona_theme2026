@@ -16,7 +16,9 @@ Last checked: 25 October 2026. The ONA Brew Guides app is installed on the ONA C
 4. Read **both** result banners. “Pushed to the product” confirms the product update. “Pushed to the linked Brew Guides article” confirms the full article update. A missing, broken, or failed article link can leave the product updated while the article remains old.
 5. Preview the product's Brew Guide tab and open **Full brewing guide**. Compare every dose, yield, time, temperature, and other parameter to the approved recipe. Check mobile as well as desktop when the layout has changed.
 
-The app does **not** create a Brew Guides article or its link. The product's existing `accentuate.select_artlice` value is the link to an article, in `brewguides/article-handle` form. When that link is absent, the app can still update the product and will show a warning for the article. Do not strip the `brewguides/` prefix.
+The product's `accentuate.select_artlice` value is the link to an article, in `brewguides/article-handle` form. When that link is absent, the app can still update the product and will show a warning for the article. Do not strip the `brewguides/` prefix.
+
+The app **can** create the article and the link. When no article is linked, the Brew guide card offers **Create a new article**, which publishes a new Brew Guides article titled after the product, fills in the five `accentuate.*` article fields from the guide, and writes the link back to `accentuate.select_artlice` on the product. **Searching** for an existing article and selecting **Link this article** writes the same field. Either path means `accentuate.select_artlice` is app-owned, not legacy data to clear by hand.
 
 ## Rotate a product to another coffee
 
