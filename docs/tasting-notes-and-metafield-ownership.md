@@ -207,23 +207,52 @@ espresso range"; "Will the coffee change each month? Absolutely."), and
 
 ## 6. Fix
 
-**A — data, on the two Single Origin Subscription products.** Two fields, and
-**values are replaced, not deleted** — the metafield records stay in place:
+**A — data, applied 9 November 2026.** Verified at source by Admin API
+read-back after each write.
 
 | Product | Field | From | To |
 |---|---|---|---|
 | S/O Subscription (Espresso) | `accentuate.roast` | `Filter` | `Espresso` |
-| S/O Subscription (Filter) | `accentuate.tastes_like` | Floral, yellow peach and citrus | *(emptied)* |
-| S/O Subscription (Espresso) | `accentuate.tastes_like` | Floral, yellow peach and citrus | *(emptied)* |
+| S/O Subscription (Filter) | `accentuate.tastes_like` | Floral, yellow peach and citrus | **deleted** |
+| S/O Subscription (Espresso) | `accentuate.tastes_like` | Floral, yellow peach and citrus | **deleted** |
+| S/O Subscription (Espresso) | `filters.coffee_type` | `["Filter"]` | `["Espresso"]` |
+| S/O Subscription (Espresso) | `filters.brew_method` | `["Aeropress","French press","Pour over"]` | `["Espresso","French press","Moka Pot"]` |
+| S/O Subscription (Espresso) | `filters.taste_notes` | `["Citrus","Floral","Peach","Sweet"]` | **deleted** |
+
+> **Deleted, not emptied.** The intent was to replace values in place and leave
+> the records alone. Shopify refuses: `metafieldsSet` with `value: ""` returns
+> **`Value can't be blank. (INVALID_VALUE)`**. There is no in-place way to clear
+> a metafield, so removing the record is the only option short of inventing
+> replacement copy. Both original values are recorded above, so it is
+> reversible.
+
+The `filters.*` values were **derived, not guessed**: ONA's espresso single
+origins (Kagumo AB, La Merced, Regional Aurea, Gelcha Kindu, Gargari Gutity)
+carry `coffee_type: ["Espresso"]` with
+`brew_method: ["Espresso","French press","Moka Pot"]`, and the Filter
+subscription already matches the filter convention
+(`["Aeropress","French press","Pour over"]`) exactly.
 
 This fixes the cards **and** the PDP line in one move, because both read the
-same field, and it is durable per §4. The theme hides the block when the value
-is blank, so an empty value is enough — the record does not need removing.
+same field, and it is durable per §4.
+
+**Storefront lag is expected.** Shopify's backend `page_cache` is not purged by
+Admin API writes — the roast change appeared on the collection page within
+minutes while the deletes had not yet, because the cache entry was rebuilt
+between the two writes. Verify at source first, then re-check the storefront
+after the TTL rather than concluding the write failed.
 
 The dormant per-lot fields in §5 are deliberately left alone: they render
 nowhere on the merch template, and replacing them is a content decision for the
-coffee owner, not a bug fix. Confirm neither product is linked to a brew guide
-via `custom.brew_guide` before considering that cleanup.
+coffee owner, not a bug fix. Both products are clear of `custom.brew_guide`, so
+the Brew Guides app is not pushing to them — but both still point
+`accentuate.select_artlice` at `brewguides/guji-pb-ethiopia-washed-1`, so their
+"Full brewing guide" link resolves to one rotating lot's article.
+
+Still open: `global.description_tag` on the Espresso subscription reads "Single
+Origin **Filter** Subscription … roasted specifically for **filter** brewing".
+That is the SEO meta description, so it is customer-facing copy and is awaiting
+sign-off rather than being corrected here.
 
 **B — theme, afterwards.** Blank `namespace` / `description_key` on
 `pdp_product_summary` in `product.merch.json` (and equipment / non-coffee),
