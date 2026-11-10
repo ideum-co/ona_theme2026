@@ -149,6 +149,7 @@
     <{{ heading_tag }}
       class="collection-carousel__heading {{ heading_preset }}{% if heading_preset == 'custom' %} custom-typography custom-font-size{% elsif heading_preset == 'rte' %} collection-carousel__heading--default{% endif %}"
       style="{%- render 'typography-style', settings: section.settings, type: 'heading' -%}"
+      {% if settings.motion_reveal %}data-reveal{% endif %}
     >{{ settings.heading }}</{{ heading_tag }}>
   {%- endif -%}
 
@@ -387,6 +388,13 @@
     }
   ],
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "motion_reveal",
+      "label": "Reveal heading on scroll",
+      "info": "Fades the heading into place the first time it scrolls into view. Off by default; respects reduced motion and never hides content without JavaScript.",
+      "default": false
+    },
     {
       "type": "header",
       "content": "t:content.heading"

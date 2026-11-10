@@ -158,3 +158,16 @@ test('the scroll-reveal opt-in is wired on the sections that use it', () => {
   const press = read('sections/press-quotes.liquid');
   assert.match(press, /settings\.motion_reveal\s*%\}data-reveal(?!-group)/, 'the whole section reveals as one block');
 });
+
+test('heading-led sections reveal their title, leaving grids and carousels untouched', () => {
+  // These commerce sections carry scroll-snapping grids/carousels, so only the
+  // heading opts into the reveal -- the title fades up like the reference while the
+  // list below is never wrapped in a transform that could fight its own scrolling.
+  const productList = read('sections/product-list.liquid');
+  assert.match(productList, /"id":\s*"motion_reveal"[\s\S]*?"default":\s*false/, 'product-list reveal is opt-in, off by default');
+  assert.match(productList, /section-resource-list__header"\{% if section\.settings\.motion_reveal %\} data-reveal/, 'product-list reveals its header');
+
+  const carousel = read('sections/collection-carousel.liquid');
+  assert.match(carousel, /"id":\s*"motion_reveal"[\s\S]*?"default":\s*false/, 'collection-carousel reveal is opt-in, off by default');
+  assert.match(carousel, /\{% if settings\.motion_reveal %\}data-reveal/, 'collection-carousel reveals its heading');
+});
