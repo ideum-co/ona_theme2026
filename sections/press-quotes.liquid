@@ -82,6 +82,7 @@
     {%- render 'spacing-style', settings: settings %}
   "
   {{ section.shopify_attributes }}
+  {% if settings.motion_reveal %}data-reveal{% endif %}
 >
   {%- if section.blocks.size > 0 -%}
     {%- render 'slideshow',
@@ -273,6 +274,13 @@
         }
       ],
       "default": "page-width"
+    },
+    {
+      "type": "checkbox",
+      "id": "motion_reveal",
+      "label": "Reveal on scroll",
+      "info": "Fades the section into place the first time it scrolls into view. Off by default; respects reduced motion and never hides content without JavaScript.",
+      "default": false
     },
     {
       "type": "header",

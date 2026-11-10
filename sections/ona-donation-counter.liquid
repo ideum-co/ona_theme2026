@@ -57,6 +57,7 @@
     --dc-frame-color: {{ section.settings.frame_color }};
   "
   {{ section.shopify_attributes }}
+  {% if section.settings.motion_reveal %}data-reveal{% endif %}
 >
   <div class="donation-counter__inner">
     {%- if section.settings.title != blank -%}
@@ -297,6 +298,13 @@
   "name": "Contribution counter",
   "tag": "section",
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "motion_reveal",
+      "label": "Reveal on scroll",
+      "info": "Fades the section into place the first time it scrolls into view. Off by default; respects reduced motion and never hides content without JavaScript.",
+      "default": false
+    },
     {
       "type": "color",
       "id": "bg_color",

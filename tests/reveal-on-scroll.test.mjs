@@ -134,3 +134,17 @@ test('a reveal engine that never runs releases the hidden start state', () => {
   assert.ok(inlineName.length >= 1, 'the inline script names the failsafe handle');
   assert.ok(engineName.length >= 1, 'the engine clears the same handle');
 });
+
+test('plain whole-section reveal is opt-in on the sections that use it', () => {
+  // Beyond media-with-content's editorial (staggered) variant, these sections opt into
+  // the plain whole-section fade-up: the engine observes the wrapper's [data-reveal] and
+  // the base `.reveal-ready [data-reveal]` rule animates it. Each must be off by default
+  // and gate the hook on its own setting, and must NOT carry `reveal--editorial` -- that
+  // variant resets its wrapper to opacity 1, which would cancel the whole-section fade.
+  for (const path of ['sections/ona-donation-counter.liquid', 'sections/press-quotes.liquid']) {
+    const section = read(path);
+    assert.match(section, /"id":\s*"motion_reveal"[\s\S]*?"default":\s*false/, `${path}: reveal is opt-in, off by default`);
+    assert.match(section, /settings\.motion_reveal\s*%\}data-reveal/, `${path}: the opt-in adds the data-reveal hook`);
+    assert.doesNotMatch(section, /reveal--editorial/, `${path}: plain reveal must not use the editorial variant`);
+  }
+});
