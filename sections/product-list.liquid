@@ -23,7 +23,7 @@
     {% render 'gap-style', value: section.settings.gap %}
   "
 >
-  <div class="section-resource-list__header">
+  <div class="section-resource-list__header"{% if section.settings.motion_reveal %} data-reveal{% endif %}>
     {%- content_for 'block', type: '_product-list-content', id: 'static-header' -%}
   </div>
 
@@ -106,6 +106,13 @@
     ]
   },
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "motion_reveal",
+      "label": "Reveal heading on scroll",
+      "info": "Fades the section heading into place the first time it scrolls into view. Off by default; respects reduced motion and never hides content without JavaScript.",
+      "default": false
+    },
     {
       "type": "collection",
       "id": "collection",

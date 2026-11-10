@@ -57,13 +57,14 @@
     --dc-frame-color: {{ section.settings.frame_color }};
   "
   {{ section.shopify_attributes }}
+  {% if section.settings.motion_reveal %}data-reveal-group{% endif %}
 >
   <div class="donation-counter__inner">
     {%- if section.settings.title != blank -%}
-      <h2 class="donation-counter__heading">{{ section.settings.title }}</h2>
+      <h2 class="donation-counter__heading"{% if section.settings.motion_reveal %} data-reveal{% endif %}>{{ section.settings.title }}</h2>
     {%- endif -%}
 
-    <div class="donation-counter__display" data-amount="{{ amount }}">
+    <div class="donation-counter__display" data-amount="{{ amount }}"{% if section.settings.motion_reveal %} data-reveal{% endif %}>
       <div class="donation-counter__cards">
         <div class="donation-counter__card donation-counter__card--symbol">
           <span>$</span>
@@ -91,11 +92,11 @@
     </div>
 
     {%- if section.settings.subtitle != blank -%}
-      <p class="donation-counter__subtitle">{{ section.settings.subtitle }}</p>
+      <p class="donation-counter__subtitle"{% if section.settings.motion_reveal %} data-reveal{% endif %}>{{ section.settings.subtitle }}</p>
     {%- endif -%}
 
     {%- if section.settings.learn_more_text != blank and section.settings.learn_more_url != blank -%}
-      <div class="donation-counter__actions">
+      <div class="donation-counter__actions"{% if section.settings.motion_reveal %} data-reveal{% endif %}>
         <a href="{{ section.settings.learn_more_url }}" class="button donation-counter__cta">
           {{- section.settings.learn_more_text -}}
         </a>
@@ -297,6 +298,13 @@
   "name": "Contribution counter",
   "tag": "section",
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "motion_reveal",
+      "label": "Reveal on scroll",
+      "info": "Fades the section into place the first time it scrolls into view. Off by default; respects reduced motion and never hides content without JavaScript.",
+      "default": false
+    },
     {
       "type": "color",
       "id": "bg_color",

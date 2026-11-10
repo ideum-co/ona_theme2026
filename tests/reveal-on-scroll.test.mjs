@@ -134,3 +134,40 @@ test('a reveal engine that never runs releases the hidden start state', () => {
   assert.ok(inlineName.length >= 1, 'the inline script names the failsafe handle');
   assert.ok(engineName.length >= 1, 'the engine clears the same handle');
 });
+
+test('the scroll-reveal opt-in is wired on the sections that use it', () => {
+  // Both are opt-in (off by default) and neither uses the editorial variant.
+  for (const path of ['sections/ona-donation-counter.liquid', 'sections/press-quotes.liquid']) {
+    const section = read(path);
+    assert.match(section, /"id":\s*"motion_reveal"[\s\S]*?"default":\s*false/, `${path}: reveal is opt-in, off by default`);
+    assert.doesNotMatch(section, /reveal--editorial/, `${path}: not the editorial variant`);
+  }
+
+  // Donation counter reveals its pieces in a title-led cascade (like the reference):
+  // the wrapper is a stagger group, and the heading carries the reveal hook, so the
+  // title lifts in first and the counter, subtitle and CTA follow on the stagger.
+  const donation = read('sections/ona-donation-counter.liquid');
+  assert.match(donation, /motion_reveal\s*%\}data-reveal-group/, 'the wrapper is a stagger group, not a single revealing block');
+  assert.match(
+    donation,
+    /donation-counter__heading"\{% if section\.settings\.motion_reveal %\} data-reveal/,
+    'the heading itself reveals, so the title has its own entrance',
+  );
+
+  // Press quotes has no heading, so the whole section fades up as one block.
+  const press = read('sections/press-quotes.liquid');
+  assert.match(press, /settings\.motion_reveal\s*%\}data-reveal(?!-group)/, 'the whole section reveals as one block');
+});
+
+test('heading-led sections reveal their title, leaving grids and carousels untouched', () => {
+  // These commerce sections carry scroll-snapping grids/carousels, so only the
+  // heading opts into the reveal -- the title fades up like the reference while the
+  // list below is never wrapped in a transform that could fight its own scrolling.
+  const productList = read('sections/product-list.liquid');
+  assert.match(productList, /"id":\s*"motion_reveal"[\s\S]*?"default":\s*false/, 'product-list reveal is opt-in, off by default');
+  assert.match(productList, /section-resource-list__header"\{% if section\.settings\.motion_reveal %\} data-reveal/, 'product-list reveals its header');
+
+  const carousel = read('sections/collection-carousel.liquid');
+  assert.match(carousel, /"id":\s*"motion_reveal"[\s\S]*?"default":\s*false/, 'collection-carousel reveal is opt-in, off by default');
+  assert.match(carousel, /\{% if settings\.motion_reveal %\}data-reveal/, 'collection-carousel reveals its heading');
+});
