@@ -1,0 +1,452 @@
+{%- liquid
+  assign s = section.settings
+  assign model_src = ''
+  if s.model_url != blank
+    assign model_src = s.model_url
+  elsif s.model_file != blank
+    assign model_src = s.model_file | file_url
+  endif
+-%}
+
+{%- comment -%}
+  ONA "Sweet spot" showcase. Replaces the baked-in background video with a flat, editor-chosen
+  colour, a field of slowly drifting SVG swirls, and two columns: a floating 3D model (.glb via
+  Google's model-viewer) and the heading / description / actions. No video, so no large download;
+  the motion is CSS and respects reduced motion.
+{%- endcomment -%}
+
+<div
+  class="sweet-spot sweet-spot--media-{{ s.media_position }} spacing-style"
+  style="
+    --sweet-spot-bg: {{ s.background_color }};
+    --sweet-spot-swirl: {{ s.swirl_color }};
+    --sweet-spot-swirl-opacity: {{ s.swirl_opacity | divided_by: 100.0 }};
+    --sweet-spot-text: {{ s.text_color }};
+    --sweet-spot-min-height: {{ s.min_height }}px;
+    {% render 'spacing-style', settings: s %}
+  "
+  {{ section.shopify_attributes }}
+>
+  {%- if s.show_swirls -%}
+    <div class="sweet-spot__swirls" aria-hidden="true">
+      <svg width="0" height="0" class="sweet-spot__swirl-def" focusable="false">
+        <symbol id="sweet-spot-swirl-{{ section.id }}" viewBox="0 0 120 120">
+          <path
+            d="M60 60 C 64 50, 78 50, 80 62 S 72 86, 54 84 S 28 70, 30 48 S 50 18, 76 24 S 108 52, 100 84 S 64 122, 30 110"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+          />
+        </symbol>
+      </svg>
+      {%- comment -%} Scattered instances; position/size/speed vary via inline custom properties. {%- endcomment -%}
+      {%- assign swirls = '6,8,230,9,0 | 70,22,150,16,1 | 86,54,340,13,2 | 24,70,120,20,3 | 58,86,420,15,4 | 90,90,200,11,5 | 40,36,300,18,6' | split: ' | ' -%}
+      {%- for swirl in swirls -%}
+        {%- assign p = swirl | split: ',' -%}
+        <svg
+          class="sweet-spot__swirl"
+          viewBox="0 0 120 120"
+          style="--x: {{ p[0] }}%; --y: {{ p[1] }}%; --rot: {{ p[2] }}deg; --size: {{ p[3] }}rem; --i: {{ p[4] }};"
+        >
+          <use href="#sweet-spot-swirl-{{ section.id }}" />
+        </svg>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+
+  <div class="sweet-spot__inner section section--page-width">
+    <div class="sweet-spot__media">
+      {%- if model_src != blank -%}
+        <model-viewer
+          class="sweet-spot__model{% if s.float_model %} sweet-spot__model--float{% endif %}"
+          src="{{ model_src }}"
+          alt="{{ s.model_alt | default: s.title | escape }}"
+          camera-controls
+          disable-zoom
+          disable-pan
+          interaction-prompt="none"
+          shadow-intensity="{{ s.model_shadow }}"
+          exposure="1"
+          camera-orbit="{{ s.model_orbit }}"
+          {% if s.auto_rotate %}auto-rotate auto-rotate-delay="0" rotation-per-second="{{ s.rotate_speed }}deg"{% endif %}
+          loading="lazy"
+          reveal="auto"
+          {% if s.fallback_image != blank %}poster="{{ s.fallback_image | image_url: width: 800 }}"{% endif %}
+        ></model-viewer>
+        <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+      {%- elsif s.fallback_image != blank -%}
+        {{
+          s.fallback_image
+          | image_url: width: 900
+          | image_tag: widths: '300, 500, 700, 900', sizes: '(min-width: 750px) 44vw, 86vw', class: 'sweet-spot__model-image', loading: 'lazy', alt: s.title
+        }}
+      {%- endif -%}
+    </div>
+
+    <div class="sweet-spot__content">
+      {%- if s.title != blank -%}
+        <h2 class="sweet-spot__title"{% if s.motion_reveal %} data-reveal{% endif %}>{{ s.title }}</h2>
+      {%- endif -%}
+      {%- if s.description != blank -%}
+        <div class="sweet-spot__description"{% if s.motion_reveal %} data-reveal{% endif %}>{{ s.description }}</div>
+      {%- endif -%}
+      {%- if s.button_1_label != blank or s.button_2_label != blank -%}
+        <div class="sweet-spot__actions"{% if s.motion_reveal %} data-reveal{% endif %}>
+          {%- if s.button_1_label != blank -%}
+            <a href="{{ s.button_1_link | default: '#' }}" class="button sweet-spot__button">{{ s.button_1_label }}</a>
+          {%- endif -%}
+          {%- if s.button_2_label != blank -%}
+            <a href="{{ s.button_2_link | default: '#' }}" class="button sweet-spot__button sweet-spot__button--alt">{{ s.button_2_label }}</a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  .sweet-spot {
+    position: relative;
+    overflow: hidden;
+    background: var(--sweet-spot-bg, #f7cfe0);
+    color: var(--sweet-spot-text, #470a12);
+    padding-block: var(--padding-block-start, var(--padding-2xl)) var(--padding-block-end, var(--padding-2xl));
+    isolation: isolate;
+  }
+
+  /* Swirl field */
+  .sweet-spot__swirls {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    color: var(--sweet-spot-swirl, #ec9bc4);
+    opacity: var(--sweet-spot-swirl-opacity, 0.5);
+    pointer-events: none;
+  }
+
+  .sweet-spot__swirl-def {
+    position: absolute;
+  }
+
+  .sweet-spot__swirl {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    inline-size: var(--size);
+    block-size: var(--size);
+    translate: -50% -50%;
+    rotate: var(--rot);
+    overflow: visible;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sweet-spot__swirl {
+      animation: sweet-spot-drift calc(22s + var(--i) * 3s) ease-in-out calc(var(--i) * -2.5s) infinite;
+    }
+  }
+
+  @keyframes sweet-spot-drift {
+    0%, 100% { translate: -50% -50%; rotate: var(--rot); }
+    50% { translate: -50% -58%; rotate: calc(var(--rot) + 18deg); }
+  }
+
+  /* Layout */
+  .sweet-spot__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: clamp(1.5rem, 5vw, 4rem);
+    min-height: var(--sweet-spot-min-height, 0px);
+  }
+
+  .sweet-spot--media-right .sweet-spot__media {
+    order: 2;
+  }
+
+  .sweet-spot__media {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .sweet-spot__model,
+  .sweet-spot__model-image {
+    inline-size: min(100%, 30rem);
+    block-size: auto;
+    aspect-ratio: 3 / 4;
+    background: transparent;
+    --poster-color: transparent;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sweet-spot__model--float {
+      animation: sweet-spot-float 6s ease-in-out infinite;
+    }
+  }
+
+  @keyframes sweet-spot-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+  }
+
+  .sweet-spot__content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--gap-lg);
+    min-width: 0;
+  }
+
+  .sweet-spot__title {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight, 400);
+    font-size: var(--font-size--5xl);
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+
+  .sweet-spot__description {
+    margin: 0;
+    max-width: 32ch;
+    font-size: var(--font-size--md);
+    line-height: 1.6;
+  }
+
+  .sweet-spot__description > :first-child { margin-top: 0; }
+  .sweet-spot__description > :last-child { margin-bottom: 0; }
+
+  .sweet-spot__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-sm);
+    margin-top: var(--gap-2xs);
+  }
+
+  @media screen and (max-width: 749px) {
+    .sweet-spot__inner {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+    .sweet-spot--media-right .sweet-spot__media { order: 0; }
+    .sweet-spot__content { align-items: center; }
+    .sweet-spot__description { margin-inline: auto; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Sweet spot showcase",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "media_position",
+      "label": "Model position",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "min_height",
+      "label": "Minimum height",
+      "min": 0,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 560
+    },
+    {
+      "type": "header",
+      "content": "Background"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#f7cfe0"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_swirls",
+      "label": "Show animated swirls",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "swirl_color",
+      "label": "Swirl color",
+      "default": "#ec9bc4"
+    },
+    {
+      "type": "range",
+      "id": "swirl_opacity",
+      "label": "Swirl opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 55
+    },
+    {
+      "type": "header",
+      "content": "3D model"
+    },
+    {
+      "type": "text",
+      "id": "model_file",
+      "label": "Model file name (.glb, uploaded to Files)",
+      "info": "Upload the .glb under Settings > Files, then paste its file name here.",
+      "default": "raspberry-candy-bag-3d.glb"
+    },
+    {
+      "type": "url",
+      "id": "model_url",
+      "label": "Or model URL",
+      "info": "Overrides the file name above if set."
+    },
+    {
+      "type": "text",
+      "id": "model_alt",
+      "label": "Model alt text",
+      "default": "Raspberry Candy coffee bag, 3D"
+    },
+    {
+      "type": "checkbox",
+      "id": "float_model",
+      "label": "Float the model",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "auto_rotate",
+      "label": "Auto-rotate",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "rotate_speed",
+      "label": "Rotate speed",
+      "min": 5,
+      "max": 60,
+      "step": 5,
+      "unit": "deg",
+      "default": 18
+    },
+    {
+      "type": "text",
+      "id": "model_orbit",
+      "label": "Camera orbit",
+      "default": "35deg 80deg 105%"
+    },
+    {
+      "type": "range",
+      "id": "model_shadow",
+      "label": "Shadow intensity",
+      "min": 0,
+      "max": 2,
+      "step": 0.1,
+      "default": 0.8
+    },
+    {
+      "type": "image_picker",
+      "id": "fallback_image",
+      "label": "Fallback / poster image",
+      "info": "Shown while the model loads, or if no model is set."
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "The Sweet spot"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Sweet berries, creamy white chocolate and a silky finish have made Raspberry Candy one of ONA's most iconic coffees.</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "motion_reveal",
+      "label": "Reveal content on scroll",
+      "info": "Fades the title, description and buttons in as the section scrolls into view. Respects reduced motion.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "text",
+      "id": "button_1_label",
+      "label": "Button 1 label",
+      "default": "Shop now"
+    },
+    {
+      "type": "url",
+      "id": "button_1_link",
+      "label": "Button 1 link"
+    },
+    {
+      "type": "text",
+      "id": "button_2_label",
+      "label": "Button 2 label",
+      "default": "Subscribe & Save"
+    },
+    {
+      "type": "url",
+      "id": "button_2_link",
+      "label": "Button 2 link"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 72
+    }
+  ],
+  "presets": [
+    {
+      "name": "Sweet spot showcase"
+    }
+  ]
+}
+{% endschema %}
