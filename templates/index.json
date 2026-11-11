@@ -1708,6 +1708,36 @@
         "padding-block-end": 96
       }
     },
+    "sweet_spot_showcase_F6AyGf": {
+      "type": "sweet-spot-showcase",
+      "name": "Sweet spot showcase",
+      "settings": {
+        "media_position": "left",
+        "min_height": 560,
+        "background_color": "#f7cfe0",
+        "show_swirls": true,
+        "swirl_color": "#ec9bc4",
+        "swirl_opacity": 55,
+        "model_file": "raspberry-candy-bag-3d.glb",
+        "model_url": "",
+        "model_alt": "Raspberry Candy coffee bag, 3D",
+        "float_model": true,
+        "auto_rotate": true,
+        "rotate_speed": 20,
+        "model_orbit": "35deg 80deg 105%",
+        "model_shadow": 0.8,
+        "text_color": "#ffffff",
+        "title": "The Sweet spot",
+        "description": "<p>Sweet berries, creamy white chocolate and a silky finish have made Raspberry Candy one of ONA's most iconic coffees.</p>",
+        "motion_reveal": true,
+        "button_1_label": "Shop now",
+        "button_1_link": "",
+        "button_2_label": "Subscribe & Save",
+        "button_2_link": "",
+        "padding-block-start": 72,
+        "padding-block-end": 72
+      }
+    },
     "section_LpJJ4p": {
       "type": "section",
       "blocks": {
@@ -4837,6 +4867,7 @@
     "club_invite_TGPaF8",
     "slideshow_nBcaMx",
     "club_benefits_937XiA",
+    "sweet_spot_showcase_F6AyGf",
     "section_LpJJ4p",
     "product_intro_k9p6yn",
     "club_benefits",
