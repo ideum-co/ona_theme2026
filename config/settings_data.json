@@ -47,7 +47,7 @@
     "page_width": "narrow",
     "page_transition_enabled": true,
     "transition_to_main_product": true,
-    "card_hover_effect": "scale",
+    "card_hover_effect": "none",
     "badge_position": "top-left",
     "badge_corner_radius": 0,
     "badge_sold_out_background_color": "{{ settings.color_palette.color2 }}",
