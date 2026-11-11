@@ -1969,6 +1969,7 @@
         "image_6tCQDg",
         "group_7pGNWg"
       ],
+      "disabled": true,
       "name": "t:names.image_with_text",
       "settings": {
         "content_direction": "row",
