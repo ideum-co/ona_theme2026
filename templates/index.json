@@ -222,15 +222,11 @@
         "padding-block-end": 64
       }
     },
-    "bf_countdown_banner": {
-      "type": "bf-countdown-banner",
-      "settings": {
-      }
-    },
     "wfg_donation_counter": {
       "type": "ona-donation-counter",
       "disabled": true,
       "settings": {
+        "motion_reveal": false,
         "bg_color": "#441925",
         "title": "THANK YOU. TOGETHER WE CONTRIBUTED",
         "subtitle": "Every participating coffee bought in October added a fixed contribution. That money goes to Water for Good and Project Origin, to support safe, reliable water in coffee-growing communities.",
@@ -254,6 +250,50 @@
         "padding-block-end": 52,
         "padding-inline-start": 30,
         "padding-inline-end": 30
+      }
+    },
+    "bf_countdown_banner": {
+      "type": "bf-countdown-banner",
+      "settings": {
+        "title": "Black Friday",
+        "subtitle": "Seven days of our best coffee. Subscribers see it first.",
+        "bg_color": "#441925",
+        "countdown_start_at": "2026-11-20T00:00:00+11:00",
+        "countdown_end_at": "2026-11-28T00:00:00+11:00",
+        "date_line": "21–27 November 2026",
+        "label_before": "Early access opens in",
+        "label_live": "Black Friday is on",
+        "label_ended": "That is a wrap",
+        "text_live": "Shop now — ends Friday 27 November.",
+        "text_ended": "Join the list to hear first next time.",
+        "label_days": "Days",
+        "label_hours": "Hours",
+        "label_minutes": "Mins",
+        "label_seconds": "Secs",
+        "clock_label": "Time until Black Friday early access",
+        "show_signup": true,
+        "signup_heading": "Sign up for early access, offers and every update.",
+        "signup_placeholder": "Email address",
+        "signup_button": "Sign up",
+        "signup_success": "You are on the list. We will email you first.",
+        "signup_tag": "BFCM 2026",
+        "cta_text": "See the sale",
+        "cta_url": "",
+        "heading_color": "#fbf8f3",
+        "subtitle_color": "#fbf8f3",
+        "card_bg_color": "#f2f0eb",
+        "card_ink_color": "#441925",
+        "frame_color": "#000000",
+        "button_bg_color": "#f2f0eb",
+        "button_text_color": "#441925",
+        "digit_size": 64,
+        "card_gap": 16,
+        "heading_size": 40,
+        "subtitle_size": 16,
+        "padding-block-start": 43,
+        "padding-block-end": 52,
+        "padding-inline-start": 20,
+        "padding-inline-end": 20
       }
     },
     "floating_badge_r89NRP": {
@@ -481,7 +521,6 @@
       },
       "name": "t:names.media_with_text",
       "settings": {
-        "motion_reveal": true,
         "mobile_padding_inline": 16,
         "mobile_text_center": true,
         "content_padding_custom": true,
@@ -500,6 +539,7 @@
         "max_width": 1360,
         "extend_media": true,
         "background_color": "{{ settings.color_palette.color1 }}",
+        "motion_reveal": true,
         "padding-block-start": 0,
         "padding-block-end": 0
       }
@@ -910,6 +950,7 @@
       },
       "name": "t:names.featured_collection",
       "settings": {
+        "motion_reveal": true,
         "collection": "all",
         "layout_type": "carousel",
         "carousel_on_mobile": true,
@@ -1094,7 +1135,6 @@
       "disabled": true,
       "name": "t:names.media_with_text",
       "settings": {
-        "motion_reveal": true,
         "mobile_padding_inline": 0,
         "mobile_text_center": false,
         "content_padding_custom": false,
@@ -1113,6 +1153,7 @@
         "max_width": 1280,
         "extend_media": false,
         "background_color": "{{ settings.color_palette.foreground }}",
+        "motion_reveal": true,
         "padding-block-start": 80,
         "padding-block-end": 80
       }
@@ -3314,6 +3355,7 @@
         "columns": 3,
         "icons_style": "arrow",
         "section_width": "page-width",
+        "motion_reveal": false,
         "background_color": "{{ settings.color_palette.background }}",
         "text_color": "{{ settings.color_palette.color1 }}",
         "padding-block-start": 0,
@@ -3890,7 +3932,6 @@
       },
       "name": "t:names.media_with_text",
       "settings": {
-        "motion_reveal": true,
         "mobile_padding_inline": 0,
         "mobile_text_center": true,
         "content_padding_custom": true,
@@ -3909,6 +3950,7 @@
         "max_width": 1280,
         "extend_media": false,
         "background_color": "{{ settings.color_palette.color1 }}",
+        "motion_reveal": true,
         "padding-block-start": 60,
         "padding-block-end": 80
       }
@@ -4742,6 +4784,7 @@
       ],
       "name": "t:names.collection_carousel",
       "settings": {
+        "motion_reveal": false,
         "heading_tag": "h3",
         "heading": "Discover by <em>category</em>",
         "heading_size": 40,
@@ -4805,4 +4848,3 @@
     "collection_carousel_GRkRhJ"
   ]
 }
-
