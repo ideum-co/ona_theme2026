@@ -802,14 +802,20 @@
     }
 
     /* The heading leads: it travels furthest and comes out of the deepest blur, which is what
-       gives the serif display its weight on arrival. */
-    .hero--animate-content .hero__content-wrapper .text-block:is(.h0, .h1, .h2, .h3) {
+       gives the serif display its weight on arrival. The first text block gets the same lead
+       even on a custom preset, so a headline that is not tagged h1-h3 (as the hero's own title
+       is) still arrives first and heaviest. */
+    .hero--animate-content .hero__content-wrapper .text-block:is(.h0, .h1, .h2, .h3),
+    .hero--animate-content .hero__content-wrapper > .text-block:first-child {
       --hero-reveal-duration: 1.3s;
       --hero-reveal-shift: 2.25rem;
       --hero-reveal-blur: 14px;
     }
 
-    .hero--animate-content .hero__content-wrapper .text-block:is(.paragraph, .rte) {
+    /* A paragraph preset, or the second text block (a custom-preset subheading like the hero's),
+       follows the title in on a short delay. */
+    .hero--animate-content .hero__content-wrapper .text-block:is(.paragraph, .rte),
+    .hero--animate-content .hero__content-wrapper > .text-block:nth-child(2) {
       --hero-reveal-delay: 0.32s;
       --hero-reveal-shift: 1.5rem;
       --hero-reveal-blur: 10px;
