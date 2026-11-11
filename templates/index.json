@@ -188,6 +188,9 @@
       "name": "t:names.hero",
       "settings": {
         "animate_content": true,
+        "type_heading": true,
+        "show_scroll_cue": true,
+        "scroll_cue_text": "Scroll",
         "pin_button_group_to_bottom": true,
         "button_group_bottom_spacing": 60,
         "media_type_1": "video",
@@ -216,11 +219,10 @@
         "overlay_color": "#201b1b66",
         "overlay_style": "solid",
         "gradient_direction": "to top",
-        "blurred_reflection": false,
+        "blurred_reflection": true,
         "reflection_opacity": 75,
         "padding-block-start": 64,
-        "padding-block-end": 64,
-        "type_heading": true
+        "padding-block-end": 64
       }
     },
     "wfg_donation_counter": {
