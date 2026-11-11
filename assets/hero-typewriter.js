@@ -6,8 +6,13 @@
  * leave the real text exactly where it was — the effect only ever *replaces* text it first read.
  */
 
-const SPEED_MS = 55; // per character
+const BASE_MS = 46; // per character
 const START_DELAY_MS = 260;
+
+// A written cadence rather than a metronome: a small beat after a space, a longer one after
+// punctuation, so the line reads like it is being set down by hand.
+const PAUSE_AFTER = { ' ': 110, ',': 240, ';': 220, ':': 200, '.': 320, '!': 320, '?': 320, '—': 240 };
+const delayAfter = (ch) => BASE_MS + (PAUSE_AFTER[ch] || 0);
 
 const prefersReduced = () =>
   typeof window.matchMedia === 'function' &&
@@ -52,7 +57,7 @@ function typeHeading(hero) {
     i += 1;
     output.textContent = text.slice(0, i);
     if (i < text.length) {
-      window.setTimeout(tick, SPEED_MS);
+      window.setTimeout(tick, delayAfter(text[i - 1]));
     } else {
       title.classList.add('hero-typing--done');
       title.dataset.typed = 'done';

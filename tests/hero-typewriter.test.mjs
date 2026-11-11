@@ -53,3 +53,21 @@ test('the title does not also fade, and the layout is reserved so nothing shifts
   assert.match(hero, /\.hero-typing__ghost \{\s*visibility: hidden/, 'the ghost reserves space but is hidden');
   assert.match(hero, /\.hero-typing__live \{[\s\S]*?position: absolute/, 'the live text overlays the ghost');
 });
+
+test('the scroll cue is opt-in and its chevron only bobs when motion is allowed', () => {
+  const schema = JSON.parse(hero.match(/\{%\s*schema\s*%\}([\s\S]*?)\{%\s*endschema\s*%\}/)[1]);
+  const setting = schema.settings.find((s) => s.id === 'show_scroll_cue');
+  assert.ok(setting, 'the hero exposes a show_scroll_cue setting');
+  assert.equal(setting.default, false, 'off by default');
+  assert.match(hero, /settings\.show_scroll_cue -%\}\s*<div class="hero__scroll-cue"/, 'the setting gates the cue markup');
+  assert.match(
+    hero,
+    /@media \(prefers-reduced-motion: no-preference\) \{\s*\.hero__scroll-cue-arrow \{\s*animation: hero-scroll-bob/,
+    'the chevron bob is gated on prefers-reduced-motion',
+  );
+});
+
+test('the typed heading uses a written cadence, not a flat metronome', () => {
+  assert.match(js, /PAUSE_AFTER/, 'punctuation/space pauses are defined');
+  assert.match(js, /setTimeout\(tick, delayAfter\(text\[i - 1\]\)\)/, 'each character waits the cadence for the one just typed');
+});
