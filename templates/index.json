@@ -227,7 +227,7 @@
       "type": "ona-donation-counter",
       "disabled": true,
       "settings": {
-        "motion_reveal": false,
+        "motion_reveal": true,
         "bg_color": "#441925",
         "title": "THANK YOU. TOGETHER WE CONTRIBUTED",
         "subtitle": "Every participating coffee bought in October added a fixed contribution. That money goes to Water for Good and Project Origin, to support safe, reliable water in coffee-growing communities.",
@@ -2065,7 +2065,8 @@
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
-            "padding-inline-end": 0
+            "padding-inline-end": 0,
+            "motion_reveal": true
           },
           "blocks": {}
         },
@@ -2838,7 +2839,8 @@
         "media_individual_side_padding": false,
         "media_padding_inline_start": 0,
         "media_padding_inline_end": 0,
-        "media_padding_inline": 0
+        "media_padding_inline": 0,
+        "scroll_scale": true
       }
     },
     "learn_with_ona": {
@@ -2867,7 +2869,8 @@
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
-            "padding-inline-end": 0
+            "padding-inline-end": 0,
+            "motion_reveal": true
           },
           "blocks": {}
         },
@@ -3356,7 +3359,7 @@
         "columns": 3,
         "icons_style": "arrow",
         "section_width": "page-width",
-        "motion_reveal": false,
+        "motion_reveal": true,
         "background_color": "{{ settings.color_palette.background }}",
         "text_color": "{{ settings.color_palette.color1 }}",
         "padding-block-start": 0,
@@ -3982,7 +3985,8 @@
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
-            "padding-inline-end": 0
+            "padding-inline-end": 0,
+            "motion_reveal": true
           },
           "blocks": {}
         },
@@ -4785,7 +4789,7 @@
       ],
       "name": "t:names.collection_carousel",
       "settings": {
-        "motion_reveal": false,
+        "motion_reveal": true,
         "heading_tag": "h3",
         "heading": "Discover by <em>category</em>",
         "heading_size": 40,
