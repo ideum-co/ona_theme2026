@@ -171,3 +171,16 @@ test('heading-led sections reveal their title, leaving grids and carousels untou
   assert.match(carousel, /"id":\s*"motion_reveal"[\s\S]*?"default":\s*false/, 'collection-carousel reveal is opt-in, off by default');
   assert.match(carousel, /\{% if settings\.motion_reveal %\}data-reveal/, 'collection-carousel reveals its heading');
 });
+
+test('any text block can opt into the reveal, so every homepage heading can use it', () => {
+  // The homepage's section titles (learn_with_ona, raspberry_candy, ...) are `text`
+  // blocks, so the opt-in lives on that block -- off by default -- and the data-reveal
+  // hook rides inside the element's attribute capture, not behind an if that wraps the
+  // element, so the theme editor's click-to-edit link to the text survives.
+  const block = read('blocks/text.liquid');
+  assert.match(block, /"id":\s*"motion_reveal"[\s\S]*?"default":\s*false/, 'text block reveal is opt-in, off by default');
+
+  const snippet = read('snippets/text.liquid');
+  const attrs = snippet.slice(snippet.indexOf('{% capture attributes %}'), snippet.indexOf('{% endcapture %}'));
+  assert.match(attrs, /block_settings\.motion_reveal\s*%\}data-reveal/, 'the data-reveal hook is part of the element attributes, not a wrapper');
+});

@@ -79,6 +79,7 @@
   "
 
   {{ block.shopify_attributes }}
+  {% if block_settings.motion_reveal %}data-reveal{% endif %}
 {% endcapture %}
 
 {% liquid
