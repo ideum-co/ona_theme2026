@@ -22,6 +22,8 @@
     --sweet-spot-swirl: {{ s.swirl_color }};
     --sweet-spot-swirl-opacity: {{ s.swirl_opacity | divided_by: 100.0 }};
     --sweet-spot-text: {{ s.text_color }};
+    --sweet-spot-btn-bg: {{ s.button_bg_color }};
+    --sweet-spot-btn-text: {{ s.button_text_color }};
     --sweet-spot-min-height: {{ s.min_height }}px;
     {% render 'spacing-style', settings: s %}
   "
@@ -223,6 +225,20 @@
     flex-wrap: wrap;
     gap: var(--gap-sm);
     margin-top: var(--gap-2xs);
+  }
+
+  /* Editor-controlled button colours. Overrides Horizon's button custom properties so both
+     buttons take the section's chosen background/text; hover darkens the background a touch. */
+  .sweet-spot__button.button {
+    --button-background-color: var(--sweet-spot-btn-bg);
+    --button-color: var(--sweet-spot-btn-text);
+    --button-border-color: var(--sweet-spot-btn-bg);
+  }
+
+  .sweet-spot__button.button:is(:hover, :focus-visible) {
+    --button-background-color: color-mix(in srgb, var(--sweet-spot-btn-bg) 85%, #000);
+    --button-border-color: color-mix(in srgb, var(--sweet-spot-btn-bg) 85%, #000);
+    --button-color: var(--sweet-spot-btn-text);
   }
 
   @media screen and (max-width: 749px) {
@@ -432,6 +448,18 @@
     {
       "type": "header",
       "content": "Buttons"
+    },
+    {
+      "type": "color",
+      "id": "button_bg_color",
+      "label": "Button background",
+      "default": "#470a12"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text",
+      "default": "#ffffff"
     },
     {
       "type": "text",
