@@ -25,7 +25,7 @@
 -%}
 
 <div
-  class="story-video spacing-style"
+  class="story-video spacing-style{% if settings.scroll_scale %} story-video--scroll-scale{% endif %}"
   style="
     --section-heading-level-size: var({{ heading_level_size }});
     {% if settings.content_gap != blank %}
@@ -157,6 +157,10 @@
     </div>
   {%- endif -%}
 </div>
+
+{%- if settings.scroll_scale -%}
+  <script src="{{ 'story-video-scale.js' | asset_url }}" defer></script>
+{%- endif -%}
 
 {% stylesheet %}
   .story-video {
@@ -307,6 +311,38 @@
     fill: none;
     stroke: currentcolor;
   }
+
+  /* Scroll-linked scale: the video settles to full size as it reaches the middle of the viewport
+     and eases back a touch at the edges, so it breathes with the scroll in both directions.
+     Modern path is a CSS scroll-driven animation (GPU, no JS); story-video-scale.js drives the
+     same motion through --sv-scale on browsers without view() timelines. Transform only. */
+  .story-video--scroll-scale .story-video__media {
+    transform: scale(var(--sv-scale, 1));
+    transform-origin: center;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .story-video--scroll-scale .story-video__media {
+        animation: story-video-scroll-scale linear both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 100%;
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .story-video--scroll-scale .story-video__media {
+      transform: none;
+    }
+  }
+
+  @keyframes story-video-scroll-scale {
+    0% { transform: scale(0.92); }
+    50% { transform: scale(1); }
+    100% { transform: scale(0.92); }
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -314,6 +350,13 @@
   "name": "t:names.story_video",
   "tag": "section",
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "scroll_scale",
+      "label": "Scale video on scroll",
+      "info": "The video eases to full size as it reaches the middle of the screen and back a touch at the edges, breathing with the scroll both ways. Respects reduced motion; needs no JavaScript on modern browsers.",
+      "default": false
+    },
     {
       "type": "select",
       "id": "heading_tag",
