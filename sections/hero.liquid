@@ -459,7 +459,7 @@
 
 <div
   id="Hero-{{ section.id }}"
-  class="hero{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}{% if section.blocks.size == 0 and section.settings.section_height == 'auto' %} hero--no-blocks-auto-height{% endif %}{% if section.settings.stack_media_on_mobile %} hero--stack-mobile{% endif %}{% if section.settings.animate_content %} hero--animate-content{% endif %}{% if section.settings.pin_button_group_to_bottom and section.settings.section_height != 'auto' %} hero--bottom-actions{% endif %}"
+  class="hero{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}{% if section.blocks.size == 0 and section.settings.section_height == 'auto' %} hero--no-blocks-auto-height{% endif %}{% if section.settings.stack_media_on_mobile %} hero--stack-mobile{% endif %}{% if section.settings.animate_content %} hero--animate-content{% endif %}{% if section.settings.type_heading %} hero--type-heading{% endif %}{% if section.settings.pin_button_group_to_bottom and section.settings.section_height != 'auto' %} hero--bottom-actions{% endif %}"
   style="
     --hero-border-style: {{ section.settings.border }};
     --hero-border-width: {{ section.settings.border_width }}px;
@@ -851,7 +851,57 @@
       filter: blur(0);
     }
   }
+
+  /* Typed heading: the title writes itself out instead of fading in. hero-typewriter.js swaps the
+     text for a hidden full-width ghost (reserves the box so nothing below shifts) plus the live
+     text and a caret. Until/unless the script runs, the plain heading shows as authored. */
+  .hero--type-heading .hero__content-wrapper > .text-block:first-child {
+    /* No fade/rise on the title -- the typing is its entrance. */
+    animation: none;
+    opacity: 1;
+  }
+
+  .hero--type-heading .hero-typing {
+    position: relative;
+  }
+
+  .hero--type-heading .hero-typing__ghost {
+    visibility: hidden;
+  }
+
+  .hero--type-heading .hero-typing__live {
+    position: absolute;
+    inset: 0;
+    display: inline-flex;
+    align-items: baseline;
+  }
+
+  .hero--type-heading .hero-typing__caret {
+    display: inline-block;
+    inline-size: 0.06em;
+    align-self: stretch;
+    margin-inline-start: 0.06em;
+    background: currentcolor;
+    translate: 0 0.08em;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero--type-heading .hero-typing:not(.hero-typing--done) .hero-typing__caret {
+      animation: hero-caret-blink 0.9s steps(1) infinite;
+    }
+  }
+
+  .hero--type-heading .hero-typing--done .hero-typing__caret {
+    display: none;
+  }
+
+  @keyframes hero-caret-blink {
+    0%, 50% { opacity: 1; }
+    50.01%, 100% { opacity: 0; }
+  }
 {% endstylesheet %}
+
+<script src="{{ 'hero-typewriter.js' | asset_url }}" defer></script>
 
 {% schema %}
 {
@@ -893,6 +943,13 @@
       "id": "animate_content",
       "label": "t:settings.animation",
       "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "type_heading",
+      "label": "Type the heading",
+      "info": "The heading writes itself out character by character on load, with a caret. Needs the content animation on. Falls back to the plain heading without JavaScript or under reduced motion.",
+      "default": false
     },
     {
       "type": "checkbox",

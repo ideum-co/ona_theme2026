@@ -219,7 +219,8 @@
         "blurred_reflection": false,
         "reflection_opacity": 75,
         "padding-block-start": 64,
-        "padding-block-end": 64
+        "padding-block-end": 64,
+        "type_heading": true
       }
     },
     "bf_countdown_banner": {
