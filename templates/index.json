@@ -224,8 +224,7 @@
     },
     "bf_countdown_banner": {
       "type": "bf-countdown-banner",
-      "settings": {
-      }
+      "settings": {}
     },
     "wfg_donation_counter": {
       "type": "ona-donation-counter",
@@ -253,7 +252,8 @@
         "padding-block-start": 43,
         "padding-block-end": 52,
         "padding-inline-start": 30,
-        "padding-inline-end": 30
+        "padding-inline-end": 30,
+        "motion_reveal": true
       }
     },
     "floating_badge_r89NRP": {
@@ -931,7 +931,8 @@
         "gap": 24,
         "background_color": "{{ settings.color_palette.background }}",
         "padding-block-start": 80,
-        "padding-block-end": 80
+        "padding-block-end": 80,
+        "motion_reveal": true
       }
     },
     "special_release": {
@@ -2023,7 +2024,8 @@
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
-            "padding-inline-end": 0
+            "padding-inline-end": 0,
+            "motion_reveal": true
           },
           "blocks": {}
         },
@@ -2825,7 +2827,8 @@
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
-            "padding-inline-end": 0
+            "padding-inline-end": 0,
+            "motion_reveal": true
           },
           "blocks": {}
         },
@@ -3317,7 +3320,8 @@
         "background_color": "{{ settings.color_palette.background }}",
         "text_color": "{{ settings.color_palette.color1 }}",
         "padding-block-start": 0,
-        "padding-block-end": 64
+        "padding-block-end": 64,
+        "motion_reveal": true
       }
     },
     "press_band": {
@@ -3939,7 +3943,8 @@
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
-            "padding-inline-end": 0
+            "padding-inline-end": 0,
+            "motion_reveal": true
           },
           "blocks": {}
         },
@@ -4774,7 +4779,8 @@
         "padding-block-start": 60,
         "padding-block-end": 80,
         "padding_inline": 0,
-        "padding_inline_mobile": 0
+        "padding_inline_mobile": 0,
+        "motion_reveal": true
       }
     }
   },
@@ -4805,4 +4811,3 @@
     "collection_carousel_GRkRhJ"
   ]
 }
-
