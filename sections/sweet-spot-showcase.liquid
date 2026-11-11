@@ -203,7 +203,7 @@
     margin: 0;
     font-family: var(--font-heading--family);
     font-weight: var(--font-heading--weight, 400);
-    font-size: var(--font-size--5xl);
+    font-size: clamp(2.25rem, 1.3rem + 3.2vw, var(--font-size--5xl));
     line-height: 1.05;
     text-wrap: balance;
   }
@@ -229,10 +229,47 @@
     .sweet-spot__inner {
       grid-template-columns: 1fr;
       text-align: center;
+      gap: 1.75rem;
+      /* Stack to content height on mobile instead of holding the desktop minimum,
+         which would leave a tall empty band. */
+      min-height: 0;
     }
+
+    /* The model always sits above the copy, whichever side it takes on desktop. */
     .sweet-spot--media-right .sweet-spot__media { order: 0; }
-    .sweet-spot__content { align-items: center; }
+
+    .sweet-spot__content {
+      align-items: center;
+      gap: var(--gap-md);
+    }
+
     .sweet-spot__description { margin-inline: auto; }
+
+    .sweet-spot__actions {
+      justify-content: center;
+      inline-size: 100%;
+    }
+
+    .sweet-spot__model,
+    .sweet-spot__model-image {
+      inline-size: min(72vw, 18rem);
+    }
+
+    /* Smaller, calmer swirls behind the narrower layout. */
+    .sweet-spot__swirl {
+      inline-size: calc(var(--size) * 0.62);
+      block-size: calc(var(--size) * 0.62);
+    }
+  }
+
+  @media screen and (max-width: 479px) {
+    .sweet-spot__actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .sweet-spot__button {
+      justify-content: center;
+    }
   }
 {% endstylesheet %}
 
