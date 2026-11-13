@@ -1730,6 +1730,8 @@
         "title": "The Sweet spot",
         "description": "<p>Sweet berries, creamy white chocolate and a silky finish have made Raspberry Candy one of ONA's most iconic coffees.</p>",
         "motion_reveal": true,
+        "button_bg_color": "#E42475",
+        "button_text_color": "#ffffff",
         "button_1_label": "Shop now",
         "button_1_link": "",
         "button_2_label": "Subscribe & Save",
