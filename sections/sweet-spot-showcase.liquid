@@ -57,11 +57,12 @@
     </div>
   {%- endif -%}
 
-  <div class="sweet-spot__inner section section--page-width">
+  <div class="sweet-spot__inner">
     <div class="sweet-spot__media">
+      <div class="sweet-spot__float{% if s.float_model %} sweet-spot__float--on{% endif %}">
       {%- if model_src != blank -%}
         <model-viewer
-          class="sweet-spot__model{% if s.float_model %} sweet-spot__model--float{% endif %}"
+          class="sweet-spot__model"
           src="{{ model_src }}"
           alt="{{ s.model_alt | default: s.title | escape }}"
           camera-controls
@@ -84,6 +85,7 @@
           | image_tag: widths: '300, 500, 700, 900', sizes: '(min-width: 750px) 44vw, 86vw', class: 'sweet-spot__model-image', loading: 'lazy', alt: s.title
         }}
       {%- endif -%}
+      </div>
     </div>
 
     <div class="sweet-spot__content">
@@ -153,13 +155,19 @@
     50% { translate: -50% -58%; rotate: calc(var(--rot) + 18deg); }
   }
 
-  /* Layout */
+  /* Layout — own two-column grid, centred and capped at the page width. (Must NOT use Horizon's
+     `.section` grid: that places every child in one central column, which stacked the model and
+     the copy instead of setting them side by side.) */
   .sweet-spot__inner {
     display: grid;
     grid-template-columns: 1fr 1fr;
     align-items: center;
-    gap: clamp(1.5rem, 5vw, 4rem);
+    gap: clamp(2rem, 5vw, 5rem);
     min-height: var(--sweet-spot-min-height, 0px);
+    inline-size: 100%;
+    max-inline-size: var(--page-width, 90rem);
+    margin-inline: auto;
+    padding-inline: max(16px, var(--page-margin, 1.5rem));
   }
 
   .sweet-spot--media-right .sweet-spot__media {
@@ -173,6 +181,14 @@
     min-width: 0;
   }
 
+  /* The float lives on this wrapper, not the model-viewer, so the drift is reliable and never
+     fights the viewer's own camera rotation. */
+  .sweet-spot__float {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
   .sweet-spot__model,
   .sweet-spot__model-image {
     inline-size: min(100%, 30rem);
@@ -183,14 +199,15 @@
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .sweet-spot__model--float {
+    .sweet-spot__float--on {
       animation: sweet-spot-float 6s ease-in-out infinite;
+      will-change: transform;
     }
   }
 
   @keyframes sweet-spot-float {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-14px); }
+    50% { transform: translateY(-16px); }
   }
 
   .sweet-spot__content {
