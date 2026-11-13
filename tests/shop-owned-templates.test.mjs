@@ -127,7 +127,7 @@ test('index.json keeps the editor-made homepage sections', () => {
     'floating_badge_r89NRP',
     'slideshow_nBcaMx',
     'club_benefits_937XiA',
-    'section_LpJJ4p',
+    'sweet_spot_showcase_F6AyGf',
   ]) {
     assert.ok(sections[id], `editor-made section ${id} is missing`);
     assert.ok(order.includes(id), `editor-made section ${id} is not in order`);
