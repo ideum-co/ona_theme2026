@@ -16,7 +16,7 @@
 {%- endcomment -%}
 
 <div
-  class="sweet-spot sweet-spot--media-{{ s.media_position }} spacing-style"
+  class="sweet-spot sweet-spot--media-{{ s.media_position }}{% if s.center_buttons_mobile %} sweet-spot--mobile-center-btn{% endif %} spacing-style"
   style="
     --sweet-spot-bg: {{ s.background_color }};
     --sweet-spot-swirl: {{ s.swirl_color }};
@@ -278,9 +278,17 @@
 
     .sweet-spot__description { margin-inline: auto; }
 
+    /* Span the content column so the chosen alignment reads against the full
+       width: left by default (matching desktop), centered when the setting asks. */
     .sweet-spot__actions {
-      justify-content: center;
       inline-size: 100%;
+      justify-content: flex-start;
+      align-items: flex-start;
+    }
+
+    .sweet-spot--mobile-center-btn .sweet-spot__actions {
+      justify-content: center;
+      align-items: center;
     }
 
     .sweet-spot__model,
@@ -296,9 +304,13 @@
   }
 
   @media screen and (max-width: 479px) {
+    /* Stacked, auto-width buttons: left-aligned by default, centered when asked. */
     .sweet-spot__actions {
       flex-direction: column;
-      align-items: stretch;
+      align-items: flex-start;
+    }
+    .sweet-spot--mobile-center-btn .sweet-spot__actions {
+      align-items: center;
     }
     .sweet-spot__button {
       justify-content: center;
@@ -499,6 +511,13 @@
       "type": "url",
       "id": "button_2_link",
       "label": "Button 2 link"
+    },
+    {
+      "type": "checkbox",
+      "id": "center_buttons_mobile",
+      "label": "Center buttons on mobile",
+      "info": "Centers the buttons on phones. Desktop alignment is unchanged.",
+      "default": true
     },
     {
       "type": "header",
