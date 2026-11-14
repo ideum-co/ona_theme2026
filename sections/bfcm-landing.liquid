@@ -167,27 +167,19 @@
       {%- endif -%}
       <ul class="bfcm-landing__grid" role="list">
         {%- for product in sale_products limit: s.products_count -%}
-          <li class="bfcm-landing__card-product">
-            <a href="{{ product.url }}">
-              <span class="bfcm-landing__card-media">
-                {%- if product.featured_image -%}
-                  {{
-                    product.featured_image
-                    | image_url: width: 600
-                    | image_tag: widths: '300, 450, 600', sizes: '(min-width: 990px) 22vw, 45vw', loading: 'lazy', alt: product.featured_image.alt | default: product.title
-                  }}
-                {%- endif -%}
-              </span>
-              <span class="bfcm-landing__card-title">{{ product.title | escape }}</span>
-              <span class="bfcm-landing__price">
-                {%- if product.compare_at_price > product.price -%}
-                  <span class="bfcm-landing__price-sale">{{ product.price | money }}</span>
-                  <s class="bfcm-landing__price-was">{{ product.compare_at_price | money }}</s>
-                {%- else -%}
-                  {{ product.price | money }}
-                {%- endif -%}
-              </span>
-            </a>
+          <li class="bfcm-landing__grid-item">
+            {%- comment -%}
+              The site-wide product card (image + info + actions). Rendered the
+              same way the homepage spotlight and the collection pages do it: a
+              static `_product-card` that self-populates its full child tree
+              (gallery, title, price, buy-buttons / quick add) from the product.
+            {%- endcomment -%}
+            {%- content_for 'block',
+              type: '_product-card',
+              id: 'static-product-card',
+              closest.product: product,
+              product_view_context: 'collection'
+            -%}
           </li>
         {%- endfor -%}
       </ul>
@@ -397,13 +389,8 @@
   }
   .bfcm-landing__products { padding: clamp(48px, 5vw, 92px) var(--bfcm-page-inset); }
   .bfcm-landing__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(16px, 2vw, 30px); list-style: none; margin: 0; padding: 0; }
-  .bfcm-landing__card-product a { display: grid; gap: 10px; text-decoration: none; color: inherit; }
-  .bfcm-landing__card-media { display: block; aspect-ratio: 1; background: #fff; overflow: hidden; }
-  .bfcm-landing__card-media img { width: 100%; height: 100%; object-fit: cover; }
-  .bfcm-landing__card-title { font-size: 16px; line-height: 1.3; }
-  .bfcm-landing__price { font-weight: 700; display: inline-flex; gap: 8px; align-items: baseline; }
-  .bfcm-landing__price-sale { color: var(--bfcm-wine, #441925); }
-  .bfcm-landing__price-was { font-weight: 400; opacity: 0.55; }
+  .bfcm-landing__grid-item { min-width: 0; display: flex; }
+  .bfcm-landing__grid-item > product-card { width: 100%; }
 
   /* ---- Compact category row ---- */
   .bfcm-landing__collections {
