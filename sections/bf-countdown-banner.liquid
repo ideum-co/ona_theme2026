@@ -35,9 +35,10 @@
   a phone field that silently drops the number is worse than no field. Needs a
   Dotdigital (or SMS app) decision first -- see the PR.
 
-  Dates default to the 21-27 November window Macarena confirmed, with the
-  countdown pointed at early access on the 20th, because early access is what
-  the sign-up is actually offering.
+  Dates default to the 21-27 November window Macarena confirmed. The sale opens
+  to EVERYONE on Sat 21 Nov -- there is no subscriber pre-sale -- so the
+  countdown points at the 21st and no wording calls it early access (Maca/Sarah,
+  13 Nov 2026).
 {%- endcomment -%}
 
 {%- liquid
@@ -455,7 +456,7 @@
       "type": "text",
       "id": "subtitle",
       "label": "Subtitle",
-      "default": "Seven days of our best coffee. Subscribers see it first."
+      "default": "Seven days of our best coffee, starting Saturday 21 November"
     },
     {
       "type": "color",
@@ -471,8 +472,8 @@
       "type": "text",
       "id": "countdown_start_at",
       "label": "Countdown start (ISO 8601)",
-      "default": "2026-11-20T00:00:00+11:00",
-      "info": "Early access opens. Needs a full date, time AND offset for Sydney, e.g. 2026-11-20T00:00:00+11:00 — without the offset the clock is wrong by the viewer's timezone and will not render at all."
+      "default": "2026-11-21T00:00:00+11:00",
+      "info": "Sale opens (midnight Sat 21 Nov, Sydney). Needs a full date, time AND offset for Sydney, e.g. 2026-11-21T00:00:00+11:00 — without the offset the clock is wrong by the viewer's timezone and will not render at all."
     },
     {
       "type": "text",
@@ -492,7 +493,7 @@
       "type": "text",
       "id": "label_before",
       "label": "Label before it starts",
-      "default": "Early access opens in"
+      "default": "Black Friday sale starts in"
     },
     {
       "type": "text",
@@ -546,7 +547,7 @@
       "type": "text",
       "id": "clock_label",
       "label": "Screen reader label for the clock",
-      "default": "Time until Black Friday early access"
+      "default": "Time until the Black Friday sale starts"
     },
     {
       "type": "header",
@@ -562,7 +563,7 @@
       "type": "text",
       "id": "signup_heading",
       "label": "Sign-up heading",
-      "default": "Sign up for early access, offers and every update."
+      "default": "Sign up to hear when the sale goes live"
     },
     {
       "type": "text",

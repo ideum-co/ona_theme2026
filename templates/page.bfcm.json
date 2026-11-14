@@ -8,9 +8,48 @@
         "filter": { "type": "collection_link", "settings": { "label": "Filter coffee", "link": "/collections/filter" } },
         "milk": { "type": "collection_link", "settings": { "label": "Milk-based coffee", "link": "/collections/milk-based" } },
         "gear": { "type": "collection_link", "settings": { "label": "Brew gear", "link": "/collections/brew-gear" } },
-        "merch": { "type": "collection_link", "settings": { "label": "Merch", "link": "/collections/merch" } }
+        "merch": { "type": "collection_link", "settings": { "label": "Merch", "link": "/collections/merch" } },
+        "faq_dates": {
+          "type": "faq",
+          "settings": {
+            "question": "When does the sale run?",
+            "answer": "<p>Our Black Friday sale runs from Saturday 21 to Friday 27 November 2026. It opens to everyone at midnight (AEDT) on the 21st.</p>"
+          }
+        },
+        "faq_shipping": {
+          "type": "faq",
+          "settings": {
+            "question": "What are the shipping cut-offs?",
+            "answer": "<p>Orders placed during the sale ship on our usual next-business-day schedule. Order early in the week to have your coffee before the weekend.</p>"
+          }
+        },
+        "faq_stack": {
+          "type": "faq",
+          "settings": {
+            "question": "Do discounts stack?",
+            "answer": "<p>Sale pricing applies automatically at checkout and can't be combined with other discount codes.</p>"
+          }
+        },
+        "faq_subscription": {
+          "type": "faq",
+          "settings": {
+            "question": "Can I save on a subscription too?",
+            "answer": "<p>Yes — start or manage a coffee subscription any time for a standing discount on every delivery, on top of the sale.</p>"
+          }
+        }
       },
-      "block_order": ["all_coffee", "espresso", "filter", "milk", "gear", "merch"],
+      "block_order": [
+        "all_coffee",
+        "espresso",
+        "filter",
+        "milk",
+        "gear",
+        "merch",
+        "faq_dates",
+        "faq_shipping",
+        "faq_stack",
+        "faq_subscription"
+      ],
       "settings": {}
     }
   },
