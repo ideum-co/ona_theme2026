@@ -1,11 +1,34 @@
+/*
+ * BFCM landing-page countdown.
+ *
+ * A COPY of the date engine, deliberately NOT shared with the homepage banner
+ * (bf-banner-countdown.js) or the Water For Good counter. Each surface keeps
+ * its own element so one campaign's wording can never leak into another's.
+ *
+ * Two live phases (Macarena/Sarah, 13 Nov 2026):
+ *   before the start -> count down to the start, status = data-label-before ("Starts in")
+ *   during the sale  -> count down to the END,   status = data-label-live   ("Ends in")
+ *   after the end    -> status = data-label-ended, show the static line, stop
+ *
+ * The phase is written onto the closest [data-bfcm-root] as data-phase, which
+ * is how the section promotes "Shop sale" to the primary button once live. All
+ * visible strings come from data attributes, so the section schema owns them.
+ */
 class BfcmCountdown extends HTMLElement {
   connectedCallback() {
-    const hasExplicitOffset = (value) => /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/.test(value || '');
+    const hasExplicitOffset = (value) =>
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/.test(value || '');
     if (!hasExplicitOffset(this.dataset.startAt) || !hasExplicitOffset(this.dataset.endAt)) return;
     this.startAt = Date.parse(this.dataset.startAt);
     this.endAt = Date.parse(this.dataset.endAt);
     if (!Number.isFinite(this.startAt) || !Number.isFinite(this.endAt) || this.endAt <= this.startAt) return;
 
+    this.labelBefore = this.dataset.labelBefore || 'Starts in';
+    this.labelLive = this.dataset.labelLive || 'Ends in';
+    this.labelEnded = this.dataset.labelEnded || 'That is a wrap';
+    this.textEnded = this.dataset.textEnded || '';
+
+    this.root = typeof this.closest === 'function' ? this.closest('[data-bfcm-root]') : null;
     this.status = this.querySelector('[data-countdown-status]');
     this.clock = this.querySelector('[data-countdown-clock]');
     this.fallback = this.querySelector('[data-countdown-fallback]');
@@ -23,37 +46,47 @@ class BfcmCountdown extends HTMLElement {
     window.clearInterval(this.interval);
   }
 
+  setPhase(phase) {
+    if (this.root && this.root.dataset.phase !== phase) this.root.dataset.phase = phase;
+  }
+
+  tick(target, label) {
+    const remaining = Math.max(0, Math.ceil((target - Date.now()) / 1000));
+    const parts = [
+      Math.floor(remaining / 86400),
+      Math.floor((remaining % 86400) / 3600),
+      Math.floor((remaining % 3600) / 60),
+      remaining % 60,
+    ];
+    parts.forEach((value, index) => {
+      const text = String(value).padStart(2, '0');
+      if (this.values[index].textContent !== text) this.values[index].textContent = text;
+    });
+    if (this.status.textContent !== label) this.status.textContent = label;
+    this.clock.hidden = false;
+    this.fallback.hidden = true;
+  }
+
   update() {
     const now = Date.now();
+
     if (now >= this.endAt) {
-      this.status.textContent = 'The event has ended';
-      this.fallback.textContent = 'Thank you for joining us.';
+      this.status.textContent = this.labelEnded;
+      this.fallback.textContent = this.textEnded;
       this.clock.hidden = true;
       this.fallback.hidden = false;
+      this.setPhase('ended');
       return false;
     }
 
     if (now >= this.startAt) {
-      if (this.status.textContent !== 'Black Friday Cyber Monday is on') {
-        this.status.textContent = 'Black Friday Cyber Monday is on';
-        this.fallback.textContent = 'Explore the latest ONA coffees.';
-      }
-      this.clock.hidden = true;
-      this.fallback.hidden = false;
+      this.tick(this.endAt, this.labelLive);
+      this.setPhase('live');
       return true;
     }
 
-    const remaining = Math.ceil((this.startAt - now) / 1000);
-    const days = Math.floor(remaining / 86400);
-    const hours = Math.floor((remaining % 86400) / 3600);
-    const minutes = Math.floor((remaining % 3600) / 60);
-    const seconds = remaining % 60;
-    [days, hours, minutes, seconds].forEach((value, index) => {
-      this.values[index].textContent = String(value).padStart(2, '0');
-    });
-    if (this.status.textContent !== 'Starts in') this.status.textContent = 'Starts in';
-    this.clock.hidden = false;
-    this.fallback.hidden = true;
+    this.tick(this.startAt, this.labelBefore);
+    this.setPhase('before');
     return true;
   }
 }

@@ -40,7 +40,8 @@ function mount(now, dates = { startAt, endAt }) {
   };
 }
 
-test('counts down to the Sydney launch instant and updates through the event end', () => {
+test('counts down to the launch, then keeps a live clock to the end of the sale', () => {
+  // Before the sale: "Starts in", counting to the Sydney launch instant.
   const countdown = mount(Date.parse('2026-11-26T23:59:58+11:00'));
   assert.equal(countdown.nodes.get('[data-countdown-status]').textContent, 'Starts in');
   assert.deepEqual(
@@ -48,18 +49,28 @@ test('counts down to the Sydney launch instant and updates through the event end
     ['00', '00', '00', '02'],
   );
   assert.equal(countdown.nodes.get('[data-countdown-clock]').hidden, false);
+
+  // Once the sale opens the clock does NOT stop: it flips to "Ends in" and
+  // counts down to the end instead (startAt..endAt is four whole days here).
   countdown.advanceTo(Date.parse(startAt));
-  assert.equal(countdown.nodes.get('[data-countdown-status]').textContent, 'Black Friday Cyber Monday is on');
-  assert.equal(countdown.nodes.get('[data-countdown-clock]').hidden, true);
+  assert.equal(countdown.nodes.get('[data-countdown-status]').textContent, 'Ends in');
+  assert.equal(countdown.nodes.get('[data-countdown-clock]').hidden, false);
+  assert.deepEqual(
+    ['days', 'hours', 'minutes', 'seconds'].map((unit) => countdown.nodes.get(`[data-countdown-${unit}]`).textContent),
+    ['04', '00', '00', '00'],
+  );
   assert.equal(countdown.cleared, false);
+
+  // At the end: the ended status, the clock hidden, and the timer cleared.
   countdown.advanceTo(Date.parse(endAt));
-  assert.equal(countdown.nodes.get('[data-countdown-status]').textContent, 'The event has ended');
+  assert.equal(countdown.nodes.get('[data-countdown-status]').textContent, 'That is a wrap');
+  assert.equal(countdown.nodes.get('[data-countdown-clock]').hidden, true);
   assert.equal(countdown.cleared, true);
 });
 
 test('shows an ended state after the campaign and keeps invalid dates as static fallback', () => {
   const ended = mount(Date.parse(endAt));
-  assert.equal(ended.nodes.get('[data-countdown-status]').textContent, 'The event has ended');
+  assert.equal(ended.nodes.get('[data-countdown-status]').textContent, 'That is a wrap');
   assert.equal(ended.scheduled, false);
 
   const invalid = mount(Date.parse(startAt), { startAt: 'invalid', endAt });
