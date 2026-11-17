@@ -5,17 +5,21 @@
 
   * No "early access" or "exclusive" anywhere — the sale opens to everyone on
     Sat 21 Nov, so the copy and the countdown target say so.
-  * Hero is a full-width typographic banner, cream on burgundy. The old blobs
-    (burgundy + pink circles, legacy branding), the extra ONA logo and the
-    espresso photo are gone. `lettering_image` is an optional slot for Sarah's
-    "Sale" script art — drop it in and it replaces the typeset title, no deploy.
+  * Hero is a full-width banner, cream on burgundy. The old blobs (burgundy +
+    pink circles, legacy branding), the extra ONA logo and the espresso photo
+    are gone. By default it shows the campaign "Black Friday Sale" lettering
+    (snippets/bfcm-sale-lettering.liquid — Sarah's vector, matches the signage).
+    Turn off "Use campaign Sale lettering" to fall back to the editable typeset
+    title/dates (the post-sale reuse mode). `lettering_image` still overrides
+    both if a raster is ever supplied — no deploy needed either way.
   * The countdown is the homepage flip-card look (cream cards, dark frame, the
     split line), centred, on the same burgundy as the homepage banner, with the
     Sign up / Shop buttons centred under it.
-  * It is one block, in the order Macarena drew: banner → dates → status →
-    countdown → one-line pitch → email + Sign up. The old separate "Stay in the
-    loop" section is folded in here, and the footer's duplicate is hidden on
-    this template (see the stylesheet).
+  * It is one block, in the order the campaign artwork uses: dates → banner →
+    status → countdown → one-line pitch → email + Sign up. The date line sits
+    above the lettering (like the stacked artwork) but stays an editable field.
+    The old separate "Stay in the loop" section is folded in here, and the
+    footer's duplicate is hidden on this template (see the stylesheet).
   * Phase switch: before the 21st the clock counts to the start and says
     "Starts in" with Sign up as the primary button. Once the sale opens the
     clock counts to the end and says "Ends in", and "Shop sale" becomes primary.
@@ -56,6 +60,10 @@
 >
   <section class="bfcm-landing__hero" aria-labelledby="bfcm-landing-title-{{ section.id }}">
     <div class="bfcm-landing__hero-inner">
+      {%- if s.date_line != blank -%}
+        <p class="bfcm-landing__dates">{{ s.date_line | escape }}</p>
+      {%- endif -%}
+
       {%- if s.lettering_image != blank -%}
         {{
           s.lettering_image
@@ -71,15 +79,16 @@
         <h1 id="bfcm-landing-title-{{ section.id }}" class="visually-hidden">
           {{ s.title | escape }} {{ s.title_emphasis | escape }}
         </h1>
+      {%- elsif s.use_campaign_lettering -%}
+        {%- render 'bfcm-sale-lettering' -%}
+        <h1 id="bfcm-landing-title-{{ section.id }}" class="visually-hidden">
+          {{ s.title | escape }} {{ s.title_emphasis | escape }}
+        </h1>
       {%- else -%}
         <h1 id="bfcm-landing-title-{{ section.id }}" class="bfcm-landing__title">
           {{ s.title | escape }}
           {%- if s.title_emphasis != blank %} <em>{{ s.title_emphasis | escape }}</em>{% endif -%}
         </h1>
-      {%- endif -%}
-
-      {%- if s.date_line != blank -%}
-        <p class="bfcm-landing__dates">{{ s.date_line | escape }}</p>
       {%- endif -%}
 
       <bfcm-countdown
@@ -254,6 +263,13 @@
     padding-inline: var(--page-margin, 16px);
   }
   .bfcm-landing__lettering { display: block; width: min(560px, 82%); height: auto; }
+
+  /* Campaign "Black Friday Sale" vector lettering (snippets/bfcm-sale-lettering).
+     Cream block letters + wine script, coloured from the hero vars so it matches
+     the signage and stays on-brand in the band. */
+  .bfcm-sale-lettering { display: block; width: min(720px, 90%); height: auto; }
+  .bfcm-sale-lettering .bf-fill-base { fill: var(--bfcm-cream, #f2f0eb); }
+  .bfcm-sale-lettering .bf-fill-script { fill: var(--bfcm-sale-script, #8b1f41); }
   .bfcm-landing__title {
     font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif);
     font-size: clamp(52px, 8vw, 118px);
@@ -432,7 +448,8 @@
   "settings": [
     { "type": "header", "content": "Hero" },
     { "type": "color", "id": "band_color", "label": "Band background", "default": "#441925", "info": "Match the homepage countdown background." },
-    { "type": "image_picker", "id": "lettering_image", "label": "Sale lettering image", "info": "Optional. Campaign 'Sale' script art (SVG or 2x PNG on transparent). Replaces the typeset title when set." },
+    { "type": "checkbox", "id": "use_campaign_lettering", "label": "Use campaign 'Sale' lettering", "default": true, "info": "On: shows the campaign 'Black Friday Sale' vector art, matching the signage. Off: shows the editable typeset title/dates below (use this to genericise the page after the sale)." },
+    { "type": "image_picker", "id": "lettering_image", "label": "Sale lettering image", "info": "Optional. Overrides the campaign art above with an uploaded raster (2x PNG on transparent)." },
     { "type": "text", "id": "title", "label": "Title", "default": "Black Friday" },
     { "type": "text", "id": "title_emphasis", "label": "Italic title word", "default": "Sale" },
     { "type": "text", "id": "date_line", "label": "Dates", "default": "21–27 November 2026" },
