@@ -195,27 +195,34 @@
     </section>
   {%- endif -%}
 
+  {%- comment -%}
+    Categories and FAQ are section SETTINGS (fixed slots), not section-defined
+    blocks. Shopify forbids mixing section-defined blocks with theme blocks in
+    one section, and the product grid above uses the site-wide `_product-card`
+    theme block — so these have to be settings. Six slots each; empty ones skip.
+  {%- endcomment -%}
   {%- assign has_links = false -%}
-  {%- for block in section.blocks -%}
-    {%- if block.type == 'collection_link' and block.settings.label != blank and block.settings.link != blank -%}
-      {%- assign has_links = true -%}
-    {%- endif -%}
+  {%- for i in (1..6) -%}
+    {%- assign lbl = 'cat_label_' | append: i -%}
+    {%- assign url = 'cat_url_' | append: i -%}
+    {%- if s[lbl] != blank and s[url] != blank -%}{%- assign has_links = true -%}{%- endif -%}
   {%- endfor -%}
   {%- if has_links -%}
     <nav class="bfcm-landing__collections" aria-label="Shop by collection">
-      {%- for block in section.blocks -%}
-        {%- if block.type == 'collection_link' and block.settings.label != blank and block.settings.link != blank -%}
-          <a href="{{ block.settings.link }}" {{ block.shopify_attributes }}>{{ block.settings.label | escape }}</a>
+      {%- for i in (1..6) -%}
+        {%- assign lbl = 'cat_label_' | append: i -%}
+        {%- assign url = 'cat_url_' | append: i -%}
+        {%- if s[lbl] != blank and s[url] != blank -%}
+          <a href="{{ s[url] }}">{{ s[lbl] | escape }}</a>
         {%- endif -%}
       {%- endfor -%}
     </nav>
   {%- endif -%}
 
   {%- assign has_faq = false -%}
-  {%- for block in section.blocks -%}
-    {%- if block.type == 'faq' and block.settings.question != blank -%}
-      {%- assign has_faq = true -%}
-    {%- endif -%}
+  {%- for i in (1..6) -%}
+    {%- assign q = 'faq_q_' | append: i -%}
+    {%- if s[q] != blank -%}{%- assign has_faq = true -%}{%- endif -%}
   {%- endfor -%}
   {%- if has_faq -%}
     <section class="bfcm-landing__faq" aria-labelledby="bfcm-landing-faq-{{ section.id }}">
@@ -223,11 +230,13 @@
         <h2 id="bfcm-landing-faq-{{ section.id }}" class="bfcm-landing__section-title">{{ s.faq_heading | escape }}</h2>
       {%- endif -%}
       <dl class="bfcm-landing__faq-list">
-        {%- for block in section.blocks -%}
-          {%- if block.type == 'faq' and block.settings.question != blank -%}
-            <div class="bfcm-landing__faq-item" {{ block.shopify_attributes }}>
-              <dt>{{ block.settings.question | escape }}</dt>
-              <dd>{{ block.settings.answer }}</dd>
+        {%- for i in (1..6) -%}
+          {%- assign q = 'faq_q_' | append: i -%}
+          {%- assign a = 'faq_a_' | append: i -%}
+          {%- if s[q] != blank -%}
+            <div class="bfcm-landing__faq-item">
+              <dt>{{ s[q] | escape }}</dt>
+              <dd>{{ s[a] }}</dd>
             </div>
           {%- endif -%}
         {%- endfor -%}
@@ -474,28 +483,34 @@
     { "type": "header", "content": "Featured products" },
     { "type": "text", "id": "products_heading", "label": "Heading", "default": "On sale now" },
     { "type": "range", "id": "products_count", "label": "Products to show", "min": 4, "max": 8, "step": 1, "default": 8 },
+    { "type": "header", "content": "Shop by collection", "info": "A compact row of category links under the product grid. Fill label + path; leave a slot blank to hide it." },
+    { "type": "text", "id": "cat_label_1", "label": "Category 1 label", "default": "All coffee" },
+    { "type": "text", "id": "cat_url_1", "label": "Category 1 path", "default": "/collections/all", "info": "Relative path, e.g. /collections/espresso" },
+    { "type": "text", "id": "cat_label_2", "label": "Category 2 label", "default": "Espresso coffee" },
+    { "type": "text", "id": "cat_url_2", "label": "Category 2 path", "default": "/collections/espresso" },
+    { "type": "text", "id": "cat_label_3", "label": "Category 3 label", "default": "Filter coffee" },
+    { "type": "text", "id": "cat_url_3", "label": "Category 3 path", "default": "/collections/filter" },
+    { "type": "text", "id": "cat_label_4", "label": "Category 4 label", "default": "Milk-based coffee" },
+    { "type": "text", "id": "cat_url_4", "label": "Category 4 path", "default": "/collections/milk-based" },
+    { "type": "text", "id": "cat_label_5", "label": "Category 5 label", "default": "Brew gear" },
+    { "type": "text", "id": "cat_url_5", "label": "Category 5 path", "default": "/collections/brew-gear" },
+    { "type": "text", "id": "cat_label_6", "label": "Category 6 label", "default": "Merch" },
+    { "type": "text", "id": "cat_url_6", "label": "Category 6 path", "default": "/collections/merch" },
     { "type": "header", "content": "FAQ" },
-    { "type": "text", "id": "faq_heading", "label": "Heading", "default": "Good to know" }
+    { "type": "text", "id": "faq_heading", "label": "Heading", "default": "Good to know" },
+    { "type": "text", "id": "faq_q_1", "label": "Question 1", "default": "When does the sale run?" },
+    { "type": "richtext", "id": "faq_a_1", "label": "Answer 1", "default": "<p>Our Black Friday sale runs from Saturday 21 to Friday 27 November 2026. It opens to everyone at midnight (AEDT) on the 21st.</p>" },
+    { "type": "text", "id": "faq_q_2", "label": "Question 2", "default": "What are the shipping cut-offs?" },
+    { "type": "richtext", "id": "faq_a_2", "label": "Answer 2", "default": "<p>Orders placed during the sale ship on our usual next-business-day schedule. Order early in the week to have your coffee before the weekend.</p>" },
+    { "type": "text", "id": "faq_q_3", "label": "Question 3", "default": "Do discounts stack?" },
+    { "type": "richtext", "id": "faq_a_3", "label": "Answer 3", "default": "<p>Sale pricing applies automatically at checkout and can't be combined with other discount codes.</p>" },
+    { "type": "text", "id": "faq_q_4", "label": "Question 4", "default": "Can I save on a subscription too?" },
+    { "type": "richtext", "id": "faq_a_4", "label": "Answer 4", "default": "<p>Yes — start or manage a coffee subscription any time for a standing discount on every delivery, on top of the sale.</p>" },
+    { "type": "text", "id": "faq_q_5", "label": "Question 5" },
+    { "type": "richtext", "id": "faq_a_5", "label": "Answer 5" },
+    { "type": "text", "id": "faq_q_6", "label": "Question 6" },
+    { "type": "richtext", "id": "faq_a_6", "label": "Answer 6" }
   ],
-  "blocks": [
-    {
-      "type": "collection_link",
-      "name": "Collection link",
-      "settings": [
-        { "type": "text", "id": "label", "label": "Label" },
-        { "type": "url", "id": "link", "label": "Collection URL" }
-      ]
-    },
-    {
-      "type": "faq",
-      "name": "FAQ item",
-      "settings": [
-        { "type": "text", "id": "question", "label": "Question" },
-        { "type": "richtext", "id": "answer", "label": "Answer" }
-      ]
-    }
-  ],
-  "max_blocks": 20,
   "presets": [{ "name": "ONA BFCM landing" }]
 }
 {% endschema %}
