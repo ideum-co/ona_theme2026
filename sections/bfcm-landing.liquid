@@ -15,10 +15,11 @@
   * The countdown is the homepage flip-card look (cream cards, dark frame, the
     split line), centred, on the same burgundy as the homepage banner, with the
     Sign up / Shop buttons centred under it.
-  * It is one block, in the order Macarena drew: banner → dates → status →
-    countdown → one-line pitch → email + Sign up. The old separate "Stay in the
-    loop" section is folded in here, and the footer's duplicate is hidden on
-    this template (see the stylesheet).
+  * It is one block, in the order the campaign artwork uses: dates → banner →
+    status → countdown → one-line pitch → email + Sign up. The date line sits
+    above the lettering (like the stacked artwork) but stays an editable field.
+    The old separate "Stay in the loop" section is folded in here, and the
+    footer's duplicate is hidden on this template (see the stylesheet).
   * Phase switch: before the 21st the clock counts to the start and says
     "Starts in" with Sign up as the primary button. Once the sale opens the
     clock counts to the end and says "Ends in", and "Shop sale" becomes primary.
@@ -59,6 +60,10 @@
 >
   <section class="bfcm-landing__hero" aria-labelledby="bfcm-landing-title-{{ section.id }}">
     <div class="bfcm-landing__hero-inner">
+      {%- if s.date_line != blank -%}
+        <p class="bfcm-landing__dates">{{ s.date_line | escape }}</p>
+      {%- endif -%}
+
       {%- if s.lettering_image != blank -%}
         {{
           s.lettering_image
@@ -84,10 +89,6 @@
           {{ s.title | escape }}
           {%- if s.title_emphasis != blank %} <em>{{ s.title_emphasis | escape }}</em>{% endif -%}
         </h1>
-      {%- endif -%}
-
-      {%- if s.date_line != blank -%}
-        <p class="bfcm-landing__dates">{{ s.date_line | escape }}</p>
       {%- endif -%}
 
       <bfcm-countdown
