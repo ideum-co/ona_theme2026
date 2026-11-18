@@ -81,7 +81,7 @@
       data-text-live="{{ section.settings.text_live | escape }}"
       data-text-ended="{{ section.settings.text_ended | escape }}"
     >
-      <span class="bf-banner__eyebrow" data-countdown-status>{{ section.settings.label_before }}</span>
+     
 
       {%- comment -%}
         Campaign "Black Friday Sale" vector (same snippet as the landing hero,
@@ -94,6 +94,7 @@
         {%- if section.settings.title != blank -%}
           <h2 class="bf-banner__heading visually-hidden">{{ section.settings.title }}</h2>
         {%- endif -%}
+         <span class="bf-banner__eyebrow" data-countdown-status>{{ section.settings.label_before }}</span>
       {%- elsif section.settings.title != blank -%}
         <h2 class="bf-banner__heading">{{ section.settings.title }}</h2>
       {%- endif -%}
