@@ -5,17 +5,21 @@
 
   * No "early access" or "exclusive" anywhere — the sale opens to everyone on
     Sat 21 Nov, so the copy and the countdown target say so.
-  * Hero is a full-width typographic banner, cream on burgundy. The old blobs
-    (burgundy + pink circles, legacy branding), the extra ONA logo and the
-    espresso photo are gone. `lettering_image` is an optional slot for Sarah's
-    "Sale" script art — drop it in and it replaces the typeset title, no deploy.
+  * Hero is a full-width banner, cream on burgundy. The old blobs (burgundy +
+    pink circles, legacy branding), the extra ONA logo and the espresso photo
+    are gone. By default it shows the campaign "Black Friday Sale" lettering
+    (snippets/bfcm-sale-lettering.liquid — Sarah's vector, matches the signage).
+    Turn off "Use campaign Sale lettering" to fall back to the editable typeset
+    title/dates (the post-sale reuse mode). `lettering_image` still overrides
+    both if a raster is ever supplied — no deploy needed either way.
   * The countdown is the homepage flip-card look (cream cards, dark frame, the
     split line), centred, on the same burgundy as the homepage banner, with the
     Sign up / Shop buttons centred under it.
-  * It is one block, in the order Macarena drew: banner → dates → status →
-    countdown → one-line pitch → email + Sign up. The old separate "Stay in the
-    loop" section is folded in here, and the footer's duplicate is hidden on
-    this template (see the stylesheet).
+  * It is one block, in the order the campaign artwork uses: dates → banner →
+    status → countdown → one-line pitch → email + Sign up. The date line sits
+    above the lettering (like the stacked artwork) but stays an editable field.
+    The old separate "Stay in the loop" section is folded in here, and the
+    footer's duplicate is hidden on this template (see the stylesheet).
   * Phase switch: before the 21st the clock counts to the start and says
     "Starts in" with Sign up as the primary button. Once the sale opens the
     clock counts to the end and says "Ends in", and "Shop sale" becomes primary.
@@ -56,6 +60,10 @@
 >
   <section class="bfcm-landing__hero" aria-labelledby="bfcm-landing-title-{{ section.id }}">
     <div class="bfcm-landing__hero-inner">
+      {%- if s.date_line != blank -%}
+        <p class="bfcm-landing__dates">{{ s.date_line | escape }}</p>
+      {%- endif -%}
+
       {%- if s.lettering_image != blank -%}
         {{
           s.lettering_image
@@ -71,15 +79,16 @@
         <h1 id="bfcm-landing-title-{{ section.id }}" class="visually-hidden">
           {{ s.title | escape }} {{ s.title_emphasis | escape }}
         </h1>
+      {%- elsif s.use_campaign_lettering -%}
+        {%- render 'bfcm-sale-lettering' -%}
+        <h1 id="bfcm-landing-title-{{ section.id }}" class="visually-hidden">
+          {{ s.title | escape }} {{ s.title_emphasis | escape }}
+        </h1>
       {%- else -%}
         <h1 id="bfcm-landing-title-{{ section.id }}" class="bfcm-landing__title">
           {{ s.title | escape }}
           {%- if s.title_emphasis != blank %} <em>{{ s.title_emphasis | escape }}</em>{% endif -%}
         </h1>
-      {%- endif -%}
-
-      {%- if s.date_line != blank -%}
-        <p class="bfcm-landing__dates">{{ s.date_line | escape }}</p>
       {%- endif -%}
 
       <bfcm-countdown
@@ -167,54 +176,53 @@
       {%- endif -%}
       <ul class="bfcm-landing__grid" role="list">
         {%- for product in sale_products limit: s.products_count -%}
-          <li class="bfcm-landing__card-product">
-            <a href="{{ product.url }}">
-              <span class="bfcm-landing__card-media">
-                {%- if product.featured_image -%}
-                  {{
-                    product.featured_image
-                    | image_url: width: 600
-                    | image_tag: widths: '300, 450, 600', sizes: '(min-width: 990px) 22vw, 45vw', loading: 'lazy', alt: product.featured_image.alt | default: product.title
-                  }}
-                {%- endif -%}
-              </span>
-              <span class="bfcm-landing__card-title">{{ product.title | escape }}</span>
-              <span class="bfcm-landing__price">
-                {%- if product.compare_at_price > product.price -%}
-                  <span class="bfcm-landing__price-sale">{{ product.price | money }}</span>
-                  <s class="bfcm-landing__price-was">{{ product.compare_at_price | money }}</s>
-                {%- else -%}
-                  {{ product.price | money }}
-                {%- endif -%}
-              </span>
-            </a>
+          <li class="bfcm-landing__grid-item">
+            {%- comment -%}
+              The site-wide product card (image + info + actions). Rendered the
+              same way the homepage spotlight and the collection pages do it: a
+              static `_product-card` that self-populates its full child tree
+              (gallery, title, price, buy-buttons / quick add) from the product.
+            {%- endcomment -%}
+            {%- content_for 'block',
+              type: '_product-card',
+              id: 'static-product-card',
+              closest.product: product,
+              product_view_context: 'collection'
+            -%}
           </li>
         {%- endfor -%}
       </ul>
     </section>
   {%- endif -%}
 
+  {%- comment -%}
+    Categories and FAQ are section SETTINGS (fixed slots), not section-defined
+    blocks. Shopify forbids mixing section-defined blocks with theme blocks in
+    one section, and the product grid above uses the site-wide `_product-card`
+    theme block — so these have to be settings. Six slots each; empty ones skip.
+  {%- endcomment -%}
   {%- assign has_links = false -%}
-  {%- for block in section.blocks -%}
-    {%- if block.type == 'collection_link' and block.settings.label != blank and block.settings.link != blank -%}
-      {%- assign has_links = true -%}
-    {%- endif -%}
+  {%- for i in (1..6) -%}
+    {%- assign lbl = 'cat_label_' | append: i -%}
+    {%- assign url = 'cat_url_' | append: i -%}
+    {%- if s[lbl] != blank and s[url] != blank -%}{%- assign has_links = true -%}{%- endif -%}
   {%- endfor -%}
   {%- if has_links -%}
     <nav class="bfcm-landing__collections" aria-label="Shop by collection">
-      {%- for block in section.blocks -%}
-        {%- if block.type == 'collection_link' and block.settings.label != blank and block.settings.link != blank -%}
-          <a href="{{ block.settings.link }}" {{ block.shopify_attributes }}>{{ block.settings.label | escape }}</a>
+      {%- for i in (1..6) -%}
+        {%- assign lbl = 'cat_label_' | append: i -%}
+        {%- assign url = 'cat_url_' | append: i -%}
+        {%- if s[lbl] != blank and s[url] != blank -%}
+          <a href="{{ s[url] }}">{{ s[lbl] | escape }}</a>
         {%- endif -%}
       {%- endfor -%}
     </nav>
   {%- endif -%}
 
   {%- assign has_faq = false -%}
-  {%- for block in section.blocks -%}
-    {%- if block.type == 'faq' and block.settings.question != blank -%}
-      {%- assign has_faq = true -%}
-    {%- endif -%}
+  {%- for i in (1..6) -%}
+    {%- assign q = 'faq_q_' | append: i -%}
+    {%- if s[q] != blank -%}{%- assign has_faq = true -%}{%- endif -%}
   {%- endfor -%}
   {%- if has_faq -%}
     <section class="bfcm-landing__faq" aria-labelledby="bfcm-landing-faq-{{ section.id }}">
@@ -222,11 +230,13 @@
         <h2 id="bfcm-landing-faq-{{ section.id }}" class="bfcm-landing__section-title">{{ s.faq_heading | escape }}</h2>
       {%- endif -%}
       <dl class="bfcm-landing__faq-list">
-        {%- for block in section.blocks -%}
-          {%- if block.type == 'faq' and block.settings.question != blank -%}
-            <div class="bfcm-landing__faq-item" {{ block.shopify_attributes }}>
-              <dt>{{ block.settings.question | escape }}</dt>
-              <dd>{{ block.settings.answer }}</dd>
+        {%- for i in (1..6) -%}
+          {%- assign q = 'faq_q_' | append: i -%}
+          {%- assign a = 'faq_a_' | append: i -%}
+          {%- if s[q] != blank -%}
+            <div class="bfcm-landing__faq-item">
+              <dt>{{ s[q] | escape }}</dt>
+              <dd>{{ s[a] }}</dd>
             </div>
           {%- endif -%}
         {%- endfor -%}
@@ -262,6 +272,13 @@
     padding-inline: var(--page-margin, 16px);
   }
   .bfcm-landing__lettering { display: block; width: min(560px, 82%); height: auto; }
+
+  /* Campaign "Black Friday Sale" vector lettering (snippets/bfcm-sale-lettering).
+     Cream block letters + wine script, coloured from the hero vars so it matches
+     the signage and stays on-brand in the band. */
+  .bfcm-sale-lettering { display: block; width: min(720px, 90%); height: auto; }
+  .bfcm-sale-lettering .bf-fill-base { fill: var(--bfcm-cream, #f2f0eb); }
+  .bfcm-sale-lettering .bf-fill-script { fill: var(--bfcm-sale-script, #8b1f41); }
   .bfcm-landing__title {
     font-family: var(--font-brand-display, 'Silk Serif', Georgia, serif);
     font-size: clamp(52px, 8vw, 118px);
@@ -397,13 +414,8 @@
   }
   .bfcm-landing__products { padding: clamp(48px, 5vw, 92px) var(--bfcm-page-inset); }
   .bfcm-landing__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(16px, 2vw, 30px); list-style: none; margin: 0; padding: 0; }
-  .bfcm-landing__card-product a { display: grid; gap: 10px; text-decoration: none; color: inherit; }
-  .bfcm-landing__card-media { display: block; aspect-ratio: 1; background: #fff; overflow: hidden; }
-  .bfcm-landing__card-media img { width: 100%; height: 100%; object-fit: cover; }
-  .bfcm-landing__card-title { font-size: 16px; line-height: 1.3; }
-  .bfcm-landing__price { font-weight: 700; display: inline-flex; gap: 8px; align-items: baseline; }
-  .bfcm-landing__price-sale { color: var(--bfcm-wine, #441925); }
-  .bfcm-landing__price-was { font-weight: 400; opacity: 0.55; }
+  .bfcm-landing__grid-item { min-width: 0; display: flex; }
+  .bfcm-landing__grid-item > product-card { width: 100%; }
 
   /* ---- Compact category row ---- */
   .bfcm-landing__collections {
@@ -445,7 +457,8 @@
   "settings": [
     { "type": "header", "content": "Hero" },
     { "type": "color", "id": "band_color", "label": "Band background", "default": "#441925", "info": "Match the homepage countdown background." },
-    { "type": "image_picker", "id": "lettering_image", "label": "Sale lettering image", "info": "Optional. Campaign 'Sale' script art (SVG or 2x PNG on transparent). Replaces the typeset title when set." },
+    { "type": "checkbox", "id": "use_campaign_lettering", "label": "Use campaign 'Sale' lettering", "default": true, "info": "On: shows the campaign 'Black Friday Sale' vector art, matching the signage. Off: shows the editable typeset title/dates below (use this to genericise the page after the sale)." },
+    { "type": "image_picker", "id": "lettering_image", "label": "Sale lettering image", "info": "Optional. Overrides the campaign art above with an uploaded raster (2x PNG on transparent)." },
     { "type": "text", "id": "title", "label": "Title", "default": "Black Friday" },
     { "type": "text", "id": "title_emphasis", "label": "Italic title word", "default": "Sale" },
     { "type": "text", "id": "date_line", "label": "Dates", "default": "21–27 November 2026" },
@@ -470,28 +483,34 @@
     { "type": "header", "content": "Featured products" },
     { "type": "text", "id": "products_heading", "label": "Heading", "default": "On sale now" },
     { "type": "range", "id": "products_count", "label": "Products to show", "min": 4, "max": 8, "step": 1, "default": 8 },
+    { "type": "header", "content": "Shop by collection", "info": "A compact row of category links under the product grid. Fill label + path; leave a slot blank to hide it." },
+    { "type": "text", "id": "cat_label_1", "label": "Category 1 label", "default": "All coffee" },
+    { "type": "text", "id": "cat_url_1", "label": "Category 1 path", "default": "/collections/all", "info": "Relative path, e.g. /collections/espresso" },
+    { "type": "text", "id": "cat_label_2", "label": "Category 2 label", "default": "Espresso coffee" },
+    { "type": "text", "id": "cat_url_2", "label": "Category 2 path", "default": "/collections/espresso" },
+    { "type": "text", "id": "cat_label_3", "label": "Category 3 label", "default": "Filter coffee" },
+    { "type": "text", "id": "cat_url_3", "label": "Category 3 path", "default": "/collections/filter" },
+    { "type": "text", "id": "cat_label_4", "label": "Category 4 label", "default": "Milk-based coffee" },
+    { "type": "text", "id": "cat_url_4", "label": "Category 4 path", "default": "/collections/milk-based" },
+    { "type": "text", "id": "cat_label_5", "label": "Category 5 label", "default": "Brew gear" },
+    { "type": "text", "id": "cat_url_5", "label": "Category 5 path", "default": "/collections/brew-gear" },
+    { "type": "text", "id": "cat_label_6", "label": "Category 6 label", "default": "Merch" },
+    { "type": "text", "id": "cat_url_6", "label": "Category 6 path", "default": "/collections/merch" },
     { "type": "header", "content": "FAQ" },
-    { "type": "text", "id": "faq_heading", "label": "Heading", "default": "Good to know" }
+    { "type": "text", "id": "faq_heading", "label": "Heading", "default": "Good to know" },
+    { "type": "text", "id": "faq_q_1", "label": "Question 1", "default": "When does the sale run?" },
+    { "type": "richtext", "id": "faq_a_1", "label": "Answer 1", "default": "<p>Our Black Friday sale runs from Saturday 21 to Friday 27 November 2026. It opens to everyone at midnight (AEDT) on the 21st.</p>" },
+    { "type": "text", "id": "faq_q_2", "label": "Question 2", "default": "What are the shipping cut-offs?" },
+    { "type": "richtext", "id": "faq_a_2", "label": "Answer 2", "default": "<p>Orders placed during the sale ship on our usual next-business-day schedule. Order early in the week to have your coffee before the weekend.</p>" },
+    { "type": "text", "id": "faq_q_3", "label": "Question 3", "default": "Do discounts stack?" },
+    { "type": "richtext", "id": "faq_a_3", "label": "Answer 3", "default": "<p>Sale pricing applies automatically at checkout and can't be combined with other discount codes.</p>" },
+    { "type": "text", "id": "faq_q_4", "label": "Question 4", "default": "Can I save on a subscription too?" },
+    { "type": "richtext", "id": "faq_a_4", "label": "Answer 4", "default": "<p>Yes — start or manage a coffee subscription any time for a standing discount on every delivery, on top of the sale.</p>" },
+    { "type": "text", "id": "faq_q_5", "label": "Question 5" },
+    { "type": "richtext", "id": "faq_a_5", "label": "Answer 5" },
+    { "type": "text", "id": "faq_q_6", "label": "Question 6" },
+    { "type": "richtext", "id": "faq_a_6", "label": "Answer 6" }
   ],
-  "blocks": [
-    {
-      "type": "collection_link",
-      "name": "Collection link",
-      "settings": [
-        { "type": "text", "id": "label", "label": "Label" },
-        { "type": "url", "id": "link", "label": "Collection URL" }
-      ]
-    },
-    {
-      "type": "faq",
-      "name": "FAQ item",
-      "settings": [
-        { "type": "text", "id": "question", "label": "Question" },
-        { "type": "richtext", "id": "answer", "label": "Answer" }
-      ]
-    }
-  ],
-  "max_blocks": 20,
   "presets": [{ "name": "ONA BFCM landing" }]
 }
 {% endschema %}

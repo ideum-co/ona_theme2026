@@ -35,10 +35,9 @@
   a phone field that silently drops the number is worse than no field. Needs a
   Dotdigital (or SMS app) decision first -- see the PR.
 
-  Dates default to the 21-27 November window Macarena confirmed. The sale opens
-  to EVERYONE on Sat 21 Nov -- there is no subscriber pre-sale -- so the
-  countdown points at the 21st and no wording calls it early access (Maca/Sarah,
-  13 Nov 2026).
+  Dates default to the 21-27 November window Macarena confirmed, with the
+  countdown pointed at early access on the 20th, because early access is what
+  the sign-up is actually offering.
 {%- endcomment -%}
 
 {%- liquid
@@ -84,7 +83,18 @@
     >
       <span class="bf-banner__eyebrow" data-countdown-status>{{ section.settings.label_before }}</span>
 
-      {%- if section.settings.title != blank -%}
+      {%- comment -%}
+        Campaign "Black Friday Sale" vector (same snippet as the landing hero,
+        so both surfaces match the signage). The typeset title stays as the
+        accessible name, and as the fallback when the toggle is off (post-sale
+        reuse). See snippets/bfcm-sale-lettering.liquid.
+      {%- endcomment -%}
+      {%- if section.settings.use_campaign_lettering -%}
+        <div class="bf-banner__lettering">{%- render 'bfcm-sale-lettering' -%}</div>
+        {%- if section.settings.title != blank -%}
+          <h2 class="bf-banner__heading visually-hidden">{{ section.settings.title }}</h2>
+        {%- endif -%}
+      {%- elsif section.settings.title != blank -%}
         <h2 class="bf-banner__heading">{{ section.settings.title }}</h2>
       {%- endif -%}
 
@@ -233,6 +243,21 @@
     margin: 12px 0 24px;
     color: var(--bf-heading-color, #fbf8f3);
   }
+
+  /* Campaign "Black Friday Sale" vector lettering (snippets/bfcm-sale-lettering).
+     Cream block letters + wine script; the snippet's fills fall back to the
+     brand hexes, so it matches the landing and the signage. */
+  .bf-banner__lettering {
+    margin: 12px auto 24px;
+    width: min(680px, 88%);
+  }
+  .bf-banner__lettering .bfcm-sale-lettering {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .bf-banner__lettering .bf-fill-base { fill: var(--bfcm-cream, #f2f0eb); }
+  .bf-banner__lettering .bf-fill-script { fill: var(--bfcm-sale-script, #8b1f41); }
 
   .bf-banner__clock {
     display: inline-flex;
@@ -453,10 +478,17 @@
       "default": "Black Friday"
     },
     {
+      "type": "checkbox",
+      "id": "use_campaign_lettering",
+      "label": "Use campaign 'Sale' lettering",
+      "default": true,
+      "info": "On: shows the campaign 'Black Friday Sale' vector art (matches the landing and the signage). Off: shows the typeset Title above."
+    },
+    {
       "type": "text",
       "id": "subtitle",
       "label": "Subtitle",
-      "default": "Seven days of our best coffee, starting Saturday 21 November"
+      "default": "Seven days of our best coffee. Subscribers see it first."
     },
     {
       "type": "color",
@@ -472,8 +504,8 @@
       "type": "text",
       "id": "countdown_start_at",
       "label": "Countdown start (ISO 8601)",
-      "default": "2026-11-21T00:00:00+11:00",
-      "info": "Sale opens (midnight Sat 21 Nov, Sydney). Needs a full date, time AND offset for Sydney, e.g. 2026-11-21T00:00:00+11:00 — without the offset the clock is wrong by the viewer's timezone and will not render at all."
+      "default": "2026-11-20T00:00:00+11:00",
+      "info": "Early access opens. Needs a full date, time AND offset for Sydney, e.g. 2026-11-20T00:00:00+11:00 — without the offset the clock is wrong by the viewer's timezone and will not render at all."
     },
     {
       "type": "text",
@@ -493,7 +525,7 @@
       "type": "text",
       "id": "label_before",
       "label": "Label before it starts",
-      "default": "Black Friday sale starts in"
+      "default": "Early access opens in"
     },
     {
       "type": "text",
@@ -547,7 +579,7 @@
       "type": "text",
       "id": "clock_label",
       "label": "Screen reader label for the clock",
-      "default": "Time until the Black Friday sale starts"
+      "default": "Time until Black Friday early access"
     },
     {
       "type": "header",
@@ -563,7 +595,7 @@
       "type": "text",
       "id": "signup_heading",
       "label": "Sign-up heading",
-      "default": "Sign up to hear when the sale goes live"
+      "default": "Sign up for early access, offers and every update."
     },
     {
       "type": "text",
