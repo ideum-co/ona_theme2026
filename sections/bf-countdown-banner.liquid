@@ -81,8 +81,6 @@
       data-text-live="{{ section.settings.text_live | escape }}"
       data-text-ended="{{ section.settings.text_ended | escape }}"
     >
-     
-
       {%- comment -%}
         Campaign "Black Friday Sale" vector (same snippet as the landing hero,
         so both surfaces match the signage). The typeset title stays as the
@@ -94,10 +92,12 @@
         {%- if section.settings.title != blank -%}
           <h2 class="bf-banner__heading visually-hidden">{{ section.settings.title }}</h2>
         {%- endif -%}
-         <span class="bf-banner__eyebrow" data-countdown-status>{{ section.settings.label_before }}</span>
       {%- elsif section.settings.title != blank -%}
         <h2 class="bf-banner__heading">{{ section.settings.title }}</h2>
       {%- endif -%}
+
+      {%- comment -%} Status ("Starts in" / "Ends in") sits right above the clock, like the landing. {%- endcomment -%}
+      <span class="bf-banner__eyebrow" data-countdown-status>{{ section.settings.label_before }}</span>
 
       {%- comment -%}
         Hidden until the script confirms both dates parse. A countdown that
@@ -188,6 +188,9 @@
             >
             <button type="submit">{{ section.settings.signup_button }}</button>
           </div>
+          {%- if section.settings.signup_legal != blank -%}
+            <div class="bf-banner__legal">{{ section.settings.signup_legal }}</div>
+          {%- endif -%}
           {%- if form.errors -%}
             <div id="bf-banner-error-{{ section.id }}" class="bf-banner__form-message" role="alert">
               {{- form.errors | default_errors -}}
@@ -227,14 +230,16 @@
     margin: 0 auto;
   }
 
+  /* Status ("Starts in"/"Ends in"): generous gap above to separate it from the
+     wordmark, tight gap below so it reads as the label of the countdown. */
   .bf-banner__eyebrow {
     display: block;
     font-family: var(--font-brand-text, 'Karla', sans-serif);
     font-size: var(--bf-subtitle-size, 16px);
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    margin: clamp(26px, 3.5vw, 40px) 0 14px;
     color: var(--bf-subtitle-color, #fbf8f3);
-    margin-bottom: 12px;
   }
 
   .bf-banner__heading {
@@ -242,7 +247,7 @@
     font-size: var(--bf-heading-size, 40px);
     font-weight: 400;
     line-height: 1.1;
-    margin: 12px 0 24px;
+    margin: 0;
     color: var(--bf-heading-color, #fbf8f3);
   }
 
@@ -250,7 +255,7 @@
      Cream block letters + wine script; the snippet's fills fall back to the
      brand hexes, so it matches the landing and the signage. */
   .bf-banner__lettering {
-    margin: 12px auto 24px;
+    margin: 0 auto;
     width: min(680px, 88%);
   }
   .bf-banner__lettering .bfcm-sale-lettering {
@@ -415,6 +420,18 @@
     margin: 0;
     color: var(--bf-subtitle-color, #fbf8f3);
   }
+
+  .bf-banner__legal {
+    font-family: var(--font-brand-text, 'Karla', sans-serif);
+    font-size: 12px;
+    line-height: 1.5;
+    margin: 8px auto 0;
+    max-width: 44ch;
+    color: var(--bf-subtitle-color, #fbf8f3);
+    opacity: 0.75;
+  }
+  .bf-banner__legal p { margin: 0; }
+  .bf-banner__legal a { color: inherit; text-underline-offset: 2px; }
 
   .bf-banner__actions {
     margin-top: 24px;
@@ -610,6 +627,13 @@
       "id": "signup_button",
       "label": "Button text",
       "default": "Sign up"
+    },
+    {
+      "type": "richtext",
+      "id": "signup_legal",
+      "label": "Legal / consent line",
+      "default": "<p>By subscribing you're already saving — subscribers get a standing discount on every subscription delivery — and you agree to receive ONA marketing emails. Unsubscribe any time.</p>",
+      "info": "Small print shown under the email field. Leave blank to hide."
     },
     {
       "type": "text",
