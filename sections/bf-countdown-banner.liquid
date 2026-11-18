@@ -83,7 +83,18 @@
     >
       <span class="bf-banner__eyebrow" data-countdown-status>{{ section.settings.label_before }}</span>
 
-      {%- if section.settings.title != blank -%}
+      {%- comment -%}
+        Campaign "Black Friday Sale" vector (same snippet as the landing hero,
+        so both surfaces match the signage). The typeset title stays as the
+        accessible name, and as the fallback when the toggle is off (post-sale
+        reuse). See snippets/bfcm-sale-lettering.liquid.
+      {%- endcomment -%}
+      {%- if section.settings.use_campaign_lettering -%}
+        <div class="bf-banner__lettering">{%- render 'bfcm-sale-lettering' -%}</div>
+        {%- if section.settings.title != blank -%}
+          <h2 class="bf-banner__heading visually-hidden">{{ section.settings.title }}</h2>
+        {%- endif -%}
+      {%- elsif section.settings.title != blank -%}
         <h2 class="bf-banner__heading">{{ section.settings.title }}</h2>
       {%- endif -%}
 
@@ -232,6 +243,21 @@
     margin: 12px 0 24px;
     color: var(--bf-heading-color, #fbf8f3);
   }
+
+  /* Campaign "Black Friday Sale" vector lettering (snippets/bfcm-sale-lettering).
+     Cream block letters + wine script; the snippet's fills fall back to the
+     brand hexes, so it matches the landing and the signage. */
+  .bf-banner__lettering {
+    margin: 12px auto 24px;
+    width: min(680px, 88%);
+  }
+  .bf-banner__lettering .bfcm-sale-lettering {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .bf-banner__lettering .bf-fill-base { fill: var(--bfcm-cream, #f2f0eb); }
+  .bf-banner__lettering .bf-fill-script { fill: var(--bfcm-sale-script, #8b1f41); }
 
   .bf-banner__clock {
     display: inline-flex;
@@ -450,6 +476,13 @@
       "id": "title",
       "label": "Title",
       "default": "Black Friday"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_campaign_lettering",
+      "label": "Use campaign 'Sale' lettering",
+      "default": true,
+      "info": "On: shows the campaign 'Black Friday Sale' vector art (matches the landing and the signage). Off: shows the typeset Title above."
     },
     {
       "type": "text",
