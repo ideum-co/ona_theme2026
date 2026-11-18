@@ -187,6 +187,9 @@
             >
             <button type="submit">{{ section.settings.signup_button }}</button>
           </div>
+          {%- if section.settings.signup_legal != blank -%}
+            <div class="bf-banner__legal">{{ section.settings.signup_legal }}</div>
+          {%- endif -%}
           {%- if form.errors -%}
             <div id="bf-banner-error-{{ section.id }}" class="bf-banner__form-message" role="alert">
               {{- form.errors | default_errors -}}
@@ -414,6 +417,18 @@
     color: var(--bf-subtitle-color, #fbf8f3);
   }
 
+  .bf-banner__legal {
+    font-family: var(--font-brand-text, 'Karla', sans-serif);
+    font-size: 12px;
+    line-height: 1.5;
+    margin: 8px auto 0;
+    max-width: 44ch;
+    color: var(--bf-subtitle-color, #fbf8f3);
+    opacity: 0.75;
+  }
+  .bf-banner__legal p { margin: 0; }
+  .bf-banner__legal a { color: inherit; text-underline-offset: 2px; }
+
   .bf-banner__actions {
     margin-top: 24px;
   }
@@ -608,6 +623,13 @@
       "id": "signup_button",
       "label": "Button text",
       "default": "Sign up"
+    },
+    {
+      "type": "richtext",
+      "id": "signup_legal",
+      "label": "Legal / consent line",
+      "default": "<p>By subscribing you're already saving — subscribers get a standing discount on every subscription delivery — and you agree to receive ONA marketing emails. Unsubscribe any time.</p>",
+      "info": "Small print shown under the email field. Leave blank to hide."
     },
     {
       "type": "text",

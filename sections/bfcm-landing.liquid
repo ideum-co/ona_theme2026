@@ -152,6 +152,9 @@
           >
           <button type="submit">{{ 'actions.sign_up' | t }}</button>
         </div>
+        {%- if s.signup_legal != blank -%}
+          <div class="bfcm-landing__legal">{{ s.signup_legal }}</div>
+        {%- endif -%}
         {%- if form.errors -%}
           <div id="bfcm-landing-error-{{ section.id }}" class="bfcm-landing__form-message" role="alert">{{ form.errors | default_errors }}</div>
         {%- elsif form.posted_successfully? -%}
@@ -224,7 +227,7 @@
     {%- assign q = 'faq_q_' | append: i -%}
     {%- if s[q] != blank -%}{%- assign has_faq = true -%}{%- endif -%}
   {%- endfor -%}
-  {%- if has_faq -%}
+  {%- if s.show_faq and has_faq -%}
     <section class="bfcm-landing__faq" aria-labelledby="bfcm-landing-faq-{{ section.id }}">
       {%- if s.faq_heading != blank -%}
         <h2 id="bfcm-landing-faq-{{ section.id }}" class="bfcm-landing__section-title">{{ s.faq_heading | escape }}</h2>
@@ -381,6 +384,13 @@
     font: inherit; font-weight: 700; cursor: pointer;
   }
   .bfcm-landing__form-message { font-size: 13px; margin: 0; color: var(--bfcm-cream, #f4f3e9); }
+  .bfcm-landing__legal {
+    font-family: var(--font-brand-text, 'Karla', sans-serif);
+    font-size: 12px; line-height: 1.5; margin: 2px 0 0;
+    color: var(--bfcm-cream, #f4f3e9); opacity: 0.75; max-width: 46ch;
+  }
+  .bfcm-landing__legal p { margin: 0; }
+  .bfcm-landing__legal a { color: inherit; text-underline-offset: 2px; }
   .bfcm-landing__actions { display: flex; justify-content: center; }
   .bfcm-landing__button {
     display: inline-flex; align-items: center; justify-content: center;
@@ -476,6 +486,7 @@
     { "type": "text", "id": "label_seconds", "label": "Unit label: seconds", "default": "Secs" },
     { "type": "header", "content": "Sign up" },
     { "type": "text", "id": "signup_pitch", "label": "Pitch line", "default": "Seven days of savings. Sign up for sale updates." },
+    { "type": "richtext", "id": "signup_legal", "label": "Legal / consent line", "default": "<p>By subscribing you're already saving — subscribers get a standing discount on every subscription delivery — and you agree to receive ONA marketing emails. Unsubscribe any time.</p>", "info": "Small print shown under the email field. Leave blank to hide." },
     { "type": "header", "content": "Buttons" },
     { "type": "text", "id": "shop_label", "label": "Shop button (before sale)", "default": "Shop coffees" },
     { "type": "text", "id": "shop_label_live", "label": "Shop button (during sale)", "default": "Shop sale" },
@@ -497,6 +508,7 @@
     { "type": "text", "id": "cat_label_6", "label": "Category 6 label", "default": "Merch" },
     { "type": "text", "id": "cat_url_6", "label": "Category 6 path", "default": "/collections/merch" },
     { "type": "header", "content": "FAQ" },
+    { "type": "checkbox", "id": "show_faq", "label": "Show FAQ section", "default": true, "info": "Turn off to hide the whole FAQ block on the page." },
     { "type": "text", "id": "faq_heading", "label": "Heading", "default": "Good to know" },
     { "type": "text", "id": "faq_q_1", "label": "Question 1", "default": "When does the sale run?" },
     { "type": "richtext", "id": "faq_a_1", "label": "Answer 1", "default": "<p>Our Black Friday sale runs from Saturday 21 to Friday 27 November 2026. It opens to everyone at midnight (AEDT) on the 21st.</p>" },
