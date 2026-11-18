@@ -15,6 +15,7 @@
         "icon_9aLnRm": {
           "type": "icon",
           "name": "t:names.icon",
+          "disabled": true,
           "settings": {
             "icon": "none",
             "image_upload": "shopify://shop_images/badge_sale.svg",
@@ -301,7 +302,6 @@
     },
     "floating_badge_r89NRP": {
       "type": "floating-badge",
-      "disabled": true,
       "name": "Floating badge",
       "settings": {
         "image": "shopify://shop_images/badge_sale.svg",
