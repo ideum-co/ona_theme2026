@@ -305,7 +305,7 @@
       "name": "Floating badge",
       "settings": {
         "image": "shopify://shop_images/badge_sale.svg",
-        "fallback_text": "New Harvest Sale",
+        "fallback_text": "Black Friday Sale",
         "accessible_label": "View the current promotion",
         "link": "",
         "open_in_new_tab": false,
