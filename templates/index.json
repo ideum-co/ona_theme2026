@@ -15,7 +15,6 @@
         "icon_9aLnRm": {
           "type": "icon",
           "name": "t:names.icon",
-          "disabled": true,
           "settings": {
             "icon": "none",
             "image_upload": "shopify://shop_images/badge_sale.svg",
@@ -259,6 +258,7 @@
       "type": "bf-countdown-banner",
       "settings": {
         "title": "Black Friday",
+        "use_campaign_lettering": true,
         "subtitle": "Seven days of our best coffee, starting Saturday 21 November",
         "bg_color": "#441925",
         "countdown_start_at": "2026-11-21T00:00:00+11:00",
@@ -1730,12 +1730,13 @@
         "title": "The Sweet spot",
         "description": "<p>Sweet berries, creamy white chocolate and a silky finish have made Raspberry Candy one of ONA's most iconic coffees.</p>",
         "motion_reveal": true,
-        "button_bg_color": "#E42475",
+        "button_bg_color": "#e42475",
         "button_text_color": "#ffffff",
         "button_1_label": "Shop now",
         "button_1_link": "",
         "button_2_label": "Subscribe & Save",
         "button_2_link": "",
+        "center_buttons_mobile": true,
         "padding-block-start": 72,
         "padding-block-end": 72
       }
