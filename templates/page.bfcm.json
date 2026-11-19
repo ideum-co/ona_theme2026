@@ -1,9 +1,90 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main": {
       "type": "bfcm-landing",
-      "settings": {}
+      "blocks": {
+        "static-product-card": {
+          "type": "_product-card",
+          "static": true,
+          "settings": {
+            "product_card_gap": 16,
+            "background_color": "",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        }
+      },
+      "settings": {
+        "band_color": "#441925",
+        "use_campaign_lettering": true,
+        "title": "Black Friday",
+        "title_emphasis": "Sale",
+        "date_line": "21–27 November 2026",
+        "countdown_start_at": "2026-11-21T00:00:00+11:00",
+        "countdown_end_at": "2026-11-28T00:00:00+11:00",
+        "label_before": "Starts in",
+        "label_live": "Ends in",
+        "label_ended": "That's a wrap",
+        "text_ended": "Shop the latest ONA coffees.",
+        "clock_label": "Time remaining in the Black Friday sale",
+        "label_days": "Days",
+        "label_hours": "Hours",
+        "label_minutes": "Mins",
+        "label_seconds": "Secs",
+        "signup_pitch": "Seven days of savings. Sign up for sale updates.",
+        "signup_legal": "<p>You agree to receive ONA marketing emails. Unsubscribe any time.</p>",
+        "shop_label": "Shop coffees",
+        "shop_label_live": "Shop sale",
+        "products_collection": "",
+        "products_heading": "On sale now",
+        "products_count": 8,
+        "cat_label_1": "All coffee",
+        "cat_url_1": "/collections/all",
+        "cat_label_2": "Espresso coffee",
+        "cat_url_2": "/collections/espresso",
+        "cat_label_3": "Filter coffee",
+        "cat_url_3": "/collections/filter",
+        "cat_label_4": "Milk-based coffee",
+        "cat_url_4": "/collections/milk-based",
+        "cat_label_5": "Brew gear",
+        "cat_url_5": "/collections/brew-gear",
+        "cat_label_6": "Merch",
+        "cat_url_6": "/collections/merch",
+        "show_faq": true,
+        "faq_heading": "Good to know",
+        "faq_q_1": "When does the sale run?",
+        "faq_a_1": "<p>Our Black Friday sale runs from Saturday 21 to Friday 27 November 2026. It opens to everyone at midnight (AEDT) on the 21st.</p>",
+        "faq_q_2": "What are the shipping cut-offs?",
+        "faq_a_2": "<p>Orders placed during the sale ship on our usual next-business-day schedule. Order early in the week to have your coffee before the weekend.</p>",
+        "faq_q_3": "Do discounts stack?",
+        "faq_a_3": "<p>Sale pricing applies automatically at checkout and can't be combined with other discount codes.</p>",
+        "faq_q_4": "Can I save on a subscription too?",
+        "faq_a_4": "<p>Yes — start or manage a coffee subscription any time for a standing discount on every delivery, on top of the sale.</p>",
+        "faq_q_5": "",
+        "faq_a_5": "",
+        "faq_q_6": "",
+        "faq_a_6": ""
+      }
     }
   },
-  "order": ["main"]
+  "order": [
+    "main"
+  ]
 }
