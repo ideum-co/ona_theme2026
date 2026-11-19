@@ -213,3 +213,42 @@ test('the countdown fits a 375px phone without overflowing the page', () => {
     );
   }
 });
+
+test('the CTA is centred by its wrapper, not by inherited text-align', () => {
+  /*
+   * Fourth silent failure mode, found live on 19 November 2026 with the sale a day
+   * out. `.bf-banner` sets `text-align: center` and every other child obeys it, so
+   * the link looks safe by inspection -- but the theme's shared `.button` class is
+   * block-level, and a block box ignores the parent's text-align. The CTA rendered
+   * flush against the left edge of __inner on desktop AND mobile, under a centred
+   * countdown and a full-width sign-up form.
+   *
+   * It stayed invisible for as long as it did because `cta_url` was blank, and the
+   * link only renders when BOTH cta_text and cta_url are set -- so the bug shipped
+   * dormant and appeared the moment someone filled the URL in.
+   *
+   * The landing page solved this already: `.bfcm-landing__actions` centres the
+   * wrapper. Keep the two sections in agreement.
+   */
+  const src = banner();
+  const css = src.slice(src.indexOf('{% stylesheet %}'), src.indexOf('{% endstylesheet %}'));
+
+  assert.match(
+    src,
+    /<div class="bf-banner__actions">\s*<a href="\{\{ section\.settings\.cta_url \}\}"/,
+    'the CTA is no longer wrapped in .bf-banner__actions -- the centring rule below has nothing to act on'
+  );
+
+  const rule = css.match(/\.bf-banner__actions\s*\{([^}]*)\}/s);
+  assert.ok(rule, '.bf-banner__actions lost its rule');
+  assert.match(rule[1], /display:\s*flex/, '.bf-banner__actions must be a flex container; text-align does not reach a block-level .button');
+  assert.match(rule[1], /justify-content:\s*center/, '.bf-banner__actions must centre the CTA');
+
+  // The landing page is the reference implementation; if it stops centring, this
+  // guard is measuring the wrong thing.
+  assert.match(
+    landing(),
+    /\.bfcm-landing__actions\s*\{[^}]*justify-content:\s*center/s,
+    'the landing page no longer centres its actions -- re-check which surface is correct'
+  );
+});
