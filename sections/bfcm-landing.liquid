@@ -177,7 +177,7 @@
       {%- if s.products_heading != blank -%}
         <h2 id="bfcm-landing-products-{{ section.id }}" class="bfcm-landing__section-title">{{ s.products_heading | escape }}</h2>
       {%- endif -%}
-      <ul class="bfcm-landing__grid" role="list">
+      <ul class="bfcm-landing__grid" role="list" style="--bfcm-cols: {{ s.products_columns | default: 4 }};">
         {%- for product in sale_products limit: s.products_count -%}
           <li class="bfcm-landing__grid-item">
             {%- comment -%}
@@ -423,7 +423,7 @@
     text-align: center;
   }
   .bfcm-landing__products { padding: clamp(48px, 5vw, 92px) var(--bfcm-page-inset); }
-  .bfcm-landing__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(16px, 2vw, 30px); list-style: none; margin: 0; padding: 0; }
+  .bfcm-landing__grid { display: grid; grid-template-columns: repeat(var(--bfcm-cols, 4), minmax(0, 1fr)); gap: clamp(16px, 2vw, 30px); list-style: none; margin: 0; padding: 0; }
   .bfcm-landing__grid-item { min-width: 0; display: flex; }
   .bfcm-landing__grid-item > product-card { width: 100%; }
 
@@ -494,6 +494,7 @@
     { "type": "header", "content": "Featured products" },
     { "type": "text", "id": "products_heading", "label": "Heading", "default": "On sale now" },
     { "type": "range", "id": "products_count", "label": "Products to show", "min": 4, "max": 8, "step": 1, "default": 8 },
+    { "type": "range", "id": "products_columns", "label": "Columns per row (desktop)", "min": 2, "max": 5, "step": 1, "default": 4, "info": "Steps down automatically on tablet and mobile." },
     { "type": "header", "content": "Shop by collection", "info": "A compact row of category links under the product grid. Fill label + path; leave a slot blank to hide it." },
     { "type": "text", "id": "cat_label_1", "label": "Category 1 label", "default": "All coffee" },
     { "type": "text", "id": "cat_url_1", "label": "Category 1 path", "default": "/collections/all", "info": "Relative path, e.g. /collections/espresso" },
