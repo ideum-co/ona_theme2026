@@ -433,8 +433,13 @@
   .bf-banner__legal p { margin: 0; }
   .bf-banner__legal a { color: inherit; text-underline-offset: 2px; }
 
+  /* The theme's .button is block-level, so the section's text-align: center
+     does not reach it -- the link sat at the left edge of __inner. Centre the
+     wrapper instead, matching .bfcm-landing__actions on the landing page. */
   .bf-banner__actions {
     margin-top: 24px;
+    display: flex;
+    justify-content: center;
   }
 
   .bf-banner__cta {
