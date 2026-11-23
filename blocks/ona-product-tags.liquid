@@ -40,7 +40,7 @@
   {{ ona_tags_markup }}
 {%- elsif request.design_mode -%}
   <div class="product_single_custom_tag_black ona-pdp-tags ona-pdp-tags--placeholder" style="margin-top: 0; {{ ona_tags_vars }}" {{ block.shopify_attributes }}>
-    <span class="custom_product_tags"><h5>Promo tag — none active</h5></span>
+    <span class="custom_product_tags"><h5 role="presentation">Promo tag — none active</h5></span>
   </div>
 {%- elsif product_resource != blank and section.settings.layout_type == 'carousel' -%}
   {%- comment -%}
