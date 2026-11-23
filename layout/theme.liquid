@@ -34,10 +34,21 @@
     {%- comment -%}
       Global on purpose: the app embeds this constrains ship on every page.
       See the file for the measurement.
+
+      Inlined rather than linked. Both sheets are ~1.5 KB, and as separate
+      <link>s each one costs its own blocking round-trip before first paint --
+      Lighthouse on mobile attributed ~480 ms to each, which is latency, not
+      bytes. Inlining trades ~3 KB of HTML (uncached) for two fewer requests on
+      the critical path.
+
+      `overflow-list.css` is deliberately NOT inlined here: it loads inside each
+      <template shadowrootmode="open"> in snippets/overflow-list.liquid, which
+      renders once per overflow list (variant swatches, filters, header menu),
+      so inlining would repeat it per instance instead of being fetched once.
     {%- endcomment -%}
-    {{ 'app-stacking.css' | asset_url | stylesheet_tag }}
+    <style>{{ 'app-stacking.css' | inline_asset_content }}</style>
     {% if request.page_type == 'index' %}
-      {{ 'home-mobile-overflow.css' | asset_url | stylesheet_tag }}
+      <style>{{ 'home-mobile-overflow.css' | inline_asset_content }}</style>
     {% endif %}
     {%- comment -%}
       Only migrated legacy page templates use these scoped layout rules.
