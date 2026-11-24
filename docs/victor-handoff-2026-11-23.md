@@ -246,26 +246,192 @@ Read them from the live theme before you start; a repo grep for
 
 ---
 
-## 4. Buy buttons sit at different heights within a row
+## 4. Buy buttons sat at different heights within a row — FIXED on live
 
-Reported on the landing, but the defect is in the shared card, not the landing.
+**Done.** Victor shipped this in #496, merged to `main` 23 Nov 14:14. The
+explanation this section originally gave was wrong in a way worth recording,
+because it would have sent the next person to the wrong fix.
 
-Measured on the live landing, second row:
+What was measured on the live landing, second row, before the fix:
 
 ```
 btnTop:   2903 / 2961 / 2929     (58px spread)
 priceTop: 2824 / 2883 / 2851
 ```
 
-Rows 1 and 3 happen to line up. The card's inner flex column stacks from the
-top and the buy group has no `margin-top: auto`, so any difference in title or
-tasting-note height pushes the buttons down by a different amount per card.
+**The wrong diagnosis** (what this doc first said): that the card's buy group
+has no `margin-top: auto`, that a fix would have to be invented, and that
+collection pages carried the same latent defect and only looked clean because
+their 4-column grouping happened to pair products of equal content height.
 
-The collection pages look clean only because their 4-column grouping happens to
-pair products of equal content height — the same latent defect is there. A fix
-that pushes the buy group to the bottom of the card corrects both surfaces at
-once, but it touches shared card CSS, so it wants its own PR and a look at
-collection pages, the homepage spotlight and quick-add.
+**What was actually true:** the theme already had a complete equal-height system
+in `snippets/product-card-styles.liquid` — `height: 100%` on `.product-card`
+and `.product-card__content`, `min-block-size: 2lh` on the title, `1lh`/`2lh`
+on the metafield lines, `block-size: 64px` on the variant placeholder, and
+`margin-block-start: auto` on the price so it absorbs the free space above and
+price → variant → buttons drop to the bottom together.
+
+Every one of those rules was scoped to
+`:is(.product-grid__item, .resource-list__item)`. #489 introduced a **new
+wrapper class**, `.bfcm-landing__grid-item`, which was never added to those
+lists — so the landing grid received none of the system. Collection pages were
+never affected; they had the rules the whole time.
+
+The fix adds `.bfcm-landing__grid-item` to all seven selector lists. It reuses
+the existing mechanism rather than bolting a parallel one onto the card, which
+is why it is nine lines and carries no risk to the other surfaces.
+
+Verified on live 24 Nov: every row's buttons now share an identical top
+(2249 / 3049 / 3849 at a 1536px viewport), all eight cards are 770px, and the
+collection grid is unchanged and still aligned (two rows, 630px and 658px, zero
+spread).
+
+**The reusable lesson:** those seven selector lists in
+`snippets/product-card-styles.liquid` are the theme's equal-height contract.
+Any new surface that renders `_product-card` inside its own grid wrapper has to
+be added to them, or its cards will silently lose equal heights and
+bottom-anchored buttons while every other grid keeps them. Worth checking
+whenever a new grid wrapper class appears.
+
+---
+
+## Found in the 24 Nov review of the live landing and countdown
+
+### 5. The sale grid and the "Shop sale" button point at the whole catalogue
+
+**This is the one worth acting on soonest, and it is a single theme-editor
+field with no deploy.**
+
+The section resolves its collection like this:
+
+```liquid
+assign sale_collection = s.products_collection
+if sale_collection == blank
+  assign sale_collection = collections['all']
+endif
+assign shop_url = sale_collection.url | default: '/collections/all'
+```
+
+`products_collection` is **empty on the live theme**, so both the "On sale now"
+grid and the primary button fall through to `collections['all']` — the entire
+catalogue, 230 products, merch and brew gear included — rather than the sale
+collection, which has 19.
+
+Two consequences:
+
+- **The grid is luck, not selection.** It takes the first 8 available products
+  of `collections['all']`. Today all 8 happen to be sale products, but position
+  8 in that collection's order is a **non-discounted merch item** and position 9
+  another non-sale product; they are absent from the page only because they are
+  not currently available on the storefront. A stock or publish change puts a
+  full-price product on the Black Friday page, in a card whose promo badge will
+  not render.
+- **The primary CTA does not go to the sale.** During the sale the button reads
+  "Shop sale" and links to all 230 products instead of the 19 on offer.
+
+Setting the section's **Sale collection** field to the Black Friday collection
+in the theme editor fixes both at once, is reversible instantly, and touches no
+code. It is the only item in this document that is safe to do mid-sale.
+
+**Also fix the schema `info` string while you are there.** It claims the setting
+"Defaults to all coffee until set", but the fallback is `collections['all']`,
+which is every product including merch and brew gear — not all coffee. The
+string tells whoever reads it in the editor that the default is narrower and
+safer than it is, which is how this went unnoticed.
+
+### 6. The homepage banner subtitle is pre-launch copy
+
+The banner's status line and CTA *are* phase-aware and currently correct
+("BLACK FRIDAY IS ON", "SHOP NOW — ENDS FRIDAY 27 NOVEMBER"). The subtitle
+underneath is a static string still reading "…starting Saturday 21 November",
+written before launch and never updated. Not false, but it frames a sale that is
+more than halfway through as something upcoming. One editor field.
+
+### The countdown itself reviewed clean
+
+Checked against an independently computed target. On live at 01:39 UTC on
+24 Nov: phase `live`, status "Ends in", clock showing **03d 11h 20m 37s**
+against a computed 3d 11h 21m to `2026-11-28T00:00:00+11:00`. Correct.
+
+The component is well built and the review found nothing to change in it:
+
+- it **requires an explicit UTC offset** on both dates
+  (`/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/`) and
+  bails otherwise, which is what stops the classic "parsed as the visitor's
+  local midnight" bug
+- the clock is `hidden` by default with the static date line as its fallback, so
+  a bail-out degrades to the date rather than to a frozen `00:00:00:00`
+- `role="timer"` with `aria-live="off"` is the right choice; a polite live region
+  on a per-second clock would announce continuously
+- it clears its interval once the end passes, and `data-text-ended` is wired, so
+  the ended state has copy to show
+
+**One caveat worth knowing.** The status text is server-rendered as
+`label_before` ("Starts in") on every request, and only corrected once the
+module runs. So between parse and hydration, and permanently if the script fails
+or is blocked, a live sale reads "Starts in" above the static date line. Liquid
+can compare `'now' | date: '%s'` against the two settings and render the correct
+initial label, which would remove both the flash and the no-JS wrong state. Low
+severity, not urgent, but it is the same family as the badge jump in item 3:
+correct state arriving after first paint.
+
+### 7. The sale end date lives in four places, and they disagree by 60s
+
+Checked 24 Nov because Felipe asked to confirm the campaign ends 27 November
+11:59pm Canberra. It does -- but it is worth knowing how many places had to
+agree for that to be true.
+
+| Mechanism | Controls | Ends (Canberra, AEDT) |
+| --- | --- | --- |
+| Shopify automatic discount | the discount applied at checkout | 27 Nov **23:59:00** |
+| `custom_product` metafields, per product | the sale badge | 27 Nov **23:59:59** |
+| `templates/page.bfcm.json` `countdown_end_at` | the landing clock | 28 Nov **00:00:00** |
+| `templates/index.json` banner `countdown_end_at` | the homepage clock | 28 Nov **00:00:00** |
+
+Three distinct instants, 60 seconds apart. Nothing runs into the 28th and
+nothing ends early, so the campaign does end on the 27th as intended. For the
+last minute of the sale the clocks still count down and the badge still shows
+while the discount has already stopped. **Felipe's call on 24 Nov: leave the 60
+seconds, it does not matter.** Recorded here rather than changed.
+
+The shop's timezone is `Australia/Melbourne`, which has the same offsets and DST
+rules as Canberra -- AEDT, UTC+11 on that date -- so there is no offset trap in
+any of the four values.
+
+**The real lesson is the count, not the 60 seconds.** Four hand-maintained
+places define one sale, with nothing keeping them in sync, and they did drift:
+the discount targeted an explicit list of **20 products** while the
+`black-friday` collection held **19**. The entire difference was one coffee
+whose badge `from_date` shows it was added to the sale mid-sale -- it received
+the discount and the badge but was never added to the collection, so it is
+discounted and badged on its own product page and in its category collections
+while being absent from the sale page that exists to sell it.
+
+The 2025 discount was scoped to a set of collections rather than to individual
+products. Scoped that way the collection *is* the discount's scope and the two
+lists cannot disagree.
+Switching to a product list for 2026 is what made this drift possible, so
+**next year scope the discount to the collection** and the whole class of
+problem goes away.
+
+Note also that the badge metafields are **parallel arrays** -- `tag_type`,
+`tag_color`, `from_date`, `to_date`, `to_time`, one slot per badge, and a
+product may carry several at once -- the sale badge plus things like "New In",
+"Low Stock" or "Rare Find" -- in no fixed order. Read `tag_type` first and use
+its index; never assume slot 0 is the sale badge. (The badge's own label text is
+store copy and is deliberately not repeated here; read it from the metafield.)
+
+### Mobile, computed rather than measured
+
+The browser extension refused to resize the window below ~50% of the screen, so
+mobile layout could not be measured directly in this session. From the
+breakpoints in `sections/bfcm-landing.liquid` the grid goes to 2 columns at
+749px and stays there, so at a 390px viewport each card is roughly 171px wide.
+With the gallery padding still at 40 that leaves a **~91px product image**; at
+20 it is ~131px. Treat those two numbers as arithmetic from the CSS, not
+observations — but they say the padding fix in item 1 matters more on a phone
+than on the desktop screenshots it was diagnosed from. Worth measuring properly
+on a real device before and after.
 
 ---
 

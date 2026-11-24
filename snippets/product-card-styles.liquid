@@ -26,7 +26,7 @@
   }
 
   /* Collection and product list cards have equal heights */
-  :is(.product-grid__item, .resource-list__item) .product-card {
+  :is(.product-grid__item, .resource-list__item, .bfcm-landing__grid-item) .product-card {
     display: grid;
     height: 100%;
   }
@@ -63,7 +63,7 @@
 
 
   /* Keep purchase actions on the same baseline across a product grid. */
-  :is(.product-grid__item, .resource-list__item) .product-card__content {
+  :is(.product-grid__item, .resource-list__item, .bfcm-landing__grid-item) .product-card__content {
     height: 100%;
   }
 
@@ -81,11 +81,11 @@
     pushing the action row to the bottom of a carousel slide. The previous
     margin-block-start:auto produced a large empty gap between picker and CTA.
   */
-  :is(.product-grid__item, .resource-list__item) .product-card .product-title-link .text-block {
+  :is(.product-grid__item, .resource-list__item, .bfcm-landing__grid-item) .product-card .product-title-link .text-block {
     min-block-size: 2lh;
   }
 
-  :is(.product-grid__item, .resource-list__item) .product-card .product-title-link .text-block > * {
+  :is(.product-grid__item, .resource-list__item, .bfcm-landing__grid-item) .product-card .product-title-link .text-block > * {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -93,15 +93,15 @@
     overflow: hidden;
   }
 
-  :is(.product-grid__item, .resource-list__item) .product-card .product-metafield-text {
+  :is(.product-grid__item, .resource-list__item, .bfcm-landing__grid-item) .product-card .product-metafield-text {
     min-block-size: 1lh;
   }
 
-  :is(.product-grid__item, .resource-list__item) .product-card .product-metafield-text[data-metafield-key='tastes_like'] {
+  :is(.product-grid__item, .resource-list__item, .bfcm-landing__grid-item) .product-card .product-metafield-text[data-metafield-key='tastes_like'] {
     min-block-size: 2lh;
   }
 
-  :is(.product-grid__item, .resource-list__item) .product-card .product-metafield-text__value {
+  :is(.product-grid__item, .resource-list__item, .bfcm-landing__grid-item) .product-card .product-metafield-text__value {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -110,7 +110,7 @@
 
   /* Match the space used by a real dropdown even if a product has only its
      default variant. The empty slot is inert and hidden from accessibility. */
-  :is(.product-grid__item, .resource-list__item) .product-card .product-card__variant-placeholder {
+  :is(.product-grid__item, .resource-list__item, .bfcm-landing__grid-item) .product-card .product-card__variant-placeholder {
     block-size: 64px;
   }
 
@@ -276,7 +276,7 @@
   /* Anchor price -> variant -> buttons to the bottom. `margin-block-start: auto`
      on the price absorbs the free space above it, so the three drop together
      and the buttons line up across the row. */
-  :is(.product-grid__item, .resource-list__item) .product-card__content > product-price,
+  :is(.product-grid__item, .resource-list__item, .bfcm-landing__grid-item) .product-card__content > product-price,
   .ui-test-product-list .resource-list__carousel .product-card__content > product-price {
     margin-block-start: auto;
   }
