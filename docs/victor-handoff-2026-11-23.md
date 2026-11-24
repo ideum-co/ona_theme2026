@@ -1,14 +1,44 @@
-# For Victor — 2026-11-23 (after the sale, not during)
+# For Victor — 2026-11-23 (updated 24 Nov; after the sale, not during)
 
-Four things about the Black Friday landing cards. Three are fixed and waiting on
-`staging-v2`; none of them should go to `main` until the sale is over, because
-`main` is the live theme and the sale runs 21–27 November.
+Findings about the Black Friday landing and the sale's configuration. Some are
+fixed and waiting on `staging-v2`, one is already live, and several are
+single-field admin changes rather than code.
 
-Felipe's call: **do not take the risk mid-sale.** Everything below is written so
-it can be picked up cold on the 28th.
+## Read this first: nothing ships to `main` until the 28th
+
+**Felipe's standing instruction, 24 Nov: do not push changes or PRs that can
+affect the live site during the campaign.** `main` *is* the live theme, so a
+merge to `main` is a deployment to a store mid-sale. The sale runs 21–27
+November and ends 27 Nov 11:59pm Canberra, so this holds until the 28th.
+
+That applies to docs-only PRs against `main` too — the merge still deploys the
+theme, so there is no reason to take the risk for a file nobody renders. Park
+them on `staging-v2` and promote after the sale.
+
+**Where a fix is minor, or is a collection or a theme setting, do it in the
+Shopify admin instead of through the repo.** An admin field change is scoped,
+visible, instantly reversible and needs no deploy; a repo change to achieve the
+same thing needs a merge to `main`, which is exactly what we are avoiding. The
+items marked **ADMIN** below are in that category and are safe to do now. The
+rest wait.
+
+Everything here is written so it can be picked up cold on the 28th.
 
 The first section is a trap rather than a task. Please read it before touching
 `templates/page.bfcm.json`, because the obvious move is the destructive one.
+
+## The short version
+
+| | What | Where | When |
+| --- | --- | --- | --- |
+| **ADMIN** | Point the landing's *Sale collection* field at the Black Friday collection — fixes both the grid source and the "Shop sale" button (§5) | theme editor | safe now |
+| **ADMIN** | Add the one discounted coffee that is missing from the Black Friday collection (§7) | Products → Collections | safe now |
+| **ADMIN** | Refresh the homepage banner subtitle, still pre-launch copy (§6) | theme editor | safe now |
+| repo | Gallery padding so the landing cards match the collection cards — **#494**, verified | `staging-v2` | after 27 Nov |
+| repo | Head CSS inlining — **#492**, verified | `staging-v2` | after 27 Nov |
+| repo | Correct the *Sale collection* schema `info` string, which misdescribes the fallback (§5) | repo | after 27 Nov |
+| repo | Migrate the shop-owned Custom CSS into the repo, which also removes the chip jump (§3) | repo | after 27 Nov |
+| done | Buy-button alignment — shipped live by Victor in **#496** (§4) | `main` | done 23 Nov |
 
 ---
 
