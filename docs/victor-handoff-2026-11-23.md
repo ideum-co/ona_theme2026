@@ -375,6 +375,52 @@ initial label, which would remove both the flash and the no-JS wrong state. Low
 severity, not urgent, but it is the same family as the badge jump in item 3:
 correct state arriving after first paint.
 
+### 7. The sale end date lives in four places, and they disagree by 60s
+
+Checked 24 Nov because Felipe asked to confirm the campaign ends 27 November
+11:59pm Canberra. It does -- but it is worth knowing how many places had to
+agree for that to be true.
+
+| Mechanism | Controls | Ends (Canberra, AEDT) |
+| --- | --- | --- |
+| Shopify automatic discount | the discount applied at checkout | 27 Nov **23:59:00** |
+| `custom_product` metafields, per product | the sale badge | 27 Nov **23:59:59** |
+| `templates/page.bfcm.json` `countdown_end_at` | the landing clock | 28 Nov **00:00:00** |
+| `templates/index.json` banner `countdown_end_at` | the homepage clock | 28 Nov **00:00:00** |
+
+Three distinct instants, 60 seconds apart. Nothing runs into the 28th and
+nothing ends early, so the campaign does end on the 27th as intended. For the
+last minute of the sale the clocks still count down and the badge still shows
+while the discount has already stopped. **Felipe's call on 24 Nov: leave the 60
+seconds, it does not matter.** Recorded here rather than changed.
+
+The shop's timezone is `Australia/Melbourne`, which has the same offsets and DST
+rules as Canberra -- AEDT, UTC+11 on that date -- so there is no offset trap in
+any of the four values.
+
+**The real lesson is the count, not the 60 seconds.** Four hand-maintained
+places define one sale, with nothing keeping them in sync, and they did drift:
+the discount targeted an explicit list of **20 products** while the
+`black-friday` collection held **19**. The entire difference was one coffee
+whose badge `from_date` shows it was added to the sale mid-sale -- it received
+the discount and the badge but was never added to the collection, so it is
+discounted and badged on its own product page and in its category collections
+while being absent from the sale page that exists to sell it.
+
+The 2025 discount was scoped to a set of collections rather than to individual
+products. Scoped that way the collection *is* the discount's scope and the two
+lists cannot disagree.
+Switching to a product list for 2026 is what made this drift possible, so
+**next year scope the discount to the collection** and the whole class of
+problem goes away.
+
+Note also that the badge metafields are **parallel arrays** -- `tag_type`,
+`tag_color`, `from_date`, `to_date`, `to_time`, one slot per badge, and a
+product may carry several at once -- the sale badge plus things like "New In",
+"Low Stock" or "Rare Find" -- in no fixed order. Read `tag_type` first and use
+its index; never assume slot 0 is the sale badge. (The badge's own label text is
+store copy and is deliberately not repeated here; read it from the metafield.)
+
 ### Mobile, computed rather than measured
 
 The browser extension refused to resize the window below ~50% of the screen, so
