@@ -31,9 +31,9 @@ The first section is a trap rather than a task. Please read it before touching
 
 | | What | Where | When |
 | --- | --- | --- | --- |
-| **ADMIN** | Point the landing's *Sale collection* field at the Black Friday collection — fixes both the grid source and the "Shop sale" button (§5) | theme editor | safe now |
-| **ADMIN** | Add the one discounted coffee that is missing from the Black Friday collection (§7) | Products → Collections | safe now |
-| **ADMIN** | Refresh the homepage banner subtitle, still pre-launch copy (§6) | theme editor | safe now |
+| **DONE** | Landing's *Sale collection* now points at the Black Friday collection — fixed the grid source and the "Shop sale" button together (§5) | theme editor | done 24 Nov |
+| **DONE** | The discounted coffee that was missing from the Black Friday collection has been added (§7) | Products → Collections | done 24 Nov |
+| **DONE** | Homepage banner subtitle and the clock's screen-reader label both de-staled (§6) | theme editor | done 24 Nov |
 | repo | Gallery padding so the landing cards match the collection cards — **#494**, verified | `staging-v2` | after 27 Nov |
 | repo | Head CSS inlining — **#492**, verified | `staging-v2` | after 27 Nov |
 | repo | Correct the *Sale collection* schema `info` string, which misdescribes the fallback (§5) | repo | after 27 Nov |
@@ -462,6 +462,43 @@ With the gallery padding still at 40 that leaves a **~91px product image**; at
 observations — but they say the padding fix in item 1 matters more on a phone
 than on the desktop screenshots it was diagnosed from. Worth measuring properly
 on a real device before and after.
+
+---
+
+## Done in the Shopify admin on 24 Nov
+
+Felipe authorised these three and they were made through the admin rather than
+the repo, so no deploy was involved and each is reversible from the same screen.
+All three are verified on the live site, not just in the editor.
+
+| Change | Where | Before | After |
+| --- | --- | --- | --- |
+| *Sale collection* set to the Black Friday collection | landing section, theme editor | empty → fell back to the whole catalogue | the sale collection |
+| One discounted coffee added to the collection | Products → Collections → Black Friday | 19 selections | 20, matching the discount exactly |
+| Banner subtitle de-staled | homepage banner, theme editor | "…best coffee, starting Saturday 21 November" | "Seven days of our best coffee" |
+| Banner clock screen-reader label | homepage banner, theme editor | "Time until the Black Friday sale starts" | "Time remaining in the Black Friday sale" |
+
+Verified on the live store afterwards: the landing's Shop button now resolves to
+the sale collection rather than to every product, the grid renders eight cards
+all carrying the promo badge, the collection holds the same number of products
+as the discount, the banner's stale sentence is gone and the clock's accessible
+name no longer says the sale has not started while it is running.
+
+Two notes for whoever picks this up:
+
+- **The landing's own clock label was already correct** ("Time remaining in the
+  Black Friday sale") and was deliberately left alone. Only the homepage
+  banner's was wrong. They now match.
+- **The collection is the single source again.** With *Sale collection* set, the
+  sale page and the landing grid both read the collection, so the drift
+  described in §7 can no longer show up as a product that is discounted but
+  invisible. The discount itself is still scoped to a product list, so the
+  reverse drift — a product in the collection that the discount does not cover —
+  is still possible. Scoping the discount to the collection next year closes
+  that side too.
+
+The column override (§2) was left at its current value: it is tied to the
+padding fix in §1, which is repo work and waits for the 28th.
 
 ---
 
