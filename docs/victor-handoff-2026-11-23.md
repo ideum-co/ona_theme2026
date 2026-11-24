@@ -52,6 +52,98 @@ live file has them unless item 2 is decided otherwise.
 
 ---
 
+## What is actually worth doing — and what is not
+
+Added 24 Nov. The four items below are ordered by how they were found, not by
+how much they matter, and the wider backlog has the same problem. So here is the
+ranking, with the reasoning, so this can be triaged rather than worked through
+top to bottom.
+
+**One measurement reframes most of it: real users already pass Core Web Vitals
+on both mobile and desktop.** That is CrUX field data at the 75th percentile.
+The mobile Lighthouse 68 is a throttled lab simulation of a page that real
+people are not struggling with. Almost every "performance" item on this list
+therefore buys a number, not an experience.
+
+### Worth doing
+
+1. **The mobile video rendition.** 12.1 MB of a 17 MB page is three videos; the
+   hero alone is 9.6 MB with exactly one 1080p / 3.3 Mbps rendition, so no theme
+   change can pick a lighter file — it needs a new asset. This is the only item
+   that changes what someone on cellular actually experiences, and the only one
+   that moves mobile 68 → ~93. Everything else in the performance bucket is
+   rounding error beside it. Server response is 28 ms, so this is payload, not
+   hosting.
+
+2. **Migrating the six Custom CSS rules into the repo** (item 3 below). The
+   reason is not the badge jump; it is that those rules are invisible to every
+   repo grep, and that nearly cost us. In #491 the obvious `h5` → `span` fix
+   would have turned the badge text red on every product card — caught only by
+   measuring the live DOM first. That landmine stays armed for whoever next
+   touches card markup.
+
+3. **Reconciling `templates/page.bfcm.json` between live and repo** (§0). Same
+   category. The trap was found before it fired; the next person works from the
+   repo, sees a valid-looking template, merges, and silently deletes the
+   countdown dates and the FAQ. Worth closing rather than documenting around
+   forever.
+
+4. **The wrong data that is customer-facing right now.** The stale banner
+   subtitle, the `Origin.Centeral America` tag typo, Finca Idolia's wrong
+   `accentuate.tastes_like`, La Huerta's `custom.region`. Minutes of work each,
+   and each currently shows something false to a customer. Best
+   value-per-effort on the list.
+
+5. **The five red tests on `staging-v2`** (see the test-suite note at the end).
+   Unglamorous, but every future PR's gate depends on it. "CI is red" currently
+   carries no information, which means it gets waved through — and that is how a
+   real regression ships.
+
+### Worth shipping only because it is already built
+
+Items 1 and 2 below — the gallery padding and the column override. Real,
+visible, and reported, but cosmetic. They are done and tested, so ship them;
+they would not have been worth scheduling ahead of the five above.
+
+### Where this hand-off argues against its own work
+
+**#492, the render-blocking CSS inlining, was marginal and was oversold.** It
+was described in the PR as the best remaining win available without waiting on
+anyone. That was wrong: those files load in parallel, so removing two of three
+shortens the critical path by roughly one round-trip rather than the ~960 ms the
+per-file figures suggest, and real users already pass CWV. It is harmless, and
+the test documents a genuine shadow-DOM stylesheet trap, but it was not worth
+prioritising.
+
+### Not worth the time
+
+- **Chasing the mobile Lighthouse score itself.** Until the video lands the
+  number will not move; once it lands the rest is noise.
+- **The `find-ona-1.webp` alt field** "to take SEO 92 → 100". Add the alt text
+  because it is right for screen readers, not for the score. The score is
+  lab-only.
+- **The 297 KB badge SVG.** An absurd size for a badge, but it is one cached
+  asset.
+- **The ~150 stale remote branches, the old PRs, the obsolete preview theme.**
+  Tidiness with no user impact. Only worth it if it is actively confusing
+  someone.
+- **The `inert` slideshow refactor.** Ten lab failures overstates it. It needs an
+  IntersectionObserver rewrite, because swipe never updates `aria-hidden` and
+  `visibleSlidesAmount` can exceed 1 — so tying `inert` to either would leave
+  *visible* slides non-interactive. Real value for keyboard users, but the most
+  effort for the least visible return here. The cheap twin is better: the PDP
+  media gallery and `zoom-dialog.js` almost certainly carry the same
+  `aria-selected` defect #490 just fixed, which is a near-copy of a merged
+  change.
+- **The console 400s and the 404.** Worth one look to confirm they are
+  third-party app noise. If they are, leave them.
+
+Items 1–5 are roughly a day of work and cover everything that touches a customer
+or protects the codebase. The rest is most of the backlog and close to none of
+the value.
+
+---
+
 ## 1. The landing cards don't line up with the collection cards — one value
 
 Ready on `staging-v2` as **#494**. Verified on the staging theme.
