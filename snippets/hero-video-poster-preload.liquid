@@ -1,0 +1,67 @@
+{%- doc -%}
+  Declares a high-priority preload for the hero video's poster frame.
+
+  The homepage's LCP is that poster. `video_tag` emits it as a `poster`
+  attribute, which the browser cannot discover until it has parsed the <video>
+  element, and on the homepage it then loses the early bandwidth race to three
+  app-injected script preloads (jquery, purify, mustache) that this theme does
+  not control. PageSpeed reports it as "LCP request discovery". Preloading the
+  same image moves that discovery into the head.
+
+  The href MUST resolve to the identical URL `video_tag` builds from the same
+  `image_size`, or the browser downloads the poster twice and this is worse than
+  doing nothing. That is the `_<size>` suffix form produced by `img_url` -- NOT
+  `image_url: width: <n>`, which produces `?width=<n>`. Hence the deprecated
+  filter here, deliberately, as in sections/ona-training-banner.liquid. `size`
+  is passed in rather than written here so it cannot drift from the `image_size`
+  the section's own `video_tag` calls use.
+
+  Scoping follows which element actually paints, not which posters exist. When
+  mobile has no media of its own (`fallback_to_desktop`) the desktop element is
+  shown at every width, so its preload is left unscoped. Otherwise the desktop
+  element is `display: none` below the breakpoint and each preload is narrowed
+  to the half that shows it -- exact complements, never both and never neither.
+  A distinct mobile *image* needs nothing from here: `image_tag` already carries
+  `fetchpriority` on the first section.
+
+  Only the first section is preloaded; below the fold there is nothing to win.
+  That test lives here rather than at the call site because
+  sections/hero.liquid sits exactly on theme-check's Liquid complexity ceiling
+  of 120 -- a single added `if` there tips it over, so every decision this
+  feature needs is on this side of the render.
+
+  @param section_index - the section's position on the page; only 1 preloads
+  @param size - the `image_size` the section's `video_tag` calls use, e.g. '1600x'
+  @param mobile_max - the largest viewport width that paints the mobile element
+  @param desktop_media - media type of the desktop slot ('video' when there is a poster)
+  @param mobile_media - media type of the mobile slot
+  @param fallback_to_desktop - true when mobile has no media of its own
+  @param desktop_video - the desktop video object
+  @param mobile_video - the mobile video object
+{%- enddoc -%}
+
+{%- if section_index == 1 -%}
+  {%- if desktop_media == 'video' and desktop_video.preview_image != blank -%}
+    <link
+      rel="preload"
+      as="image"
+      href="{{ desktop_video.preview_image | img_url: size }}"
+      fetchpriority="high"
+      {%- unless fallback_to_desktop %}
+        media="not all and (max-width: {{ mobile_max }}px)"
+      {%- endunless %}
+    >
+  {%- endif -%}
+
+  {%- unless fallback_to_desktop -%}
+    {%- if mobile_media == 'video' and mobile_video.preview_image != blank -%}
+      <link
+        rel="preload"
+        as="image"
+        href="{{ mobile_video.preview_image | img_url: size }}"
+        fetchpriority="high"
+        media="(max-width: {{ mobile_max }}px)"
+      >
+    {%- endif -%}
+  {%- endunless -%}
+{%- endif -%}
