@@ -1,28 +1,70 @@
 {%- liquid
   assign settings = section.settings
   assign badge_label = settings.accessible_label | default: settings.fallback_text | default: 'Promotion'
+
+  # The badge can be one or two stacked layers. Each layer resolves to an
+  # uploaded image first, then the bundled Black Friday art, then (back layer
+  # only) the text fallback. The front layer is optional.
+  assign has_back = false
+  if settings.image != blank or settings.use_bf_art or settings.fallback_text != blank
+    assign has_back = true
+  endif
+
+  assign has_front = false
+  if settings.enable_top_layer
+    if settings.image_top != blank or settings.use_bf_art
+      assign has_front = true
+    endif
+  endif
 -%}
 
-{%- capture badge_content -%}
-  <span class="floating-badge__rotator">
-    {%- if settings.image != blank -%}
-      {{
-        settings.image
-        | image_url: width: 800
-        | image_tag:
-          widths: '120, 180, 240, 360, 480, 640, 800',
-          sizes: '(max-width: 749px) 120px, 200px',
-          loading: 'eager',
-          class: 'floating-badge__image',
-          alt: ''
-      }}
-    {%- else -%}
-      <span class="floating-badge__fallback" aria-hidden="true">
-        {{- settings.fallback_text | escape -}}
-      </span>
-    {%- endif -%}
+{%- capture back_layer -%}
+  <span class="floating-badge__layer floating-badge__layer--back">
+    <span class="floating-badge__rotator" style="--fb-duration: {{ settings.duration }}s; --fb-direction: {{ settings.direction }};">
+      {%- if settings.image != blank -%}
+        {{
+          settings.image
+          | image_url: width: 800
+          | image_tag:
+            widths: '120, 180, 240, 360, 480, 640, 800',
+            sizes: '(max-width: 749px) 120px, 200px',
+            loading: 'eager',
+            class: 'floating-badge__image',
+            alt: ''
+        }}
+      {%- elsif settings.use_bf_art -%}
+        <img class="floating-badge__image" src="{{ 'floating-badge-bf-bg.svg' | asset_url }}" alt="" loading="eager" width="233" height="227">
+      {%- else -%}
+        <span class="floating-badge__fallback" aria-hidden="true">{{ settings.fallback_text | escape }}</span>
+      {%- endif -%}
+    </span>
   </span>
 {%- endcapture -%}
+
+{%- capture front_layer -%}
+  {%- if has_front -%}
+    <span class="floating-badge__layer floating-badge__layer--front">
+      <span class="floating-badge__rotator" style="--fb-duration: {{ settings.duration_top }}s; --fb-direction: {{ settings.direction_top }};">
+        {%- if settings.image_top != blank -%}
+          {{
+            settings.image_top
+            | image_url: width: 800
+            | image_tag:
+              widths: '120, 180, 240, 360, 480, 640, 800',
+              sizes: '(max-width: 749px) 120px, 200px',
+              loading: 'eager',
+              class: 'floating-badge__image',
+              alt: ''
+          }}
+        {%- else -%}
+          <img class="floating-badge__image" src="{{ 'floating-badge-bf-text.svg' | asset_url }}" alt="" loading="eager" width="233" height="227">
+        {%- endif -%}
+      </span>
+    </span>
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- capture badge_content -%}{{ back_layer }}{{ front_layer }}{%- endcapture -%}
 
 <div
   class="floating-badge floating-badge--{{ settings.position }}{% if settings.animate %} floating-badge--animated{% endif %}{% if settings.hide_on_mobile %} floating-badge--hide-mobile{% endif %}"
@@ -31,8 +73,6 @@
     --floating-badge-size-mobile: {{ settings.size_mobile }}px;
     --floating-badge-offset-vertical: {{ settings.offset_vertical }}px;
     --floating-badge-offset-horizontal: {{ settings.offset_horizontal }}px;
-    --floating-badge-duration: {{ settings.duration }}s;
-    --floating-badge-direction: {{ settings.direction }};
     --floating-badge-z-index: {{ settings.z_index }};
     --floating-badge-background: {{ settings.fallback_background }};
     --floating-badge-color: {{ settings.fallback_text_color }};
@@ -84,19 +124,29 @@
     right: var(--floating-badge-offset-horizontal);
   }
 
-  .floating-badge__link,
+  .floating-badge__link {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    pointer-events: auto;
+    text-decoration: none;
+  }
+
+  /* Each layer fills the badge and stacks on top of the previous one, so the
+     background art and the text sit in the same circle and spin independently. */
+  .floating-badge__layer {
+    position: absolute;
+    inset: 0;
+  }
+
   .floating-badge__rotator,
   .floating-badge__image,
   .floating-badge__fallback {
     display: block;
     width: 100%;
     height: 100%;
-  }
-
-  .floating-badge__link {
-    border-radius: 50%;
-    pointer-events: auto;
-    text-decoration: none;
   }
 
   .floating-badge__link:focus-visible {
@@ -123,8 +173,10 @@
   }
 
   @media (prefers-reduced-motion: no-preference) {
+    /* Each rotator reads its OWN --fb-duration / --fb-direction, so the two
+       layers can turn at different speeds and in opposite directions. */
     .floating-badge--animated .floating-badge__rotator {
-      animation: floating-badge-spin var(--floating-badge-duration) linear infinite var(--floating-badge-direction);
+      animation: floating-badge-spin var(--fb-duration, 12s) linear infinite var(--fb-direction, normal);
       transform-origin: center;
       will-change: transform;
     }
@@ -158,8 +210,11 @@
   "enabled_on": { "templates": ["index"] },
   "settings": [
     { "type": "header", "content": "Content" },
-    { "type": "image_picker", "id": "image", "label": "Badge image" },
-    { "type": "text", "id": "fallback_text", "label": "Fallback text", "default": "New Harvest Sale" },
+    { "type": "checkbox", "id": "enable_top_layer", "label": "Two layers (background + top)", "default": true, "info": "Off = a single spinning badge. On = a background layer with a second layer (e.g. the lettering) on top, each with its own speed and direction." },
+    { "type": "checkbox", "id": "use_bf_art", "label": "Use the bundled Black Friday badge art", "default": true, "info": "When a layer has no image uploaded, fall back to the packaged 'Black Friday Sale' artwork." },
+    { "type": "image_picker", "id": "image", "label": "Background layer image", "info": "Optional. Overrides the bundled background art." },
+    { "type": "image_picker", "id": "image_top", "label": "Top layer image", "info": "Optional. Overrides the bundled lettering.", "visible_if": "{{ section.settings.enable_top_layer }}" },
+    { "type": "text", "id": "fallback_text", "label": "Fallback text", "default": "New Harvest Sale", "info": "Shown only if the background layer has no image and the bundled art is off." },
     { "type": "text", "id": "accessible_label", "label": "Accessible label", "default": "View the current promotion" },
     { "type": "url", "id": "link", "label": "Link" },
     { "type": "checkbox", "id": "open_in_new_tab", "label": "Open in a new tab", "default": false },
@@ -185,18 +240,30 @@
     { "type": "checkbox", "id": "hide_on_mobile", "label": "Hide on mobile", "default": false },
 
     { "type": "header", "content": "Animation" },
-    { "type": "checkbox", "id": "animate", "label": "Rotate continuously", "default": true },
-    { "type": "range", "id": "duration", "label": "Rotation duration", "min": 2, "max": 60, "step": 1, "unit": "s", "default": 12, "visible_if": "{{ section.settings.animate }}" },
+    { "type": "checkbox", "id": "animate", "label": "Animate (rotate)", "default": true, "info": "Off = both layers sit still." },
+    { "type": "range", "id": "duration", "label": "Background speed (seconds per turn)", "min": 2, "max": 60, "step": 1, "unit": "s", "default": 16, "visible_if": "{{ section.settings.animate }}" },
     {
       "type": "select",
       "id": "direction",
-      "label": "Direction",
+      "label": "Background direction",
       "options": [
         { "value": "normal", "label": "Clockwise" },
         { "value": "reverse", "label": "Counterclockwise" }
       ],
       "default": "normal",
       "visible_if": "{{ section.settings.animate }}"
+    },
+    { "type": "range", "id": "duration_top", "label": "Top speed (seconds per turn)", "min": 2, "max": 60, "step": 1, "unit": "s", "default": 10, "visible_if": "{{ section.settings.animate and section.settings.enable_top_layer }}" },
+    {
+      "type": "select",
+      "id": "direction_top",
+      "label": "Top direction",
+      "options": [
+        { "value": "normal", "label": "Clockwise" },
+        { "value": "reverse", "label": "Counterclockwise" }
+      ],
+      "default": "reverse",
+      "visible_if": "{{ section.settings.animate and section.settings.enable_top_layer }}"
     },
 
     { "type": "header", "content": "Fallback style" },
