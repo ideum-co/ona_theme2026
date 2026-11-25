@@ -19,7 +19,7 @@
 -%}
 
 {%- capture back_layer -%}
-  <span class="floating-badge__layer floating-badge__layer--back">
+  <span class="floating-badge__layer floating-badge__layer--back{% if settings.animate and settings.animate_back %} floating-badge__layer--animated{% endif %}">
     <span class="floating-badge__rotator" style="--fb-duration: {{ settings.duration }}s; --fb-direction: {{ settings.direction }};">
       {%- if settings.image != blank -%}
         {{
@@ -43,7 +43,7 @@
 
 {%- capture front_layer -%}
   {%- if has_front -%}
-    <span class="floating-badge__layer floating-badge__layer--front">
+    <span class="floating-badge__layer floating-badge__layer--front{% if settings.animate and settings.animate_front %} floating-badge__layer--animated{% endif %}">
       <span class="floating-badge__rotator" style="--fb-duration: {{ settings.duration_top }}s; --fb-direction: {{ settings.direction_top }};">
         {%- if settings.image_top != blank -%}
           {{
@@ -67,7 +67,7 @@
 {%- capture badge_content -%}{{ back_layer }}{{ front_layer }}{%- endcapture -%}
 
 <div
-  class="floating-badge floating-badge--{{ settings.position }}{% if settings.animate %} floating-badge--animated{% endif %}{% if settings.hide_on_mobile %} floating-badge--hide-mobile{% endif %}"
+  class="floating-badge floating-badge--{{ settings.position }}{% if settings.hide_on_mobile %} floating-badge--hide-mobile{% endif %}"
   style="
     --floating-badge-size: {{ settings.size }}px;
     --floating-badge-size-mobile: {{ settings.size_mobile }}px;
@@ -175,13 +175,13 @@
   @media (prefers-reduced-motion: no-preference) {
     /* Each rotator reads its OWN --fb-duration / --fb-direction, so the two
        layers can turn at different speeds and in opposite directions. */
-    .floating-badge--animated .floating-badge__rotator {
+    .floating-badge__layer--animated .floating-badge__rotator {
       animation: floating-badge-spin var(--fb-duration, 12s) linear infinite var(--fb-direction, normal);
       transform-origin: center;
       will-change: transform;
     }
 
-    .floating-badge--animated .floating-badge__link:hover .floating-badge__rotator {
+    .floating-badge__link:hover .floating-badge__layer--animated .floating-badge__rotator {
       animation-play-state: paused;
     }
   }
@@ -240,8 +240,9 @@
     { "type": "checkbox", "id": "hide_on_mobile", "label": "Hide on mobile", "default": false },
 
     { "type": "header", "content": "Animation" },
-    { "type": "checkbox", "id": "animate", "label": "Animate (rotate)", "default": true, "info": "Off = both layers sit still." },
-    { "type": "range", "id": "duration", "label": "Background speed (seconds per turn)", "min": 2, "max": 60, "step": 1, "unit": "s", "default": 16, "visible_if": "{{ section.settings.animate }}" },
+    { "type": "checkbox", "id": "animate", "label": "Animate (rotate)", "default": true, "info": "Master switch. Off = both layers sit still. On = each layer below can spin or stay still on its own." },
+    { "type": "checkbox", "id": "animate_back", "label": "Spin the background layer", "default": true, "visible_if": "{{ section.settings.animate }}" },
+    { "type": "range", "id": "duration", "label": "Background speed (seconds per turn)", "min": 2, "max": 60, "step": 1, "unit": "s", "default": 16, "visible_if": "{{ section.settings.animate and section.settings.animate_back }}" },
     {
       "type": "select",
       "id": "direction",
@@ -251,9 +252,10 @@
         { "value": "reverse", "label": "Counterclockwise" }
       ],
       "default": "normal",
-      "visible_if": "{{ section.settings.animate }}"
+      "visible_if": "{{ section.settings.animate and section.settings.animate_back }}"
     },
-    { "type": "range", "id": "duration_top", "label": "Top speed (seconds per turn)", "min": 2, "max": 60, "step": 1, "unit": "s", "default": 10, "visible_if": "{{ section.settings.animate and section.settings.enable_top_layer }}" },
+    { "type": "checkbox", "id": "animate_front", "label": "Spin the top layer", "default": true, "visible_if": "{{ section.settings.animate and section.settings.enable_top_layer }}" },
+    { "type": "range", "id": "duration_top", "label": "Top speed (seconds per turn)", "min": 2, "max": 60, "step": 1, "unit": "s", "default": 10, "visible_if": "{{ section.settings.animate and section.settings.animate_front and section.settings.enable_top_layer }}" },
     {
       "type": "select",
       "id": "direction_top",
@@ -263,7 +265,7 @@
         { "value": "reverse", "label": "Counterclockwise" }
       ],
       "default": "reverse",
-      "visible_if": "{{ section.settings.animate and section.settings.enable_top_layer }}"
+      "visible_if": "{{ section.settings.animate and section.settings.animate_front and section.settings.enable_top_layer }}"
     },
 
     { "type": "header", "content": "Fallback style" },
